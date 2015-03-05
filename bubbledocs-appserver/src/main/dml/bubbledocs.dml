@@ -1,0 +1,127 @@
+package pt.tecnico.bubbledocs.domain;
+
+class Bubbledocs{
+	Integer ID;
+}
+
+class User{
+	String password;
+}
+
+class Observer;
+
+class Observable;
+
+class ID;
+
+class CustomId extends ID{
+	String value;
+}
+
+class SystemId extends ID{
+	Integer value;
+}
+
+class Entity{
+	String name;
+}
+
+class Root extends User;
+
+class Spreadsheet{
+	DateTime createdAt;
+	DateTime modifiedAt;
+	Integer line;
+	Integer column;
+}
+
+class Cell{
+	Integer line;
+	Integer column;
+	Boolean protect;
+}
+
+class Content;
+
+class Argument extends Content;
+
+class Literal extends Argument{
+	Integer value;
+}
+
+class Reference extends Argument;
+
+class Function extends Content;
+
+class BinaryFunction;
+
+class Addicion;
+
+class Subtraction;
+
+class Division;
+
+class Multiplication;
+
+
+relation UserContainsSpreadsheet{
+	User playsRole user;
+	Spreadsheet playsRole Docs{
+		multiplicity 0..*;
+	}
+}
+
+relation SpreadsheetContainsUsers{
+	Spreadsheet playsRole spreadsheet;
+	User playsRole users{
+		multiplicity 0..*;
+		}
+}
+
+relation SpreadsheetContainsCell{
+	Spreadsheet playsRole spreadsheet;
+	Cell playsRole cells{
+		multiplicity 0..*;}
+}
+
+relation CellContainsContent{
+	Cell playsRole cell;
+	Content playsRole content{
+		multiplicity 0..1;}
+}
+
+relation BinaryFunctionContainsArgument{
+	BinaryFunction playsRole binaryFunction;
+	Argument playsRole operand1{
+		multiplicity 2;}
+	}
+
+relation DomainRootHasBubbleApplication {
+  .pt.ist.fenixframework.DomainRoot playsRole root {
+    multiplicity 0..1;
+  }
+  Bubbledocs playsRole bubbledocs {
+    multiplicity 0..1;
+  }
+}
+
+relation BubbledocsContainsEntity{
+	Bubbledocs playsRole bubbledocs;
+	User playsRole entity{
+		multiplicity 0..*;
+	}
+}
+
+relation EntityContainsID{
+	Entity playsRole entity;
+	ID playsRole id{
+		multiplicity 0..1;
+	}
+}
+
+relation ReferenceContainsCell{
+	Reference playsRole reference;
+	Cell playsRole cells{
+		multiplicity 0..1;
+	}
+}

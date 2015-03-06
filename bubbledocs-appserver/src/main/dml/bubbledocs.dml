@@ -1,29 +1,11 @@
 package pt.tecnico.bubbledocs.domain;
 
 class Bubbledocs{
-	Integer ID;
+	Integer lastID;
 }
 
 class User{
 	String password;
-}
-
-class Observer;
-
-class Observable;
-
-class ID;
-
-class CustomId extends ID{
-	String value;
-}
-
-class SystemId extends ID{
-	Integer value;
-}
-
-class Entity{
-	String name;
 }
 
 class Root extends User;
@@ -55,7 +37,7 @@ class Function extends Content;
 
 class BinaryFunction;
 
-class Addicion;
+class Addiction;
 
 class Subtraction;
 
@@ -93,7 +75,9 @@ relation CellContainsContent{
 relation BinaryFunctionContainsArgument{
 	BinaryFunction playsRole binaryFunction;
 	Argument playsRole operand1{
-		multiplicity 2;}
+		multiplicity 1;}
+	Argument playsRole operand2{
+		multiplicity 1;}
 	}
 
 relation DomainRootHasBubbleApplication {
@@ -105,17 +89,17 @@ relation DomainRootHasBubbleApplication {
   }
 }
 
-relation BubbledocsContainsEntity{
+relation BubbledocsContainsUser{
 	Bubbledocs playsRole bubbledocs;
-	User playsRole entity{
+	User playsRole _users{
 		multiplicity 0..*;
 	}
 }
 
-relation EntityContainsID{
-	Entity playsRole entity;
-	ID playsRole id{
-		multiplicity 0..1;
+relation BubbledocsContainsSpreadsheet{
+	Bubbledocs playsRole bubbledocs;
+	Spreadsheet playsRole _docs{
+		multiplicity 0..*;
 	}
 }
 

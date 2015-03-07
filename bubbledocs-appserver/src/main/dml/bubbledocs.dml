@@ -5,12 +5,16 @@ class Bubbledocs{
 }
 
 class User{
+	String username;
+	String name;
 	String password;
 }
 
 class Root extends User;
 
 class Spreadsheet{
+	int ID;
+	String name;
 	DateTime createdAt;
 	DateTime modifiedAt;
 	Integer line;

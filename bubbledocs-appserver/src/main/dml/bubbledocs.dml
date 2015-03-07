@@ -47,15 +47,22 @@ class Multiplication;
 
 
 relation UserContainsSpreadsheet{
-	User playsRole user;
-	Spreadsheet playsRole Docs{
+	User playsRole creator;
+	Spreadsheet playsRole DocsCreated{
 		multiplicity 0..*;
 	}
 }
 
-relation SpreadsheetContainsUsers{
-	Spreadsheet playsRole spreadsheet;
-	User playsRole users{
+relation SpreadsheetContainsUsers1{
+	Spreadsheet playsRole WRDocs;
+	User playsRole writers{
+		multiplicity 0..*;
+		}
+}
+
+relation SpreadsheetContainsUsers2{
+	Spreadsheet playsRole RDocs;
+	User playsRole readers{
 		multiplicity 0..*;
 		}
 }
@@ -72,13 +79,17 @@ relation CellContainsContent{
 		multiplicity 0..1;}
 }
 
-relation BinaryFunctionContainsArgument{
-	BinaryFunction playsRole binaryFunction;
+relation BinaryFunctionContainsArgument1{
+	BinaryFunction playsRole binaryFunction1;
 	Argument playsRole operand1{
 		multiplicity 1;}
+	}
+	
+relation BinaryFunctionContainsArgument2{
+	BinaryFunction playsRole binaryFunction2;
 	Argument playsRole operand2{
 		multiplicity 1;}
-	}
+		}
 
 relation DomainRootHasBubbleApplication {
   .pt.ist.fenixframework.DomainRoot playsRole root {

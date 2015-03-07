@@ -41,7 +41,7 @@ class Function extends Content;
 
 class BinaryFunction;
 
-class Addiction;
+class Addition;
 
 class Subtraction;
 

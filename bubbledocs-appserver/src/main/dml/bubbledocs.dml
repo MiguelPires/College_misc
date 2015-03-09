@@ -49,7 +49,6 @@ class Division;
 
 class Multiplication;
 
-
 relation UserContainsSpreadsheet{
 	User playsRole creator;
 	Spreadsheet playsRole DocsCreated{
@@ -61,59 +60,63 @@ relation SpreadsheetContainsUsers1{
 	Spreadsheet playsRole WRDocs;
 	User playsRole writers{
 		multiplicity 0..*;
-		}
+	}
 }
 
 relation SpreadsheetContainsUsers2{
 	Spreadsheet playsRole RDocs;
 	User playsRole readers{
 		multiplicity 0..*;
-		}
+	}
 }
 
-relation SpreadsheetContainsCell{
+relation SpreadsheetContainsCells{
 	Spreadsheet playsRole spreadsheet;
 	Cell playsRole cells{
-		multiplicity 0..*;}
+		multiplicity 0..*;
+	}
 }
 
 relation CellContainsContent{
 	Cell playsRole cell;
 	Content playsRole content{
-		multiplicity 0..1;}
+		multiplicity 0..1;
+	}
 }
 
 relation BinaryFunctionContainsArgument1{
 	BinaryFunction playsRole binaryFunction1;
 	Argument playsRole operand1{
-		multiplicity 1;}
+		multiplicity 1;
 	}
+}
 	
 relation BinaryFunctionContainsArgument2{
 	BinaryFunction playsRole binaryFunction2;
 	Argument playsRole operand2{
-		multiplicity 1;}
-		}
-
-relation DomainRootHasBubbleApplication {
-  .pt.ist.fenixframework.DomainRoot playsRole root {
-    multiplicity 0..1;
-  }
-  Bubbledocs playsRole bubbledocs {
-    multiplicity 0..1;
-  }
+		multiplicity 1;
+	}
 }
 
-relation BubbledocsContainsUser{
+relation DomainRootHasBubbleApplication{
+  	.pt.ist.fenixframework.DomainRoot playsRole root{
+   		multiplicity 0..1;
+  	}
+ 	Bubbledocs playsRole bubbledocs{
+    	multiplicity 0..1;
+  	}
+}
+
+relation BubbledocsContainsUsers{
 	Bubbledocs playsRole bubbledocs;
-	User playsRole _users{
+	User playsRole users{
 		multiplicity 0..*;
 	}
 }
 
-relation BubbledocsContainsSpreadsheet{
+relation BubbledocsContainsSpreadsheets{
 	Bubbledocs playsRole bubbledocs;
-	Spreadsheet playsRole _docs{
+	Spreadsheet playsRole docs{
 		multiplicity 0..*;
 	}
 }
@@ -121,6 +124,6 @@ relation BubbledocsContainsSpreadsheet{
 relation ReferenceContainsCell{
 	Reference playsRole reference;
 	Cell playsRole cells{
-		multiplicity 0..1;
+		multiplicity 1;
 	}
 }

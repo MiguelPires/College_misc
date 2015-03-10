@@ -49,64 +49,50 @@ class Division;
 
 class Multiplication;
 
-relation UserContainsSpreadsheet1{
+relation UserContainsSpreadsheet{
 	User playsRole creator;
 	Spreadsheet playsRole createdDocs{
 		multiplicity 0..*;
 	}
 }
 
-relation UserContainsSpreadsheet2{
-	User playsRole reader;
-	Spreadsheet playsRole readableDocs{
-		multiplicity 0..*;
-	}
-}
-
-relation UserContainsSpreadsheet3{
-	User playsRole writer;
+relation SpreadsheetContainsUsers1{
 	Spreadsheet playsRole writableDocs{
 		multiplicity 0..*;
 	}
-}
-
-relation SpreadsheetContainsUsers1{
-	Spreadsheet playsRole WRDocs;
 	User playsRole writers{
 		multiplicity 0..*;
 	}
 }
 
 relation SpreadsheetContainsUsers2{
-	Spreadsheet playsRole RDocs;
+	Spreadsheet playsRole readableDocs{
+		multiplicity 0..*;
+	}
 	User playsRole readers{
 		multiplicity 0..*;
 	}
 }
 
 relation SpreadsheetContainsCells{
-	Spreadsheet playsRole spreadsheet;
 	Cell playsRole cells{
 		multiplicity 0..*;
 	}
 }
 
 relation CellContainsContent{
-	Cell playsRole cell;
 	Content playsRole content{
 		multiplicity 0..1;
 	}
 }
 
 relation BinaryFunctionContainsArgument1{
-	BinaryFunction playsRole binaryFunction1;
 	Argument playsRole firstOperand{
 		multiplicity 1;
 	}
 }
 	
 relation BinaryFunctionContainsArgument2{
-	BinaryFunction playsRole binaryFunction2;
 	Argument playsRole secondOperand{
 		multiplicity 1;
 	}
@@ -122,22 +108,25 @@ relation DomainRootHasBubbleApplication{
 }
 
 relation BubbledocsContainsUsers{
-	Bubbledocs playsRole bubbledocs;
 	User playsRole users{
 		multiplicity 0..*;
 	}
 }
 
 relation BubbledocsContainsSpreadsheets{
-	Bubbledocs playsRole bubbledocs;
 	Spreadsheet playsRole docs{
 		multiplicity 0..*;
 	}
 }
 
 relation ReferenceContainsCell{
-	Reference playsRole reference;
 	Cell playsRole referedCell{
 		multiplicity 1;
+	}
+}
+
+relation RootContainsBubbledocs{
+	Bubbledocs playsRole bubbledocs{
+		multiplicity 0..1;
 	}
 }

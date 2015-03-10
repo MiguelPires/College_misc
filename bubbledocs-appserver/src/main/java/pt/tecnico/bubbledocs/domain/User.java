@@ -18,7 +18,7 @@ public class User extends User_Base {
     
 	public ArrayList<Spreadsheet> findCreatedDocs(String name){
 		ArrayList<Spreadsheet> documents = new ArrayList<Spreadsheet>();
-		for (Spreadsheet doc : this.getDocsCreatedSet())
+		for (Spreadsheet doc : this.getCreatedDocsSet())
 			if(doc.getName().equals(name))
 				documents.add(doc);
 				

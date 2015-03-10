@@ -49,9 +49,23 @@ class Division;
 
 class Multiplication;
 
-relation UserContainsSpreadsheet{
+relation UserContainsSpreadsheet1{
 	User playsRole creator;
-	Spreadsheet playsRole DocsCreated{
+	Spreadsheet playsRole createdDocs{
+		multiplicity 0..*;
+	}
+}
+
+relation UserContainsSpreadsheet2{
+	User playsRole reader;
+	Spreadsheet playsRole readableDocs{
+		multiplicity 0..*;
+	}
+}
+
+relation UserContainsSpreadsheet3{
+	User playsRole writer;
+	Spreadsheet playsRole writableDocs{
 		multiplicity 0..*;
 	}
 }
@@ -86,14 +100,14 @@ relation CellContainsContent{
 
 relation BinaryFunctionContainsArgument1{
 	BinaryFunction playsRole binaryFunction1;
-	Argument playsRole operand1{
+	Argument playsRole firstOperand{
 		multiplicity 1;
 	}
 }
 	
 relation BinaryFunctionContainsArgument2{
 	BinaryFunction playsRole binaryFunction2;
-	Argument playsRole operand2{
+	Argument playsRole secondOperand{
 		multiplicity 1;
 	}
 }
@@ -123,7 +137,7 @@ relation BubbledocsContainsSpreadsheets{
 
 relation ReferenceContainsCell{
 	Reference playsRole reference;
-	Cell playsRole cells{
+	Cell playsRole referedCell{
 		multiplicity 1;
 	}
 }

@@ -6,4 +6,8 @@ public class Content extends Content_Base {
         super();
     }
     
+    public void delete(){
+    	deleteDomainObject();
+    }
+    
 }

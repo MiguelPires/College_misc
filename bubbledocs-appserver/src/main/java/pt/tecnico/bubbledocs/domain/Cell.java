@@ -6,4 +6,10 @@ public class Cell extends Cell_Base {
         super();
     }
     
+    public void delete(){
+    	getContent().delete();
+    	
+    	deleteDomainObject();
+    }
+    
 }

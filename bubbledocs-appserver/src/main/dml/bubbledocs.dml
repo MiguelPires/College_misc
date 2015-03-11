@@ -75,34 +75,28 @@ relation SpreadsheetContainsUsers2{
 }
 
 relation SpreadsheetContainsCells{
-	Spreadsheet playsRole spreadsheet;
+	Spreadsheet playsRole;
 	Cell playsRole cells{
 		multiplicity 0..*;
 	}
 }
 
 relation CellContainsContent{
-	Cell playsRole cell{
-		multiplicity 0;
-	}
+	Cell playsRole;
 	Content playsRole content{
 		multiplicity 0..1;
 	}
 }
 
 relation BinaryFunctionContainsArgument1{
-	BinaryFunction playsRole binaryFunction1{
-		multiplicity 0;
-	}
+	BinaryFunction playsRole;
 	Argument playsRole firstOperand{
 		multiplicity 1;
 	}
 }
 	
 relation BinaryFunctionContainsArgument2{
-	BinaryFunction playsRole binaryFunction2{
-		multiplicity 0;
-	}
+	BinaryFunction playsRole;
 	Argument playsRole secondOperand{
 		multiplicity 1;
 	}
@@ -118,35 +112,29 @@ relation DomainRootHasBubbleApplication{
 }
 
 relation BubbledocsContainsUsers{
-	Bubbledocs playsRole bubbledocs{
-		multiplicity 0;
-	}
+	Bubbledocs playsRole;
 	User playsRole users{
 		multiplicity 0..*;
 	}
 }
 
 relation BubbledocsContainsSpreadsheets{
-	Bubbledocs playsRole bubbledocs{
-		multiplicity 0;
-	}
+	Bubbledocs playsRole;
 	Spreadsheet playsRole docs{
 		multiplicity 0..*;
 	}
 }
 
 relation ReferenceContainsCell{
-	Reference playsRole reference{
-		multiplicity 0;
-	}
+	Reference playsRole;
 	Cell playsRole referedCell{
 		multiplicity 1;
 	}
 }
 
 relation RootContainsBubbledocs{
-	Root playsRole admin;
-	Bubbledocs playsRole app{
+	Root playsRole;
+	Bubbledocs playsRole application{
 		multiplicity 0..1;
 	}
 }

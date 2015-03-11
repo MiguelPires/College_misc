@@ -23,7 +23,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 	            return;
 	        }
 	    }
-	    throw new SpreadsheetNotFoundException("Not spreadsheet found for the "+id.toString()+" identifier.");	    
+	    throw new SpreadsheetNotFoundException("No spreadsheet was found for the "+id.toString()+" identifier.");	    
 	}
 	
 	public void deleteDoc(Spreadsheet doc)

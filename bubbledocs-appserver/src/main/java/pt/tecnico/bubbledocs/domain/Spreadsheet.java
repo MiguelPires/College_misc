@@ -27,4 +27,23 @@ public class Spreadsheet extends Spreadsheet_Base {
     	 
     	deleteDomainObject();
     }
+	
+	public Element exportToXML() {
+		Element element = new Element("spreadsheet");
+		element.setAttribute("ID",  Integer.toString(getID()));
+		element.setAttribute("name", getName());
+		element.setAttribute("createAt", ""+getCreatedAt());
+		element.setAttribute("modifiedAt", ""+getModifiedAt());
+		element.setAttribute("line",  Integer.toString(getLine()));
+		element.setAttribute("column",  Integer.toString(getColumn()));
+		
+		Element cellElement = new Element("cell");
+		element.addContent(cellElement);
+
+		for (Cell c : getCellsSet()) {
+		    cellElement.addContent(c.exportToXML());
+		}
+		
+		return element;
+	}
 }

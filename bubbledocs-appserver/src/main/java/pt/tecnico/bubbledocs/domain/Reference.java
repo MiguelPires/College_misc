@@ -4,7 +4,7 @@ public class Reference extends Reference_Base {
     
     public Reference(Cell cell) {
         super();
-        setCell(cell);
+        setReferedCell(cell);
     }
     
 }

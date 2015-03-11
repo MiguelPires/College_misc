@@ -1,5 +1,7 @@
 package pt.tecnico.bubbledocs.domain;
 
+import org.jdom2.Element;
+
 public class Spreadsheet extends Spreadsheet_Base {
 
 	public Spreadsheet() {

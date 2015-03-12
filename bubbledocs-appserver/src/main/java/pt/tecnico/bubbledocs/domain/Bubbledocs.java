@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.jdom2.Element;
 
 import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
+import pt.tecnico.bubbledocs.exception.UserNotFoundException;
 
 public class Bubbledocs extends Bubbledocs_Base {
     
@@ -33,6 +34,16 @@ public class Bubbledocs extends Bubbledocs_Base {
 	{
 	    doc.delete();
 	    removeDocs(doc);
+	}
+	
+	public User findUser(String username) throws UserNotFoundException
+	{
+		for(User user : getUsersSet()){
+			if(user.getUsername().equals(username)){
+				return user;
+			}
+		}
+		throw new UserNotFoundException("User ' " + username + " ' not found.");
 	}
 	
 	public void importFromXML(Element bubbledocsElement) {

@@ -1,6 +1,8 @@
 package pt.tecnico.bubbledocs.domain;
 
+import pt.tecnico.bubbledocs.exception.ImportDocumentException;
 import org.jdom2.Element;
+import org.jdom2.DataConversionException;
 
 public class Cell extends Cell_Base {
     
@@ -21,8 +23,19 @@ public class Cell extends Cell_Base {
 		Element element = new Element("cell");
 		element.setAttribute("line",  Integer.toString(getLine()));
 		element.setAttribute("column", Integer.toString(getColumn()));
-		element.setAttribute("protect", ""+getProtect());
+		//element.setAttribute("protect", ""+getProtect());
 		return element;
 	}
-    
+ 
+    public void importFromXML(Element cellElement) {
+		
+		//setProtect(cellElement.getAttribute("protect").getValue());
+		
+		try {
+			setLine(cellElement.getAttribute("line").getIntValue());
+			setColumn(cellElement.getAttribute("column").getIntValue());
+		} catch (DataConversionException e) { 
+		    throw new ImportDocumentException();
+		}
+	    }
 }

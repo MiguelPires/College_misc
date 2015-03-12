@@ -41,13 +41,13 @@ class Function extends Content;
 
 class BinaryFunction;
 
-class Addition;
+class Addition extends BinaryFunction;
 
-class Subtraction;
+class Subtraction extends BinaryFunction;
 
-class Division;
+class Division extends BinaryFunction;
 
-class Multiplication;
+class Multiplication extends BinaryFunction;
 
 relation UserContainsSpreadsheet{
 	User playsRole creator;

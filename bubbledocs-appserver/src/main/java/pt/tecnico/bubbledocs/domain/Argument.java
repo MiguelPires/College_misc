@@ -19,4 +19,13 @@ public class Argument extends Argument_Base {
 				
 		firstArg.importFromXML(newElement);
     }
+	
+	public void delete ()
+	{
+		setForbiddenBin1(null);
+		setForbiddenBin2(null);
+		setForbiddenCell(null);
+    	deleteDomainObject();
+
+	}
 }

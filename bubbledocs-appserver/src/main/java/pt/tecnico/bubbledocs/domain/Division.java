@@ -14,4 +14,13 @@ public class Division extends Division_Base {
     public Element exportToXML() {
 		return exportToXML("DIV");
 	}   
+    
+    public void delete ()
+	{
+		setForbiddenCell(null);
+		setFirstOperand(null);
+		setSecondOperand(null);
+    	deleteDomainObject();
+
+	}
 }

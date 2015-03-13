@@ -28,6 +28,7 @@ public class Cell extends Cell_Base {
     
     public void delete(){
     	getContent().delete();
+    	setForbiddenCells(null);
     	deleteDomainObject();
     }
     

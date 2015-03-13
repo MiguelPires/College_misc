@@ -33,4 +33,11 @@ public class Reference extends Reference_Base {
 		setReferedCell(ref);
 		
 	    }
+	
+	public void delete ()
+	{
+		setReferedCell(null);
+    	deleteDomainObject();
+
+	}
 }

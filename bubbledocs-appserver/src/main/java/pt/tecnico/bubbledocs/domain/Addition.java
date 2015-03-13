@@ -13,5 +13,14 @@ public class Addition extends Addition_Base {
     public Element exportToXML() {
 		return exportToXML("ADD");
 	}
+    
+    public void delete ()
+	{
+		setForbiddenCell(null);
+		setFirstOperand(null);
+		setSecondOperand(null);
+    	deleteDomainObject();
+
+	}
 	
 }

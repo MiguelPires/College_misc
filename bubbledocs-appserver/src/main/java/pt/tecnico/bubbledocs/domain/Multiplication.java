@@ -11,4 +11,13 @@ public class Multiplication extends Multiplication_Base {
     public Element exportToXML() {
 		return exportToXML("MUL");
 	}
+    
+    public void delete ()
+	{
+		setForbiddenCell(null);
+		setFirstOperand(null);
+		setSecondOperand(null);
+    	deleteDomainObject();
+
+	}
 }

@@ -7,6 +7,8 @@ public class Content extends Content_Base {
     }
     
     public void delete(){
+    	
+    	setForbiddenCell(null);
     	deleteDomainObject();
     }
     

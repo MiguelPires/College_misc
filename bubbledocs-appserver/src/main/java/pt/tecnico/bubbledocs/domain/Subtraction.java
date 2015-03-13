@@ -11,4 +11,13 @@ public class Subtraction extends Subtraction_Base {
     public Element exportToXML() {
 		return exportToXML("SUB");
 	}
+    
+    public void delete ()
+	{
+		setForbiddenCell(null);
+		setFirstOperand(null);
+		setSecondOperand(null);
+    	deleteDomainObject();
+
+	}
 }

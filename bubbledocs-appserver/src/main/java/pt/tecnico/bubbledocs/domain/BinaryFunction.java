@@ -55,4 +55,13 @@ public class BinaryFunction extends BinaryFunction_Base {
 		setSecondOperand(secondArg);
 		
 	}
+	
+	public void delete ()
+	{
+		setFirstOperand(null);
+		setSecondOperand(null);
+		
+    	deleteDomainObject();
+
+	}
 }

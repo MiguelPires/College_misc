@@ -27,6 +27,7 @@ public class SetupDomain {
 		bubbleapp.addUsers(ra);
 
 		Spreadsheet doc = pf.createSpreadsheet(bubbleapp.getLastID()+1, "Notas ES", 300, 20); //constructor ? falta o creator pf
+		bubbleapp.addDocs(doc);
 		
 		doc.addCellContent(3, 4, new Literal(5));
 		doc.addCellContent(1, 1, new Reference(doc.getCell(5, 6)));

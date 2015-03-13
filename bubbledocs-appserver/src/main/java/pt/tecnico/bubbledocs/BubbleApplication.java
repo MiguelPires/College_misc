@@ -51,15 +51,17 @@ public class BubbleApplication {
 
     	}
     	
-    	//escrever cenas da Jane
+    	printUsers();
+		printSpreadsheets("pf");
+		printSpreadsheets("ra");
     	
     	//aceder as spreadsheets, converter e escrever o resultado
     	ArrayList <org.jdom2.Document> docList = exportFeature();
     	
     	//remover a spreadsheet do pf
-    	deleteSpreadsheet();
+    	//deleteSpreadsheet();
     	
-    	//mais cenas tipo prints e o #raiopicobomba
+    	printSpreadsheetsID("pf");
     	
     	//importar spreadsheet        
         for(org.jdom2.Document doc: docList)
@@ -67,7 +69,7 @@ public class BubbleApplication {
          //   importFromXML(doc);
         }
             
-        //mais cenas tipo prints e o #raiopicobomba
+        printSpreadsheetsID("pf");
 
         //aceder as spreadsheets, converter e escrever o resultado
         docList = exportFeature();
@@ -123,21 +125,87 @@ public class BubbleApplication {
 	
     @Atomic
 	public static void deleteSpreadsheet() {
-		Bubbledocs bubbleapp = Bubbledocs.getInstance();
+		//Bubbledocs bubbleapp = Bubbledocs.getInstance();
 		for (Spreadsheet s : bubbleapp.getDocsSet()) {
-			if (s.getCreator().equals("pf") && s.getName().equals("Notas ES")) {
+			if (s.getCreator().getUsername().equals("pf") && s.getName().equals("Notas ES")) {
 				s.delete();
+				bubbleapp.removeDocs(s);
 			}
 		}
 	}
 	
 	@Atomic
-	public static void printSpreadsheetsUser(String name) {
-		for (Spreadsheet s : bubbleapp.getDocsSet()) {
-			if (s.getCreator().equals(name)) {
-				System.out.println("ID: " + s.getID() + " Name: " + s.getName());
-			}
+	public static void printUsers()
+	{
+		if (bubbleapp.getUsersSet().isEmpty())
+		{
+			System.out.println("No users were found.");
 		}
+		for (User user : bubbleapp.getUsersSet()) 
+		{
+			System.out.println("BubbleDocs User: " + user.getUsername());
+			System.out.println("\t Name: " + user.getName());
+			System.out.println("\t Password: " + user.getPassword());
+		}
+	}
+
+	@Atomic
+	public static void printSpreadsheets(String username)
+	{
+		User user;
+		try {
+			user = bubbleapp.findUser(username);
+			
+			if (user.getCreatedDocsSet().isEmpty())
+			{
+				System.out.println("No spreadsheets were created by: "+ user.getUsername() + ".");
+			}
+			else 
+			{
+				System.out.println("Documents created by: " + user.getUsername());
+				
+				for(Spreadsheet spreadsheet: user.getCreatedDocsSet()) 
+				{
+					System.out.println("\t - " + spreadsheet.getName());
+				}
+			}
+				
+			
+			
+		} catch (UserNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	
+		
+	}
+
+	@Atomic
+	public static void printSpreadsheetsID(String username)
+	{
+		User user;
+		try {
+			user = bubbleapp.findUser(username);
+			
+			if (user.getCreatedDocsSet().isEmpty())
+			{
+				System.out.println("No spreadsheets were created by: "+ user.getUsername() + ".");
+			}
+			System.out.println("Documents created by: " + user.getUsername());
+			
+			for(Spreadsheet spreadsheet: user.getCreatedDocs()) 
+			{
+				System.out.println("\t - " + spreadsheet.getName() + ", id = " + spreadsheet.getID());
+			}
+			
+		} catch (UserNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
 	}	
 	
 	

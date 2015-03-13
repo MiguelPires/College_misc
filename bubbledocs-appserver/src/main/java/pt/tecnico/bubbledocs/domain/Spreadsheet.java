@@ -105,7 +105,7 @@ public class Spreadsheet extends Spreadsheet_Base {
 		element.setAttribute("line",  Integer.toString(getLines()));
 		element.setAttribute("column",  Integer.toString(getColumns()));
 		
-		Element cellElement = new Element("cell");
+		Element cellElement = new Element("cells");
 		element.addContent(cellElement);
 
 		for (Cell c : getCellsSet()) {
@@ -117,23 +117,37 @@ public class Spreadsheet extends Spreadsheet_Base {
 	
 	public void importFromXML(Element spreadsheetElement) {
 		
+	   if (spreadsheetElement == null)
+	       System.out.println("NULL-COISe-MERGULHAM");
+	    
+       try {
+            setID(spreadsheetElement.getAttribute("ID").getIntValue());
+            setLines(spreadsheetElement.getAttribute("line").getIntValue());
+            setColumns(spreadsheetElement.getAttribute("column").getIntValue());
+        } catch (DataConversionException e) { 
+            throw new ImportDocumentException();
+        }
+        
+
 		String createTimeString = spreadsheetElement.getAttribute("createdAt").getValue();
-		DateTime created = new DateTime(createTimeString, DateTimeZone.forID("Europe/Lisbon"));
+		DateTime created = new DateTime(createTimeString, DateTimeZone.getDefault());
 		
 		String modifiedTimeString = spreadsheetElement.getAttribute("modifiedAt").getValue();
-		DateTime modified= new DateTime(modifiedTimeString, DateTimeZone.forID("Europe/Lisbon"));
+		DateTime modified= new DateTime(modifiedTimeString, DateTimeZone.getDefault());
 
 		setName(spreadsheetElement.getAttribute("name").getValue());
 		setCreatedAt(created);
 		setModifiedAt(modified);
 		
-		try {
-			setID(spreadsheetElement.getAttribute("ID").getIntValue());
-			setLines(spreadsheetElement.getAttribute("line").getIntValue());
-			setColumns(spreadsheetElement.getAttribute("column").getIntValue());
-		} catch (DataConversionException e) { 
-		    throw new ImportDocumentException();
+		Element cells = spreadsheetElement.getChild("cells");
+		
+		for (Element cell: cells.getChildren("cell"))
+		{
+		    Cell c = new Cell();
+		    c.importFromXML(cell);
+		    addCells(c);
 		}
-	    }
+	}
+
 }
 

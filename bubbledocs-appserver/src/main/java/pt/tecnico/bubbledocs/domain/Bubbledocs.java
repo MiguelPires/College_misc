@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.jdom2.Element;
 
+import pt.ist.fenixframework.Atomic;
 import pt.ist.fenixframework.DomainRoot;
 import pt.ist.fenixframework.FenixFramework;
 import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
@@ -60,21 +61,20 @@ public class Bubbledocs extends Bubbledocs_Base {
 		throw new UserNotFoundException("User ' " + username + " ' not found.");
 	}
 	
-	public void importFromXML(Element bubbledocsElement) {
-		Element docs = bubbledocsElement.getChild("spreadsheet");
-		Element people = bubbledocsElement.getChild("people");
+	public void importFromXML(Element spreadsheetElement) {
+	    
+	    if (spreadsheetElement == null)
+	        System.out.println("Bubbledocs ");
+	    
+		Element doc = spreadsheetElement.getChild("spreadsheet");
 		
-		for (Element user : people.getChildren("user")) {
-		    User u = new User();
-		    u.importFromXML(user);
-		    addUsers(u);
-		}
-		
-		for (Element spreadsheet : docs.getChildren("spreadsheet")) {
-		    Spreadsheet doc = new Spreadsheet();
-		    doc.importFromXML(spreadsheet);
-		    addDocs(doc);
-		}
+		if (doc == null)
+		    System.out.println("docs");
+	       
+		Spreadsheet spread = new Spreadsheet();
+		spread.importFromXML(doc);
+		addDocs (spread);
+	
 	}
 	
 	/*public Element exportToXML() {

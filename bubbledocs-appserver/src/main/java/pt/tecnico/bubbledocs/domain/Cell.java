@@ -6,6 +6,10 @@ import org.jdom2.DataConversionException;
 
 public class Cell extends Cell_Base {
     
+    public Cell()
+    {
+        super();
+    }
     public Cell(int line, int column) {
         super();
         setLine(line);
@@ -37,7 +41,7 @@ public class Cell extends Cell_Base {
  
     public void importFromXML(Element cellElement) {
 		
-        if((cellElement.getAttribute("protect").getValue()).equals("false"))
+        if ((cellElement.getAttribute("protect").getValue()).equals("false"))
             setProtect(false);
         else
             setProtect(true);
@@ -48,5 +52,5 @@ public class Cell extends Cell_Base {
 		} catch (DataConversionException e) { 
 		    throw new ImportDocumentException();
 		}
-	    }
+	}
 }

@@ -59,43 +59,27 @@ public class BubbleApplication {
     	//remover a spreadsheet do pf
     	deleteSpreadsheet();
     	
-    	//mais cenas tipos prints e o #raiopicobomba
+    	//mais cenas tipo prints e o #raiopicobomba
     	
-    	//importar spreadsheet
-    	//importFromXML(docList.get(0));
-    	
-    	//org.jdom2.Document doc = convertToXMLPf();
-    	
-		
-		
-    	//printSpreadsheetsUserPf();
-		//importToSpreadsheet (doc);
-    	//printSpreadsheetsUserPf();
-    	//convertToXMLPf();
-    	
-    
+    	//importar spreadsheet        
+        for(org.jdom2.Document doc: docList)
+        {
+         //   importFromXML(doc);
+        }
+            
+        //mais cenas tipo prints e o #raiopicobomba
+
+        //aceder as spreadsheets, converter e escrever o resultado
+        docList = exportFeature();
+
    }
 	
-    
  // setup the initial state if Bubbledocs is empty
     private static void setupIfNeed(Bubbledocs bubbleapp) {
 		if (bubbleapp.getUsersSet().isEmpty())
 		    SetupDomain.populateDomain();
     }
     
-    
-    
-    
-   /* @Atomic 
-    public static org.jdom2.Document convertToXML() {
-		Bubbledocs bubbleapp = Bubbledocs.getInstance();
-	
-		org.jdom2.Document jdomDoc = new org.jdom2.Document();
-
-		jdomDoc.setRootElement(bubbleapp.exportToXML());
-
-		return jdomDoc;
-    }*/
     @Atomic
     private static ArrayList <org.jdom2.Document> exportFeature()
     {
@@ -103,10 +87,10 @@ public class BubbleApplication {
     	try {
 			User u = bubbleapp.findUser("pf");
 			
-			docList = new ArrayList <org.jdom2.Document>();
 	    	org.jdom2.Document doc;
 	    	
 	    	for(Spreadsheet s : u.getCreatedDocsSet()){
+	    	    System.out.println (s.getName());
 	    		doc = exportToXML(s);
 	    		docList.add(doc);
 	    		printDomainInXML(doc);
@@ -148,10 +132,9 @@ public class BubbleApplication {
 	}
 	
 	@Atomic
-	public static void printSpreadsheetsUserPf() {
-		Bubbledocs bubbleapp = Bubbledocs.getInstance();
+	public static void printSpreadsheetsUser(String name) {
 		for (Spreadsheet s : bubbleapp.getDocsSet()) {
-			if (s.getCreator().equals("pf")) {
+			if (s.getCreator().equals(name)) {
 				System.out.println("ID: " + s.getID() + " Name: " + s.getName());
 			}
 		}
@@ -164,5 +147,14 @@ public class BubbleApplication {
 		doc.setRootElement(bubbleapp.importToSpreadsheet());
 	}*/
 	
+	/* @Atomic 
+    public static org.jdom2.Document convertToXML() {
+        Bubbledocs bubbleapp = Bubbledocs.getInstance();
+    
+        org.jdom2.Document jdomDoc = new org.jdom2.Document();
 
+        jdomDoc.setRootElement(bubbleapp.exportToXML());
+
+        return jdomDoc;
+    }*/
 }

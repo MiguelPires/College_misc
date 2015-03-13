@@ -101,7 +101,11 @@ public class Spreadsheet extends Spreadsheet_Base {
 		Element element = new Element("spreadsheet");
 		element.setAttribute("ID",  Integer.toString(getID()));
 		element.setAttribute("name", getName());
-
+		
+		/*Element creatorElement = new Element("creator");
+		element.addContent(creatorElement);
+		creatorElement.addContent(getCreator().exportToXML());*/
+		
 		element.setAttribute("createdAt", ""+getCreatedAt());
 		element.setAttribute("modifiedAt", ""+getModifiedAt());
 
@@ -120,8 +124,6 @@ public class Spreadsheet extends Spreadsheet_Base {
 	
 	public void importFromXML(Element spreadsheetElement) {
 		
-	   if (spreadsheetElement == null)
-	       System.out.println("NULL-COISe-MERGULHAM");
 	    
        try {
             setID(spreadsheetElement.getAttribute("ID").getIntValue());
@@ -130,26 +132,32 @@ public class Spreadsheet extends Spreadsheet_Base {
         } catch (DataConversionException e) { 
             throw new ImportDocumentException();
         }
-        
-
-		String createTimeString = spreadsheetElement.getAttribute("createdAt").getValue();
+      
+       /*	Element crt = spreadsheetElement.getChild("creator");
+		User u = new User("pf","pf","pf");
+		u.importFromXML(crt);
+		setCreator(u);*/
+		
+		/*String createTimeString = spreadsheetElement.getAttribute("createdAt").getValue();
 		DateTime created = new DateTime(createTimeString, DateTimeZone.getDefault());
 		
 		String modifiedTimeString = spreadsheetElement.getAttribute("modifiedAt").getValue();
-		DateTime modified= new DateTime(modifiedTimeString, DateTimeZone.getDefault());
+		DateTime modified= new DateTime(modifiedTimeString, DateTimeZone.getDefault());*/
 
 		setName(spreadsheetElement.getAttribute("name").getValue());
-		setCreatedAt(created);
-		setModifiedAt(modified);
+		//setCreatedAt(created);
+		//setModifiedAt(modified);
 		
 		Element cells = spreadsheetElement.getChild("cells");
-		
+	
 		for (Element cell: cells.getChildren("cell"))
 		{
 		    Cell c = new Cell();
 		    c.importFromXML(cell);
 		    addCells(c);
 		}
+		
+		
 	}
 
 }

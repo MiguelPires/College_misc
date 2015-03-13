@@ -64,12 +64,11 @@ public class BubbleApplication {
     	printSpreadsheetsID("pf");
     	
     	//importar spreadsheet        
-        for(org.jdom2.Document doc: docList)
+       /* for(org.jdom2.Document doc: docList)
         {
-           // importFromXML(doc);
-        }
-            
-        printSpreadsheetsID("pf");
+           importFromXML(doc);
+        }*/
+           
 
         //aceder as spreadsheets, converter e escrever o resultado
         docList = exportFeature();
@@ -85,13 +84,15 @@ public class BubbleApplication {
     @Atomic
     private static ArrayList <org.jdom2.Document> exportFeature()
     {
-    	ArrayList <org.jdom2.Document> docList = new ArrayList <org.jdom2.Document>();
+    	ArrayList <org.jdom2.Document> docList = new ArrayList <org.jdom2.Document>(); 
+ 
     	try {
 			User u = bubbleapp.findUser("pf");
 			
 	    	org.jdom2.Document doc;
 	    	
 	    	for(Spreadsheet s : u.getCreatedDocsSet()){
+	    	
 	    	    System.out.println (s.getName());
 	    		doc = exportToXML(s);
 	    		docList.add(doc);
@@ -125,7 +126,6 @@ public class BubbleApplication {
 	
     @Atomic
 	public static void deleteSpreadsheet() {
-		//Bubbledocs bubbleapp = Bubbledocs.getInstance();
 		for (Spreadsheet s : bubbleapp.getDocsSet()) {
 			if (s.getCreator().getUsername().equals("pf") && s.getName().equals("Notas ES")) {
 				bubbleapp.removeDocs(s);
@@ -192,13 +192,16 @@ public class BubbleApplication {
 			{
 				System.out.println("No spreadsheets were created by: "+ user.getUsername() + ".");
 			}
-			System.out.println("Documents created by: " + user.getUsername());
-			
-			for(Spreadsheet spreadsheet: user.getCreatedDocs()) 
+			else
 			{
-				System.out.println("\t - " + spreadsheet.getName() + ", id = " + spreadsheet.getID());
-			}
+				System.out.println("Documents created by: " + user.getUsername());
+				
 			
+				for(Spreadsheet spreadsheet: user.getCreatedDocs()) 
+				{
+					System.out.println("\t - " + spreadsheet.getName() + ", id = " + spreadsheet.getID());
+				}
+			}
 		} catch (UserNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -208,21 +211,4 @@ public class BubbleApplication {
 		
 	}	
 	
-	
-/*	@Atomic
-    public static void importToSpreadsheet (org.jdom2.Document doc) {
-		Bubbledocs bubbleapp = new Bubbledocs();
-		doc.setRootElement(bubbleapp.importToSpreadsheet());
-	}*/
-	
-	/* @Atomic 
-    public static org.jdom2.Document convertToXML() {
-        Bubbledocs bubbleapp = Bubbledocs.getInstance();
-    
-        org.jdom2.Document jdomDoc = new org.jdom2.Document();
-
-        jdomDoc.setRootElement(bubbleapp.exportToXML());
-
-        return jdomDoc;
-    }*/
 }

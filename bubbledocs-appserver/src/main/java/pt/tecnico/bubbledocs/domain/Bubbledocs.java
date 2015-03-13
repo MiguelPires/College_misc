@@ -63,16 +63,10 @@ public class Bubbledocs extends Bubbledocs_Base {
 	
 	public void importFromXML(Element spreadsheetElement) {
 	    
-	    if (spreadsheetElement == null)
-	        System.out.println("Bubbledocs ");
 	    
-		Element doc = spreadsheetElement.getChild("spreadsheet");
-		
-		if (doc == null)
-		    System.out.println("docs");
-	       
 		Spreadsheet spread = new Spreadsheet();
-		spread.importFromXML(doc);
+		spread.importFromXML(spreadsheetElement);
+	  
 		addDocs (spread);
 	
 	}
@@ -82,12 +76,6 @@ public class Bubbledocs extends Bubbledocs_Base {
 		element.setAttribute("lastID",  Integer.toString(getLastID()));
 		
 		
-		Element userElement = new Element("users");
-		element.addContent(userElement);
-
-		for (User c : getUsersSet()) {
-		    userElement.addContent(c.exportToXML());
-		}
 		
 		Element docsElement = new Element("docs");
 		element.addContent(docsElement);

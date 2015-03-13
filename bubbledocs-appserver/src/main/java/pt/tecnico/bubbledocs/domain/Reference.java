@@ -9,11 +9,12 @@ public class Reference extends Reference_Base {
         setReferedCell(cell);
     }
  
+    @Override
     public Element exportToXML() {
 		Element element = new Element("reference");
 		
-		Cell c = getReferedCell();
-		element.addContent(c.exportToXML());
+		/*Cell c = getReferedCell();
+		element.addContent(c.exportToXML());*/
 		
 		return element;
 	}

@@ -1,4 +1,5 @@
 package pt.tecnico.bubbledocs.domain;
+import org.jdom2.Element;
 
 public class Content extends Content_Base {
     
@@ -12,4 +13,7 @@ public class Content extends Content_Base {
     	deleteDomainObject();
     }
     
+    public Element exportToXML() {
+    	return null;
+	}
 }

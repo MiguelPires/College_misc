@@ -10,8 +10,23 @@ public class Addition extends Addition_Base {
         setSecondOperand(arg2);
     }
     
+    @Override
     public Element exportToXML() {
-		return exportToXML("ADD");
+		Element element = new Element("ADD");
+		
+		Element firstElement = new Element("firstOperand");
+		element.addContent(firstElement);
+
+		
+		firstElement.addContent((getFirstOperand()).exportToXML());
+
+		
+		Element secondElement = new Element("secondOperand");
+		element.addContent(secondElement);		
+		
+		secondElement.addContent((getSecondOperand()).exportToXML());
+		
+		return element;
 	}
     
     public void delete ()

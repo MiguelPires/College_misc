@@ -8,8 +8,23 @@ public class Subtraction extends Subtraction_Base {
         super();
     }
     
+    @Override
     public Element exportToXML() {
-		return exportToXML("SUB");
+		Element element = new Element("SUB");
+		
+		Element firstElement = new Element("firstOperand");
+		element.addContent(firstElement);
+
+		
+		firstElement.addContent((getFirstOperand()).exportToXML());
+
+		
+		Element secondElement = new Element("secondOperand");
+		element.addContent(secondElement);		
+		
+		secondElement.addContent((getSecondOperand()).exportToXML());
+		
+		return element;
 	}
     
     public void delete ()

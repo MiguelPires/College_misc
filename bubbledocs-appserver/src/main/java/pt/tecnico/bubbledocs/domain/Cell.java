@@ -43,23 +43,7 @@ public class Cell extends Cell_Base {
 		Element contentElement = new Element("content");
 		element.addContent(contentElement);
 		
-		if(getContent() instanceof Literal){
-			Literal l = (Literal) getContent();
-			contentElement.addContent(l.exportToXML());
-		}
-		else if(getContent() instanceof Reference){
-			Reference l = (Reference) getContent();
-			contentElement.addContent(l.exportToXML());
-		}
-		
-		/*else if(getContent() instanceof Addition){
-			Addition l = (Addition) getContent();
-			contentElement.addContent(l.exportToXML());
-		}
-		else if(getContent() instanceof Division){
-			Division l = (Division) getContent();
-			contentElement.addContent(l.exportToXML());
-		}*/
+		contentElement.addContent((getContent()).exportToXML());
 		
 		return element;
 	}

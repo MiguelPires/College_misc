@@ -11,6 +11,7 @@ public class Literal extends Literal_Base {
         setValue(value);
     }
     
+    @Override
     public Element exportToXML() {
 		Element element = new Element("literal");
 		element.setAttribute("value",  Integer.toString(getValue()));

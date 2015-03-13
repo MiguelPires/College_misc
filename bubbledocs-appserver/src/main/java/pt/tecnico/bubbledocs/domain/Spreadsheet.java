@@ -9,6 +9,11 @@ import org.joda.time.DateTimeZone;
 
 public class Spreadsheet extends Spreadsheet_Base {
 
+	public Spreadsheet()
+	{
+		super();
+	}
+	
 	public Spreadsheet(Integer id, String name, Integer lines, Integer columns, User creator) {
         super();
         
@@ -93,8 +98,10 @@ public class Spreadsheet extends Spreadsheet_Base {
 		Element element = new Element("spreadsheet");
 		element.setAttribute("ID",  Integer.toString(getID()));
 		element.setAttribute("name", getName());
-		//element.setAttribute("createAt", ""+getCreatedAt());
-		//element.setAttribute("modifiedAt", ""+getModifiedAt());
+
+		element.setAttribute("createdAt", ""+getCreatedAt());
+		element.setAttribute("modifiedAt", ""+getModifiedAt());
+
 		element.setAttribute("line",  Integer.toString(getLines()));
 		element.setAttribute("column",  Integer.toString(getColumns()));
 		
@@ -110,9 +117,15 @@ public class Spreadsheet extends Spreadsheet_Base {
 	
 	public void importFromXML(Element spreadsheetElement) {
 		
+		String createTimeString = spreadsheetElement.getAttribute("createdAt").getValue();
+		DateTime created = new DateTime(createTimeString, DateTimeZone.forID("Europe/Lisbon"));
+		
+		String modifiedTimeString = spreadsheetElement.getAttribute("modifiedAt").getValue();
+		DateTime modified= new DateTime(modifiedTimeString, DateTimeZone.forID("Europe/Lisbon"));
+
 		setName(spreadsheetElement.getAttribute("name").getValue());
-		//setCreatedAt(spreadsheetElement.getAttribute("createdAt").getValue());
-		//setModifiedAt(spreadsheetElement.getAttribute("modifiedAt").getValue());
+		setCreatedAt(created);
+		setModifiedAt(modified);
 		
 		try {
 			setID(spreadsheetElement.getAttribute("ID").getIntValue());

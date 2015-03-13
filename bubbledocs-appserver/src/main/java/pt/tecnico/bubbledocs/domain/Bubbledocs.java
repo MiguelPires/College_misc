@@ -23,7 +23,6 @@ public class Bubbledocs extends Bubbledocs_Base {
     }
 
     private Bubbledocs() {
-        System.out.println("CREATED BUBBLE");
         setLastID(0);
 		FenixFramework.getDomainRoot().setBubbledocs(this);
     }
@@ -61,7 +60,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 		throw new UserNotFoundException("User ' " + username + " ' not found.");
 	}
 	
-	/*public void importFromXML(Element bubbledocsElement) {
+	public void importFromXML(Element bubbledocsElement) {
 		Element docs = bubbledocsElement.getChild("spreadsheet");
 		Element people = bubbledocsElement.getChild("people");
 		
@@ -76,7 +75,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 		    doc.importFromXML(spreadsheet);
 		    addDocs(doc);
 		}
-	}*/
+	}
 	
 	public Element exportToXML() {
 		Element element = new Element("bubbledocs");

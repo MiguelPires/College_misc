@@ -15,36 +15,44 @@ public class BinaryFunction extends BinaryFunction_Base {
     public Element exportToXML(String str) {
 		Element element = new Element(str);
 		
-		
-		/*Element firstElement = new Element("firstOperand");
+		Element firstElement = new Element("firstOperand");
 		element.addContent(firstElement);
-		Argument first = getFirstOperand();
-		firstElement.addContent(first.exportToXML());
+
+		if(getFirstOperand() instanceof Literal) 		//check class to call respective export
+			firstElement.addContent(((Literal) getFirstOperand()).exportToXML());
+		else
+			firstElement.addContent(((Reference) getFirstOperand()).exportToXML());
+		
 		
 		Element secondElement = new Element("secondOperand");
 		element.addContent(secondElement);
-		Argument second = getSecondOperand();
-		firstElement.addContent(second.exportToXML());*/
 		
+		if(getSecondOperand() instanceof Literal)		//check class to call respective export
+			secondElement.addContent(((Literal) getSecondOperand()).exportToXML());
+		else
+			secondElement.addContent(((Reference) getSecondOperand()).exportToXML());
+	
 
 		return element;
 	}
 	
-	public void importFromXML(Element additionElement) {
+	public void importFromXML(Element newElement) {
 		
 			
-			/*Element first = additionElement.getChild("firstOperand");
-			Element second = additionElement.getChild("secondOperand");
+		Element first = newElement.getChild("firstOperand");
+		Element second = newElement.getChild("secondOperand");
+
+		Element firstElement = first.getChild("firstOperand");
+		Argument firstArg = new Argument();
+
+		firstArg.importFromXML(firstElement);
+		setFirstOperand(firstArg);
 			
-			Element firstElement = first.getChild("firstOperand");
-			Argument firstArg = new Argument();
-			firstArg.importFromXML(firstElement);
-			setFirstOperand(firstArg);
-			
-			Element secondElement = second.getChild("secondOperand");
-			Argument secondArg = new Argument();
-			secondArg.importFromXML(secondElement);
-			setSecondOperand(secondArg);*/
+		Element secondElement = second.getChild("secondOperand");
+		Argument secondArg = new Argument();
+
+		secondArg.importFromXML(secondElement);
+		setSecondOperand(secondArg);
 		
-		    }
+	}
 }

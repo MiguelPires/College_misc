@@ -31,13 +31,16 @@ public class Cell extends Cell_Base {
 		Element element = new Element("cell");
 		element.setAttribute("line",  Integer.toString(getLine()));
 		element.setAttribute("column", Integer.toString(getColumn()));
-		//element.setAttribute("protect", ""+getProtect());
+		element.setAttribute("protect", ""+getProtect());
 		return element;
 	}
  
     public void importFromXML(Element cellElement) {
 		
-		//setProtect(cellElement.getAttribute("protect").getValue());
+        if((cellElement.getAttribute("protect").getValue()).equals("false"))
+            setProtect(false);
+        else
+            setProtect(true);
 		
 		try {
 			setLine(cellElement.getAttribute("line").getIntValue());

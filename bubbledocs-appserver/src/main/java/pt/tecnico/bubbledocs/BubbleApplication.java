@@ -48,9 +48,9 @@ public class BubbleApplication {
     	}
     	
     	//org.jdom2.Document doc = convertToXMLPf();
-    	System.out.println("DELETE BEFORE");
+    	
 		deleteSpreadsheet();
-		System.out.println("DELETE AFTER");
+		
     	printSpreadsheetsUserPf();
 		//importToSpreadsheet (doc);
     	printSpreadsheetsUserPf();

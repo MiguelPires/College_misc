@@ -14,10 +14,6 @@ public class Multiplication extends Multiplication_Base {
     
     public void delete ()
 	{
-		setForbiddenCell(null);
-		setFirstOperand(null);
-		setSecondOperand(null);
-    	deleteDomainObject();
-
+        super.delete();
 	}
 }

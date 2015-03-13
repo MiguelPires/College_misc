@@ -24,11 +24,11 @@ public class Literal extends Literal_Base {
 		} catch (DataConversionException e) { 
 		    throw new ImportDocumentException();
 		}
-	    }
+	}
 	
-	 public void delete(){
-	    	
-	    	deleteDomainObject();
-	    }
+	 public void delete()
+	 {
+	    super.delete();
+	 }
 	 
 }

@@ -59,14 +59,14 @@ public class BubbleApplication {
     	ArrayList <org.jdom2.Document> docList = exportFeature();
     	
     	//remover a spreadsheet do pf
-    	//deleteSpreadsheet();
+    	deleteSpreadsheet();
     	
     	printSpreadsheetsID("pf");
     	
     	//importar spreadsheet        
         for(org.jdom2.Document doc: docList)
         {
-         //   importFromXML(doc);
+           // importFromXML(doc);
         }
             
         printSpreadsheetsID("pf");
@@ -128,8 +128,8 @@ public class BubbleApplication {
 		//Bubbledocs bubbleapp = Bubbledocs.getInstance();
 		for (Spreadsheet s : bubbleapp.getDocsSet()) {
 			if (s.getCreator().getUsername().equals("pf") && s.getName().equals("Notas ES")) {
-				s.delete();
 				bubbleapp.removeDocs(s);
+                s.delete();
 			}
 		}
 	}

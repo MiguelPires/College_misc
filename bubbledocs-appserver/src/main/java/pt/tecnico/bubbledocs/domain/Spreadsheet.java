@@ -75,11 +75,13 @@ public class Spreadsheet extends Spreadsheet_Base {
 	public void delete(){
 		
     	for(Cell c : getCellsSet()){
-    		c.delete();
     		removeCells(c);
+            c.delete();
     	}
     	
+    	
     	getCreator().removeCreatedDocs(this);
+    	setCreator(null);
     	
     	for(User u : getWritersSet()){
     		u.removeWritableDocs(this);
@@ -91,6 +93,7 @@ public class Spreadsheet extends Spreadsheet_Base {
     		removeReaders(u);
     	}
     	 
+    	setBubbleApp(null);
     	deleteDomainObject();
     }
 	

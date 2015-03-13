@@ -32,7 +32,7 @@ public class Reference extends Reference_Base {
 	public void delete ()
 	{
 		setReferedCell(null);
-    	deleteDomainObject();
+    	super.delete();
 
 	}
 }

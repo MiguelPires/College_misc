@@ -24,8 +24,6 @@ public class Argument extends Argument_Base {
 	{
 		setForbiddenBin1(null);
 		setForbiddenBin2(null);
-		setForbiddenCell(null);
-    	deleteDomainObject();
-
+		super.delete();
 	}
 }

@@ -16,11 +16,7 @@ public class Addition extends Addition_Base {
     
     public void delete ()
 	{
-		setForbiddenCell(null);
-		setFirstOperand(null);
-		setSecondOperand(null);
-    	deleteDomainObject();
-
+        super.delete();
 	}
 	
 }

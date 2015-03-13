@@ -17,10 +17,6 @@ public class Division extends Division_Base {
     
     public void delete ()
 	{
-		setForbiddenCell(null);
-		setFirstOperand(null);
-		setSecondOperand(null);
-    	deleteDomainObject();
-
+		super.delete();
 	}
 }

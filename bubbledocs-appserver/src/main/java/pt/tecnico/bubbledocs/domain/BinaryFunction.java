@@ -18,7 +18,7 @@ public class BinaryFunction extends BinaryFunction_Base {
 		Element firstElement = new Element("firstOperand");
 		element.addContent(firstElement);
 
-		if(getFirstOperand() instanceof Literal){ 		//check class to call respective export
+		if (getFirstOperand() instanceof Literal){ 		//check class to call respective export
 			Literal l = (Literal) getFirstOperand();
 			firstElement.addContent(l.exportToXML());
 		}
@@ -69,8 +69,6 @@ public class BinaryFunction extends BinaryFunction_Base {
 	{
 		setFirstOperand(null);
 		setSecondOperand(null);
-		
-    	deleteDomainObject();
-
+		super.delete();
 	}
 }

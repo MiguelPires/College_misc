@@ -19,6 +19,7 @@ public class User extends User_Base {
     }
 	
 	public User(){
+	    super();
 	}
     
 	public ArrayList<Spreadsheet> findCreatedDocs(String name){
@@ -64,6 +65,11 @@ public class User extends User_Base {
 		}
 		
 		return element;
+	}
+	
+	public void delete()
+	{
+	    
 	}
 }
 

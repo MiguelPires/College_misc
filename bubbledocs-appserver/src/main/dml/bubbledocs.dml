@@ -17,8 +17,8 @@ class Spreadsheet{
 	String name;
 	DateTime createdAt;
 	DateTime modifiedAt;
-	Integer line;
-	Integer column;
+	Integer lines;
+	Integer columns;
 }
 
 class Cell{
@@ -39,7 +39,7 @@ class Reference extends Argument;
 
 class Function extends Content;
 
-class BinaryFunction;
+class BinaryFunction extends Function;
 
 class Addition extends BinaryFunction;
 
@@ -75,28 +75,28 @@ relation SpreadsheetContainsUsers2{
 }
 
 relation SpreadsheetContainsCells{
-	Spreadsheet playsRole;
+	Spreadsheet playsRole forbiddenCells;
 	Cell playsRole cells{
 		multiplicity 0..*;
 	}
 }
 
 relation CellContainsContent{
-	Cell playsRole;
+	Cell playsRole forbiddenCell;
 	Content playsRole content{
 		multiplicity 0..1;
 	}
 }
 
 relation BinaryFunctionContainsArgument1{
-	BinaryFunction playsRole;
+	BinaryFunction playsRole forbiddenBin1;
 	Argument playsRole firstOperand{
 		multiplicity 1;
 	}
 }
 	
 relation BinaryFunctionContainsArgument2{
-	BinaryFunction playsRole;
+	BinaryFunction playsRole forbiddenBin2;
 	Argument playsRole secondOperand{
 		multiplicity 1;
 	}
@@ -112,28 +112,28 @@ relation DomainRootHasBubbleApplication{
 }
 
 relation BubbledocsContainsUsers{
-	Bubbledocs playsRole;
+	Bubbledocs playsRole forbiddenBubble1;
 	User playsRole users{
 		multiplicity 0..*;
 	}
 }
 
 relation BubbledocsContainsSpreadsheets{
-	Bubbledocs playsRole;
+	Bubbledocs playsRole bubbleApp;
 	Spreadsheet playsRole docs{
 		multiplicity 0..*;
 	}
 }
 
 relation ReferenceContainsCell{
-	Reference playsRole;
+	Reference playsRole forbiddenReference;
 	Cell playsRole referedCell{
 		multiplicity 1;
 	}
 }
 
 relation RootContainsBubbledocs{
-	Root playsRole;
+	Root playsRole forbiddenRoot;
 	Bubbledocs playsRole application{
 		multiplicity 0..1;
 	}

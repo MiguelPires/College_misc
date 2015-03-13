@@ -11,7 +11,6 @@ public class Reference extends Reference_Base {
  
     public Element exportToXML() {
 		Element element = new Element("reference");
-		element.setAttribute("type", "reference");
 		
 		Element cellElement = new Element("referedcell");
 		element.addContent(cellElement);

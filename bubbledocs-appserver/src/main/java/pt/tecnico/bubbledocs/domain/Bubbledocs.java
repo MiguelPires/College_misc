@@ -4,13 +4,28 @@ import java.util.ArrayList;
 
 import org.jdom2.Element;
 
+import pt.ist.fenixframework.DomainRoot;
+import pt.ist.fenixframework.FenixFramework;
 import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 import pt.tecnico.bubbledocs.exception.UserNotFoundException;
 
 public class Bubbledocs extends Bubbledocs_Base {
     
-    public Bubbledocs() {
-        super();
+    
+    public static Bubbledocs getInstance()
+    {		
+        Bubbledocs bubble = FenixFramework.getDomainRoot().getBubbledocs();
+    	
+		if (bubble == null)
+		    bubble = new Bubbledocs();
+
+		return bubble;
+    }
+
+    private Bubbledocs() {
+        System.out.println("CREATED BUBBLE");
+        setLastID(0);
+		FenixFramework.getDomainRoot().setBubbledocs(this);
     }
     
 	public ArrayList<Spreadsheet> findCreatedDocsByUser(User user, String name){
@@ -46,7 +61,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 		throw new UserNotFoundException("User ' " + username + " ' not found.");
 	}
 	
-	public void importFromXML(Element bubbledocsElement) {
+	/*public void importFromXML(Element bubbledocsElement) {
 		Element docs = bubbledocsElement.getChild("spreadsheet");
 		Element people = bubbledocsElement.getChild("people");
 		
@@ -61,7 +76,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 		    doc.importFromXML(spreadsheet);
 		    addDocs(doc);
 		}
-	}
+	}*/
 	
 	public Element exportToXML() {
 		Element element = new Element("bubbledocs");

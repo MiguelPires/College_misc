@@ -13,9 +13,17 @@ public class Cell extends Cell_Base {
         setProtect(false);
     }
     
+    public Cell(int line, int column, Content content)
+    {
+        super();
+        setLine(line);
+        setColumn(column);
+        setContent(content);
+        setProtect(false);
+    }
+    
     public void delete(){
     	getContent().delete();
-    	
     	deleteDomainObject();
     }
     
@@ -23,17 +31,13 @@ public class Cell extends Cell_Base {
 		Element element = new Element("cell");
 		element.setAttribute("line",  Integer.toString(getLine()));
 		element.setAttribute("column", Integer.toString(getColumn()));
-		element.setAttribute("protect", ""+getProtect());
+		//element.setAttribute("protect", ""+getProtect());
 		return element;
 	}
  
     public void importFromXML(Element cellElement) {
 		
-    	
-		if((cellElement.getAttribute("protect").getValue()).equals("false"))
-			setProtect(false);
-		else
-			setProtect(true);
+		//setProtect(cellElement.getAttribute("protect").getValue());
 		
 		try {
 			setLine(cellElement.getAttribute("line").getIntValue());

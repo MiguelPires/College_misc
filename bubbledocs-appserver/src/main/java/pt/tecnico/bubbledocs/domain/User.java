@@ -18,7 +18,7 @@ public class User extends User_Base {
         setPassword(password);
     }
 	
-	User(){
+	public User(){
 	}
     
 	public ArrayList<Spreadsheet> findCreatedDocs(String name){
@@ -28,6 +28,16 @@ public class User extends User_Base {
 				documents.add(doc);
 				
 		return documents;
+	}
+	
+	public Spreadsheet createSpreadsheet(Integer id, String name, Integer lines, Integer columns)
+	{
+	    Spreadsheet doc = new Spreadsheet (id, name, lines, columns, this);
+	    
+	    addCreatedDocs(doc);
+	    addWritableDocs(doc);
+	    
+	    return doc;	    
 	}
 	
 	public void importFromXML(Element userElement) throws ImportDocumentException{

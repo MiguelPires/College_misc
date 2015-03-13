@@ -77,7 +77,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 		}
 	}
 	
-	public Element exportToXML() {
+	/*public Element exportToXML() {
 		Element element = new Element("bubbledocs");
 		element.setAttribute("lastID",  Integer.toString(getLastID()));
 		
@@ -97,7 +97,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 		}
 		
 		return element;
-	}
+	}*/
 	
 	
 }

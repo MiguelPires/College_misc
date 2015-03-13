@@ -1,5 +1,7 @@
 package pt.tecnico.bubbledocs;
 
+import java.util.ArrayList;
+
 import javax.transaction.*;
 
 import org.jdom2.Element;
@@ -10,11 +12,13 @@ import org.joda.time.*;
 import pt.ist.fenixframework.Atomic;
 import pt.ist.fenixframework.FenixFramework;
 import pt.ist.fenixframework.TransactionManager;
-
 import pt.tecnico.bubbledocs.domain.*;
+import pt.tecnico.bubbledocs.exception.UserNotFoundException;
 
 public class BubbleApplication {
 
+	private static Bubbledocs bubbleapp;
+	
     public static void main(String[] args) {
 
     	System.out.println("+--------------------------------------------+");
@@ -28,7 +32,7 @@ public class BubbleApplication {
     	try {
     		tm.begin();
 
-    		Bubbledocs bubbleapp =  Bubbledocs.getInstance();
+    		bubbleapp =  Bubbledocs.getInstance();
     		setupIfNeed(bubbleapp);
 
     		tm.commit();
@@ -47,14 +51,29 @@ public class BubbleApplication {
 
     	}
     	
+    	//escrever cenas da Jane
+    	
+    	//aceder as spreadsheets, converter e escrever o resultado
+    	ArrayList <org.jdom2.Document> docList = exportFeature();
+    	
+    	//remover a spreadsheet do pf
+    	deleteSpreadsheet();
+    	
+    	//mais cenas tipos prints e o #raiopicobomba
+    	
+    	//importar spreadsheet
+    	//importFromXML(docList.get(0));
+    	
     	//org.jdom2.Document doc = convertToXMLPf();
     	
-		deleteSpreadsheet();
 		
-    	printSpreadsheetsUserPf();
+		
+    	//printSpreadsheetsUserPf();
 		//importToSpreadsheet (doc);
-    	printSpreadsheetsUserPf();
+    	//printSpreadsheetsUserPf();
     	//convertToXMLPf();
+    	
+    
    }
 	
     
@@ -65,20 +84,57 @@ public class BubbleApplication {
     }
     
     
-/*	@Atomic
-    public static org.jdom2.Document convertToXMLPf() {
-		Bubbledocs bubbleapp = new Bubbledocs();
+    
+    
+   /* @Atomic 
+    public static org.jdom2.Document convertToXML() {
+		Bubbledocs bubbleapp = Bubbledocs.getInstance();
+	
 		org.jdom2.Document jdomDoc = new org.jdom2.Document();
-		XMLOutputter xml = new XMLOutputter();
-		
-		for (Spreadsheet s : bubbleapp.getDocsSet()) {
-			if (s.getCreator().equals("pf")) {
-				jdomDoc.setRootElement(s.exportToXML());
-				xml.setFormat(Format.getPrettyFormat());
-				System.out.println(xml.outputString(jdomDoc));
-			}
+
+		jdomDoc.setRootElement(bubbleapp.exportToXML());
+
+		return jdomDoc;
+    }*/
+    @Atomic
+    private static ArrayList <org.jdom2.Document> exportFeature()
+    {
+    	ArrayList <org.jdom2.Document> docList = new ArrayList <org.jdom2.Document>();
+    	try {
+			User u = bubbleapp.findUser("pf");
+			
+			docList = new ArrayList <org.jdom2.Document>();
+	    	org.jdom2.Document doc;
+	    	
+	    	for(Spreadsheet s : u.getCreatedDocsSet()){
+	    		doc = exportToXML(s);
+	    		docList.add(doc);
+	    		printDomainInXML(doc);
+	    	}
+		} catch (UserNotFoundException e) {
+			System.out.println(e.getMessage());
 		}
-	}*/
+    	return docList;
+    }
+    
+    public static org.jdom2.Document exportToXML(Spreadsheet spreadsheet){
+    	org.jdom2.Document jdomDoc = new org.jdom2.Document();
+    	jdomDoc.setRootElement(spreadsheet.exportToXML());
+    	
+    	return jdomDoc;
+    }
+    
+    public static void printDomainInXML(org.jdom2.Document jdomDoc) {
+		XMLOutputter xml = new XMLOutputter();
+		xml.setFormat(Format.getPrettyFormat());
+		System.out.println(xml.outputString(jdomDoc));
+    }
+    
+
+    @Atomic
+    private static void importFromXML(org.jdom2.Document jdomDoc) {
+		bubbleapp.importFromXML(jdomDoc.getRootElement());
+    }
 	
 	
     @Atomic

@@ -14,7 +14,6 @@ public class Literal extends Literal_Base {
     public Element exportToXML() {
 		Element element = new Element("literal");
 		element.setAttribute("value",  Integer.toString(getValue()));
-		element.setAttribute("type", "literal");
 		
 		return element;
 	}
@@ -26,4 +25,10 @@ public class Literal extends Literal_Base {
 		    throw new ImportDocumentException();
 		}
 	    }
+	
+	 public void delete(){
+	    	
+	    	deleteDomainObject();
+	    }
+	 
 }

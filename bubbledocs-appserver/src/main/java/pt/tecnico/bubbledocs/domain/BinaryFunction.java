@@ -18,21 +18,30 @@ public class BinaryFunction extends BinaryFunction_Base {
 		Element firstElement = new Element("firstOperand");
 		element.addContent(firstElement);
 
-		if(getFirstOperand() instanceof Literal) 		//check class to call respective export
-			firstElement.addContent(((Literal) getFirstOperand()).exportToXML());
-		else
-			firstElement.addContent(((Reference) getFirstOperand()).exportToXML());
+		if(getFirstOperand() instanceof Literal){ 		//check class to call respective export
+			Literal l = (Literal) getFirstOperand();
+			firstElement.addContent(l.exportToXML());
+		}
+		else{
+			Reference l = (Reference) getFirstOperand();
+			firstElement.addContent(l.exportToXML());
+			
+		}
 		
 		
 		Element secondElement = new Element("secondOperand");
 		element.addContent(secondElement);
 		
-		if(getSecondOperand() instanceof Literal)		//check class to call respective export
-			secondElement.addContent(((Literal) getSecondOperand()).exportToXML());
-		else
-			secondElement.addContent(((Reference) getSecondOperand()).exportToXML());
+		if(getSecondOperand() instanceof Literal){		//check class to call respective export
+			Literal ll = (Literal) getSecondOperand();
+			secondElement.addContent(ll.exportToXML());
+		}
+		else{
+			Reference ll = (Reference) getSecondOperand();
+			secondElement.addContent(ll.exportToXML());
+		}
 	
-
+		
 		return element;
 	}
 	

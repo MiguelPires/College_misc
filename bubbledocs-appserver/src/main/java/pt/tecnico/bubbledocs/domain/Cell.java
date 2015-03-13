@@ -37,6 +37,28 @@ public class Cell extends Cell_Base {
 		element.setAttribute("line",  Integer.toString(getLine()));
 		element.setAttribute("column", Integer.toString(getColumn()));
 		element.setAttribute("protect", ""+getProtect());
+		
+		Element contentElement = new Element("content");
+		element.addContent(contentElement);
+		
+		if(getContent() instanceof Literal){
+			Literal l = (Literal) getContent();
+			contentElement.addContent(l.exportToXML());
+		}
+		else if(getContent() instanceof Reference){
+			Reference l = (Reference) getContent();
+			contentElement.addContent(l.exportToXML());
+		}
+		
+		/*else if(getContent() instanceof Addition){
+			Addition l = (Addition) getContent();
+			contentElement.addContent(l.exportToXML());
+		}
+		else if(getContent() instanceof Division){
+			Division l = (Division) getContent();
+			contentElement.addContent(l.exportToXML());
+		}*/
+		
 		return element;
 	}
  

@@ -1,6 +1,8 @@
 package pt.tecnico.bubbledocs.domain;
 
 import pt.tecnico.bubbledocs.exception.ImportDocumentException;
+import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
+
 import org.jdom2.Element;
 import org.jdom2.DataConversionException;
 
@@ -31,12 +33,18 @@ public class Cell extends Cell_Base {
     		removeForbiddenReference(c);
     	
     	setForbiddenCells(null);
-        getContent().delete();
+    	
+    	if (getContent() != null)
+    	{
+    	    getContent().delete();
+    	    setContent(null);
+    	}
+    	    
 
     	deleteDomainObject();
     }
     
-    public Element exportToXML() {
+    public Element exportToXML() throws ShouldNotExecuteException {
     	
 		Element element = new Element("cell");
 		element.setAttribute("line",  Integer.toString(getLine()));

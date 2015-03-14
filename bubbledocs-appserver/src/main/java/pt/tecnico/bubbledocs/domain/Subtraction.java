@@ -2,6 +2,8 @@ package pt.tecnico.bubbledocs.domain;
 
 import org.jdom2.Element;
 
+import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
+
 public class Subtraction extends Subtraction_Base {
     
     public Subtraction() {
@@ -9,7 +11,7 @@ public class Subtraction extends Subtraction_Base {
     }
     
     @Override
-    public Element exportToXML() {
+    public Element exportToXML() throws ShouldNotExecuteException {
 		Element element = new Element("SUB");
 		
 		Element firstElement = new Element("firstOperand");

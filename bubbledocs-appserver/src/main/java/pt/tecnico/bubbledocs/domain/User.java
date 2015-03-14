@@ -50,7 +50,7 @@ public class User extends User_Base {
 	}
 	
 	public Element exportToXML() {
-		Element element = new Element("users");
+		Element element = new Element("user");
 		element.setAttribute("username",  getUsername());
 		element.setAttribute("name", getName());
 		element.setAttribute("password", getPassword());
@@ -67,7 +67,21 @@ public class User extends User_Base {
 	
 	public void delete()
 	{
-	    
+	   for (Spreadsheet doc: getCreatedDocsSet())
+	   {
+	       removeCreatedDocs(doc);
+	       removeWritableDocs(doc);
+	       doc.delete();
+	   }
+	   
+	   for (Spreadsheet doc: getReadableDocsSet())
+	   {
+	       removeReadableDocs(doc);
+	   }
+	   
+	   setForbiddenBubble1(null);
+
+        deleteDomainObject();
 	}
 }
 

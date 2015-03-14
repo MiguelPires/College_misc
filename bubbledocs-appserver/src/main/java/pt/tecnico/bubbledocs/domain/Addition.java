@@ -2,6 +2,8 @@ package pt.tecnico.bubbledocs.domain;
 
 import org.jdom2.Element;
 
+import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
+
 public class Addition extends Addition_Base {
     
     public Addition(Argument arg1, Argument arg2) {
@@ -11,7 +13,7 @@ public class Addition extends Addition_Base {
     }
     
     @Override
-    public Element exportToXML() {
+    public Element exportToXML() throws ShouldNotExecuteException {
 		Element element = new Element("ADD");
 		
 		Element firstElement = new Element("firstOperand");

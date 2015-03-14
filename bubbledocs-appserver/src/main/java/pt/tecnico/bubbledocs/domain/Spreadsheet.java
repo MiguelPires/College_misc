@@ -1,6 +1,7 @@
 package pt.tecnico.bubbledocs.domain;
 
 import pt.tecnico.bubbledocs.exception.ImportDocumentException;
+import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 
 import org.jdom2.Element;
 import org.jdom2.DataConversionException;
@@ -97,7 +98,7 @@ public class Spreadsheet extends Spreadsheet_Base {
     	deleteDomainObject();
     }
 	
-	public Element exportToXML() {
+	public Element exportToXML() throws ShouldNotExecuteException {
 		Element element = new Element("spreadsheet");
 		element.setAttribute("ID",  Integer.toString(getID()));
 		element.setAttribute("name", getName());
@@ -109,16 +110,18 @@ public class Spreadsheet extends Spreadsheet_Base {
 		element.setAttribute("column",  Integer.toString(getColumns()));
 		
 		Element cellElement = new Element("cells");
+		for (Cell c : getCellsSet()) {
+                cellElement.addContent(c.exportToXML());
+        }
+		
 		element.addContent(cellElement);
 
-		for (Cell c : getCellsSet()) {
-		    cellElement.addContent(c.exportToXML());
-		}
+
 		
 		Element creatorElement = new Element("creator");
-		element.addContent(creatorElement);
-		creatorElement.addContent((getCreator()).exportToXML());
-		
+		creatorElement.addContent(getCreator().exportToXML());
+	    element.addContent(creatorElement);
+
 		return element;
 	}
 	
@@ -155,9 +158,8 @@ public class Spreadsheet extends Spreadsheet_Base {
 		
 		Element crt = spreadsheetElement.getChild("creator");
 		
-		
 		User u = new User();
-		u.importFromXML(crt.getChild("users"));
+		u.importFromXML(crt.getChild("user"));
 		u.addCreatedDocs(this);
 		setCreator(u);
 		

@@ -2,6 +2,8 @@ package pt.tecnico.bubbledocs.domain;
 
 import org.jdom2.Element;
 
+import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
+
 public class BinaryFunction extends BinaryFunction_Base {
     
     public BinaryFunction(Argument one, Argument two) {
@@ -10,10 +12,13 @@ public class BinaryFunction extends BinaryFunction_Base {
         setSecondOperand(two);
     }
     
-    BinaryFunction(){}
+    BinaryFunction()
+    {
+        super();
+    }
     
     @Override
-    public void importFromXML(Element binElement) {
+    public void importFromXML(Element binElement) throws ShouldNotExecuteException {
     	
     	Element first = binElement.getChild("firstOperand");
     	Argument f = new Argument();

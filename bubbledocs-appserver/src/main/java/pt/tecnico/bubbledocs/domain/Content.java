@@ -1,6 +1,8 @@
 package pt.tecnico.bubbledocs.domain;
 import org.jdom2.Element;
 
+import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
+
 public class Content extends Content_Base {
     
     public Content() {
@@ -13,11 +15,11 @@ public class Content extends Content_Base {
     	deleteDomainObject();
     }
     
-    public Element exportToXML() {
-    	return null;
+    public Element exportToXML() throws ShouldNotExecuteException {
+        throw new ShouldNotExecuteException("exportToXML in the Content class shouldn't run.");
 	}
     
-    public void importFromXML(Element cellElement) {
-		;
+    public void importFromXML(Element cellElement) throws ShouldNotExecuteException {
+        throw new ShouldNotExecuteException("importToXML in the Content class shouldn't run.");
 	}
 }

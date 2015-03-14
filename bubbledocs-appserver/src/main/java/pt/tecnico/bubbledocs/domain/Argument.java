@@ -1,7 +1,5 @@
 package pt.tecnico.bubbledocs.domain;
 
-import org.jdom2.Element;
-
 public class Argument extends Argument_Base {
     
     public Argument() {

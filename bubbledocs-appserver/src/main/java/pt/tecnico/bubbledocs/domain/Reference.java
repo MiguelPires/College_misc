@@ -2,6 +2,8 @@ package pt.tecnico.bubbledocs.domain;
 
 import org.jdom2.Element;
 
+import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
+
 public class Reference extends Reference_Base {
     
     public Reference(Cell cell) {
@@ -10,7 +12,7 @@ public class Reference extends Reference_Base {
     }
  
     @Override
-    public Element exportToXML() {
+    public Element exportToXML() throws ShouldNotExecuteException {
 		Element element = new Element("reference");
 		
 		element.addContent(getReferedCell().exportToXML());

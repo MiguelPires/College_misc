@@ -7,6 +7,7 @@ import org.jdom2.Element;
 import pt.ist.fenixframework.Atomic;
 import pt.ist.fenixframework.DomainRoot;
 import pt.ist.fenixframework.FenixFramework;
+import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 import pt.tecnico.bubbledocs.exception.UserNotFoundException;
 
@@ -71,7 +72,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 		addUsers(spread.getCreator());
 	}
 	
-	public Element exportToXML() {
+	public Element exportToXML() throws ShouldNotExecuteException {
 		Element element = new Element("bubbledocs");
 		element.setAttribute("lastID",  Integer.toString(getLastID()));
 

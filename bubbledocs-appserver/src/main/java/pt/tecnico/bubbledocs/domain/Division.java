@@ -2,6 +2,8 @@ package pt.tecnico.bubbledocs.domain;
 
 import org.jdom2.Element;
 
+import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
+
 public class Division extends Division_Base {
     
     public Division(Argument arg1, Argument arg2) {
@@ -12,15 +14,13 @@ public class Division extends Division_Base {
     }
     
     @Override
-    public Element exportToXML() {
+    public Element exportToXML() throws ShouldNotExecuteException {
 		Element element = new Element("DIV");
 		
 		Element firstElement = new Element("firstOperand");
 		element.addContent(firstElement);
-
 		
 		firstElement.addContent((getFirstOperand()).exportToXML());
-
 		
 		Element secondElement = new Element("secondOperand");
 		element.addContent(secondElement);		

@@ -1,11 +1,5 @@
 package pt.tecnico.bubbledocs;
 
-import pt.ist.fenixframework.Atomic;
-import pt.ist.fenixframework.FenixFramework;
-import pt.ist.fenixframework.Config;
-
-import org.joda.time.*;
-
 import pt.tecnico.bubbledocs.domain.*;
 
 
@@ -16,8 +10,7 @@ public class SetupDomain {
 		populateDomain();
     }
     
-    @Atomic
-    static void populateDomain() {
+    public static void populateDomain() {
 		Bubbledocs bubbleapp = Bubbledocs.getInstance();
 
 		User pf = new User("pf", "Paul Door", "sub");

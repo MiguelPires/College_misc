@@ -126,7 +126,9 @@ relation BubbledocsContainsSpreadsheets{
 }
 
 relation ReferenceContainsCell{
-	Reference playsRole forbiddenReference;
+	Reference playsRole forbiddenReference{
+		multiplicity *;
+	}
 	Cell playsRole referedCell{
 		multiplicity 1;
 	}

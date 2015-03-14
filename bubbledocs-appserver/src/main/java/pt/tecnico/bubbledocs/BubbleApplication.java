@@ -54,7 +54,8 @@ public class BubbleApplication {
     	printUsers();
 		printSpreadsheets("pf");
 		printSpreadsheets("ra");
-    	
+    
+		
     	//aceder as spreadsheets, converter e escrever o resultado
     	ArrayList <org.jdom2.Document> docList = exportFeature();
     	
@@ -64,17 +65,17 @@ public class BubbleApplication {
     	printSpreadsheetsID("pf");
     	
     	//importar spreadsheet        
-       /* for(org.jdom2.Document doc: docList)
+        for(org.jdom2.Document doc: docList)
         {
            importFromXML(doc);
-        }*/
-           
-
+        }
+    
+        
         //aceder as spreadsheets, converter e escrever o resultado
         docList = exportFeature();
 
    }
-	
+    
  // setup the initial state if Bubbledocs is empty
     private static void setupIfNeed(Bubbledocs bubbleapp) {
 		if (bubbleapp.getUsersSet().isEmpty())
@@ -101,6 +102,7 @@ public class BubbleApplication {
 		} catch (UserNotFoundException e) {
 			System.out.println(e.getMessage());
 		}
+    	
     	return docList;
     }
     

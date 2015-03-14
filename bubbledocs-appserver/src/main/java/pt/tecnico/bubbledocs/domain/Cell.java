@@ -27,7 +27,9 @@ public class Cell extends Cell_Base {
     }
     
     public void delete(){
-    	setForbiddenReference(null);
+    	for(Reference c : getForbiddenReferenceSet())
+    		removeForbiddenReference(c);
+    	
     	setForbiddenCells(null);
         getContent().delete();
 
@@ -35,6 +37,7 @@ public class Cell extends Cell_Base {
     }
     
     public Element exportToXML() {
+    	
 		Element element = new Element("cell");
 		element.setAttribute("line",  Integer.toString(getLine()));
 		element.setAttribute("column", Integer.toString(getColumn()));
@@ -43,7 +46,9 @@ public class Cell extends Cell_Base {
 		Element contentElement = new Element("content");
 		element.addContent(contentElement);
 		
-		contentElement.addContent((getContent()).exportToXML());
+		//nunca devia ser null (para os nossos exemplos)
+		if(getContent() != null)
+			contentElement.addContent((getContent()).exportToXML());
 		
 		return element;
 	}
@@ -54,6 +59,14 @@ public class Cell extends Cell_Base {
             setProtect(false);
         else
             setProtect(true);
+		
+        //ERRO AQUI
+        
+    	/*Element content = cellElement.getChild("content");
+        Content c = new Content();
+    	c.importFromXML(content);
+    	setContent(c);*/
+    	
 		
 		try {
 			setLine(cellElement.getAttribute("line").getIntValue());

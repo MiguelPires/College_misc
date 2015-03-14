@@ -42,13 +42,11 @@ public class User extends User_Base {
 	}
 	
 	public void importFromXML(Element userElement) throws ImportDocumentException{
+		
 		setUsername(userElement.getAttribute("username").getValue());
-		try {
-		    setName(userElement.getAttribute("name").getValue());
-		    setPassword(userElement.getAttribute("password").getValue());
-		} catch (ImportDocumentException e) { 
-		    e.importDocException();
-		}
+		setName(userElement.getAttribute("name").getValue());
+		setPassword(userElement.getAttribute("password").getValue());
+		
 	}
 	
 	public Element exportToXML() {
@@ -57,12 +55,12 @@ public class User extends User_Base {
 		element.setAttribute("name", getName());
 		element.setAttribute("password", getPassword());
 		
-		Element spreadsheetElement = new Element("spreadsheet");
+		/*Element spreadsheetElement = new Element("spreadsheet");
 		element.addContent(spreadsheetElement);
 
 		for (Spreadsheet c : getCreatedDocsSet()) {
 			spreadsheetElement.addContent(c.exportToXML());
-		}
+		}*/
 		
 		return element;
 	}

@@ -19,6 +19,7 @@ public class Literal extends Literal_Base {
 		return element;
 	}
 	
+    @Override
 	public void importFromXML(Element literalElement) {
 		try {
 			setValue(literalElement.getAttribute("value").getIntValue());

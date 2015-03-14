@@ -13,15 +13,15 @@ public class Reference extends Reference_Base {
     public Element exportToXML() {
 		Element element = new Element("reference");
 		
-		/*Cell c = getReferedCell();
-		element.addContent(c.exportToXML());*/
+		element.addContent(getReferedCell().exportToXML());
 		
 		
 		return element;
 	}
 	
+    @Override
 	public void importFromXML(Element referenceElement) {
-	
+    	
 		Element cell = referenceElement.getChild("referedcell");
 		
 		Element cellElement = cell.getChild("cell");

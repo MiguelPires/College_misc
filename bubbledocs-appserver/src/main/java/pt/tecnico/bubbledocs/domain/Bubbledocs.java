@@ -66,17 +66,15 @@ public class Bubbledocs extends Bubbledocs_Base {
 	    
 		Spreadsheet spread = new Spreadsheet();
 		spread.importFromXML(spreadsheetElement);
-	  
-		addDocs (spread);
-	
+		
+		addDocs(spread);
+		addUsers(spread.getCreator());
 	}
 	
-	/*public Element exportToXML() {
+	public Element exportToXML() {
 		Element element = new Element("bubbledocs");
 		element.setAttribute("lastID",  Integer.toString(getLastID()));
-		
-		
-		
+
 		Element docsElement = new Element("docs");
 		element.addContent(docsElement);
 
@@ -85,7 +83,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 		}
 		
 		return element;
-	}*/
+	}
 	
 	
 }

@@ -12,7 +12,22 @@ public class BinaryFunction extends BinaryFunction_Base {
     
     BinaryFunction(){}
     
-	
+    @Override
+    public void importFromXML(Element binElement) {
+    	
+    	Element first = binElement.getChild("firstOperand");
+    	Argument f = new Argument();
+    	
+    	f.importFromXML(first);
+    	setFirstOperand(f);
+    	
+    	Element second = binElement.getChild("secondOperand");
+    	Argument sc = new Argument();
+    	
+    	sc.importFromXML(second);
+    	setSecondOperand(sc);
+	}
+    
 	public void delete ()
 	{
 		setFirstOperand(null);

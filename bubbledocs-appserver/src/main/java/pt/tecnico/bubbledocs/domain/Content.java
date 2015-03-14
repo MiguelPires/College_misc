@@ -16,4 +16,8 @@ public class Content extends Content_Base {
     public Element exportToXML() {
     	return null;
 	}
+    
+    public void importFromXML(Element cellElement) {
+		;
+	}
 }

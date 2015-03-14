@@ -102,10 +102,6 @@ public class Spreadsheet extends Spreadsheet_Base {
 		element.setAttribute("ID",  Integer.toString(getID()));
 		element.setAttribute("name", getName());
 		
-		/*Element creatorElement = new Element("creator");
-		element.addContent(creatorElement);
-		creatorElement.addContent(getCreator().exportToXML());*/
-		
 		element.setAttribute("createdAt", ""+getCreatedAt());
 		element.setAttribute("modifiedAt", ""+getModifiedAt());
 
@@ -118,6 +114,10 @@ public class Spreadsheet extends Spreadsheet_Base {
 		for (Cell c : getCellsSet()) {
 		    cellElement.addContent(c.exportToXML());
 		}
+		
+		Element creatorElement = new Element("creator");
+		element.addContent(creatorElement);
+		creatorElement.addContent((getCreator()).exportToXML());
 		
 		return element;
 	}
@@ -133,20 +133,16 @@ public class Spreadsheet extends Spreadsheet_Base {
             throw new ImportDocumentException();
         }
       
-       /*	Element crt = spreadsheetElement.getChild("creator");
-		User u = new User("pf","pf","pf");
-		u.importFromXML(crt);
-		setCreator(u);*/
 		
-		/*String createTimeString = spreadsheetElement.getAttribute("createdAt").getValue();
+		String createTimeString = spreadsheetElement.getAttribute("createdAt").getValue();
 		DateTime created = new DateTime(createTimeString, DateTimeZone.getDefault());
 		
 		String modifiedTimeString = spreadsheetElement.getAttribute("modifiedAt").getValue();
-		DateTime modified= new DateTime(modifiedTimeString, DateTimeZone.getDefault());*/
+		DateTime modified= new DateTime(modifiedTimeString, DateTimeZone.getDefault());
 
 		setName(spreadsheetElement.getAttribute("name").getValue());
-		//setCreatedAt(created);
-		//setModifiedAt(modified);
+		setCreatedAt(created);
+		setModifiedAt(modified);
 		
 		Element cells = spreadsheetElement.getChild("cells");
 	
@@ -156,6 +152,14 @@ public class Spreadsheet extends Spreadsheet_Base {
 		    c.importFromXML(cell);
 		    addCells(c);
 		}
+		
+		Element crt = spreadsheetElement.getChild("creator");
+		
+		
+		User u = new User();
+		u.importFromXML(crt.getChild("users"));
+		u.addCreatedDocs(this);
+		setCreator(u);
 		
 		
 	}

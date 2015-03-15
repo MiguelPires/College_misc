@@ -1,6 +1,7 @@
 package pt.tecnico.bubbledocs.domain;
 
 import pt.tecnico.bubbledocs.exception.ImportDocumentException;
+import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 import org.jdom2.Element;
 import org.jdom2.DataConversionException;
 
@@ -11,8 +12,12 @@ public class Literal extends Literal_Base {
         setValue(value);
     }
     
+    public Literal() {
+        super();
+    }
+    
     @Override
-    public Element exportToXML() {
+    public Element exportToXML() throws ShouldNotExecuteException {
 		Element element = new Element("literal");
 		element.setAttribute("value",  Integer.toString(getValue()));
 		
@@ -20,7 +25,7 @@ public class Literal extends Literal_Base {
 	}
 	
     @Override
-	public void importFromXML(Element literalElement) {
+	public void importFromXML(Element literalElement) throws ImportDocumentException {
 		try {
 			setValue(literalElement.getAttribute("value").getIntValue());
 		} catch (DataConversionException e) { 

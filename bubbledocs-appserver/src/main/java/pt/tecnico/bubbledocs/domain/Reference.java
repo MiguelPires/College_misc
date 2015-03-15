@@ -3,12 +3,17 @@ package pt.tecnico.bubbledocs.domain;
 import org.jdom2.Element;
 
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
+import pt.tecnico.bubbledocs.exception.ImportDocumentException;
 
 public class Reference extends Reference_Base {
     
     public Reference(Cell cell) {
         super();
         setReferedCell(cell);
+    }
+    
+    public Reference() {
+        super();
     }
  
     @Override
@@ -22,14 +27,15 @@ public class Reference extends Reference_Base {
 	}
 	
     @Override
-	public void importFromXML(Element referenceElement) {
-    	
-		Element cell = referenceElement.getChild("referedcell");
-		
-		Element cellElement = cell.getChild("cell");
+	public void importFromXML(Element referenceElement) throws ImportDocumentException {
+    	try{	
+		Element cellElement = referenceElement.getChild("cell");
 		Cell ref = new Cell(1, 1);
 		ref.importFromXML(cellElement);
 		setReferedCell(ref);
+    	}catch (ImportDocumentException e){
+    		throw new ImportDocumentException();
+    	}
 		
 	    }
 	

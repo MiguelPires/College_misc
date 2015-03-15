@@ -1,5 +1,6 @@
 package pt.tecnico.bubbledocs.domain;
 
+import java.util.*;
 import pt.tecnico.bubbledocs.exception.ImportDocumentException;
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 
@@ -54,33 +55,62 @@ public class Cell extends Cell_Base {
 		Element contentElement = new Element("content");
 		element.addContent(contentElement);
 		
-		//nunca devia ser null (para os nossos exemplos)
-		if(getContent() != null)
+		try{
 			contentElement.addContent((getContent()).exportToXML());
+		}catch (ShouldNotExecuteException e){
+			;
+		}
+		
+		
 		
 		return element;
 	}
  
-    public void importFromXML(Element cellElement) {
+    public void importFromXML(Element cellElement) throws ImportDocumentException {
 		
         if ((cellElement.getAttribute("protect").getValue()).equals("false"))
             setProtect(false);
         else
             setProtect(true);
 		
-        //ERRO AQUI
         
-    	/*Element content = cellElement.getChild("content");
-        Content c = new Content();
-    	c.importFromXML(content);
-    	setContent(c);*/
+    	Element content = cellElement.getChild("content");
+    	Content c = new Content();
+    	List<Element> child = content.getChildren();
+    	for(Element el : child){
+    		content = el;
+    		c = getXMLtype(el.getName());
+    	}
     	
+        try{
+        c.importFromXML(content);
+    	setContent(c);
+        }catch(ImportDocumentException e){
+        	setContent(new Content());
+        }
 		
 		try {
-			setLine(cellElement.getAttribute("line").getIntValue());
+	    	setLine(cellElement.getAttribute("line").getIntValue());
 			setColumn(cellElement.getAttribute("column").getIntValue());
 		} catch (DataConversionException e) { 
 		    throw new ImportDocumentException();
 		}
 	}
+    
+  //nao é a melhor maneira mas nao estou a ver como fazer doutra forma
+    	public Content getXMLtype (String str){
+    		if(str.equals("ADD"))
+    			return new Addition();
+    		else if(str.equals("SUB"))
+    			return new Subtraction();
+    		else if(str.equals("MUL"))
+    			return new Multiplication();
+    		else if(str.equals("DIV"))
+    			return new Division();
+    		else if(str.equals("literal"))
+    			return new Literal();
+    		else
+    			return new Reference();    		
+    	}
+
 }

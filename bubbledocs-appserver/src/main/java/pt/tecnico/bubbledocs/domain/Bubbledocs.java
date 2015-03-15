@@ -73,7 +73,9 @@ public class Bubbledocs extends Bubbledocs_Base {
 	}
 	
 	public Element exportToXML() throws ShouldNotExecuteException {
+		
 		Element element = new Element("bubbledocs");
+		try{
 		element.setAttribute("lastID",  Integer.toString(getLastID()));
 
 		Element docsElement = new Element("docs");
@@ -82,7 +84,9 @@ public class Bubbledocs extends Bubbledocs_Base {
 		for (Spreadsheet c : getDocsSet()) {
 		    docsElement.addContent(c.exportToXML());
 		}
-		
+		}catch(ShouldNotExecuteException e){
+			;
+		}
 		return element;
 	}
 	

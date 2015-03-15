@@ -12,6 +12,10 @@ public class Addition extends Addition_Base {
         setSecondOperand(arg2);
     }
     
+    public Addition() {
+        super();
+    }
+    
     @Override
     public Element exportToXML() throws ShouldNotExecuteException {
 		Element element = new Element("ADD");
@@ -29,6 +33,7 @@ public class Addition extends Addition_Base {
 		secondElement.addContent((getSecondOperand()).exportToXML());
 		
 		return element;
+		
 	}
     
     public void delete ()

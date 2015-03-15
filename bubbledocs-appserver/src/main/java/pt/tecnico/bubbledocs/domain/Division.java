@@ -13,6 +13,10 @@ public class Division extends Division_Base {
         
     }
     
+    public Division() {
+        super();
+    }
+    
     @Override
     public Element exportToXML() throws ShouldNotExecuteException {
 		Element element = new Element("DIV");

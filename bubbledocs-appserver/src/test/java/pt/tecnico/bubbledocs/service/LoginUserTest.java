@@ -4,10 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
 import org.joda.time.LocalTime;
 import org.joda.time.Seconds;
+import org.junit.Test;
 
+import pt.tecnico.bubbledocs.domain.ActiveUser;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
@@ -31,77 +32,58 @@ public class LoginUserTest extends BubbleDocsServiceTest {
     // returns the time of the last access for the user with token userToken.
     // It must get this data from the session object of the application
     private LocalTime getLastAccessTimeInSession(String userToken) {
-        return null;
-	// add code here
+        ActiveUser user = getUserFromSession(userToken).getActiveUser();
+        return user.getLastAccess().toLocalTime(); 
     }
 
     @Test
-    public void success() {
-        try{
-            LoginUser service = new LoginUser(USERNAME, PASSWORD);
-            service.execute();
-            LocalTime currentTime = new LocalTime();
-        
-            String token = service.getUserToken();
+    public void success() throws BubbleDocsException {
+        LoginUser service = new LoginUser(USERNAME, PASSWORD);
+        service.execute();
+        LocalTime currentTime = new LocalTime();
+    
+        String token = service.getUserToken();
 
-            User user = getUserFromSession(service.getUserToken());
-            assertEquals(USERNAME, user.getUsername());
+        User user = getUserFromSession(service.getUserToken());
+        assertEquals(USERNAME, user.getUsername());
 
-            int difference = Seconds.secondsBetween(getLastAccessTimeInSession(token), currentTime).getSeconds();
+        int difference = Seconds.secondsBetween(getLastAccessTimeInSession(token), currentTime).getSeconds();
 
-            assertTrue("Access time in session not correctly set", difference >= 0);
-            assertTrue("diference in seconds greater than expected", difference < 2);
-        } catch (BubbleDocsException e)
-        {
-            e.printStackTrace();
-        }
+        assertTrue("Access time in session not correctly set", difference >= 0);
+        assertTrue("diference in seconds greater than expected", difference < 2);
+
         
     }
 
     @Test
-    public void successLoginTwice() {
+    public void successLoginTwice() throws BubbleDocsException {
 
-        try {
-            LoginUser service = new LoginUser(USERNAME, PASSWORD);
+        LoginUser service = new LoginUser(USERNAME, PASSWORD);
 
-            service.execute();
-            String token1 = service.getUserToken();
+        service.execute();
+        String token1 = service.getUserToken();
 
-            service.execute();
-            String token2 = service.getUserToken();
+        service.execute();
+        String token2 = service.getUserToken();
 
-            User user = getUserFromSession(token1);
-            assertNull(user);
-            user = getUserFromSession(token2);
-            assertEquals(USERNAME, user.getUsername());
-        } catch (BubbleDocsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-     
+        User user = getUserFromSession(token1);
+        assertNull(user);
+        user = getUserFromSession(token2);
+        assertEquals(USERNAME, user.getUsername());
+
     }
 
     @Test(expected = UnknownBubbleDocsUserException.class)
-    public void loginUnknownUser() {
-        try {
+    public void loginUnknownUser() throws BubbleDocsException {
             LoginUser service = new LoginUser("jp2", "jp");
-
             service.execute();
-        } catch (BubbleDocsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+
     }
 
     @Test(expected = WrongPasswordException.class)
-    public void loginUserWithinWrongPassword() {
-        try {
+    public void loginUserWithinWrongPassword() throws BubbleDocsException {
             LoginUser service = new LoginUser(USERNAME, "jp2");
-
             service.execute();
-        } catch (BubbleDocsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+
     }
 }

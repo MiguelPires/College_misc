@@ -51,16 +51,10 @@ public class User extends User_Base {
 	
 	public Element exportToXML() {
 		Element element = new Element("user");
+		
 		element.setAttribute("username",  getUsername());
 		element.setAttribute("name", getName());
 		element.setAttribute("password", getPassword());
-		
-		/*Element spreadsheetElement = new Element("spreadsheet");
-		element.addContent(spreadsheetElement);
-
-		for (Spreadsheet c : getCreatedDocsSet()) {
-			spreadsheetElement.addContent(c.exportToXML());
-		}*/
 		
 		return element;
 	}
@@ -80,8 +74,10 @@ public class User extends User_Base {
 	   }
 	   
 	   setForbiddenBubble1(null);
-
-        deleteDomainObject();
+	   
+	   getActiveUser().delete();
+	   setActiveUser(null);
+       deleteDomainObject();
 	}
 }
 

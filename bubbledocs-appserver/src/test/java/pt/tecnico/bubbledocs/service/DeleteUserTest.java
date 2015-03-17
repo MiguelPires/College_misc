@@ -65,7 +65,7 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
      * and is in session Test if user and session are both deleted
      */
     @Test
-    public void successToDeleteIsInSession() {
+    public void successToDeleteIsInSession() throws UserNotInSessionException {
         String token = addUserToSession(USERNAME_TO_DELETE);
         success();
 	assertNull("Removed user but not removed from session", getUserFromSession(token));

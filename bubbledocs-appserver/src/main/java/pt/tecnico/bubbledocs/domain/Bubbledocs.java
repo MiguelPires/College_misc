@@ -10,6 +10,7 @@ import pt.ist.fenixframework.FenixFramework;
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 import pt.tecnico.bubbledocs.exception.UserNotFoundException;
+import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 public class Bubbledocs extends Bubbledocs_Base {
     
@@ -27,6 +28,7 @@ public class Bubbledocs extends Bubbledocs_Base {
     private Bubbledocs() {
         setLastID(0);
 		FenixFramework.getDomainRoot().setBubbledocs(this);
+		setSession(new Session());
     }
     
 	public ArrayList<Spreadsheet> findCreatedDocsByUser(User user, String name){
@@ -52,6 +54,19 @@ public class Bubbledocs extends Bubbledocs_Base {
 	    removeDocs(doc);
 	}
 	
+	// User functions
+	
+	public User addUser(String username, String name, String password)
+	{
+	    User user = new User(username, name, password);
+	    addUsers(user);
+	    return user;
+	}
+	public void addUserToSession(User user, String token)
+	{
+	    getSession().addUser(user, token);
+	}
+	
 	public User findUser(String username) throws UserNotFoundException
 	{
 		for(User user : getUsersSet()){
@@ -62,9 +77,18 @@ public class Bubbledocs extends Bubbledocs_Base {
 		throw new UserNotFoundException("User ' " + username + " ' not found.");
 	}
 	
-	public void importFromXML(Element spreadsheetElement) {
-	    
-	    
+	public User getUserByToken(String token) throws UserNotInSessionException
+	{
+	    return getSession().getUserByToken(token); 
+	}
+	
+	public ActiveUser getActiveUserByUsername(String username) throws UserNotInSessionException
+	{
+	    return getSession().getActiveUserByUsername(username);
+	}
+	
+	
+	public void importFromXML(Element spreadsheetElement) {	    
 		Spreadsheet spread = new Spreadsheet();
 		spread.importFromXML(spreadsheetElement);
 		
@@ -75,7 +99,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 	public Element exportToXML() throws ShouldNotExecuteException {
 		
 		Element element = new Element("bubbledocs");
-		try{
+
 		element.setAttribute("lastID",  Integer.toString(getLastID()));
 
 		Element docsElement = new Element("docs");
@@ -84,9 +108,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 		for (Spreadsheet c : getDocsSet()) {
 		    docsElement.addContent(c.exportToXML());
 		}
-		}catch(ShouldNotExecuteException e){
-			;
-		}
+    		
 		return element;
 	}
 	

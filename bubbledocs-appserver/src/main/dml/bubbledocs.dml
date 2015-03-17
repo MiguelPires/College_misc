@@ -4,10 +4,17 @@ class Bubbledocs{
 	Integer lastID;
 }
 
+class Session;
+
 class User{
 	String username;
 	String name;
 	String password;
+}
+
+class ActiveUser{
+	String token;
+	DateTime lastAccess;
 }
 
 class Root extends User;
@@ -48,6 +55,19 @@ class Subtraction extends BinaryFunction;
 class Division extends BinaryFunction;
 
 class Multiplication extends BinaryFunction;
+
+relation SessionContainsActiveUser{
+	Session playsRole session;
+	ActiveUser playsRole activeUsers{
+		multiplicity 0..*;
+	}
+}
+relation ActiveUserContainsUser{
+	ActiveUser playsRole activeUser;
+	User playsRole loggedUser{
+		multiplicity 1;
+	}
+}
 
 relation UserContainsSpreadsheet{
 	User playsRole creator;
@@ -109,6 +129,13 @@ relation DomainRootHasBubbleApplication{
  	Bubbledocs playsRole bubbledocs{
     	multiplicity 0..1;
   	}
+}
+
+relation BubbledocsContainsSession{
+	Bubbledocs playsRole forbiddenApp;
+	Session playsRole session{
+		multiplicity 1;
+	}
 }
 
 relation BubbledocsContainsUsers{

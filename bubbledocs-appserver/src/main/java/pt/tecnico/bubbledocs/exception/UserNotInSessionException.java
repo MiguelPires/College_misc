@@ -1,6 +1,6 @@
 package pt.tecnico.bubbledocs.exception;
 
-public class UserNotInSessionException extends BubbleDocsException {
+public class UserNotInSessionException extends RuntimeException {
     public UserNotInSessionException()
     {
         super();

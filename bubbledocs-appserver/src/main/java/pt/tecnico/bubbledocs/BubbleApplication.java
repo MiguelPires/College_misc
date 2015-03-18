@@ -16,8 +16,8 @@ import pt.ist.fenixframework.TransactionManager;
 import pt.tecnico.bubbledocs.domain.*;
 import pt.tecnico.bubbledocs.exception.PermissionDeniedException;
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
-import pt.tecnico.bubbledocs.exception.UserNotFoundException;
 import pt.tecnico.bubbledocs.*;
+import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 
 public class BubbleApplication {
 
@@ -102,7 +102,7 @@ public class BubbleApplication {
 	    		docList.add(doc);
 	    		printDomainInXML(doc);
 	    	}
-		} catch (UserNotFoundException e) {
+		} catch (UnknownBubbleDocsUserException e) {
 			System.out.println(e.getMessage());
 		}
     	
@@ -186,7 +186,7 @@ public class BubbleApplication {
 				}
 			}
 	
-		} catch (UserNotFoundException e) {
+		} catch (UnknownBubbleDocsUserException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -211,7 +211,7 @@ public class BubbleApplication {
 					System.out.println("\t - " + spreadsheet.getName() + ", id = " + spreadsheet.getID());
 				}
 			}
-		} catch (UserNotFoundException e) {
+		} catch (UnknownBubbleDocsUserException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

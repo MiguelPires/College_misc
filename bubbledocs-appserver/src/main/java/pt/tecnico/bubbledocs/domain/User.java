@@ -75,9 +75,20 @@ public class User extends User_Base {
 	   
 	   setForbiddenBubble1(null);
 	   
-	   getActiveUser().delete();
+	   ActiveUser actUser = getActiveUser();
+	   
+	   if (actUser != null)
+	       actUser.delete();
+	   
 	   setActiveUser(null);
        deleteDomainObject();
+	}
+	
+	
+	public boolean isRoot(){
+		if(getUsername()=="root")
+			return true;
+		return false;
 	}
 }
 

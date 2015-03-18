@@ -1,5 +1,6 @@
 package pt.tecnico.bubbledocs.domain;
 
+import java.util.Random;
 import java.util.ArrayList;
 
 import org.jdom2.Element;
@@ -9,12 +10,12 @@ import pt.ist.fenixframework.DomainRoot;
 import pt.ist.fenixframework.FenixFramework;
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
-import pt.tecnico.bubbledocs.exception.UserNotFoundException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
+import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 
 public class Bubbledocs extends Bubbledocs_Base {
     
-    
+    @Atomic
     public static Bubbledocs getInstance()
     {		
         Bubbledocs bubble = FenixFramework.getDomainRoot().getBubbledocs();
@@ -29,65 +30,71 @@ public class Bubbledocs extends Bubbledocs_Base {
         setLastID(0);
 		FenixFramework.getDomainRoot().setBubbledocs(this);
 		setSession(new Session());
+		addUsers(new Root(this));
+    }
+	
+    @Atomic
+    public void removeUser(String username) throws UnknownBubbleDocsUserException{
+        findUser(username).delete();
     }
     
-	public ArrayList<Spreadsheet> findCreatedDocsByUser(User user, String name){
-		return user.findCreatedDocs(name);
-	}
-	
-	public void deleteDoc(Integer id) throws SpreadsheetNotFoundException
-	{
-	    for (Spreadsheet s: getDocsSet())
-	    {
-	        if (id.equals(s.getID()))
-	        {
-	            deleteDoc(s);
-	            return;
-	        }
-	    }
-	    throw new SpreadsheetNotFoundException("No spreadsheet was found for the "+id.toString()+" identifier.");	    
-	}
-	
-	public void deleteDoc(Spreadsheet doc)
-	{
-	    doc.delete();
-	    removeDocs(doc);
-	}
-	
+    @Atomic
+    public void removeUserByToken(String token) throws UserNotInSessionException{
+        getSession().removeUser(token);
+        
+    }
+    
 	// User functions
-	
-	public User addUser(String username, String name, String password)
+    @Atomic
+	public User createUser(String username, String name, String password)
 	{
 	    User user = new User(username, name, password);
 	    addUsers(user);
 	    return user;
 	}
-	public void addUserToSession(User user, String token)
+    
+    @Atomic
+	public String addUserToSession(String username) throws UnknownBubbleDocsUserException
 	{
-	    getSession().addUser(user, token);
+		 
+		User user = findUser(username);
+	    return addUserToSession(user);
 	}
 	
-	public User findUser(String username) throws UserNotFoundException
+    @Atomic
+	public String addUserToSession(User user)
+	{
+		Random random = new Random();
+        Integer randInt = new Integer(random.nextInt(10));       
+        String token = user.getUsername() + randInt.toString();
+	    getSession().addUser(user, token);
+	    return token;
+	}
+	
+    @Atomic
+	public User findUser(String username) throws UnknownBubbleDocsUserException
 	{
 		for(User user : getUsersSet()){
 			if(user.getUsername().equals(username)){
 				return user;
 			}
 		}
-		throw new UserNotFoundException("User ' " + username + " ' not found.");
+		throw new UnknownBubbleDocsUserException("User '" + username + "' not found.");
 	}
 	
+    @Atomic
 	public User getUserByToken(String token) throws UserNotInSessionException
 	{
 	    return getSession().getUserByToken(token); 
 	}
 	
+    @Atomic
 	public ActiveUser getActiveUserByUsername(String username) throws UserNotInSessionException
 	{
 	    return getSession().getActiveUserByUsername(username);
 	}
 	
-	
+    @Atomic
 	public void importFromXML(Element spreadsheetElement) {	    
 		Spreadsheet spread = new Spreadsheet();
 		spread.importFromXML(spreadsheetElement);
@@ -96,6 +103,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 		addUsers(spread.getCreator());
 	}
 	
+    @Atomic
 	public Element exportToXML() throws ShouldNotExecuteException {
 		
 		Element element = new Element("bubbledocs");
@@ -112,6 +120,51 @@ public class Bubbledocs extends Bubbledocs_Base {
 		return element;
 	}
 	
+    @Atomic
+	public Spreadsheet createSpreadSheet(User user, String name, int rows,
+            int columns) {
+		setLastID(getLastID()+1);
+		Spreadsheet Doc = new Spreadsheet(getLastID(), name, rows, columns, user);
+		addDocs(Doc);
+    	return Doc;
+    }
+	
+    @Atomic
+    public ArrayList<Spreadsheet> findCreatedDocsByUser(User user, String name){
+        return user.findCreatedDocs(name);
+    }
+    
+    @Atomic
+    public void deleteDoc(Integer id) throws SpreadsheetNotFoundException
+    {
+        for (Spreadsheet s: getDocsSet())
+        {
+            if (id.equals(s.getID()))
+            {
+                deleteDoc(s);
+                return;
+            }
+        }
+        throw new SpreadsheetNotFoundException("No spreadsheet was found for the "+id.toString()+" identifier.");       
+    }
+    
+    @Atomic
+    public void deleteDoc(Spreadsheet doc)
+    {
+        doc.delete();
+        removeDocs(doc);
+    }
+    
+    @Atomic
+    public Spreadsheet getSpreadSheet(String name)
+    {
+        for (Spreadsheet doc: getDocsSet())
+        {
+            if (doc.getName().equals(name))
+                return doc;
+        }
+        return null;
+    }
 	
 }
 

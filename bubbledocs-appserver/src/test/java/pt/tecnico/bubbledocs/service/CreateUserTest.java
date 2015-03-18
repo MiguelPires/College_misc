@@ -9,6 +9,7 @@ import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.DuplicateUsernameException;
 import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
+import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 // add needed import declarations
@@ -25,7 +26,7 @@ public class CreateUserTest extends BubbleDocsServiceTest {
     private static final String USERNAME_DOES_NOT_EXIST = "no-one";
 
     @Override
-    public void populate4Test() {
+    public void populate4Test() throws BubbleDocsException {
         createUser(USERNAME, PASSWORD, "António Rito Silva");
         root = addUserToSession("root");
         ars = addUserToSession("ars");

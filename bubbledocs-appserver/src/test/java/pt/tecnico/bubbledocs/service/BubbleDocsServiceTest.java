@@ -11,7 +11,9 @@ import pt.ist.fenixframework.core.WriteOnReadError;
 import pt.tecnico.bubbledocs.domain.Bubbledocs;
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
+import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
+import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 
 // add needed import declarations
 
@@ -39,46 +41,48 @@ public class BubbleDocsServiceTest {
 
     // should redefine this method in the subclasses if it is needed to specify
     // some initial state
-    public void populate4Test() {
+    public void populate4Test() throws BubbleDocsException {
     }
 
     // auxiliary methods that access the domain layer and are needed in the test classes
     // for defining the initial state and checking that the service has the expected behavior
-    User createUser(String username, String password, String name) {
-        return Bubbledocs.getInstance().addUser(username, name, password);
+    public User createUser(String username, String password, String name) {
+        return BubbleDocsService.createUser(username, name, password);
     }
 
-    public Spreadsheet createSpreadSheet(User user, String name, int row,
-            int column) {
-	// add code here
-        return null;
+    public Spreadsheet createSpreadSheet(User user, String name, int row, int column) {
+	
+    	return BubbleDocsService.createSpreadSheet(user, name, row, column);
     }
 
     // returns a spreadsheet whose name is equal to name
     public Spreadsheet getSpreadSheet(String name) {
-	// add code here
-        return  null;
+        return BubbleDocsService.getSpreadsheet(name);
+
     }
 
     // returns the user registered in the application whose username is equal to username
-    User getUserFromUsername(String username) {
-	// add code here
-        return null;
+    public User getUserFromUsername(String username) {
+    	try{
+    		return BubbleDocsService.getUser(username);
+    	}catch(UnknownBubbleDocsUserException e){
+    		return null;
+    	}
     }
 
     // put a user into session and returns the token associated to it
-    String addUserToSession(String username) {
-        return null;
-	// add code here
+    public String addUserToSession(String username) throws UnknownBubbleDocsUserException {
+    	return BubbleDocsService.addUserToSession(username);
     }
 
     // remove a user from session given its token
-    void removeUserFromSession(String token) {
-	// add code here
+    public void removeUserFromSession(String token) throws UserNotInSessionException {
+    	BubbleDocsService.removeUserByToken(token);
+
     }
 
     // return the user registered in session whose token is equal to token
-    User getUserFromSession(String token){
+    public User getUserFromSession(String token){
         try{
             return BubbleDocsService.getUserByToken(token);
         } catch (UserNotInSessionException e)

@@ -26,7 +26,7 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
     private String root;
 
     @Override
-    public void populate4Test() {
+    public void populate4Test() throws UnknownBubbleDocsUserException {
         createUser(USERNAME, PASSWORD, "António Rito Silva");
         User smf = createUser(USERNAME_TO_DELETE, "smf", "Sérgio Fernandes");
         createSpreadSheet(smf, USERNAME_TO_DELETE, 20, 20);
@@ -65,10 +65,10 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
      * and is in session Test if user and session are both deleted
      */
     @Test
-    public void successToDeleteIsInSession() throws UserNotInSessionException {
+    public void successToDeleteIsInSession() throws BubbleDocsException {
         String token = addUserToSession(USERNAME_TO_DELETE);
         success();
-	assertNull("Removed user but not removed from session", getUserFromSession(token));
+        assertNull("Removed user but not removed from session", getUserFromSession(token));
     }
 
     @Test(expected = UnknownBubbleDocsUserException.class)

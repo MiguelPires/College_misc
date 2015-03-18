@@ -29,6 +29,18 @@ public class Session extends Session_Base {
         user.delete();
     }
     
+    public void removeUser(String token) throws UserNotInSessionException
+    {       
+    	for (ActiveUser user: getActiveUsersSet())
+    	{
+    		if (user.getToken().equals(token)){
+    			user.delete();
+    			//removeActiveUsers(user);
+    			return;
+    		}
+    	}
+    }
+    
     public boolean isInactive(ActiveUser user)
     {
         DateTime last = user.getLastAccess();

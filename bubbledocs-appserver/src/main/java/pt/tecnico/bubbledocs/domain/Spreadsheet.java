@@ -80,8 +80,16 @@ public class Spreadsheet extends Spreadsheet_Base {
             c.delete();
     	}
     	
+    	User creator = getCreator();
     	
-    	getCreator().removeCreatedDocs(this);
+    	try{
+    	    creator.removeCreatedDocs(this);    
+    	} catch(NullPointerException e)
+    	{
+    	    // A spreadsheet foi removida pelo lado do user
+    	}
+    	
+    	
     	setCreator(null);
     	
     	for(User u : getWritersSet()){

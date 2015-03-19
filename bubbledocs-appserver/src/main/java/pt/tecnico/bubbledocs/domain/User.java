@@ -86,7 +86,7 @@ public class User extends User_Base {
 	
 	
 	public boolean isRoot(){
-		if(getUsername()=="root")
+		if(getUsername().equals("root"))
 			return true;
 		return false;
 	}

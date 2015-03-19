@@ -26,7 +26,7 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
     private String root;
 
     @Override
-    public void populate4Test() throws UnknownBubbleDocsUserException {
+    public void populate4Test() throws BubbleDocsException {
         createUser(USERNAME, PASSWORD, "António Rito Silva");
         User smf = createUser(USERNAME_TO_DELETE, "smf", "Sérgio Fernandes");
         createSpreadSheet(smf, USERNAME_TO_DELETE, 20, 20);
@@ -72,59 +72,32 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
     }
 
     @Test(expected = UnknownBubbleDocsUserException.class)
-    public void userToDeleteDoesNotExist() {
-        try {
+    public void userToDeleteDoesNotExist() throws BubbleDocsException{
             new DeleteUser(root, USERNAME_DOES_NOT_EXIST).execute();
-        } catch (BubbleDocsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
 
     @Test(expected = UnauthorizedOperationException.class)
-    public void notRootUser() {
-        try {
+    public void notRootUser() throws BubbleDocsException{
             String ars = addUserToSession(USERNAME);
-
             new DeleteUser(ars, USERNAME_TO_DELETE).execute();
-        } catch (BubbleDocsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
 
     @Test(expected = UserNotInSessionException.class)
-    public void rootNotInSession() {
-
-        try {
+    public void rootNotInSession() throws BubbleDocsException {
             removeUserFromSession(root);
-
             new DeleteUser(root, USERNAME_TO_DELETE).execute();
-        } catch (BubbleDocsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
 
     @Test(expected = UserNotInSessionException.class)
-    public void notInSessionAndNotRoot() {
-        try {
-            String ars = addUserToSession(USERNAME);
-            removeUserFromSession(ars);
-            new DeleteUser(ars, USERNAME_TO_DELETE).execute();
-        } catch (BubbleDocsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    public void notInSessionAndNotRoot() throws BubbleDocsException {
+        String ars = addUserToSession(USERNAME);
+        removeUserFromSession(ars);
+        new DeleteUser(ars, USERNAME_TO_DELETE).execute();
+
     }
 
     @Test(expected = UserNotInSessionException.class)
-    public void accessUserDoesNotExist() {
-        try {
-            new DeleteUser(USERNAME_DOES_NOT_EXIST, USERNAME_TO_DELETE).execute();
-        } catch (BubbleDocsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    public void accessUserDoesNotExist() throws BubbleDocsException{
+        new DeleteUser(USERNAME_DOES_NOT_EXIST, USERNAME_TO_DELETE).execute();
     }
 }

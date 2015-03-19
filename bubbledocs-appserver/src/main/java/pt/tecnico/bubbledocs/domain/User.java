@@ -22,7 +22,7 @@ public class User extends User_Base {
 	    super();
 	}
     
-	public ArrayList<Spreadsheet> findCreatedDocs(String name){
+	public ArrayList<Spreadsheet> getCreatedDocs(String name){
 		ArrayList<Spreadsheet> documents = new ArrayList<Spreadsheet>();
 		for (Spreadsheet doc : this.getCreatedDocsSet())
 			if(doc.getName().equals(name))

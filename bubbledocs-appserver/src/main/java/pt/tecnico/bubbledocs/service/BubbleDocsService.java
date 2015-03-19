@@ -7,6 +7,7 @@ import pt.tecnico.bubbledocs.domain.Bubbledocs;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
+import pt.tecnico.bubbledocs.exception.DuplicateUsernameException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 
@@ -26,13 +27,13 @@ public abstract class BubbleDocsService {
         return FenixFramework.getDomainRoot().getBubbledocs();
     }
     
-    public static User createUser(String username, String name, String password) {
+    public static User createUser(String username, String name, String password) throws BubbleDocsException {
         return Bubbledocs.getInstance().createUser(username, name, password);
     }
     
     public static User getUser(String username) throws UnknownBubbleDocsUserException
     {
-        return getBubbledocs().findUser(username);
+        return getBubbledocs().getUser(username);
     }
     
     public static User getUserByToken(String token) throws UserNotInSessionException

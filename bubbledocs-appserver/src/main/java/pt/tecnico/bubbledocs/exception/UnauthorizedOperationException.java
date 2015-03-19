@@ -1,6 +1,6 @@
 package pt.tecnico.bubbledocs.exception;
 
-public class UnauthorizedOperationException extends RuntimeException{
+public class UnauthorizedOperationException extends BubbleDocsException{
 	public UnauthorizedOperationException() {
         super();
     }

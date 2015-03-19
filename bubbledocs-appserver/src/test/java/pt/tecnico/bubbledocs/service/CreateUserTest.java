@@ -52,54 +52,32 @@ public class CreateUserTest extends BubbleDocsServiceTest {
     }
 
     @Test(expected = DuplicateUsernameException.class)
-    public void usernameExists() {
-        
-        try {
-            CreateUser service = new CreateUser(root, USERNAME, "jose",
-                    "José Ferreira");
-            service.execute();
-        } catch (BubbleDocsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    public void usernameExists() throws BubbleDocsException {
+        CreateUser service = new CreateUser(root, USERNAME, "jose",
+                "José Ferreira");
+        service.execute();
     }
 
     @Test(expected = EmptyUsernameException.class)
-    public void emptyUsername() {
-        try{
-            CreateUser service = new CreateUser(root, "", "jose", "José Ferreira");
-            service.execute();
-        } catch (BubbleDocsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    public void emptyUsername() throws BubbleDocsException {
+        CreateUser service = new CreateUser(root, "", "jose", "José Ferreira");
+        service.execute();
+
     }
 
     @Test(expected = UnauthorizedOperationException.class)
-    public void unauthorizedUserCreation() {
-       
-        try {
-            CreateUser service = new CreateUser(ars, USERNAME_DOES_NOT_EXIST, "jose",
-                    "José Ferreira");
-            service.execute();
-        } catch (BubbleDocsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    public void unauthorizedUserCreation() throws BubbleDocsException {
+        CreateUser service = new CreateUser(ars, USERNAME_DOES_NOT_EXIST, "jose",
+                "José Ferreira");
+        service.execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
-    public void accessUsernameNotExist() {
-        try {
+    public void accessUsernameNotExist() throws BubbleDocsException {
             removeUserFromSession(root);
             CreateUser service = new CreateUser(root, USERNAME_DOES_NOT_EXIST, "jose",
                     "José Ferreira");
 
             service.execute();
-        } catch (BubbleDocsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
-
 }

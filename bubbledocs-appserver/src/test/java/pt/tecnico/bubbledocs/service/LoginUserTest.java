@@ -25,7 +25,7 @@ public class LoginUserTest extends BubbleDocsServiceTest {
     private static final String PASSWORD = "jp#";
 
     @Override
-    public void populate4Test() {
+    public void populate4Test() throws BubbleDocsException {
         createUser(USERNAME, PASSWORD, "João Pereira");
     }
 

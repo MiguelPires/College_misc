@@ -20,12 +20,9 @@ public class DeleteUser extends BubbleDocsService {
     @Override
     protected void dispatch() throws BubbleDocsException{
     	User user = getUserByToken(userToken);
-    	if(user.isRoot()){
-				try {
-					getBubbledocs().removeUser(deleteUsername);
-				} catch (UnknownBubbleDocsUserException e) {
-					throw new UnknownBubbleDocsUserException();
-				}
+    	
+    	if (user.isRoot()) {
+			getBubbledocs().removeUser(deleteUsername);
     	}
     	else
     		throw new UnauthorizedOperationException();

@@ -31,7 +31,7 @@ public class AssignLiteralCellTest extends BubbleDocsServiceTest {
 	private static final String OUT = "6;6";
 	
 	 @Override
-	 public void populate4Test() {
+	 public void populate4Test() throws BubbleDocsException {
 		 Content content = new Literal(100);
 		 User creator = createUser(CREATOR, CREATORPASSWORD, "Kim Kibum");
 		 User reader = createUser(READER, READERPASSWORD, "Lee Jinki");

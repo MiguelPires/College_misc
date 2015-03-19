@@ -1,17 +1,19 @@
 package pt.tecnico.bubbledocs.domain;
 
-import java.util.Random;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.jdom2.Element;
 
 import pt.ist.fenixframework.Atomic;
-import pt.ist.fenixframework.DomainRoot;
 import pt.ist.fenixframework.FenixFramework;
+import pt.tecnico.bubbledocs.exception.BubbleDocsException;
+import pt.tecnico.bubbledocs.exception.DuplicateUsernameException;
+import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
-import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
+import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 public class Bubbledocs extends Bubbledocs_Base {
     
@@ -35,7 +37,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 	
     @Atomic
     public void removeUser(String username) throws UnknownBubbleDocsUserException{
-        findUser(username).delete();
+        getUser(username).delete();
     }
     
     @Atomic
@@ -46,18 +48,27 @@ public class Bubbledocs extends Bubbledocs_Base {
     
 	// User functions
     @Atomic
-	public User createUser(String username, String name, String password)
+	public User createUser(String username, String name, String password) throws BubbleDocsException
 	{
-	    User user = new User(username, name, password);
-	    addUsers(user);
-	    return user;
+        if (username.isEmpty())
+            throw new EmptyUsernameException();
+        
+        try {
+            getUser(username);
+            throw new DuplicateUsernameException();
+        } catch(UnknownBubbleDocsUserException e)
+        {
+            User user = new User(username, name, password);
+            addUsers(user);
+            return user;
+        }
 	}
     
     @Atomic
 	public String addUserToSession(String username) throws UnknownBubbleDocsUserException
 	{
 		 
-		User user = findUser(username);
+		User user = getUser(username);
 	    return addUserToSession(user);
 	}
 	
@@ -72,7 +83,7 @@ public class Bubbledocs extends Bubbledocs_Base {
 	}
 	
     @Atomic
-	public User findUser(String username) throws UnknownBubbleDocsUserException
+	public User getUser(String username) throws UnknownBubbleDocsUserException
 	{
 		for(User user : getUsersSet()){
 			if(user.getUsername().equals(username)){
@@ -130,8 +141,8 @@ public class Bubbledocs extends Bubbledocs_Base {
     }
 	
     @Atomic
-    public ArrayList<Spreadsheet> findCreatedDocsByUser(User user, String name){
-        return user.findCreatedDocs(name);
+    public ArrayList<Spreadsheet> getCreatedDocsByUser(User user, String name){
+        return user.getCreatedDocs(name);
     }
     
     @Atomic

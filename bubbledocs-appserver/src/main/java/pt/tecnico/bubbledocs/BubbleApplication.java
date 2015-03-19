@@ -14,8 +14,8 @@ import pt.ist.fenixframework.Atomic;
 import pt.ist.fenixframework.FenixFramework;
 import pt.ist.fenixframework.TransactionManager;
 import pt.tecnico.bubbledocs.domain.*;
-import pt.tecnico.bubbledocs.exception.PermissionDeniedException;
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
+import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.*;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 
@@ -23,7 +23,7 @@ public class BubbleApplication {
 
 	private static Bubbledocs bubbleapp;
 	
-    public static void main(String[] args) throws ShouldNotExecuteException, PermissionDeniedException {
+    public static void main(String[] args) throws ShouldNotExecuteException, UnauthorizedOperationException {
 
     	System.out.println("+--------------------------------------------+");
     	System.out.println("+   Welcome to the Bubbledocs application!   +");
@@ -81,8 +81,17 @@ public class BubbleApplication {
  // setup the initial state if Bubbledocs is empty
     @Atomic
     private static void setupIfNeed(Bubbledocs bubbleapp) {
-		if (bubbleapp.getUsersSet().isEmpty())
-		    SetupDomain.populateDomain();
+		for(User user: bubbleapp.getUsersSet())
+		{
+		    if (user.getUsername().equals("root")){
+	            continue;
+	        } else {
+	            return;
+	        }
+		    
+		}
+        SetupDomain.populateDomain();
+
     }
     
     @Atomic
@@ -91,7 +100,7 @@ public class BubbleApplication {
     	ArrayList <org.jdom2.Document> docList = new ArrayList <org.jdom2.Document>(); 
  
     	try {
-			User u = bubbleapp.findUser(userName);
+			User u = bubbleapp.getUser(userName);
 			
 	    	org.jdom2.Document doc;
 	    	
@@ -123,7 +132,7 @@ public class BubbleApplication {
     }
     
     @Atomic
-    public static void importUserDocs(String userName, org.jdom2.Document jdomDoc) throws PermissionDeniedException
+    public static void importUserDocs(String userName, org.jdom2.Document jdomDoc) throws UnauthorizedOperationException
     { 
         Element doc = jdomDoc.getRootElement();
         Element creatorElement = doc.getChild("creator");
@@ -134,7 +143,7 @@ public class BubbleApplication {
         if (xmlUsername.equals(userName))
             importFromXML(jdomDoc);
         else
-            throw new PermissionDeniedException("The exported document doesn't belong to " +userName);
+            throw new UnauthorizedOperationException("The exported document doesn't belong to " +userName);
     }
 
     private static void importFromXML(org.jdom2.Document jdomDoc) {
@@ -171,7 +180,7 @@ public class BubbleApplication {
 	{
 		User user;
 		try {
-			user = bubbleapp.findUser(username);
+			user = bubbleapp.getUser(username);
 			
 			if (user.getCreatedDocsSet().isEmpty())
 			{
@@ -197,7 +206,7 @@ public class BubbleApplication {
 	{
 		User user;
 		try {
-			user = bubbleapp.findUser(username);
+			user = bubbleapp.getUser(username);
 			
 			if (user.getCreatedDocsSet().isEmpty())
 			{

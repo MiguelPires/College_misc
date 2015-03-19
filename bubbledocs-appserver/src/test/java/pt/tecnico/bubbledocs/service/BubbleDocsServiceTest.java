@@ -55,8 +55,8 @@ public class BubbleDocsServiceTest {
     }
 
     // returns a spreadsheet whose name is equal to name
-    public Spreadsheet getSpreadSheet(String name) {
-        return BubbleDocsService.getSpreadsheet(name);
+    public Spreadsheet getSpreadSheet(int id) {
+        return BubbleDocsService.getSpreadsheet(id);
 
     }
 

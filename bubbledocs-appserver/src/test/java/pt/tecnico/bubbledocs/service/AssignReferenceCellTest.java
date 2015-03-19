@@ -1,6 +1,7 @@
 package pt.tecnico.bubbledocs.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
@@ -33,7 +34,7 @@ public class AssignReferenceCellTest extends BubbleDocsServiceTest {
 	private static final String REFERENCE = "1;1";
 
 	private int ssId;
-	private String creatorToken, readerToken, notAllowedToken;
+	private String creatorToken, writerToken, readerToken, notAllowedToken;
 	
 	 @Override
 	 public void populate4Test() throws BubbleDocsException {

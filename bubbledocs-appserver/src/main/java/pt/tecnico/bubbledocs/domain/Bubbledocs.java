@@ -113,8 +113,8 @@ public class Bubbledocs extends Bubbledocs_Base {
         return jdomDoc;
     }
     
-    public org.jdom2.Document exportToXML(String spreadsheet) throws ShouldNotExecuteException{        
-        return exportToXML(getSpreadSheet(spreadsheet));
+    public org.jdom2.Document exportToXML(int id) throws ShouldNotExecuteException{        
+        return exportToXML(getSpreadSheet(id));
     }
 	
     public String getDomainInXML(org.jdom2.Document jdomDoc) {
@@ -156,11 +156,11 @@ public class Bubbledocs extends Bubbledocs_Base {
         removeDocs(doc);
     }
     
-    public Spreadsheet getSpreadSheet(String name)
+    public Spreadsheet getSpreadSheet(int id)
     {
         for (Spreadsheet doc: getDocsSet())
         {
-            if (doc.getName().equals(name))
+            if (doc.getID() == id)
                 return doc;
         }
         return null;

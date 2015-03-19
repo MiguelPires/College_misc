@@ -1,8 +1,10 @@
 package pt.tecnico.bubbledocs.service;
 
+import pt.tecnico.bubbledocs.domain.ActiveUser;
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
+import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 public class CreateSpreadSheet extends BubbleDocsService {
     private int sheetId;  // id of the new sheet
@@ -27,8 +29,17 @@ public class CreateSpreadSheet extends BubbleDocsService {
     protected void dispatch() throws BubbleDocsException {
         User user = getUserByToken(token);
 
-        Spreadsheet ss = createSpreadSheet(user, name, rows, columns);
-        sheetId = ss.getID();
+        try{
+
+            ActiveUser active = getActiveUserByUsername(user.getUsername());
+
+            Spreadsheet ss = createSpreadSheet(user, name, rows, columns);
+            sheetId = ss.getID();
+
+        } catch (UserNotInSessionException e){
+            ; //not found if user isn't logged in
+        }
+        
     }
 
 }

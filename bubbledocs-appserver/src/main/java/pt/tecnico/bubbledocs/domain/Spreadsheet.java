@@ -1,5 +1,7 @@
 package pt.tecnico.bubbledocs.domain;
 
+import java.util.Iterator;
+
 import pt.tecnico.bubbledocs.exception.ImportDocumentException;
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 
@@ -72,6 +74,25 @@ public class Spreadsheet extends Spreadsheet_Base {
             }
         }
 	}
+	
+	public boolean isWriter(String username){ 
+		for (User user : getWritersSet()) {
+			if (user.getUsername().equals(username))
+				return true;
+		}
+		
+		return false;		
+	}
+	
+	public boolean isReader(String username){ 
+		for (User user : getReadersSet()) {
+			if (user.getUsername().equals(username))
+				return true;
+		}
+		
+		return false;	
+	}
+	
 	
 	public void delete(){
 		

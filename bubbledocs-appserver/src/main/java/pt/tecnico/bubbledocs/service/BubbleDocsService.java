@@ -7,6 +7,7 @@ import pt.tecnico.bubbledocs.domain.Bubbledocs;
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
+import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
@@ -56,9 +57,14 @@ public abstract class BubbleDocsService {
         return getBubbledocs().createSpreadSheet(user, name, row, column);
     }
     
-    public static Spreadsheet getSpreadsheet (String name)
+    public static Spreadsheet getSpreadsheet (int id)
     {
-        return getBubbledocs().getSpreadSheet(name);
+        return getBubbledocs().getSpreadSheet(id);
+    }
+    
+    public static String exportToXML (int id) throws ShouldNotExecuteException
+    {
+        return getBubbledocs().exportToXML(id).toString();
     }
     
 }

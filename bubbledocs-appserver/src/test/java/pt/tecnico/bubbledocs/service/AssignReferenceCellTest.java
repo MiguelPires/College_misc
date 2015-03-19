@@ -13,7 +13,7 @@ import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.CellOutOfBoundsException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 
-public class AssignLiteralCellTest extends BubbleDocsServiceTest {
+public class AssignReferenceCellTest extends BubbleDocsServiceTest {
 		
 	private static final String SPREADSHEET = "Spreadsheep";
 	private static final String CREATOR = "Shkey";
@@ -30,12 +30,15 @@ public class AssignLiteralCellTest extends BubbleDocsServiceTest {
 	private static final String FULL = "4;2";
 	private static final String OUT = "6;6";
 
+	private static final String REFERENCE = "1;1";
+
 	private int ssId;
-	private String creatorToken, writerToken, readerToken, notAllowedToken;
+	private String creatorToken, readerToken, notAllowedToken;
 	
 	 @Override
 	 public void populate4Test() throws BubbleDocsException {
 		 Content content = new Literal(100);
+		 Content content2 = new Literal(19);
 		 User creator = createUser(CREATOR, CREATORPASSWORD, "Kim Kibum");
 		 User writer = createUser(WRITER, WRITERPASSWORD, "Choi Minho");
 		 User reader = createUser(READER, READERPASSWORD, "Lee Jinki");
@@ -51,45 +54,57 @@ public class AssignLiteralCellTest extends BubbleDocsServiceTest {
 		 ss.addReaders(reader);
 		 Cell protect = ss.getCell(2, 2);
 		 Cell full = ss.getCell(4, 2);
+		 Cell ref = ss.getCell(1, 1);
 		 
 		 protect.setProtect(true);
 		 full.setContent(content);
+		 ref.setContent(content2);
 	 }
 	 
 	 @Test
 	 public void success() throws BubbleDocsException {
 		 
-			 AssignLiteralCell service1 = new AssignLiteralCell(creatorToken, ssId, FULL, "50");
-	         service1.execute();
+		 AssignReferenceCell service1 = new AssignReferenceCell(creatorToken, ssId, FULL, REFERENCE);
+	     service1.execute();
 	         
-	         AssignLiteralCell service2 = new AssignLiteralCell(writerToken, ssId, EMPTY, "25");
-	         service2.execute();
+	     AssignReferenceCell service2 = new AssignReferenceCell(writerToken, ssId, EMPTY, REFERENCE);
+	     service2.execute();
 
-	         assertEquals("50", service1.getResult());
-	         assertEquals("25", service2.getResult());
+	     AssignReferenceCell service3 = new AssignReferenceCell(writerToken, ssId, EMPTY, PROTECTED);
+	     service3.execute();
+
+	     assertEquals("19", service1.getResult());
+	     assertEquals("19", service2.getResult());
+	     assertNull("Cell has content.", service2.getResult());
 	 }
 	 
 	 @Test(expected = UnauthorizedOperationException.class)
 	public void creatorAccessToProtectedCell() throws BubbleDocsException {
-		 AssignLiteralCell service = new AssignLiteralCell(creatorToken, ssId, PROTECTED, "91");
+		 AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, PROTECTED, REFERENCE);
 		 service.execute();
 	 }
 	 
 	 @Test(expected = CellOutOfBoundsException.class)
 	public void accessToNonExistentCell() throws BubbleDocsException {
-		 AssignLiteralCell service = new AssignLiteralCell(creatorToken, ssId, OUT, "88");
+		 AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, OUT, REFERENCE);
+		 service.execute();
+	 }
+
+	 @Test(expected = CellOutOfBoundsException.class)
+	public void referenceToNonExistentCell() throws BubbleDocsException {
+		 AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, EMPTY, OUT);
 		 service.execute();
 	 }
 	 
 	 @Test(expected = UnauthorizedOperationException.class)
 	public void readerWritingCell() throws BubbleDocsException {
-		 AssignLiteralCell service = new AssignLiteralCell(readerToken, ssId, EMPTY, "88");
+		 AssignReferenceCell service = new AssignReferenceCell(readerToken, ssId, EMPTY, REFERENCE);
 		 service.execute();
 	 }
 
 	 @Test(expected = UnauthorizedOperationException.class)
 	public void notAllowedWritingCell() throws BubbleDocsException {
-		 AssignLiteralCell service = new AssignLiteralCell(notAllowedToken, ssId, EMPTY, "88");
+		 AssignReferenceCell service = new AssignReferenceCell(notAllowedToken, ssId, EMPTY, REFERENCE);
 		 service.execute();
 	 }
 }

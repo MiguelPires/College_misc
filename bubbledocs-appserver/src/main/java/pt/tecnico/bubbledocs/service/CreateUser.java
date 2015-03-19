@@ -4,8 +4,6 @@ import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 
-// add needed import declarations
-
 public class CreateUser extends BubbleDocsService {
 
     private String token;

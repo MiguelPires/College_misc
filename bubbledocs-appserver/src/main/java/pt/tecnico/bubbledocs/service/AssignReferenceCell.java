@@ -2,8 +2,6 @@ package pt.tecnico.bubbledocs.service;
 
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 
-// add needed import declarations
-
 public class AssignReferenceCell extends BubbleDocsService {
     private String result;
 

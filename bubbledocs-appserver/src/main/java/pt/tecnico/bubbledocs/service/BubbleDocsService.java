@@ -4,14 +4,11 @@ import pt.ist.fenixframework.Atomic;
 import pt.ist.fenixframework.FenixFramework;
 import pt.tecnico.bubbledocs.domain.ActiveUser;
 import pt.tecnico.bubbledocs.domain.Bubbledocs;
-import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
+import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
-import pt.tecnico.bubbledocs.exception.DuplicateUsernameException;
-import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
-
-// add needed import declarations
+import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 public abstract class BubbleDocsService {
 
@@ -63,5 +60,6 @@ public abstract class BubbleDocsService {
     {
         return getBubbledocs().getSpreadSheet(name);
     }
+    
 }
    

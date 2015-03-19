@@ -2,21 +2,22 @@ package pt.tecnico.bubbledocs;
 
 import java.util.ArrayList;
 
-import javax.transaction.*;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
 
-import org.jdom2.DataConversionException;
 import org.jdom2.Element;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
-import org.joda.time.*;
 
 import pt.ist.fenixframework.Atomic;
 import pt.ist.fenixframework.FenixFramework;
 import pt.ist.fenixframework.TransactionManager;
-import pt.tecnico.bubbledocs.domain.*;
+import pt.tecnico.bubbledocs.domain.Bubbledocs;
+import pt.tecnico.bubbledocs.domain.Spreadsheet;
+import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
-import pt.tecnico.bubbledocs.*;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 
 public class BubbleApplication {
@@ -107,28 +108,15 @@ public class BubbleApplication {
 	    	for(Spreadsheet s : u.getCreatedDocsSet()){
 	    	
 	    	    System.out.println (s.getName());
-	    		doc = exportToXML(s);
+	    		doc = bubbleapp.exportToXML(s);
 	    		docList.add(doc);
-	    		printDomainInXML(doc);
+	    		System.out.println(bubbleapp.getDomainInXML(doc));
 	    	}
 		} catch (UnknownBubbleDocsUserException e) {
 			System.out.println(e.getMessage());
 		}
     	
     	return docList;
-    }
-    
-    public static org.jdom2.Document exportToXML(Spreadsheet spreadsheet) throws ShouldNotExecuteException{
-    	org.jdom2.Document jdomDoc = new org.jdom2.Document();
-    	jdomDoc.setRootElement(spreadsheet.exportToXML());
-    	
-    	return jdomDoc;
-    }
-    
-    public static void printDomainInXML(org.jdom2.Document jdomDoc) {
-		XMLOutputter xml = new XMLOutputter();
-		xml.setFormat(Format.getPrettyFormat());
-		System.out.println(xml.outputString(jdomDoc));
     }
     
     @Atomic

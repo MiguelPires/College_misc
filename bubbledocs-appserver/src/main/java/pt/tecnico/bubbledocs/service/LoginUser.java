@@ -7,8 +7,6 @@ import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.exception.WrongPasswordException;
 
-// add needed import declarations
-
 public class LoginUser extends BubbleDocsService {
 
     private String userToken;

@@ -2,10 +2,11 @@ package pt.tecnico.bubbledocs.exception;
 
 public class ImportDocumentException extends RuntimeException {
 	public ImportDocumentException() {
-		// TODO Auto-generated constructor stub
+		// super()
 	}
 	
-	public void importDocException(){
-		System.out.println("ImportException");
+	public ImportDocumentException(String message)
+	{
+	    super(message);
 	}
 }

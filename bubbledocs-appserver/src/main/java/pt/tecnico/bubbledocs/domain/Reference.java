@@ -45,4 +45,13 @@ public class Reference extends Reference_Base {
     	super.delete();
 
 	}
+	
+	public boolean equals(Reference ref) throws ShouldNotExecuteException
+	{
+	    if (this.getReferedCell().equals(ref.getReferedCell()))
+	        return true;
+	    
+	    else
+	        return false;
+	}
 }

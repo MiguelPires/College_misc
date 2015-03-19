@@ -37,7 +37,7 @@ public class LoginUserTest extends BubbleDocsServiceTest {
     }
 
     @Test
-    public void success() throws BubbleDocsException {
+    public void success() {
         LoginUser service = new LoginUser(USERNAME, PASSWORD);
         service.execute();
         LocalTime currentTime = new LocalTime();
@@ -51,12 +51,10 @@ public class LoginUserTest extends BubbleDocsServiceTest {
 
         assertTrue("Access time in session not correctly set", difference >= 0);
         assertTrue("diference in seconds greater than expected", difference < 2);
-
-        
     }
 
     @Test
-    public void successLoginTwice() throws BubbleDocsException {
+    public void successLoginTwice() {
 
         LoginUser service = new LoginUser(USERNAME, PASSWORD);
 
@@ -74,14 +72,14 @@ public class LoginUserTest extends BubbleDocsServiceTest {
     }
 
     @Test(expected = UnknownBubbleDocsUserException.class)
-    public void loginUnknownUser() throws BubbleDocsException {
+    public void loginUnknownUser() {
             LoginUser service = new LoginUser("jp2", "jp");
             service.execute();
 
     }
 
     @Test(expected = WrongPasswordException.class)
-    public void loginUserWithinWrongPassword() throws BubbleDocsException {
+    public void loginUserWithinWrongPassword() {
             LoginUser service = new LoginUser(USERNAME, "jp2");
             service.execute();
 

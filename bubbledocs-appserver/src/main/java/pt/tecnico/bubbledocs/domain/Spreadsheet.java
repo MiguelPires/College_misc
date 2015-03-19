@@ -111,8 +111,8 @@ public class Spreadsheet extends Spreadsheet_Base {
 		element.setAttribute("ID",  Integer.toString(getID()));
 		element.setAttribute("name", getName());
 		
-		element.setAttribute("createdAt", ""+getCreatedAt());
-		element.setAttribute("modifiedAt", ""+getModifiedAt());
+		//element.setAttribute("createdAt", ""+getCreatedAt());
+		//element.setAttribute("modifiedAt", ""+getModifiedAt());
 
 		element.setAttribute("line",  Integer.toString(getLines()));
 		element.setAttribute("column",  Integer.toString(getColumns()));
@@ -145,15 +145,18 @@ public class Spreadsheet extends Spreadsheet_Base {
         }
       
 		
-		String createTimeString = spreadsheetElement.getAttribute("createdAt").getValue();
-		DateTime created = new DateTime(createTimeString, DateTimeZone.getDefault());
+	//	String createTimeString = spreadsheetElement.getAttribute("createdAt").getValue();
+	//	DateTime created = new DateTime(createTimeString, DateTimeZone.getDefault());
 		
-		String modifiedTimeString = spreadsheetElement.getAttribute("modifiedAt").getValue();
-		DateTime modified= new DateTime(modifiedTimeString, DateTimeZone.getDefault());
+	//	String modifiedTimeString = spreadsheetElement.getAttribute("modifiedAt").getValue();
+	//	DateTime modified= new DateTime(modifiedTimeString, DateTimeZone.getDefault());
 
 		setName(spreadsheetElement.getAttribute("name").getValue());
-		setCreatedAt(created);
-		setModifiedAt(modified);
+		
+		// alterar caso seja para importar o tempo
+        DateTime date = new DateTime(DateTimeZone.getDefault());
+        setCreatedAt(date);
+        setModifiedAt(date);
 		
 		Element cells = spreadsheetElement.getChild("cells");
 	

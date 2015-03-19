@@ -112,5 +112,16 @@ public class Cell extends Cell_Base {
     		else
     			return new Reference();    		
     	}
+    	
+    	public boolean equals(Cell cell) throws ShouldNotExecuteException
+    	{
+    	    if (this.getLine().equals(cell.getLine()) &&
+    	            this.getColumn().equals(cell.getColumn()) &&
+    	            this.getContent().equals(cell.getContent()))
+    	        return true;
+    	    
+    	    else
+    	        return false;
+    	}
 
 }

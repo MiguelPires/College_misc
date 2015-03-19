@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import pt.tecnico.bubbledocs.domain.User;
-import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
@@ -26,7 +25,7 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
     private String root;
 
     @Override
-    public void populate4Test() throws BubbleDocsException {
+    public void populate4Test() {
         createUser(USERNAME, PASSWORD, "António Rito Silva");
         User smf = createUser(USERNAME_TO_DELETE, "smf", "Sérgio Fernandes");
         createSpreadSheet(smf, USERNAME_TO_DELETE, 20, 20);
@@ -36,19 +35,14 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
 
     public void success() {
        
-        try {
-            DeleteUser service = new DeleteUser(root, USERNAME_TO_DELETE);
-            service.execute();
-            boolean deleted = getUserFromUsername(USERNAME_TO_DELETE) == null;
+        DeleteUser service = new DeleteUser(root, USERNAME_TO_DELETE);
+        service.execute();
+        boolean deleted = getUserFromUsername(USERNAME_TO_DELETE) == null;
 
-            assertTrue("user was not deleted", deleted);
+        assertTrue("user was not deleted", deleted);
 
-            assertNull("Spreadsheet was not deleted",
-                    getSpreadSheet(SPREADSHEET_NAME));
-        } catch (BubbleDocsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        assertNull("Spreadsheet was not deleted",
+                getSpreadSheet(SPREADSHEET_NAME));
     }
 
     /*
@@ -65,31 +59,31 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
      * and is in session Test if user and session are both deleted
      */
     @Test
-    public void successToDeleteIsInSession() throws BubbleDocsException {
+    public void successToDeleteIsInSession() {
         String token = addUserToSession(USERNAME_TO_DELETE);
         success();
         assertNull("Removed user but not removed from session", getUserFromSession(token));
     }
 
     @Test(expected = UnknownBubbleDocsUserException.class)
-    public void userToDeleteDoesNotExist() throws BubbleDocsException{
+    public void userToDeleteDoesNotExist() {
             new DeleteUser(root, USERNAME_DOES_NOT_EXIST).execute();
     }
 
     @Test(expected = UnauthorizedOperationException.class)
-    public void notRootUser() throws BubbleDocsException{
+    public void notRootUser() {
             String ars = addUserToSession(USERNAME);
             new DeleteUser(ars, USERNAME_TO_DELETE).execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
-    public void rootNotInSession() throws BubbleDocsException {
+    public void rootNotInSession() {
             removeUserFromSession(root);
             new DeleteUser(root, USERNAME_TO_DELETE).execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
-    public void notInSessionAndNotRoot() throws BubbleDocsException {
+    public void notInSessionAndNotRoot() {
         String ars = addUserToSession(USERNAME);
         removeUserFromSession(ars);
         new DeleteUser(ars, USERNAME_TO_DELETE).execute();
@@ -97,7 +91,7 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
     }
 
     @Test(expected = UserNotInSessionException.class)
-    public void accessUserDoesNotExist() throws BubbleDocsException{
+    public void accessUserDoesNotExist() {
         new DeleteUser(USERNAME_DOES_NOT_EXIST, USERNAME_TO_DELETE).execute();
     }
 }

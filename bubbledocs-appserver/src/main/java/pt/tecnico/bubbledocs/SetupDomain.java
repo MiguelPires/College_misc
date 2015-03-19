@@ -19,7 +19,7 @@ public class SetupDomain {
 		User ra = new User("ra", "Step Rabbit", "cor");
 		bubbleapp.addUsers(ra);
 
-		Spreadsheet doc = pf.createSpreadsheet(bubbleapp.getLastID()+1, "Notas ES", 300, 20); //constructor ? falta o creator pf
+		Spreadsheet doc = bubbleapp.createSpreadSheet(pf, "Notas ES", 300, 20); //constructor ? falta o creator pf
 		bubbleapp.addDocs(doc);
 		
 		doc.addCellContent(3, 4, new Literal(5));

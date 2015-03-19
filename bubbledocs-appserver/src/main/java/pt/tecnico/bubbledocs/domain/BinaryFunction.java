@@ -59,6 +59,16 @@ public class BinaryFunction extends BinaryFunction_Base {
     		return new Reference();
     }
     
+    public boolean equals (BinaryFunction function) throws ShouldNotExecuteException
+    {
+        if (this.toString().equals(function.toString()) && 
+                getFirstOperand().equals(function.getFirstOperand()) &&
+                getSecondOperand().equals(function.getSecondOperand()))
+                return true;
+        else
+            return false;
+    }
+    
 	public void delete ()
 	{
 		setFirstOperand(null);

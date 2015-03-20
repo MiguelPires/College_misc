@@ -46,4 +46,11 @@ public class Reference extends Reference_Base {
         else
             return false;
     }
+    
+    public String print(){
+    	int row = getReferedCell().getRow();
+    	int column = getReferedCell().getColumn();
+    	
+    	return row+";"+column;
+    }
 }

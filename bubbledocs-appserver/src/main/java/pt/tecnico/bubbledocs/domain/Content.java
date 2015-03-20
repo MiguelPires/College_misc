@@ -17,6 +17,10 @@ public class Content extends Content_Base {
         deleteDomainObject();
     }
 
+    public String print() throws ShouldNotExecuteException {
+        throw new ShouldNotExecuteException("Cannot access.");
+    }
+    
     public Integer getValue() throws ShouldNotExecuteException {
         throw new ShouldNotExecuteException("Cannot access.");
     }

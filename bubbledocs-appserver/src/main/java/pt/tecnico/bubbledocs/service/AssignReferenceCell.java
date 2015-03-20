@@ -5,7 +5,7 @@ import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 public class AssignReferenceCell extends BubbleDocsService {
     private String result;
 
-    public AssignReferenceCell(String tokenUser, int docId, String cellId,
+    public AssignReferenceCell(String userToken, int docId, String cellId,
             String reference) {
 	// add code here
     }

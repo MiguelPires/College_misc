@@ -16,6 +16,10 @@ public class Content extends Content_Base {
     	deleteDomainObject();
     }
     
+    public Integer getValue() throws ShouldNotExecuteException{
+    	throw new ShouldNotExecuteException("Cannot access.");
+    }
+    
     public Element exportToXML() throws ShouldNotExecuteException {
     		throw new ShouldNotExecuteException("exportToXML in the Content class shouldn't run.");
 	}

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.jdom2.Element;
 
 import pt.tecnico.bubbledocs.exception.ImportDocumentException;
+import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 
 
 public class User extends User_Base {

@@ -22,31 +22,28 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
     private static final String USERNAME_DOES_NOT_EXIST = "no-one";
     private static final String SPREADSHEET_NAME = "spread";
 
-    // the tokens for user root
     private String root;
-    
     private int ssId;
 
     @Override
     public void populate4Test() {
         createUser(USERNAME, PASSWORD, "António Rito Silva");
         User smf = createUser(USERNAME_TO_DELETE, "smf", "Sérgio Fernandes");
-        Spreadsheet ss = createSpreadSheet(smf, USERNAME_TO_DELETE, 20, 20);
+        Spreadsheet ss = createSpreadSheet(smf, SPREADSHEET_NAME, 20, 20);
 
         ssId = ss.getID();
         root = addUserToSession(ROOT_USERNAME);
     };
 
     public void success() {
-       
+
         DeleteUser service = new DeleteUser(root, USERNAME_TO_DELETE);
         service.execute();
         boolean deleted = getUserFromUsername(USERNAME_TO_DELETE) == null;
 
         assertTrue("user was not deleted", deleted);
 
-        assertNull("Spreadsheet was not deleted",
-                getSpreadSheet(ssId));
+        assertNull("Spreadsheet was not deleted", getSpreadSheet(ssId));
     }
 
     /*
@@ -71,19 +68,19 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
 
     @Test(expected = UnknownBubbleDocsUserException.class)
     public void userToDeleteDoesNotExist() {
-            new DeleteUser(root, USERNAME_DOES_NOT_EXIST).execute();
+        new DeleteUser(root, USERNAME_DOES_NOT_EXIST).execute();
     }
 
     @Test(expected = UnauthorizedOperationException.class)
     public void notRootUser() {
-            String ars = addUserToSession(USERNAME);
-            new DeleteUser(ars, USERNAME_TO_DELETE).execute();
+        String ars = addUserToSession(USERNAME);
+        new DeleteUser(ars, USERNAME_TO_DELETE).execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
     public void rootNotInSession() {
-            removeUserFromSession(root);
-            new DeleteUser(root, USERNAME_TO_DELETE).execute();
+        removeUserFromSession(root);
+        new DeleteUser(root, USERNAME_TO_DELETE).execute();
     }
 
     @Test(expected = UserNotInSessionException.class)

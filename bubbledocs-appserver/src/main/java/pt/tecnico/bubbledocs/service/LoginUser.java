@@ -12,7 +12,7 @@ public class LoginUser extends BubbleDocsService {
     private String userToken;
     private String username;
     private String password;
-    
+
     public LoginUser(String username, String password) {
         this.username = username;
         this.password = password;
@@ -20,23 +20,21 @@ public class LoginUser extends BubbleDocsService {
 
     @Override
     protected void dispatch() throws BubbleDocsException {
-        try{
+        try {
             ActiveUser loggedUser = getActiveUserByUsername(username);
             loggedUser.delete();
-        } catch (UserNotInSessionException e)
-        {
-           ; // not found if user isn't already logged in 
+        } catch (UserNotInSessionException e) {
+            ; // not found if user isn't already logged in 
         }
-            
+
         try {
             User user = getUser(username);
 
             if (!user.getPassword().equals(password))
                 throw new WrongPasswordException();
-                  
-            this.userToken = getBubbledocs().addUserToSession(user);      
-        } catch(UnknownBubbleDocsUserException e)
-        {
+
+            userToken = getBubbledocs().addUserToSession(user);
+        } catch (UnknownBubbleDocsUserException e) {
             throw new UnknownBubbleDocsUserException();
         }
     }

@@ -22,44 +22,44 @@ public class ExportDocumentTest extends BubbleDocsServiceTest{
 
     private Spreadsheet doc;
     private User as;
-    private String expectedFile = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+
-"<spreadsheet ID=\"1\" name=\"ES\" line=\"300\" column=\"20\">"+
-"  <cells>"+
-"    <cell line=\"3\" column=\"4\" protect=\"false\">"+
-"      <content>"+
-"        <literal value=\"5\" />"+
-"      </content>"+
-"    </cell>"+
-"    <cell line=\"5\" column=\"6\" protect=\"false\">"+
-"      <content>"+
-"        <ADD>"+
-"          <firstOperand>"+
-"            <literal value=\"2\" />"+
-"          </firstOperand>"+
-"          <secondOperand>"+
-"            <reference>"+
-"              <cell line=\"3\" column=\"4\" protect=\"false\">"+
-"                <content>"+
-"                  <literal value=\"5\" />"+
-"                </content>"+
-"              </cell>"+
-"            </reference>"+
-"          </secondOperand>"+
-"        </ADD>"+
-"      </content>"+
-"    </cell>"+
-"  </cells>"+
-"  <creator>"+
-"    <user username=\"ars\" name=\"António Rito Silva\" password=\"ars\" />"+
-"  </creator>"+
-"</spreadsheet>";
+    private String expectedFile = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
+"<spreadsheet ID=\"1\" name=\"ES\" row=\"30\" column=\"20\">\n"+
+"  <cells>\n"+
+"    <cell row=\"5\" column=\"6\" protect=\"false\">\n"+
+"      <content>\n"+
+"        <ADD>\n"+
+"          <firstOperand>\n"+
+"            <literal value=\"2\" />\n"+
+"          </firstOperand>\n"+
+"          <secondOperand>\n"+
+"            <reference>\n"+
+"              <cell row=\"3\" column=\"4\" protect=\"false\">\n"+
+"                <content>\n"+
+"                  <literal value=\"5\" />\n"+
+"                </content>\n"+
+"              </cell>\n"+
+"            </reference>\n"+
+"          </secondOperand>\n"+
+"        </ADD>\n"+
+"      </content>\n"+
+"    </cell>\n"+
+"    <cell row=\"3\" column=\"4\" protect=\"false\">\n"+
+"      <content>\n"+
+"        <literal value=\"5\" />\n"+
+"      </content>\n"+
+"    </cell>\n"+
+"  </cells>\n"+
+"  <creator>\n"+
+"    <user username=\"ars\" name=\"Antonio Rito Silva\" password=\"ars\" />\n"+
+"  </creator>\n"+
+"]/spreadsheet>\n";
     
     @Override
     public void populate4Test() throws BubbleDocsException {
 
-        as = createUser(USERNAME, PASSWORD, "António Rito Silva");
+        as = createUser(USERNAME, PASSWORD, "Antonio Rito Silva");
         ars = addUserToSession("ars");
-        doc = createSpreadSheet(as, "ES", 30, 100);
+        doc = createSpreadSheet(as, "ES", 30, 20);
 
          createUser("mp", "1234", "Miguel Pires");
          mp = addUserToSession("mp");
@@ -74,7 +74,7 @@ public class ExportDocumentTest extends BubbleDocsServiceTest{
         
         ExportDocument service = new ExportDocument(ars, doc.getID());
         service.execute();
-        assertEquals(expectedFile, service.getDocXML());       
+        assertEquals(expectedFile/*.getBytes()*/, service.getDocXML());       
         
     }
     

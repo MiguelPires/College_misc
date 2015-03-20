@@ -3,6 +3,7 @@ package pt.tecnico.bubbledocs.service;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
+import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 public class CreateUser extends BubbleDocsService {
 
@@ -10,9 +11,8 @@ public class CreateUser extends BubbleDocsService {
     private String username;
     private String password;
     private String name;
-    
-    public CreateUser(String userToken, String newUsername,
-            String password, String name) {
+
+    public CreateUser(String userToken, String newUsername, String password, String name) {
         this.token = userToken;
         this.username = newUsername;
         this.password = password;
@@ -22,11 +22,12 @@ public class CreateUser extends BubbleDocsService {
     @Override
     protected void dispatch() throws BubbleDocsException {
         User user = getUserByToken(token);
-        
-        if (user.isRoot())
+
+        if (!isLoggedIn(user))
+            throw new UserNotInSessionException();
+        else if (user.isRoot())
             createUser(username, name, password);
         else
             throw new UnauthorizedOperationException();
     }
 }
-

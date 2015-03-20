@@ -1,6 +1,6 @@
 package pt.tecnico.bubbledocs.exception;
 
-public class CellOutOfBoundsException extends Exception{
+public class CellOutOfBoundsException extends BubbleDocsException{
 	
 	public CellOutOfBoundsException (){
 		super();

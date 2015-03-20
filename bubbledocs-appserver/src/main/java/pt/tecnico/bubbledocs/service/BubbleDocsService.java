@@ -19,53 +19,56 @@ public abstract class BubbleDocsService {
     }
 
     protected abstract void dispatch() throws BubbleDocsException;
-    
-    public static Bubbledocs getBubbledocs ()
-    {
+
+    public static Bubbledocs getBubbledocs() {
         return FenixFramework.getDomainRoot().getBubbledocs();
     }
-    
+
     public static User createUser(String username, String name, String password) throws BubbleDocsException {
         return Bubbledocs.getInstance().createUser(username, name, password);
     }
-    
-    public static User getUser(String username) throws UnknownBubbleDocsUserException
-    {
+
+    public static User getUser(String username) throws UnknownBubbleDocsUserException {
         return getBubbledocs().getUser(username);
     }
-    
-    public static User getUserByToken(String token) throws UserNotInSessionException
-    {
+
+    public static User getUserByToken(String token) throws UserNotInSessionException {
         return getBubbledocs().getUserByToken(token);
     }
-    
-    public static ActiveUser getActiveUserByUsername(String username) throws UserNotInSessionException
-    {
+
+    public static ActiveUser getActiveUserByUsername(String username) throws UserNotInSessionException {
         return getBubbledocs().getActiveUserByUsername(username);
     }
-    
+
     public static String addUserToSession(String username) throws UnknownBubbleDocsUserException {
-    	return getBubbledocs().addUserToSession(username);
+        return getBubbledocs().addUserToSession(username);
     }
-    
-    public static void removeUserByToken(String token) throws UserNotInSessionException{
-    	getBubbledocs().removeUserByToken(token);
+
+    public static void removeUserByToken(String token) throws UserNotInSessionException {
+        getBubbledocs().removeUserByToken(token);
     }
-    
-    public static Spreadsheet createSpreadSheet(User user, String name, int row, int column) {
-        
-        return getBubbledocs().createSpreadSheet(user, name, row, column);
+
+    public static Spreadsheet createSpreadsheet(User user, String name, int row, int column) {
+
+        return getBubbledocs().createSpreadsheet(user, name, row, column);
     }
-    
-    public static Spreadsheet getSpreadsheet (int id)
-    {
-        return getBubbledocs().getSpreadSheet(id);
+
+    public static Spreadsheet getSpreadsheet(int id) {
+        return getBubbledocs().getSpreadsheet(id);
     }
-    
-    public static String exportToXML (int id) throws ShouldNotExecuteException
-    {
-        return getBubbledocs().exportToXML(id).toString();
+
+    public static String exportToXML(int id) throws ShouldNotExecuteException {
+        Bubbledocs app = getBubbledocs();
+        return app.getDomainInXML(app.exportToXML(id));
     }
-    
+
+    public static boolean isLoggedIn(User user) {
+        try {
+            getActiveUserByUsername(user.getUsername());
+            return true;
+        } catch (UserNotInSessionException e) {
+            return false;
+        }
+    }
+
 }
-   

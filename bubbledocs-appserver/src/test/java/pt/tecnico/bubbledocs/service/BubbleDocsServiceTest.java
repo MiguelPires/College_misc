@@ -14,8 +14,6 @@ import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
-// add needed import declarations
-
 public class BubbleDocsServiceTest {
 
     @Before
@@ -50,8 +48,7 @@ public class BubbleDocsServiceTest {
     }
 
     public Spreadsheet createSpreadSheet(User user, String name, int row, int column) {
-	
-    	return BubbleDocsService.createSpreadSheet(user, name, row, column);
+        return BubbleDocsService.createSpreadsheet(user, name, row, column);
     }
 
     // returns a spreadsheet whose name is equal to name
@@ -62,30 +59,29 @@ public class BubbleDocsServiceTest {
 
     // returns the user registered in the application whose username is equal to username
     public User getUserFromUsername(String username) {
-    	try{
-    		return BubbleDocsService.getUser(username);
-    	}catch(UnknownBubbleDocsUserException e){
-    		return null;
-    	}
+        try {
+            return BubbleDocsService.getUser(username);
+        } catch (UnknownBubbleDocsUserException e) {
+            return null;
+        }
     }
 
     // put a user into session and returns the token associated to it
     public String addUserToSession(String username) throws UnknownBubbleDocsUserException {
-    	return BubbleDocsService.addUserToSession(username);
+        return BubbleDocsService.addUserToSession(username);
     }
 
     // remove a user from session given its token
     public void removeUserFromSession(String token) throws UserNotInSessionException {
-    	BubbleDocsService.removeUserByToken(token);
+        BubbleDocsService.removeUserByToken(token);
 
     }
 
     // return the user registered in session whose token is equal to token
-    public User getUserFromSession(String token){
-        try{
+    public User getUserFromSession(String token) {
+        try {
             return BubbleDocsService.getUserByToken(token);
-        } catch (UserNotInSessionException e)
-        {
+        } catch (UserNotInSessionException e) {
             return null;
         }
     }

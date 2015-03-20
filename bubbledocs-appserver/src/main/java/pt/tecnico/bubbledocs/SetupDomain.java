@@ -19,7 +19,7 @@ public class SetupDomain {
 		User ra = new User("ra", "Step Rabbit", "cor");
 		bubbleapp.addUsers(ra);
 
-		Spreadsheet doc = bubbleapp.createSpreadSheet(pf, "Notas ES", 300, 20); 
+		Spreadsheet doc = bubbleapp.createSpreadsheet(pf, "Notas ES", 300, 20); 
 		bubbleapp.addDocs(doc);
 		
 		doc.addCellContent(3, 4, new Literal(5));

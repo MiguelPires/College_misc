@@ -24,12 +24,12 @@ class Spreadsheet{
 	String name;
 	DateTime createdAt;
 	DateTime modifiedAt;
-	Integer lines;
+	Integer rows;
 	Integer columns;
 }
 
 class Cell{
-	Integer line;
+	Integer row;
 	Integer column;
 	Boolean protect;
 }

@@ -33,7 +33,7 @@ public class LoginUserTest extends BubbleDocsServiceTest {
     // It must get this data from the session object of the application
     private LocalTime getLastAccessTimeInSession(String userToken) {
         ActiveUser user = getUserFromSession(userToken).getActiveUser();
-        return user.getLastAccess().toLocalTime(); 
+        return user.getLastAccess().toLocalTime();
     }
 
     @Test
@@ -41,13 +41,14 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         LoginUser service = new LoginUser(USERNAME, PASSWORD);
         service.execute();
         LocalTime currentTime = new LocalTime();
-    
+
         String token = service.getUserToken();
 
         User user = getUserFromSession(service.getUserToken());
         assertEquals(USERNAME, user.getUsername());
 
-        int difference = Seconds.secondsBetween(getLastAccessTimeInSession(token), currentTime).getSeconds();
+        int difference = Seconds.secondsBetween(getLastAccessTimeInSession(token), currentTime)
+                .getSeconds();
 
         assertTrue("Access time in session not correctly set", difference >= 0);
         assertTrue("diference in seconds greater than expected", difference < 2);
@@ -73,15 +74,15 @@ public class LoginUserTest extends BubbleDocsServiceTest {
 
     @Test(expected = UnknownBubbleDocsUserException.class)
     public void loginUnknownUser() {
-            LoginUser service = new LoginUser("jp2", "jp");
-            service.execute();
+        LoginUser service = new LoginUser("jp2", "jp");
+        service.execute();
 
     }
 
     @Test(expected = WrongPasswordException.class)
     public void loginUserWithinWrongPassword() {
-            LoginUser service = new LoginUser(USERNAME, "jp2");
-            service.execute();
+        LoginUser service = new LoginUser(USERNAME, "jp2");
+        service.execute();
 
     }
 }

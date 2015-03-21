@@ -11,7 +11,6 @@ import pt.ist.fenixframework.FenixFramework;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.DuplicateUsernameException;
 import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
-import pt.tecnico.bubbledocs.exception.InvalidSpreadsheetDimensionsException;
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
@@ -105,7 +104,6 @@ public class Bubbledocs extends Bubbledocs_Base {
         Spreadsheet spread = new Spreadsheet();
         spread.importFromXML(spreadsheetElement, this);
 
-        addDocs(spread);
         return spread;
     }
 
@@ -126,43 +124,47 @@ public class Bubbledocs extends Bubbledocs_Base {
     }
 
     public Spreadsheet createSpreadsheet(User user, String name, int rows, int columns) {
-        if (rows < 1 || columns < 1)
-            throw new InvalidSpreadsheetDimensionsException();
-
-        int id = getLastID() + 1;
-        setLastID(id);
-        Spreadsheet doc = new Spreadsheet(id, name, rows, columns, user);
-        addDocs(doc);
-        user.addCreatedDocs(doc);
-        user.addWritableDocs(doc);
-        return doc;
+    	return user.createSpreadsheet(name, rows, columns);
     }
 
     public ArrayList<Spreadsheet> getCreatedDocsByUser(User user, String name) {
-        return user.getCreatedDocs(name);
+        return user.getCreatedSpreadsheets(name);
     }
 
-    public void deleteDoc(Integer id) throws SpreadsheetNotFoundException {
-        for (Spreadsheet s : getDocsSet()) {
-            if (id.equals(s.getID())) {
-                deleteDoc(s);
-                return;
-            }
-        }
-        throw new SpreadsheetNotFoundException("No spreadsheet was found for the " + id.toString()
-                + " identifier.");
+    public void deleteSpreadsheet(Integer id) throws SpreadsheetNotFoundException {
+        getSpreadsheet(id).delete();
     }
 
     public void deleteDoc(Spreadsheet doc) {
         doc.delete();
-        removeDocs(doc);
     }
 
     public Spreadsheet getSpreadsheet(int id) {
-        for (Spreadsheet doc : getDocsSet()) {
-            if (doc.getID() == id)
-                return doc;
+        for (User user : getUsersSet()) {
+        	try {
+        		return user.getSpreadsheet(id);       	
+        	} catch (SpreadsheetNotFoundException e) {
+        		; // a spreadsheet nao pertence a este user
+        	}
         }
         return null;
+    }
+    
+    // por indicação do professor, não serão inseridas Spreadsheets com o mesmo nome
+    public Spreadsheet getSpreadsheet(String name) {
+    	for (User user : getUsersSet()) {
+    		try {
+        		return user.getSpreadsheet(name);       	
+        	} catch (SpreadsheetNotFoundException e) {
+        		; // a spreadsheet nao pertence a este user
+        	}        
+    	}
+        return null;
+    }
+    
+    public int getNewID(){
+    	int id = getLastID() + 1;
+        setLastID(id);        
+        return id;
     }
 }

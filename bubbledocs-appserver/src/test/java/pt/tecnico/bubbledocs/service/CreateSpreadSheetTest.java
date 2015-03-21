@@ -31,8 +31,7 @@ public class CreateSpreadSheetTest extends BubbleDocsServiceTest {
     public void success() {
         CreateSpreadSheet service = new CreateSpreadSheet(vany, SPNAME, ROWS, COL);
         service.execute();
-        int id = service.getID();
-        Spreadsheet createdSpreadsheet = getSpreadSheet(id);
+        Spreadsheet createdSpreadsheet = getSpreadSheet(SPNAME);
 
         assertEquals(SPNAME, createdSpreadsheet.getName());
         assertEquals(ROWS, createdSpreadsheet.getRows());

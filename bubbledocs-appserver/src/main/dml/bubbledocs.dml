@@ -77,18 +77,14 @@ relation UserContainsSpreadsheet{
 }
 
 relation SpreadsheetContainsUsers1{
-	Spreadsheet playsRole writableDocs{
-		multiplicity 0..*;
-	}
+	Spreadsheet playsRole writableDocs;
 	User playsRole writers{
 		multiplicity 0..*;
 	}
 }
 
 relation SpreadsheetContainsUsers2{
-	Spreadsheet playsRole readableDocs{
-		multiplicity 0..*;
-	}
+	Spreadsheet playsRole readableDocs;
 	User playsRole readers{
 		multiplicity 0..*;
 	}
@@ -139,15 +135,8 @@ relation BubbledocsContainsSession{
 }
 
 relation BubbledocsContainsUsers{
-	Bubbledocs playsRole forbiddenBubble1;
-	User playsRole users{
-		multiplicity 0..*;
-	}
-}
-
-relation BubbledocsContainsSpreadsheets{
 	Bubbledocs playsRole bubbleApp;
-	Spreadsheet playsRole docs{
+	User playsRole users{
 		multiplicity 0..*;
 	}
 }

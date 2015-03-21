@@ -133,12 +133,8 @@ public class BubbleApplication {
 
     @Atomic
     public static void deleteSpreadsheet(String username, String docName) {
-        for (Spreadsheet s : bubbleapp.getDocsSet()) {
-            if (s.getCreator().getUsername().equals(username) && s.getName().equals(docName)) {
-                bubbleapp.removeDocs(s);
-                s.delete();
-            }
-        }
+        User user = bubbleapp.getUser(username);
+        user.getSpreadsheet(docName).delete();
     }
 
     @Atomic

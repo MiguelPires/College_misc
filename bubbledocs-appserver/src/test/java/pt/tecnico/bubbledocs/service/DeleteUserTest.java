@@ -43,7 +43,7 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
 
         assertTrue("user was not deleted", deleted);
 
-        assertNull("Spreadsheet was not deleted", getSpreadSheet(ssId));
+        assertNull("Spreadsheet was not deleted", getSpreadSheet(SPREADSHEET_NAME));
     }
 
     /*

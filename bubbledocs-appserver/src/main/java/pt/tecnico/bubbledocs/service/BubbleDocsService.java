@@ -56,6 +56,10 @@ public abstract class BubbleDocsService {
     public static Spreadsheet getSpreadsheet(int id) {
         return getBubbledocs().getSpreadsheet(id);
     }
+    
+    public static Spreadsheet getSpreadsheet(String name) {
+        return getBubbledocs().getSpreadsheet(name);
+    }
 
     public static org.jdom2.Document exportToXML(int id) throws ShouldNotExecuteException {
         return getBubbledocs().exportToXML(id);

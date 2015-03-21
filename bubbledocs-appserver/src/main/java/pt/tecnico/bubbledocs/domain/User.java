@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import org.jdom2.Element;
 
 import pt.tecnico.bubbledocs.exception.ImportDocumentException;
+import pt.tecnico.bubbledocs.exception.InvalidSpreadsheetDimensionsException;
+import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 
 public class User extends User_Base {
 
@@ -18,26 +20,60 @@ public class User extends User_Base {
     public User() { 
         super();
     }
+    
+    @Override
+    public void addCreatedDocs(Spreadsheet doc) {
+    	if (doc.getRows() < 1 || doc.getColumns() < 1)
+            throw new InvalidSpreadsheetDimensionsException();
+    	
+       	super.addCreatedDocs(doc);
+    }
 
     @Override
-    public void setForbiddenBubble1(Bubbledocs forbiddenBubble1) {
-        forbiddenBubble1.addUsers(this);
+    public void setBubbleApp(Bubbledocs app) {
+        app.addUsers(this);
     }
     
-    public ArrayList<Spreadsheet> getCreatedDocs(String name) {
+    public Spreadsheet createSpreadsheet(String name, int rows, int columns) {
+        if (rows < 1 || columns < 1)
+            throw new InvalidSpreadsheetDimensionsException();
+
+        Spreadsheet doc = new Spreadsheet(getBubbleApp().getNewID(), name, rows, columns, this);
+        addCreatedDocs(doc);
+        return doc;
+    }
+    
+    public ArrayList<Spreadsheet> getCreatedSpreadsheets(String name) {
         ArrayList<Spreadsheet> documents = new ArrayList<Spreadsheet>();
         for (Spreadsheet doc : this.getCreatedDocsSet())
             if (doc.getName().equals(name))
                 documents.add(doc);
         return documents;
     }
+    
+    public Spreadsheet getSpreadsheet(int id) {
+    	for (Spreadsheet spreadsheet : this.getCreatedDocsSet()) {
+    		if (spreadsheet.getID() == id)
+                return spreadsheet;
+    	}
+    	throw new SpreadsheetNotFoundException("No spreadsheet was found for the " + id
+                + " identifier.");
+    }
+    
+    public Spreadsheet getSpreadsheet(String name) {
+    	for (Spreadsheet spreadsheet : this.getCreatedDocsSet()) {
+    		if (spreadsheet.getName().equals(name))
+                return spreadsheet;
+    	}
+    	throw new SpreadsheetNotFoundException("No spreadsheet was found for the \"" + name
+                + "\" name.");
+    }
 
     public void importFromXML(Element userElement) throws ImportDocumentException {
-
         setUsername(userElement.getAttribute("username").getValue());
         setName(userElement.getAttribute("name").getValue());
         setPassword(userElement.getAttribute("password").getValue());
-
+        
     }
 
     public Element exportToXML() {
@@ -53,15 +89,12 @@ public class User extends User_Base {
     public void delete() {
         for (Spreadsheet doc : getCreatedDocsSet()) {
             removeCreatedDocs(doc);
-            removeWritableDocs(doc);
             doc.delete();
         }
-
-        for (Spreadsheet doc : getReadableDocsSet()) {
-            removeReadableDocs(doc);
-        }
-
-        super.setForbiddenBubble1(null);
+        
+        setWritableDocs(null);
+        setReadableDocs(null);
+        super.setBubbleApp(null);
 
         ActiveUser actUser = getActiveUser();
 
@@ -71,7 +104,6 @@ public class User extends User_Base {
         setActiveUser(null);
         deleteDomainObject();
     }
-
 
     public boolean isRoot() {
         if (getUsername().equals("root"))

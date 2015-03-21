@@ -26,14 +26,18 @@ public class Spreadsheet extends Spreadsheet_Base {
         setName(name);
         setRows(rows);
         setColumns(columns);
-        setCreator(creator);
+        super.setCreator(creator);
 
         DateTime date = new DateTime(DateTimeZone.getDefault());
         setCreatedAt(date);
         setModifiedAt(date);
     }
 
-
+    @Override
+    public void setCreator(User creator) {
+    	creator.addCreatedDocs(this);
+    	super.setCreator(creator);
+    }
 
     public Cell getCell(Integer row, Integer column) {
 
@@ -113,19 +117,18 @@ public class Spreadsheet extends Spreadsheet_Base {
             // A spreadsheet foi removida pelo lado do user
         }
 
-        setCreator(null);
+        super.setCreator(null);
 
         for (User u : getWritersSet()) {
-            u.removeWritableDocs(this);
+            u.setWritableDocs(null);
             removeWriters(u);
         }
 
         for (User u : getReadersSet()) {
-            u.removeReadableDocs(this);
+            u.setReadableDocs(null);
             removeReaders(u);
         }
 
-        setBubbleApp(null);
         deleteDomainObject();
     }
 
@@ -156,9 +159,8 @@ public class Spreadsheet extends Spreadsheet_Base {
 
     public void importFromXML(Element spreadsheetElement, Bubbledocs app) {
 
-        setBubbleApp(app);
         try {
-            setID(spreadsheetElement.getAttribute("ID").getIntValue());
+            setID(app.getNewID());
             setRows(spreadsheetElement.getAttribute("row").getIntValue());
             setColumns(spreadsheetElement.getAttribute("column").getIntValue());
         } catch (DataConversionException e) {
@@ -188,7 +190,7 @@ public class Spreadsheet extends Spreadsheet_Base {
 
         User tempUser = new User();
         tempUser.importFromXML(crt.getChild("user"));
-        User existingUser = getBubbleApp().getUser(tempUser.getUsername());
+        User existingUser = app.getUser(tempUser.getUsername());
         tempUser.delete();
 
         existingUser.addCreatedDocs(this);

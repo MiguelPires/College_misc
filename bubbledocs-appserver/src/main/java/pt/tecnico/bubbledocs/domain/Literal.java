@@ -36,11 +36,4 @@ public class Literal extends Literal_Base {
     public void delete() {
         super.delete();
     }
-
-    public boolean equals(Literal lit) {
-        if (this.getValue().equals(lit.getValue()))
-            return true;
-        else
-            return false;
-    }
 }

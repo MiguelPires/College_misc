@@ -57,9 +57,13 @@ public abstract class BubbleDocsService {
         return getBubbledocs().getSpreadsheet(id);
     }
 
-    public static String exportToXML(int id) throws ShouldNotExecuteException {
-        Bubbledocs app = getBubbledocs();
-        return app.getDomainInXML(app.exportToXML(id));
+    public static org.jdom2.Document exportToXML(int id) throws ShouldNotExecuteException {
+        return getBubbledocs().exportToXML(id);
+    }
+    
+    public static Spreadsheet importFromXML (org.jdom2.Document xml)
+    {
+        return getBubbledocs().importFromXML(xml.getRootElement());
     }
 
     public static boolean isLoggedIn(User user) {
@@ -70,5 +74,4 @@ public abstract class BubbleDocsService {
             return false;
         }
     }
-
 }

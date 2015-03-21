@@ -20,7 +20,7 @@ public class Content extends Content_Base {
     public String print() throws ShouldNotExecuteException {
         throw new ShouldNotExecuteException("Cannot access.");
     }
-    
+
     public Integer getValue() throws ShouldNotExecuteException {
         throw new ShouldNotExecuteException("Cannot access.");
     }
@@ -31,9 +31,5 @@ public class Content extends Content_Base {
 
     public void importFromXML(Element cellElement) throws ImportDocumentException {
         throw new ImportDocumentException();
-    }
-
-    public boolean equals(Content content) throws ShouldNotExecuteException {
-        throw new ShouldNotExecuteException("Equals method in Content class");
     }
 }

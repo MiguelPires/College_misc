@@ -34,4 +34,8 @@ public class Addition extends Addition_Base {
     public void delete() {
         super.delete();
     }
+
+    public Integer getValue() {
+        return getFirstOperand().getValue() + getSecondOperand().getValue();
+    }
 }

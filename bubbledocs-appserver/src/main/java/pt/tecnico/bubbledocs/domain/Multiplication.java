@@ -29,4 +29,8 @@ public class Multiplication extends Multiplication_Base {
     public void delete() {
         super.delete();
     }
+    
+    public Integer getValue() {
+        return getFirstOperand().getValue() * getSecondOperand().getValue();
+    }
 }

@@ -86,4 +86,7 @@ public class BubbleDocsServiceTest {
         }
     }
 
+    public Spreadsheet importFromXML(org.jdom2.Document doc) {
+        return BubbleDocsService.importFromXML(doc);
+    }
 }

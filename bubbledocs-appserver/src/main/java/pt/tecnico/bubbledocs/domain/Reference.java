@@ -40,17 +40,7 @@ public class Reference extends Reference_Base {
         super.delete();
     }
 
-    public boolean equals(Reference ref) throws ShouldNotExecuteException {
-        if (this.getReferedCell().equals(ref.getReferedCell()))
-            return true;
-        else
-            return false;
-    }
-    
-    public String print(){
-    	int row = getReferedCell().getRow();
-    	int column = getReferedCell().getColumn();
-    	
-    	return row+";"+column;
+    public Integer getValue() {
+        return getReferedCell().getValue();
     }
 }

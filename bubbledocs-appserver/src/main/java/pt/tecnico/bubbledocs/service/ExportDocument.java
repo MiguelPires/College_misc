@@ -8,11 +8,11 @@ import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 public class ExportDocument extends BubbleDocsService {
 
-    private String docXML;
+    private  org.jdom2.Document docXML;
     private String token;
     private int docId;
 
-    public String getDocXML() {
+    public  org.jdom2.Document getDocXML() {
         return docXML;
     }
 

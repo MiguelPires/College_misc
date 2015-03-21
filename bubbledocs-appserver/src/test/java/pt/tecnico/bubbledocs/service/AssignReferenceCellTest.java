@@ -78,36 +78,36 @@ public class AssignReferenceCellTest extends BubbleDocsServiceTest {
 
         assertEquals("19", service1.getResult());
         assertEquals("19", service2.getResult());
-        assertNull("Cell has content.", service2.getResult());
+        assertNull("Cell has content.", service3.getResult());
     }
 
     @Test(expected = UnauthorizedOperationException.class)
-    public void creatorAccessToProtectedCell() throws BubbleDocsException {
+    public void creatorAccessToProtectedCell() {
         AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, PROTECTED,
                 REFERENCE);
         service.execute();
     }
 
     @Test(expected = CellOutOfBoundsException.class)
-    public void accessToNonExistentCell() throws BubbleDocsException {
+    public void accessToNonExistentCell() {
         AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, OUT, REFERENCE);
         service.execute();
     }
 
     @Test(expected = CellOutOfBoundsException.class)
-    public void referenceToNonExistentCell() throws BubbleDocsException {
+    public void referenceToNonExistentCell() {
         AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, EMPTY, OUT);
         service.execute();
     }
 
     @Test(expected = UnauthorizedOperationException.class)
-    public void readerWritingCell() throws BubbleDocsException {
+    public void readerWritingCell() {
         AssignReferenceCell service = new AssignReferenceCell(readerToken, ssId, EMPTY, REFERENCE);
         service.execute();
     }
 
     @Test(expected = UnauthorizedOperationException.class)
-    public void notAllowedWritingCell() throws BubbleDocsException {
+    public void notAllowedWritingCell() {
         AssignReferenceCell service = new AssignReferenceCell(notAllowedToken, ssId, EMPTY,
                 REFERENCE);
         service.execute();

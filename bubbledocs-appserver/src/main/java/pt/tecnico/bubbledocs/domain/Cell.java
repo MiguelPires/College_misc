@@ -1,12 +1,13 @@
 package pt.tecnico.bubbledocs.domain;
 
-import java.util.*;
+import java.util.List;
+
+import org.jdom2.DataConversionException;
+import org.jdom2.Element;
 
 import pt.tecnico.bubbledocs.exception.ImportDocumentException;
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
-
-import org.jdom2.Element;
-import org.jdom2.DataConversionException;
+import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 
 public class Cell extends Cell_Base {
 
@@ -25,13 +26,20 @@ public class Cell extends Cell_Base {
         super();
         setRow(row);
         setColumn(column);
-        setContent(content);
+        super.setContent(content);
         setProtect(false);
     }
-    
+
     @Override
     public void setForbiddenCells(Spreadsheet forbiddenCells) {
         forbiddenCells.getCell(getRow(), getColumn());
+    }
+
+    @Override
+    public void setContent(Content content) {
+        if (this.getProtect())
+            throw new UnauthorizedOperationException();
+        super.setContent(content);
     }
 
     public void delete() {
@@ -73,17 +81,12 @@ public class Cell extends Cell_Base {
         Element content = cellElement.getChild("content");
         Content c = new Content();
         List<Element> child = content.getChildren();
-        for (Element el : child) {
-            content = el;
-            c = getXMLtype(el.getName());
-        }
 
-        try {
-            c.importFromXML(content);
-            setContent(c);
-        } catch (ImportDocumentException e) {
-            setContent(new Content());
-        }
+        content = child.get(0);
+        c = getXMLtype(child.get(0).getName());
+
+        c.importFromXML(content);
+        setContent(c);
 
         try {
             setRow(cellElement.getAttribute("row").getIntValue());
@@ -108,12 +111,12 @@ public class Cell extends Cell_Base {
             return new Reference();
     }
 
-    public boolean equals(Cell cell) throws ShouldNotExecuteException {
-        if (this.getRow().equals(cell.getRow()) && this.getColumn().equals(cell.getColumn())
-                && this.getContent().equals(cell.getContent()))
-            return true;
+    public Integer getValue() {
+        Content content = getContent();
 
+        if (content == null)
+            return null;
         else
-            return false;
+            return content.getValue();
     }
 }

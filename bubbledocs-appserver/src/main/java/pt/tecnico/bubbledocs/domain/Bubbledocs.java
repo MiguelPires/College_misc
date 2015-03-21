@@ -101,11 +101,12 @@ public class Bubbledocs extends Bubbledocs_Base {
         return getSession().getActiveUserByUsername(username);
     }
 
-    public void importFromXML(Element spreadsheetElement) {
+    public Spreadsheet importFromXML(Element spreadsheetElement) {
         Spreadsheet spread = new Spreadsheet();
         spread.importFromXML(spreadsheetElement, this);
 
         addDocs(spread);
+        return spread;
     }
 
     public org.jdom2.Document exportToXML(Spreadsheet spreadsheet) throws ShouldNotExecuteException {

@@ -28,4 +28,8 @@ public class Subtraction extends Subtraction_Base {
     public void delete() {
         super.delete();
     }
+    
+    public Integer getValue() {
+        return getFirstOperand().getValue() - getSecondOperand().getValue();
+    }
 }

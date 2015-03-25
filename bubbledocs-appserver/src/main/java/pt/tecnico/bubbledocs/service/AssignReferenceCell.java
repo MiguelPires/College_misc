@@ -10,6 +10,10 @@ import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 public class AssignReferenceCell extends BubbleDocsService {
     private int docId;
+    private int cellRow;
+    private int cellColumn;
+    private int referenceRow;
+    private int referenceColumn;
     
     private String result;
     private String cellId;
@@ -33,13 +37,17 @@ public class AssignReferenceCell extends BubbleDocsService {
         Spreadsheet doc = getBubbledocs().getSpreadsheet(docId);
         
         if (doc.getCreator().equals(user) || doc.isWriter(user.getUsername())) {
-            String[] cellCoordinates = cellId.split(";");
-            int cellRow = Integer.parseInt(cellCoordinates[0]);
-            int cellColumn = Integer.parseInt(cellCoordinates[1]);
+        	try {
+        		String[] cellCoordinates = cellId.split(";");
+        		cellRow = Integer.parseInt(cellCoordinates[0]);
+        		cellColumn = Integer.parseInt(cellCoordinates[1]);
 
-            String[] referenceCoordinates = reference.split(";");
-            int referenceRow = Integer.parseInt(referenceCoordinates[0]);
-            int referenceColumn = Integer.parseInt(referenceCoordinates[1]);
+        		String[] referenceCoordinates = reference.split(";");
+        		referenceRow = Integer.parseInt(referenceCoordinates[0]);
+        		referenceColumn = Integer.parseInt(referenceCoordinates[1]);
+        	} catch (Exception e) {
+        		throw new UnauthorizedOperationException("Wrong content " + reference + ".");
+        	}
             
             Cell reference = doc.getCell(referenceRow, referenceColumn);
 

@@ -142,12 +142,12 @@ public class Bubbledocs extends Bubbledocs_Base {
     public Spreadsheet getSpreadsheet(int id) {
         for (User user : getUsersSet()) {
         	try {
-        		return user.getSpreadsheet(id);       	
+        		return user.getSpreadsheet(id); 
         	} catch (SpreadsheetNotFoundException e) {
-        		; // a spreadsheet nao pertence a este user
+        		;
         	}
         }
-        return null;
+        throw new SpreadsheetNotFoundException("Spreadsheet " + id + " not found"); // a spreadsheet nao pertence a este user
     }
     
     // por indicação do professor, não serão inseridas Spreadsheets com o mesmo nome

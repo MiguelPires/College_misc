@@ -8,6 +8,7 @@ import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
+import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
@@ -53,7 +54,7 @@ public abstract class BubbleDocsService {
         return getBubbledocs().createSpreadsheet(user, name, row, column);
     }
 
-    public static Spreadsheet getSpreadsheet(int id) {
+    public static Spreadsheet getSpreadsheet(int id) throws SpreadsheetNotFoundException {
         return getBubbledocs().getSpreadsheet(id);
     }
     

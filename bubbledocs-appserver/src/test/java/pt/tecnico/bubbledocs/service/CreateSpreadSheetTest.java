@@ -8,6 +8,7 @@ import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.EmptySpreadSheetNameException;
 import pt.tecnico.bubbledocs.exception.InvalidSpreadsheetDimensionsException;
+import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 
 public class CreateSpreadSheetTest extends BubbleDocsServiceTest {
@@ -50,6 +51,13 @@ public class CreateSpreadSheetTest extends BubbleDocsServiceTest {
     @Test(expected = InvalidSpreadsheetDimensionsException.class)
     public void negativeDimensions() {
         CreateSpreadSheet service = new CreateSpreadSheet(vany, "Negative", -5, 1);
+        service.execute();
+    }
+    
+    @Test(expected = UserNotInSessionException.class)
+    public void accessUsernameNotExist() {
+        removeUserFromSession(vany);
+        CreateSpreadSheet service = new CreateSpreadSheet(vany, SPNAME, ROWS, COL);
         service.execute();
     }
 }

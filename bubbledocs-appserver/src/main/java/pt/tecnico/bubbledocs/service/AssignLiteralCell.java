@@ -16,7 +16,8 @@ public class AssignLiteralCell extends BubbleDocsService {
     private int docId;
     private int row;
     private int column;
-
+    private int l;
+    
     public AssignLiteralCell(String userToken, int docId, String cellId, String literal) {
         this.token = userToken;
         this.cellId = cellId;
@@ -42,12 +43,18 @@ public class AssignLiteralCell extends BubbleDocsService {
             throw new UserNotInSessionException();
 
         Spreadsheet ss = getSpreadsheet(docId);
-
+        
         if (ss.getCreator().equals(user) || ss.isWriter(user.getUsername())) {
             row = this.getRow(cellId);
             column = this.getColumn(cellId);
 
-            Literal content = new Literal(Integer.parseInt(literal));
+            try {
+            	l = Integer.parseInt(literal);
+            } catch (Exception e) {
+            	throw new UnauthorizedOperationException("Wrong content " + literal + ".");
+            }
+            
+            Literal content = new Literal(l);
             ss.addCellContent(row, column, content);
 
             Cell cell = ss.getCell(row, column);

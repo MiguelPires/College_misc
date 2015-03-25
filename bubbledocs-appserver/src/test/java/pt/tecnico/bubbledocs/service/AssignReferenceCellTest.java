@@ -12,7 +12,9 @@ import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.CellOutOfBoundsException;
+import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
+import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 public class AssignReferenceCellTest extends BubbleDocsServiceTest {
 
@@ -66,19 +68,19 @@ public class AssignReferenceCellTest extends BubbleDocsServiceTest {
 
     @Test
     public void success() throws BubbleDocsException {
-
+        Integer test1 = 19;
+         
         AssignReferenceCell service1 = new AssignReferenceCell(creatorToken, ssId, FULL, REFERENCE);
         service1.execute();
+        assertEquals(test1, getSpreadSheet(SPREADSHEET).getCell(4, 2).getValue());
 
         AssignReferenceCell service2 = new AssignReferenceCell(writerToken, ssId, EMPTY, REFERENCE);
         service2.execute();
+        assertEquals(test1, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
 
         AssignReferenceCell service3 = new AssignReferenceCell(writerToken, ssId, EMPTY, PROTECTED);
         service3.execute();
-
-        assertEquals("19", service1.getResult());
-        assertEquals("19", service2.getResult());
-        assertNull("Cell has content.", service3.getResult());
+        assertNull("Cell has content.", getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
     }
 
     @Test(expected = UnauthorizedOperationException.class)
@@ -110,6 +112,26 @@ public class AssignReferenceCellTest extends BubbleDocsServiceTest {
     public void notAllowedWritingCell() {
         AssignReferenceCell service = new AssignReferenceCell(notAllowedToken, ssId, EMPTY,
                 REFERENCE);
+        service.execute();
+    }
+    
+    @Test(expected = SpreadsheetNotFoundException.class)
+    public void spreadSheetNotExist() throws BubbleDocsException {
+        AssignReferenceCell service = new AssignReferenceCell(writerToken, 100, EMPTY, REFERENCE);
+        service.execute();
+    }
+    
+    @Test(expected = UnauthorizedOperationException.class)
+    public void invalidValue() throws BubbleDocsException {
+        AssignReferenceCell service = new AssignReferenceCell(writerToken, ssId, EMPTY, "ola;adeus");
+        service.execute();
+    }
+    
+    @Test(expected = UserNotInSessionException.class)
+    public void accessUsernameNotExist() {
+        removeUserFromSession(creatorToken);
+        AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, EMPTY, REFERENCE);
+
         service.execute();
     }
 }

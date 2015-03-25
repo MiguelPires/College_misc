@@ -14,7 +14,9 @@ import pt.tecnico.bubbledocs.domain.Reference;
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
+import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
+import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 public class ExportDocumentTest extends BubbleDocsServiceTest {
     private String ars;
@@ -69,6 +71,19 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
     @Test(expected = UnauthorizedOperationException.class)
     public void unauthorizedExport() throws BubbleDocsException {
         ExportDocument service = new ExportDocument(js, docs.get(1).getID());
+        service.execute();
+    }
+    
+    @Test(expected = SpreadsheetNotFoundException.class)
+    public void spreadSheetNotExist() throws BubbleDocsException {
+    	ExportDocument service = new ExportDocument(ars, 100);
+        service.execute();
+    }
+    
+    @Test(expected = UserNotInSessionException.class)
+    public void accessUsernameNotExist() {
+        removeUserFromSession(ars);
+        ExportDocument service = new ExportDocument(ars, docs.get(0).getID());
         service.execute();
     }
 }

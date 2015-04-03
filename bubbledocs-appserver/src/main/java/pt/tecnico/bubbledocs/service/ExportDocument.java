@@ -1,5 +1,8 @@
 package pt.tecnico.bubbledocs.service;
 
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
@@ -11,6 +14,18 @@ public class ExportDocument extends BubbleDocsService {
     private  org.jdom2.Document docXML;
     private String token;
     private int docId;
+    private byte[] XMLByte;
+
+    public byte[] getXMLByte() {
+    	return XMLByte;
+    }
+    
+    public void convertToBytes(){
+    	XMLOutputter xml = new XMLOutputter();
+        xml.setFormat(Format.getPrettyFormat());
+        String str = xml.outputString(docXML);
+        XMLByte = str.getBytes();
+    }
 
     public  org.jdom2.Document getDocXML() {
         return docXML;
@@ -34,6 +49,7 @@ public class ExportDocument extends BubbleDocsService {
                 || ss.isReader(user.getUsername())) {
 
             docXML = exportToXML(docId);
+            convertToBytes();
 
         } else
             throw new UnauthorizedOperationException();

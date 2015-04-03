@@ -5,6 +5,11 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
+import mockit.Mock;
+import mockit.MockUp;
+import mockit.Mocked;
+import mockit.Expectations;
+
 import org.junit.Test;
 
 import pt.tecnico.bubbledocs.domain.Addition;
@@ -25,9 +30,9 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
     private static final String USERNAME = "ars";
     private static final String PASSWORD = "ars";
 
-    private List<Spreadsheet> docs = new ArrayList<Spreadsheet>();;
+    private List<Spreadsheet> docs = new ArrayList<Spreadsheet>();
     private User as;
-
+    
     @Override
     public void populate4Test() throws BubbleDocsException {
 
@@ -36,6 +41,7 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
 
         createUser("js", "1234", "João Sheepires");
         js = addUserToSession("js");
+
 
         docs.add(createSpreadSheet(as, "ES", 30, 20));
         docs.add(createSpreadSheet(as, "ES", 30, 20));
@@ -48,10 +54,17 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
 
     @Test
     public void success() throws BubbleDocsException {
-
-        ExportDocument service = new ExportDocument(ars, docs.get(0).getID());
+    	new MockUp<ExportDocument>() {
+    		   @SuppressWarnings("unused")
+    		   @Mock
+    		   public org.jdom2.Document getDocXML(){
+    		    return exportToXML(docs.get(1).getID());
+    		   }
+    		  };
+    		  
+    	ExportDocument service = new ExportDocument(ars, docs.get(0).getID());    
         service.execute();
-
+          
         Spreadsheet doc = importFromXML(service.getDocXML());
         Spreadsheet expected = docs.get(1);
 
@@ -70,13 +83,25 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
 
     @Test(expected = UnauthorizedOperationException.class)
     public void unauthorizedExport() throws BubbleDocsException {
-        ExportDocument service = new ExportDocument(js, docs.get(1).getID());
+    	ExportDocument service = new ExportDocument(js, docs.get(1).getID());
+        
+        new Expectations(service){{
+        	service.execute();
+        	result = new UnauthorizedOperationException();
+        }};
+
         service.execute();
     }
     
     @Test(expected = SpreadsheetNotFoundException.class)
     public void spreadSheetNotExist() throws BubbleDocsException {
     	ExportDocument service = new ExportDocument(ars, 100);
+    	
+    	 new Expectations(service){{
+        	service.execute();
+        	result = new SpreadsheetNotFoundException();
+        }};
+        
         service.execute();
     }
     
@@ -84,6 +109,12 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
     public void accessUsernameNotExist() {
         removeUserFromSession(ars);
         ExportDocument service = new ExportDocument(ars, docs.get(0).getID());
+        
+        new Expectations(service){{
+        	service.execute();
+        	result = new UserNotInSessionException();
+        }};
+        
         service.execute();
     }
 }

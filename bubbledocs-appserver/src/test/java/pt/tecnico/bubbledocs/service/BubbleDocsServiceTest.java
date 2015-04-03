@@ -3,6 +3,8 @@ package pt.tecnico.bubbledocs.service;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 
+import mockit.Mocked;
+
 import org.junit.After;
 import org.junit.Before;
 
@@ -85,7 +87,11 @@ public class BubbleDocsServiceTest {
             return null;
         }
     }
-
+    
+    public org.jdom2.Document exportToXML(int id) {
+        return BubbleDocsService.exportToXML(id);
+    }
+    
     public Spreadsheet importFromXML(org.jdom2.Document doc) {
         return BubbleDocsService.importFromXML(doc);
     }

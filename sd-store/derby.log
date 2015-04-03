@@ -1,6 +1,6 @@
 ----------------------------------------------------------------
-2015-03-25 19:12:52.195 GMT:
- Booting Derby version The Apache Software Foundation - Apache Derby - 10.4.2.0 - (689064): instance a816c00e-014c-5259-fc2d-00000d3826b0
-on database directory C:\Users\David\Desktop\ES\Project\T_03_59_67-project\sd-store\target\juddi-derby-test-db  
+2015-04-01 16:25:25.010 GMT:
+ Booting Derby version The Apache Software Foundation - Apache Derby - 10.4.2.0 - (689064): instance a816c00e-014c-75cd-30be-000008cfb150
+on database directory C:\Users\David\Desktop\SD\Lab04\SDStore\target\juddi-derby-test-db  
 
 Database Class Loader started - derby.database.classpath=''

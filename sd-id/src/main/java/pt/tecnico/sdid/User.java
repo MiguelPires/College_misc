@@ -25,7 +25,7 @@ public class User {
 	}
 
 	public void setEmail(String email) throws InvalidEmail_Exception {
-    	Pattern p = Pattern.compile("[A-Za-z0-9_\\.]@[A-Za-z0-9\\.]");
+    	Pattern p = Pattern.compile("[A-Za-z0-9_\\.]*@[A-Za-z0-9\\.]*");
     	Matcher m = p.matcher(email);
     	if (m.matches()) {
     		this.email = email;

@@ -1,5 +1,6 @@
 package pt.tecnico.sdid;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,17 +30,6 @@ public class SDIdImpl implements SDId {
     public List<User> getUsers() {
         return users;
     }
-    
-    public User getUser(String userId) throws UserDoesNotExist {
-    	for (User user : getUsers()) {
-            if (user.getUserId().equals(userId)) {
-                return user;
-            }
-        }
-    	UsernameProblem up = new UsernameProblem();
-    	up.setUserId(userId);
-		throw new UserDoesNotExist("User "+ userId + " not found.", up); 	
-    }
 
     public void setUsers(List<User> users) {
         this.users = users;
@@ -47,6 +37,17 @@ public class SDIdImpl implements SDId {
 
     public SDIdImpl() {
         setUsers(new ArrayList<User>());
+    }
+
+    public User getUser(String userId) throws UserDoesNotExist {
+        for (User user : getUsers()) {
+            if (user.getUserId().equals(userId)) {
+                return user;
+            }
+        }
+        UsernameProblem up = new UsernameProblem();
+        up.setUserId(userId);
+        throw new UserDoesNotExist("User " + userId + " not found.", up);
     }
 
     public void createUser(CreateUser parameters) throws EmailAlreadyExists_Exception,
@@ -66,25 +67,26 @@ public class SDIdImpl implements SDId {
     }
 
     public byte[] requestAuthentication(String userId, byte[] reserved) throws AuthReqFailed_Exception {
-    	byte[] trueByte = new byte[] {(byte)1};
-    	try {
-    		User user = getUser(userId);
-    		byte[] password = user.getPassword().getBytes();
-    		if (Arrays.equals(reserved, password)){
-    			return trueByte;
-    		}
-    		else {
-    			AuthReqFailed arf = new AuthReqFailed();
-    			JAXBElement<byte[]> element= (new ObjectFactory()).createAuthReqFailedReserved(reserved);
-    			arf.setReserved(element);
-    			throw new AuthReqFailed_Exception("Wrong password.", arf);
-    		}
-    	} catch (UserDoesNotExist e) {
-    		byte[] userByte = userId.getBytes();
-    		AuthReqFailed arf = new AuthReqFailed();
-			JAXBElement<byte[]> element= (new ObjectFactory()).createAuthReqFailedReserved(userByte);
-			arf.setReserved(element);
-			throw new AuthReqFailed_Exception("Wrong password.", arf);
-    	}
+        byte[] trueByte = ByteBuffer.allocate(4).putInt(1).array();
+        try {
+            User user = getUser(userId);
+            byte[] password = user.getPassword().getBytes();
+            if (Arrays.equals(reserved, password)) {
+                return trueByte;
+            } else {
+                AuthReqFailed arf = new AuthReqFailed();
+                JAXBElement<byte[]> element = (new ObjectFactory())
+                        .createAuthReqFailedReserved(reserved);
+                arf.setReserved(element);
+                throw new AuthReqFailed_Exception("Wrong password.", arf);
+            }
+        } catch (UserDoesNotExist e) {
+            byte[] userByte = userId.getBytes();
+            AuthReqFailed arf = new AuthReqFailed();
+            JAXBElement<byte[]> element = (new ObjectFactory())
+                    .createAuthReqFailedReserved(userByte);
+            arf.setReserved(element);
+            throw new AuthReqFailed_Exception("User doesn't exist.", arf);
+        }
     }
 }

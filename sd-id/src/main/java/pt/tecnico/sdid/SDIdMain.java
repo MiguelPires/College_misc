@@ -56,6 +56,7 @@ public class SDIdMain {
         try {
 
             server = new SDIdImpl();
+            populate();
             endpoint = Endpoint.create(server);
 
             // publish endpoint
@@ -87,6 +88,6 @@ public class SDIdMain {
                 System.out.printf("Caught exception when stopping: %s%n", e);
             }
         }
-        populate();
+
     }
 }

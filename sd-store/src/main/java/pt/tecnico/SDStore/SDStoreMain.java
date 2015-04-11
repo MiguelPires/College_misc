@@ -31,7 +31,7 @@ public class SDStoreMain {
             System.out.printf("Publishing '%s' to UDDI at %s%n", name, uddiURL);
             uddiNaming = new UDDINaming(uddiURL);
             uddiNaming.rebind(name, url);
-            
+                        
             // wait
             System.out.println("Awaiting connections");
             System.out.println("Press enter to shutdown");

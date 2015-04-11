@@ -1,7 +1,5 @@
 package pt.tecnico.SDStore;
 
-import java.util.ArrayList;
-
 public class document {
 
 	private String id;

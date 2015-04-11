@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 
 
 /**
- *  Test suite
+ *  Test Communication for JUDDI
  */
 public class ComunicationTest {
 
@@ -24,31 +24,20 @@ String uddiURL = "http://localhost:8081";
 String name = "SDStore";
 String url = "http://localhost:8080/store-ws/endpoint";
 
+	
     //Tests UDDI server - publishes and checks if it's there
     @Test
-    public void UDDItest() {
-        try{
-        Endpoint endpoint = Endpoint.create(new SDStoreImpl());
-        endpoint.publish(url);
-
+    public void UDDItest() throws JAXRException {
+     
         UDDINaming uddiNaming = new UDDINaming(uddiURL);
         uddiNaming.rebind(name, url);
 
         String endpointAddress = uddiNaming.lookup(name);
-        assertEquals(url, endpointAddress);
-
-        if (endpoint != null)
-             endpoint.stop();
+ 
         if (uddiNaming != null)
             uddiNaming.unbind(name);
-
-   }catch(JAXRException e){
-    ;
-   }
         
-     
+        assertEquals(url, endpointAddress);
     }
-
     
-
 }

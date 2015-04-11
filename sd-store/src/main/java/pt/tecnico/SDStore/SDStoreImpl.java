@@ -18,13 +18,20 @@ import pt.ulisboa.tecnico.sdis.store.ws.*; // classes generated from WSDL
 
 public class SDStoreImpl implements SDStore {
 
-private ArrayList <String> users;
 private ArrayList <userDirectory> folders;
 
 
 	public SDStoreImpl(){
-		users = new ArrayList<String>();
 		folders = new ArrayList<userDirectory>();
+		setup();
+	}
+	
+	public void setup(){
+		folders.add(new userDirectory("alice"));
+		folders.add(new userDirectory("bruno"));
+		folders.add(new userDirectory("carla"));
+		folders.add(new userDirectory("duarte"));
+		folders.add(new userDirectory("eduardo"));
 	}
 
     public List<String> listDocs(String name) {
@@ -34,31 +41,21 @@ private ArrayList <userDirectory> folders;
     
 
     //creates document for user; if user does not exists, creates user; if document already exists, throws exception
-	public void createDoc(DocUserPair docUserPair)
-			throws DocAlreadyExists_Exception {
+	public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception {
 		String user = docUserPair.getUserId();
 		String doc = docUserPair.getDocumentId();
 		userDirectory folder = null;
-		
-		if(!users.contains(user)){
-			users.add(user);
+				
+		for(userDirectory aux : folders)
+			if(aux.getUser().equals(user))
+				folder = aux;
+			
+		if(folder==null){
 			folder = new userDirectory(user);
 			folders.add(folder);
 		}
-		else{
-			for(userDirectory aux : folders)
-				if(aux.getUser().equals(user))
-					folder = aux;
-		}
 		
-		if(folder.docExists(doc)){
-			DocAlreadyExists faultinfo = new DocAlreadyExists();
-			faultinfo.setDocId(doc);
-			throw new DocAlreadyExists_Exception("Document ID already exists", faultinfo);
-		}
-		else{
-			folder.addDoc(doc);
-		}	
+		folder.addDoc(doc);		
 	}
 
 	public void store(DocUserPair docUserPair, byte[] contents)

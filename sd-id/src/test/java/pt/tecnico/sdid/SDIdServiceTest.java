@@ -16,16 +16,16 @@ import pt.ulisboa.tecnico.sdis.id.ws.SDId_Service;
 public class SDIdServiceTest {
 
     // alterar para argumentos do pom
-    String serverName = "SDId";
-    String uddiUrl = "http://localhost:8081";
-    SDId server;
+    private String serverName = "SDId";
+    private String uddiUrl = "http://localhost:8081";
+    private SDId server;
 
     @Before
     public void setUp() throws Exception {
-        server = getServer();
+        server = connectServer();
     }
 
-    public SDId getServer() throws JAXRException {
+    public SDId connectServer() throws JAXRException {
         UDDINaming uddiNaming = new UDDINaming(uddiUrl);
         String endpointAddress = uddiNaming.lookup(serverName);
 
@@ -47,5 +47,9 @@ public class SDIdServiceTest {
         requestContext.put(ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
 
         return port;
+    }
+    
+    public SDId getServer() {
+    	return server;
     }
 }

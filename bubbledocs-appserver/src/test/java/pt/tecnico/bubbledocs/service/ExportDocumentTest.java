@@ -19,9 +19,15 @@ import pt.tecnico.bubbledocs.domain.Reference;
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
+import pt.tecnico.bubbledocs.exception.CannotLoadDocumentException;
+import pt.tecnico.bubbledocs.exception.CannotStoreDocumentException;
+import pt.tecnico.bubbledocs.exception.LoginBubbleDocsException;
+import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
+import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
+import pt.tecnico.bubbledocs.service.remote.StoreRemoteServices;
 
 public class ExportDocumentTest extends BubbleDocsServiceTest {
     private String ars;
@@ -54,17 +60,17 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
 
     @Test
     public void success() throws BubbleDocsException {
-    	new MockUp<ExportDocument>() {
-    		   @SuppressWarnings("unused")
+    	new MockUp<StoreRemoteServices>() {
     		   @Mock
-    		   public org.jdom2.Document getDocXML(){
-    		    return exportToXML(docs.get(1).getID());
-    		   }
+    		   public void storeDocument(String username, String docName, byte[] document)
+    			        throws CannotStoreDocumentException, RemoteInvocationException {
+    			        ;
+    			    }
     		  };
     		  
     	ExportDocument service = new ExportDocument(ars, docs.get(0).getID());    
         service.execute();
-          
+ 		  
         Spreadsheet doc = importFromXML(service.getDocXML());
         Spreadsheet expected = docs.get(1);
 
@@ -83,6 +89,14 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
 
     @Test(expected = UnauthorizedOperationException.class)
     public void unauthorizedExport() throws BubbleDocsException {
+    	new MockUp<StoreRemoteServices>() {
+ 		   @Mock
+ 		   public void storeDocument(String username, String docName, byte[] document)
+ 			        throws CannotStoreDocumentException, RemoteInvocationException {
+ 			        ;
+ 			    }
+ 		  };
+ 		  
     	ExportDocument service = new ExportDocument(js, docs.get(1).getID());
         
         new Expectations(service){{
@@ -95,6 +109,14 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
     
     @Test(expected = SpreadsheetNotFoundException.class)
     public void spreadSheetNotExist() throws BubbleDocsException {
+    	new MockUp<StoreRemoteServices>() {
+ 		   @Mock
+ 		   public void storeDocument(String username, String docName, byte[] document)
+ 			        throws CannotStoreDocumentException, RemoteInvocationException {
+ 			        ;
+ 			    }
+ 		  };
+ 		  
     	ExportDocument service = new ExportDocument(ars, 100);
     	
     	 new Expectations(service){{
@@ -107,6 +129,14 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
     
     @Test(expected = UserNotInSessionException.class)
     public void accessUsernameNotExist() {
+    	new MockUp<StoreRemoteServices>() {
+ 		   @Mock
+ 		   public void storeDocument(String username, String docName, byte[] document)
+ 			        throws CannotStoreDocumentException, RemoteInvocationException {
+ 			        ;
+ 			    }
+ 		  };
+ 		  
         removeUserFromSession(ars);
         ExportDocument service = new ExportDocument(ars, docs.get(0).getID());
         

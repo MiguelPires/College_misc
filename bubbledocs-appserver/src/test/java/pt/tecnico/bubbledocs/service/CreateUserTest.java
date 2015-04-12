@@ -12,6 +12,7 @@ import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.DuplicateUsernameException;
 import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
+import pt.tecnico.bubbledocs.exception.InvalidEmailException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
@@ -84,10 +85,32 @@ public class CreateUserTest extends BubbleDocsServiceTest {
         service.execute();
 
     }
+    
+    @Test(expected = InvalidEmailException.class)
+    public void invalidEmail() {
+    	new MockUp<IDRemoteServices>() {
+    		@Mock
+     		public void createUser(String username, String email) {
+     			   throw new InvalidEmailException();
+    		}
+        };
+    	
+    	CreateUser service = new CreateUser(root, USERNAME_DOES_NOT_EXIST, "@tecnico.pt", "José Ferreira");
+        
+        service.execute();
+    }
 
     @Test(expected = UnauthorizedOperationException.class)
     public void unauthorizedUserCreation() {
         CreateUser service = new CreateUser(ars, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt", "José Ferreira");
+        
+        service.execute();
+    }
+    
+    @Test(expected = UserNotInSessionException.class)
+    public void unauthorizedUserCreationNotInSession() {
+    	removeUserFromSession(ars);
+    	CreateUser service = new CreateUser(ars, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt", "José Ferreira");
         
         service.execute();
     }
@@ -97,6 +120,13 @@ public class CreateUserTest extends BubbleDocsServiceTest {
         removeUserFromSession(root);
         CreateUser service = new CreateUser(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt", "José Ferreira");
 
+        service.execute();
+    }
+    
+    @Test(expected = UserNotInSessionException.class)
+    public void unauthorizedUserCreationDoesNotExist() {
+    	CreateUser service = new CreateUser("ola", USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt", "José Ferreira");
+        
         service.execute();
     }
 }

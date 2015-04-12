@@ -17,25 +17,19 @@ public class SDIdMain {
             InvalidEmail_Exception,
             UserAlreadyExists {
         // Alice 
-        User alice = new User("alice", "alice@tecnico.pt", "Aaa1");
-        server.getUsers().add(alice);
+        server.createUser("alice", "alice@tecnico.pt", "Aaa1");
 
         // Bruno
-        User bruno = new User("bruno", "bruno@tecnico.pt", "Bbb2");
-        server.getUsers().add(bruno);
+        server.createUser("bruno", "bruno@tecnico.pt", "Bbb2");
 
         // Carla
-        User carla = new User("carla", "carla@tecnico.pt", "Ccc3");
-        server.getUsers().add(carla);
+        server.createUser("carla", "carla@tecnico.pt", "Ccc3");
 
         // Duarte
-        User duarte = new User("duarte", "duarte@tecnico.pt", "Ddd4");
-        server.getUsers().add(duarte);
-
+        server.createUser("duarte", "duarte@tecnico.pt", "Ddd4");
 
         // Eduardo 
-        User eduardo = new User("eduardo", "eduardo@tecnico.pt", "Eee5");
-        server.getUsers().add(eduardo);
+        server.createUser("eduardo", "eduardo@tecnico.pt", "Eee5");
     }
 
     public static void main(String[] args) throws EmailAlreadyExists_Exception,

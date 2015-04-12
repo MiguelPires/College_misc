@@ -8,10 +8,10 @@ import java.util.List;
 import javax.jws.WebService;
 import javax.xml.bind.JAXBElement;
 
-import pt.tecnico.sdid.User;
 import pt.ulisboa.tecnico.sdis.id.ws.AuthReqFailed;
 import pt.ulisboa.tecnico.sdis.id.ws.AuthReqFailed_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.CreateUser;
+import pt.ulisboa.tecnico.sdis.id.ws.EmailAlreadyExists;
 import pt.ulisboa.tecnico.sdis.id.ws.EmailAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.InvalidEmail_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.ObjectFactory;
@@ -34,6 +34,28 @@ public class SDIdImpl implements SDId {
     public void setUsers(List<User> users) {
         this.users = users;
     }
+    
+    public void addUser(User user) throws UserAlreadyExists, EmailAlreadyExists_Exception {
+    	String userId = user.getUserId();
+    	String email = user.getEmail();
+    	try {
+			getUser(userId); //verifies if user already exists
+			UsernameProblem userProblem = new UsernameProblem();
+			userProblem.setUserId(userId);
+			throw new UserAlreadyExists("User " + userId + " already exists", userProblem);
+		} catch (UserDoesNotExist e) {
+			//User does not exist: proceed as normal 
+		}
+    	try {
+			getUserByEmail(email);
+			EmailAlreadyExists emailProblem = new EmailAlreadyExists();
+			emailProblem.setEmailAddress(email);
+			throw new EmailAlreadyExists_Exception("Email " + email + " already exists", emailProblem);
+		} catch (UserDoesNotExist e) {
+			//Email does not exist: proceed as normal
+		}
+    	getUsers().add(user);
+    }
 
     public SDIdImpl() {
         setUsers(new ArrayList<User>());
@@ -45,15 +67,34 @@ public class SDIdImpl implements SDId {
                 return user;
             }
         }
-        UsernameProblem up = new UsernameProblem();
-        up.setUserId(userId);
-        throw new UserDoesNotExist("User " + userId + " not found.", up);
+        UsernameProblem userProblem = new UsernameProblem();
+        userProblem.setUserId(userId);
+        throw new UserDoesNotExist("User " + userId + " not found.", userProblem);
+    }
+    
+    public User getUserByEmail(String email) throws UserDoesNotExist {
+        for (User user : getUsers()) {
+            if (user.getEmail().equals(email)) {
+                return user;
+            }
+        }
+        UsernameProblem userProblem = new UsernameProblem();
+        userProblem.setUserId(email);
+        throw new UserDoesNotExist("User with email address" + email + " not found.", userProblem);
     }
 
     public void createUser(CreateUser parameters) throws EmailAlreadyExists_Exception,
-            InvalidEmail_Exception,
-            UserAlreadyExists {
+    														InvalidEmail_Exception,
+    														UserAlreadyExists {
         System.out.println("Create User");
+    }
+    
+    public User createUser(String username, String email, String password) throws EmailAlreadyExists_Exception,
+    																				InvalidEmail_Exception,
+    																				UserAlreadyExists {
+    	User user = new User(username, email, password);
+    	addUser(user);
+    	return user;
     }
 
     public void renewPassword(RenewPassword parameters) throws UserDoesNotExist {
@@ -74,19 +115,19 @@ public class SDIdImpl implements SDId {
             if (Arrays.equals(reserved, password)) {
                 return trueByte;
             } else {
-                AuthReqFailed arf = new AuthReqFailed();
+                AuthReqFailed authProblem = new AuthReqFailed();
                 JAXBElement<byte[]> element = (new ObjectFactory())
                         .createAuthReqFailedReserved(reserved);
-                arf.setReserved(element);
-                throw new AuthReqFailed_Exception("Wrong password.", arf);
+                authProblem.setReserved(element);
+                throw new AuthReqFailed_Exception("Wrong password.", authProblem);
             }
         } catch (UserDoesNotExist e) {
             byte[] userByte = userId.getBytes();
-            AuthReqFailed arf = new AuthReqFailed();
+            AuthReqFailed authProblem = new AuthReqFailed();
             JAXBElement<byte[]> element = (new ObjectFactory())
                     .createAuthReqFailedReserved(userByte);
-            arf.setReserved(element);
-            throw new AuthReqFailed_Exception("User doesn't exist.", arf);
+            authProblem.setReserved(element);
+            throw new AuthReqFailed_Exception("User doesn't exist.", authProblem);
         }
     }
 }

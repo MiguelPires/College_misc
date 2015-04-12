@@ -25,14 +25,14 @@ public class User {
 	}
 
 	public void setEmail(String email) throws InvalidEmail_Exception {
-    	Pattern p = Pattern.compile("[A-Za-z0-9_\\.]*@[A-Za-z0-9\\.]*");
+    	Pattern p = Pattern.compile("[A-Za-z0-9_\\.]+@[A-Za-z0-9\\.]+");
     	Matcher m = p.matcher(email);
     	if (m.matches()) {
     		this.email = email;
     	} else {
-    		InvalidEmail ie = new InvalidEmail();
-    		ie.setEmailAddress(email);
-    		throw new InvalidEmail_Exception("Invalid e-mail address: " + email, ie);
+    		InvalidEmail emailProblem = new InvalidEmail();
+    		emailProblem.setEmailAddress(email);
+    		throw new InvalidEmail_Exception("Invalid e-mail address: " + email, emailProblem);
     	}
     	
     }

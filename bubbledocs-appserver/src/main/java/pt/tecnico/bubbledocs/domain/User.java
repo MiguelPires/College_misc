@@ -10,11 +10,11 @@ import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 
 public class User extends User_Base {
 
-    public User(String username, String name, String password) {
+    public User(String username, String name, String email) {
         super();
         setUsername(username);
         setName(name);
-        setPassword(password);
+        setEmail(email);
     }
 
     public User() { 
@@ -73,6 +73,7 @@ public class User extends User_Base {
         setUsername(userElement.getAttribute("username").getValue());
         setName(userElement.getAttribute("name").getValue());
         setPassword(userElement.getAttribute("password").getValue());
+        setEmail(userElement.getAttribute("email").getValue());
         
     }
 
@@ -82,6 +83,7 @@ public class User extends User_Base {
         element.setAttribute("username", getUsername());
         element.setAttribute("name", getName());
         element.setAttribute("password", getPassword());
+        element.setAttribute("email", getEmail());
 
         return element;
     }

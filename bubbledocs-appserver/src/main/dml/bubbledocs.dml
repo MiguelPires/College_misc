@@ -10,6 +10,7 @@ class User{
 	String username;
 	String name;
 	String password;
+	String email;
 }
 
 class ActiveUser{

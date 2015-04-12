@@ -9,6 +9,7 @@ import org.jdom2.output.XMLOutputter;
 
 import pt.ist.fenixframework.FenixFramework;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
+import pt.tecnico.bubbledocs.exception.DuplicateEmailException;
 import pt.tecnico.bubbledocs.exception.DuplicateUsernameException;
 import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
@@ -43,8 +44,8 @@ public class Bubbledocs extends Bubbledocs_Base {
 
     }
 
-    public User createUser(String username, String name, String password) throws BubbleDocsException {
-        User user = new User(username, name, password);
+    public User createUser(String username, String name, String email) throws BubbleDocsException {
+        User user = new User(username, name, email);
         try {
             addUsers(user);
         } catch (EmptyUsernameException e) {
@@ -66,8 +67,17 @@ public class Bubbledocs extends Bubbledocs_Base {
             getUser(user.getUsername());
             throw new DuplicateUsernameException();
         } catch (UnknownBubbleDocsUserException e) {
-            super.addUsers(user);
+        	
         }
+        
+        try {
+        	getUserByEmail(user.getEmail());
+        	throw new DuplicateEmailException();
+        } catch (UnknownBubbleDocsUserException e) {
+        	
+        }
+        
+        super.addUsers(user);
     }
 
     public String addUserToSession(String username) throws UnknownBubbleDocsUserException {
@@ -90,6 +100,15 @@ public class Bubbledocs extends Bubbledocs_Base {
             }
         }
         throw new UnknownBubbleDocsUserException("User '" + username + "' not found.");
+    }
+    
+    public User getUserByEmail(String email) throws UnknownBubbleDocsUserException {
+        for (User user : getUsersSet()) {
+            if (user.getEmail().equals(email)) {
+                return user;
+            }
+        }
+        throw new UnknownBubbleDocsUserException("User with email '" + email + "' not found.");
     }
 
     public User getUserByToken(String token) throws UserNotInSessionException {

@@ -52,7 +52,7 @@ public class CreateUserTest extends BubbleDocsServiceTest {
         User user = getUserFromUsername(USERNAME_DOES_NOT_EXIST);
 
         assertEquals(USERNAME_DOES_NOT_EXIST, user.getUsername());
-        assertEquals("jose", user.getPassword());
+        assertEquals("jose@tecnico.pt", user.getEmail());
         assertEquals("José Ferreira", user.getName());
     }
 

@@ -22,6 +22,7 @@ import pt.tecnico.bubbledocs.exception.CannotStoreDocumentException;
 import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
+import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.service.remote.StoreRemoteServices;
 
@@ -126,7 +127,7 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
         service.execute();
     }
     
-    @Test(expected = RemoteInvocationException.class)
+    @Test(expected = UnavailableServiceException.class)
     public void storeServiceUnavailable() {
     	new MockUp<StoreRemoteServices>() {
  		   @Mock

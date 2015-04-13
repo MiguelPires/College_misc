@@ -4,30 +4,41 @@ import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
+import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
+import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
+import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
+
 
 public class CreateUser extends BubbleDocsService {
 
     private String token;
     private String username;
-    private String password;
     private String name;
+    private String email;
 
-    public CreateUser(String userToken, String newUsername, String password, String name) {
+    public CreateUser(String userToken, String newUsername, String name, String email) {
         this.token = userToken;
         this.username = newUsername;
-        this.password = password;
         this.name = name;
+        this.email = email;
     }
 
     @Override
     protected void dispatch() throws BubbleDocsException {
-        User user = getUserByToken(token);
+    	IDRemoteServices remote = new IDRemoteServices();
+    	User user = getUserByToken(token);
 
         if (!isLoggedIn(user))
             throw new UserNotInSessionException();
-        else if (user.isRoot())
-            createUser(username, name, password);
-        else
+        else if (user.isRoot()) {
+            try{
+        	remote.createUser(username, email);
+        	} catch (RemoteInvocationException e) {
+        		throw new UnavailableServiceException();
+        	}
+            
+            createUser(username, name, email);
+        } else
             throw new UnauthorizedOperationException();
     }
 }

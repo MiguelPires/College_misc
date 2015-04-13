@@ -25,8 +25,8 @@ public abstract class BubbleDocsService {
         return FenixFramework.getDomainRoot().getBubbledocs();
     }
 
-    public static User createUser(String username, String name, String password) throws BubbleDocsException {
-        return Bubbledocs.getInstance().createUser(username, name, password);
+    public static User createUser(String username, String name, String email) throws BubbleDocsException {
+        return Bubbledocs.getInstance().createUser(username, name, email);
     }
 
     public static User getUser(String username) throws UnknownBubbleDocsUserException {

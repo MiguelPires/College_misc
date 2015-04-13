@@ -7,7 +7,7 @@ public class Root extends Root_Base {
         setUsername("root");
         setName("Super User");
         setPassword("root");
-        setEmail("");
+        setEmail("root@root");
         setApplication(bubble);
     }
 }

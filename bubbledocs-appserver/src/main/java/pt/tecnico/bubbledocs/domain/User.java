@@ -6,12 +6,18 @@ import org.jdom2.Element;
 
 import pt.tecnico.bubbledocs.exception.ImportDocumentException;
 import pt.tecnico.bubbledocs.exception.InvalidSpreadsheetDimensionsException;
+import pt.tecnico.bubbledocs.exception.InvalidUsernameException;
 import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 
 public class User extends User_Base {
 
     public User(String username, String name, String email) {
         super();
+        
+        if (username.length() < 3 || username.length() > 8) {
+        	throw new InvalidUsernameException();
+        }
+        
         setUsername(username);
         setName(name);
         setEmail(email);

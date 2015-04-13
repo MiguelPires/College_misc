@@ -13,6 +13,7 @@ import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.DuplicateUsernameException;
 import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
 import pt.tecnico.bubbledocs.exception.InvalidEmailException;
+import pt.tecnico.bubbledocs.exception.InvalidUsernameException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
@@ -81,6 +82,36 @@ public class CreateUserTest extends BubbleDocsServiceTest {
         };
     	
     	CreateUser service = new CreateUser(root, "", "jose@tecnico.pt", "José Ferreira");
+        
+        service.execute();
+
+    }
+    
+    @Test(expected = InvalidUsernameException.class)
+    public void invalidUsernameTooShort() {
+    	new MockUp<IDRemoteServices>() {
+    		@Mock
+     		public void createUser(String username, String email) {
+     			   throw new InvalidUsernameException();
+    		}
+        };
+    	
+    	CreateUser service = new CreateUser(root, "jo", "jose@tecnico.pt", "José Ferreira");
+        
+        service.execute();
+
+    }
+    
+    @Test(expected = InvalidUsernameException.class)
+    public void invalidUsernameTooLong() {
+    	new MockUp<IDRemoteServices>() {
+    		@Mock
+     		public void createUser(String username, String email) {
+     			   throw new InvalidUsernameException();
+    		}
+        };
+    	
+    	CreateUser service = new CreateUser(root, "josejosejose", "jose@tecnico.pt", "José Ferreira");
         
         service.execute();
 

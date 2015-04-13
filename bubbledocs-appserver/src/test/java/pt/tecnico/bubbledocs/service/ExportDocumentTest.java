@@ -43,8 +43,8 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
         as.setPassword(PASSWORD);
         ars = addUserToSession("ars");
 
-        createUser("js", "1234", "João Sheepires");
-        js = addUserToSession("js");
+        createUser("jshp", "1234", "João Sheepires");
+        js = addUserToSession("jshp");
 
         docs.add(createSpreadSheet(as, "ES", 30, 20));
         docs.add(createSpreadSheet(as, "ES", 30, 20));

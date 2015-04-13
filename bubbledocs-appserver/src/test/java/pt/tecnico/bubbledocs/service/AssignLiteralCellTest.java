@@ -19,13 +19,13 @@ public class AssignLiteralCellTest extends BubbleDocsServiceTest {
 	
 	private static final String SPREADSHEET = "Spreadsheep";
     private static final String CREATOR = "Shkey";
-    private static final String CREATOREMAIL = "sherl0ck@";
+    private static final String CREATOREMAIL = "sherl0ck@shneep";
     private static final String WRITER = "Sheepno";
-    private static final String WRITEREMAIL = "dibidibidis@";
+    private static final String WRITEREMAIL = "dibidibidis@shneep";
     private static final String READER = "Oneepken";
-    private static final String READEREMAIL = "0chicken@";
-    private static final String NOTALLOWED = "jongsheep@";
-    private static final String NOTALLOWEDEMAIL = "trololol@";
+    private static final String READEREMAIL = "0chicken@shneep";
+    private static final String NOTALLOWED = "jongshp";
+    private static final String NOTALLOWEDEMAIL = "trololol@shneep";
 
     private static final String PROTECTED = "2;2";
     private static final String EMPTY = "3;3";

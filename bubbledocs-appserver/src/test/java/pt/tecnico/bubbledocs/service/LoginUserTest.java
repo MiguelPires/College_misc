@@ -20,7 +20,7 @@ import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 
 public class LoginUserTest extends BubbleDocsServiceTest {
 
-    private static final String USERNAME = "jp";
+    private static final String USERNAME = "jshp";
     private static final String PASSWORD = "jp#";
     private static final String EMAIL = "joao@ulisboa.pt";
 

@@ -15,7 +15,7 @@ public class CreateSpreadSheetTest extends BubbleDocsServiceTest {
 
     private String vany;
     private static final String USERNAME = "vany";
-    private static final String PASSWORD = "lala123";
+    private static final String EMAIL = "vanessag@tecnico.pt";
     private static final String SPNAME = "Notas LEIC";
     private Integer ROWS = 20;
     private Integer COL = 10;
@@ -23,7 +23,7 @@ public class CreateSpreadSheetTest extends BubbleDocsServiceTest {
 
     @Override
     public void populate4Test() throws BubbleDocsException {
-        createUser(USERNAME, PASSWORD, "Vanessa Gaspar");
+        createUser(USERNAME, EMAIL, "Vanessa Gaspar");
         vany = addUserToSession(USERNAME);
 
     }

@@ -17,7 +17,7 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
 
     private static final String USERNAME_TO_DELETE = "smf";
     private static final String USERNAME = "ars";
-    private static final String PASSWORD = "ars";
+    private static final String EMAIL = "ars@tecnico.pt";
     private static final String ROOT_USERNAME = "root";
     private static final String USERNAME_DOES_NOT_EXIST = "no-one";
     private static final String SPREADSHEET_NAME = "spread";
@@ -27,8 +27,8 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
 
     @Override
     public void populate4Test() {
-        createUser(USERNAME, PASSWORD, "António Rito Silva");
-        User smf = createUser(USERNAME_TO_DELETE, "smf", "Sérgio Fernandes");
+        createUser(USERNAME, EMAIL, "António Rito Silva");
+        User smf = createUser(USERNAME_TO_DELETE, "smf@tecnico.pt", "Sérgio Fernandes");
         Spreadsheet ss = createSpreadSheet(smf, SPREADSHEET_NAME, 20, 20);
 
         ssId = ss.getID();

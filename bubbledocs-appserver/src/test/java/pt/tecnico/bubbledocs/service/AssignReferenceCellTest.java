@@ -20,13 +20,13 @@ public class AssignReferenceCellTest extends BubbleDocsServiceTest {
 
     private static final String SPREADSHEET = "Spreadsheep";
     private static final String CREATOR = "Shkey";
-    private static final String CREATORPASSWORD = "sherl0ck";
+    private static final String CREATOREMAIL = "sherl0ck@";
     private static final String WRITER = "Sheepno";
-    private static final String WRITERPASSWORD = "dibidibidis";
+    private static final String WRITEREMAIL = "dibidibidis@";
     private static final String READER = "Oneepken";
-    private static final String READERPASSWORD = "0Chicken";
-    private static final String NOTALLOWED = "Jongsheep";
-    private static final String NOTALLOWEDPASSWORD = "Trololol";
+    private static final String READEREMAIL = "0chicken@";
+    private static final String NOTALLOWED = "jongsheep@";
+    private static final String NOTALLOWEDEMAIL = "trololol@";
 
     private static final String PROTECTED = "2;2";
     private static final String EMPTY = "3;3";
@@ -42,10 +42,10 @@ public class AssignReferenceCellTest extends BubbleDocsServiceTest {
     public void populate4Test() throws BubbleDocsException {
         Content content = new Literal(100);
         Content content2 = new Literal(19);
-        User creator = createUser(CREATOR, CREATORPASSWORD, "Kim Kibum");
-        User writer = createUser(WRITER, WRITERPASSWORD, "Choi Minho");
-        User reader = createUser(READER, READERPASSWORD, "Lee Jinki");
-        createUser(NOTALLOWED, NOTALLOWEDPASSWORD, "Kim Jonghyun");
+        User creator = createUser(CREATOR, CREATOREMAIL, "Kim Kibum");
+        User writer = createUser(WRITER, WRITEREMAIL, "Choi Minho");
+        User reader = createUser(READER, READEREMAIL, "Lee Jinki");
+        createUser(NOTALLOWED, NOTALLOWEDEMAIL, "Kim Jonghyun");
 
         creatorToken = addUserToSession(CREATOR);
         writerToken = addUserToSession(WRITER);

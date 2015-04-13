@@ -17,7 +17,6 @@ import pt.tecnico.bubbledocs.domain.Reference;
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
-import pt.tecnico.bubbledocs.exception.CannotLoadDocumentException;
 import pt.tecnico.bubbledocs.exception.CannotStoreDocumentException;
 import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
@@ -32,19 +31,20 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
 
     private static final String USERNAME = "ars";
     private static final String PASSWORD = "ars";
-
+    private static final String EMAIL = "ars@tecnico.pt";
+    
     private List<Spreadsheet> docs = new ArrayList<Spreadsheet>();
     private User as;
     
     @Override
     public void populate4Test() throws BubbleDocsException {
 
-        as = createUser(USERNAME, PASSWORD, "Antonio Rito Silva");
+        as = createUser(USERNAME, EMAIL, "Antonio Rito Silva");
+        as.setPassword(PASSWORD);
         ars = addUserToSession("ars");
 
         createUser("js", "1234", "João Sheepires");
         js = addUserToSession("js");
-
 
         docs.add(createSpreadSheet(as, "ES", 30, 20));
         docs.add(createSpreadSheet(as, "ES", 30, 20));
@@ -64,7 +64,7 @@ public class ExportDocumentTest extends BubbleDocsServiceTest {
     			        ;
     			    }
     		  };
-    		  
+
     	ExportDocument service = new ExportDocument(ars, docs.get(0).getID());    
         service.execute();
  		  

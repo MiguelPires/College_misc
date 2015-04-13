@@ -3,7 +3,6 @@ package pt.tecnico.bubbledocs.service;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import mockit.Expectations;
 import mockit.Mock;
 import mockit.MockUp;
 
@@ -16,23 +15,18 @@ import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.LoginBubbleDocsException;
 import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
-import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
-import pt.tecnico.bubbledocs.exception.WrongPasswordException;
+import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
-
-// add needed import declarations
 
 public class LoginUserTest extends BubbleDocsServiceTest {
 
-    private String jp; // the token for user jp
-    private String root; // the token for user root
-
     private static final String USERNAME = "jp";
     private static final String PASSWORD = "jp#";
+    private static final String EMAIL = "joao@ulisboa.pt";
 
     @Override
     public void populate4Test() throws BubbleDocsException {
-        createUser(USERNAME, PASSWORD, "João Pereira");
+        createUser(USERNAME, EMAIL, "João Pereira");
     }
 
     // returns the time of the last access for the user with token userToken.
@@ -59,7 +53,8 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         String token = service.getUserToken();
         User user = getUserFromSession(token);
         assertEquals(USERNAME, user.getUsername());
-
+        assertEquals(EMAIL, user.getEmail());
+        
         int difference = Seconds.secondsBetween(getLastAccessTimeInSession(token), currentTime)
                 .getSeconds();
         assertTrue("Access time in session not correctly set", difference >= 0);
@@ -87,6 +82,7 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         
         user = getUserFromSession(token2);
         assertEquals(USERNAME, user.getUsername());
+        assertEquals(EMAIL, user.getEmail());
     }
     
     @Test
@@ -105,6 +101,7 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         String token = service.getUserToken();
         User user = getUserFromSession(token);
         assertEquals(USERNAME, user.getUsername());
+        assertEquals(EMAIL, user.getEmail());
         
         new MockUp<IDRemoteServices>() {
             @Mock
@@ -118,6 +115,7 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         String token2 = service.getUserToken();
         user = getUserFromSession(token2);
         assertEquals(USERNAME, user.getUsername());
+        assertEquals(EMAIL, user.getEmail());
     }
 
     @Test(expected = LoginBubbleDocsException.class)
@@ -130,7 +128,7 @@ public class LoginUserTest extends BubbleDocsServiceTest {
             }
         };
 
-        LoginUser service = new LoginUser("jp2", "jp");
+        LoginUser service = new LoginUser("jp2", PASSWORD);
         service.execute();
     }
 
@@ -148,7 +146,7 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         service.execute();
     }
     
-    @Test(expected = RemoteInvocationException.class)
+    @Test(expected = UnavailableServiceException.class)
     public void NoServiceAndNoLocalCopy() {
         new MockUp<IDRemoteServices>() {
             @Mock
@@ -157,5 +155,7 @@ public class LoginUserTest extends BubbleDocsServiceTest {
                 throw new RemoteInvocationException("Service unavailable");
             }
         };
+        LoginUser service = new LoginUser(USERNAME, PASSWORD);
+        service.execute();
     }
 }

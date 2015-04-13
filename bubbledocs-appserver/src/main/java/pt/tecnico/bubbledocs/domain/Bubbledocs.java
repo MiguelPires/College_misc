@@ -181,6 +181,10 @@ public class Bubbledocs extends Bubbledocs_Base {
         return null;
     }
     
+    public void renewPassword(User user) {
+    	user.setPassword(null);
+    }
+    
     public int getNewID(){
     	int id = getLastID() + 1;
         setLastID(id);        

@@ -70,6 +70,11 @@ public abstract class BubbleDocsService {
     {
         return getBubbledocs().importFromXML(xml.getRootElement());
     }
+    
+    public static void renewPassword (User user)
+    {
+        getBubbledocs().renewPassword(user);
+    }
 
     public static boolean isLoggedIn(User user) {
         try {

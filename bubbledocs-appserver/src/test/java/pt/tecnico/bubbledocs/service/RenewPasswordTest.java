@@ -2,11 +2,13 @@ package pt.tecnico.bubbledocs.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import mockit.Expectations;
 import mockit.Mock;
 import mockit.MockUp;
 import mockit.Mocked;
 
+import org.joda.time.chrono.IslamicChronology;
 import org.junit.Test;
 
 import pt.tecnico.bubbledocs.domain.User;
@@ -47,7 +49,10 @@ public class RenewPasswordTest extends BubbleDocsServiceTest{
 		service.execute();
 
 		User user = getUserFromUsername(USERNAME);
+		boolean loggedOut = getUserFromSession(ars) == null;
+		
 		assertNull("Password renewed: no local copy.", user.getPassword());
+		assertTrue("User is logged out", loggedOut);
 	}
 	
 	@Test(expected = UserNotInSessionException.class)

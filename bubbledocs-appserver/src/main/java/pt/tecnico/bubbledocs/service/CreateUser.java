@@ -3,7 +3,6 @@ package pt.tecnico.bubbledocs.service;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
-import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
@@ -26,11 +25,9 @@ public class CreateUser extends BubbleDocsService {
     @Override
     protected void dispatch() throws BubbleDocsException {
     	IDRemoteServices remote = new IDRemoteServices();
-    	User user = getUserByToken(token);
-
-        if (!isLoggedIn(user))
-            throw new UserNotInSessionException();
-        else if (user.isRoot()) {
+    	User user = checkLogin(token);
+    	
+        if (user.isRoot()) {
             try{
         	remote.createUser(username, email);
         	} catch (RemoteInvocationException e) {

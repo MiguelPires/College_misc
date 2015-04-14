@@ -84,4 +84,13 @@ public abstract class BubbleDocsService {
             return false;
         }
     }
+    
+    public static User checkLogin(String userToken){
+    	User user = getUserByToken(userToken);
+        if (!isLoggedIn(user))
+            throw new UserNotInSessionException();
+        
+        return user;
+    }
+    
 }

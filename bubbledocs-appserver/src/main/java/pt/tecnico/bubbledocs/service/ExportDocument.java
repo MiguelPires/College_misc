@@ -9,7 +9,6 @@ import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
-import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.service.remote.StoreRemoteServices;
 
 public class ExportDocument extends BubbleDocsService {
@@ -37,10 +36,7 @@ public class ExportDocument extends BubbleDocsService {
 
     @Override
     protected void dispatch() throws BubbleDocsException {
-        User user = getUserByToken(token);
-
-        if (!isLoggedIn(user))
-            throw new UserNotInSessionException();
+        User user = checkLogin(token);
         
         Spreadsheet ss = getSpreadsheet(docId);
 

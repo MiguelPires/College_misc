@@ -3,7 +3,6 @@ package pt.tecnico.bubbledocs.service;
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
-import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 public class CreateSpreadSheet extends BubbleDocsService {
     private int rows;
@@ -21,10 +20,7 @@ public class CreateSpreadSheet extends BubbleDocsService {
 
     @Override
     protected void dispatch() throws BubbleDocsException {
-        User user = getUserByToken(token);
-
-        if (!isLoggedIn(user))
-            throw new UserNotInSessionException();
+        User user = checkLogin(token);
 
         Spreadsheet sp = createSpreadsheet(user, name, rows, columns);
         this.id = sp.getID();

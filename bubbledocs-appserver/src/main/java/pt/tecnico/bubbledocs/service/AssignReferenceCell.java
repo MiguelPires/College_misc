@@ -6,7 +6,6 @@ import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
-import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 public class AssignReferenceCell extends BubbleDocsService {
     private int docId;
@@ -29,10 +28,7 @@ public class AssignReferenceCell extends BubbleDocsService {
 
     @Override
     protected void dispatch() throws BubbleDocsException {
-        User user = getUserByToken(userToken);
-
-        if (!isLoggedIn(user))
-            throw new UserNotInSessionException();
+        User user = checkLogin(userToken);
 
         Spreadsheet doc = getBubbledocs().getSpreadsheet(docId);
         

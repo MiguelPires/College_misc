@@ -8,6 +8,7 @@ import mockit.MockUp;
 
 import org.joda.time.LocalTime;
 import org.joda.time.Seconds;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import pt.tecnico.bubbledocs.domain.ActiveUser;
@@ -35,7 +36,7 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         ActiveUser user = getUserFromSession(userToken).getActiveUser();
         return user.getLastAccess().toLocalTime();
     }
-
+    
     @Test
     public void success() {
         new MockUp<IDRemoteServices>() {
@@ -84,7 +85,7 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         assertEquals(USERNAME, user.getUsername());
         assertEquals(EMAIL, user.getEmail());
     }
-    
+ 
     @Test
     public void successNoServiceWithLocalCopy() {
         new MockUp<IDRemoteServices>() {
@@ -131,7 +132,7 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         LoginUser service = new LoginUser("jp2", PASSWORD);
         service.execute();
     }
-
+ 
     @Test(expected = LoginBubbleDocsException.class)
     public void loginUserWithinWrongPassword() {
         new MockUp<IDRemoteServices>() {

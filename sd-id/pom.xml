@@ -110,8 +110,10 @@
     <mainclass>pt.tecnico.sdid.SDIdMain</mainclass>
 
     <uddi.url>http://localhost:8081</uddi.url>
-    <ws.name>SDId</ws.name>
+    <ws.name>SD-ID</ws.name>
     <ws.url>http://localhost:8080/id-ws/endpoint</ws.url>
+    <test.url>http://localhost:8080/id-ws/test/endpoint</test.url>
+
   </properties>
   
   <build>

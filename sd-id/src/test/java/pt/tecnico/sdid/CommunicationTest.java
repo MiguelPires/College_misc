@@ -1,37 +1,54 @@
 package pt.tecnico.sdid;
 
-import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Map;
+import javax.xml.registry.JAXRException;
 
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Endpoint;
+import mockit.Mock;
+import mockit.MockUp;
 
-import org.junit.Before;
+import org.junit.After;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import pt.tecnico.ws.uddi.UDDINaming;
-import pt.ulisboa.tecnico.sdis.id.ws.SDId;
-import pt.ulisboa.tecnico.sdis.id.ws.SDId_Service;
 
 // Communication test
 public class CommunicationTest extends SDIdServiceTest {
     
-    @Before
-    public void setUp() {
-        // ignore setUp - server publication and lookup to be done in test
+    @BeforeClass
+    public void setUpOnce() {
+        ; // don't connect with the server
     }
-
+    
+    @After
+    public void tearDown() {
+        server = null;   
+        endpointAddress = null;
+    }
+    
     // publishes a server instance, looks it up and checks if it's valid
     @Test
     public void success() throws Exception {
-        setUpServer();
         connectToServer();
 
         assertEquals(serverURL, endpointAddress);
         assertNotNull(server);
     }
     
+    @Test
+    public void successSingleUDDIFailure() throws JAXRException {
+        
+        new MockUp<UDDINaming>() {
+            @Mock
+            public void rebind(String orgName, String url) throws JAXRException {
+                throw new JAXRException();
+            }
+        };
+        connectToServer();
+
+        assertEquals(serverURL, endpointAddress);
+        assertNotNull(server);
+    }
 }

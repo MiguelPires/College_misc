@@ -8,6 +8,7 @@ import org.junit.Test;
 import pt.ulisboa.tecnico.sdis.id.ws.EmailAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.InvalidEmail_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.UserAlreadyExists;
+import pt.ulisboa.tecnico.sdis.id.ws.UserAlreadyExists_Exception;
 
 // Implementation test - User 
 public class UserTest {
@@ -26,8 +27,7 @@ public class UserTest {
     }
     
     @Test
-    public void success() throws InvalidEmail_Exception, EmailAlreadyExists_Exception, UserAlreadyExists {
-    	
+    public void success() throws Exception {
     	User user = server.addUser(USERNAME, EMAIL, PASSWORD);
     	assertEquals(USERNAME, user.getUserId());
     	assertEquals(EMAIL, user.getEmail());
@@ -35,28 +35,28 @@ public class UserTest {
     }
     
     @Test (expected = InvalidEmail_Exception.class)
-    public void invalidEmailNoAt() throws InvalidEmail_Exception, EmailAlreadyExists_Exception, UserAlreadyExists {
+    public void invalidEmailNoAt() throws Exception {
     	server.addUser(USERNAME, "francisco.tecnico.pt", PASSWORD);
     }
     
     @Test (expected = InvalidEmail_Exception.class)
-    public void invalidEmailNoFirstHalf() throws InvalidEmail_Exception, EmailAlreadyExists_Exception, UserAlreadyExists {
+    public void invalidEmailNoFirstHalf() throws Exception {
     	server.addUser(USERNAME, "@tecnico.pt", PASSWORD);
     }
     
     @Test (expected = InvalidEmail_Exception.class)
-    public void invalidEmailNoSecondHalf() throws InvalidEmail_Exception, EmailAlreadyExists_Exception, UserAlreadyExists {
+    public void invalidEmailNoSecondHalf() throws Exception {
     	server.addUser(USERNAME, "francisco@", PASSWORD);
     }
     
     @Test (expected = EmailAlreadyExists_Exception.class)
-    public void emailAldreadyExists() throws EmailAlreadyExists_Exception, InvalidEmail_Exception, UserAlreadyExists {
+    public void emailAlreadyExists() throws Exception {
     	server.addUser(USERNAME, EMAIL, PASSWORD);
     	server.addUser(USERNAME2, EMAIL, PASSWORD2);
     }
     
-    @Test (expected = UserAlreadyExists.class)
-    public void userAldreadyExists() throws UserAlreadyExists, InvalidEmail_Exception, EmailAlreadyExists_Exception {
+    @Test (expected = UserAlreadyExists_Exception.class)
+    public void userAlreadyExists() throws Exception {
     	server.addUser(USERNAME2, EMAIL2, PASSWORD2);
     	server.addUser(USERNAME2, EMAIL, PASSWORD2);
     }

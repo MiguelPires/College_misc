@@ -3,34 +3,33 @@ package pt.tecnico.sdid;
 import javax.xml.ws.Endpoint;
 
 import pt.tecnico.ws.uddi.UDDINaming;
-import pt.ulisboa.tecnico.sdis.id.ws.CreateUser;
 import pt.ulisboa.tecnico.sdis.id.ws.EmailAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.InvalidEmail_Exception;
-import pt.ulisboa.tecnico.sdis.id.ws.SDId;
 import pt.ulisboa.tecnico.sdis.id.ws.UserAlreadyExists;
 
 public class SDIdMain {
 
     private static SDIdImpl server;
 
-    public static void populate() throws EmailAlreadyExists_Exception,
+    public static void populate(SDIdImpl server) throws EmailAlreadyExists_Exception,
             InvalidEmail_Exception,
             UserAlreadyExists {
         // Alice 
-        server.createUser("alice", "alice@tecnico.pt", "Aaa1");
+        server.addUser("alice", "alice@tecnico.pt", "Aaa1");
 
         // Bruno
-        server.createUser("bruno", "bruno@tecnico.pt", "Bbb2");
+        server.addUser("bruno", "bruno@tecnico.pt", "Bbb2");
 
         // Carla
-        server.createUser("carla", "carla@tecnico.pt", "Ccc3");
+        server.addUser("carla", "carla@tecnico.pt", "Ccc3");
 
         // Duarte
-        server.createUser("duarte", "duarte@tecnico.pt", "Ddd4");
+        server.addUser("duarte", "duarte@tecnico.pt", "Ddd4");
 
         // Eduardo 
-        server.createUser("eduardo", "eduardo@tecnico.pt", "Eee5");
+        server.addUser("eduardo", "eduardo@tecnico.pt", "Eee5");
     }
+    
 
     public static void main(String[] args) throws EmailAlreadyExists_Exception,
             InvalidEmail_Exception,
@@ -50,7 +49,7 @@ public class SDIdMain {
         try {
 
             server = new SDIdImpl();
-            populate();
+            populate(server);
             endpoint = Endpoint.create(server);
 
             // publish endpoint

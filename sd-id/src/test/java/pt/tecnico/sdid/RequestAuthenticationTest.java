@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import pt.ulisboa.tecnico.sdis.id.ws.AuthReqFailed_Exception;
 
+// WSDL contract test - Authentication Service 
 public class RequestAuthenticationTest extends SDIdServiceTest {
 
     private static final String USERNAME = "alice";
@@ -20,7 +21,7 @@ public class RequestAuthenticationTest extends SDIdServiceTest {
 
     @Test
     public void success() throws AuthReqFailed_Exception {
-        result = getServer().requestAuthentication(USERNAME, PW_BYTE);
+        result = server.requestAuthentication(USERNAME, PW_BYTE);
 
         ByteBuffer buffer = ByteBuffer.allocate(4).put(result);
         assertEquals(1, buffer.getInt(0));
@@ -28,11 +29,11 @@ public class RequestAuthenticationTest extends SDIdServiceTest {
 
     @Test(expected = AuthReqFailed_Exception.class)
     public void userDoesNotExist() throws AuthReqFailed_Exception {
-        getServer().requestAuthentication("francisco", PW_BYTE);
+        server.requestAuthentication("francisco", PW_BYTE);
     }
 
     @Test(expected = AuthReqFailed_Exception.class)
     public void wrongPassword() throws AuthReqFailed_Exception {
-        getServer().requestAuthentication(USERNAME, WPW_BYTE);
+        server.requestAuthentication(USERNAME, WPW_BYTE);
     }
 }

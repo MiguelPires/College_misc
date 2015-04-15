@@ -1,18 +1,14 @@
 package pt.tecnico.SDStore;
 
-import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 import pt.tecnico.ws.uddi.UDDINaming;
-import pt.ulisboa.tecnico.sdis.store.ws.*;
-
-import java.util.Map;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import javax.xml.registry.JAXRException;
-import javax.xml.ws.*;
-
-import com.sun.xml.ws.api.EndpointAddress;
-
 import org.junit.*;
+
 import static org.junit.Assert.*;
+import mockit.*;
 
 
 /**
@@ -21,23 +17,47 @@ import static org.junit.Assert.*;
 public class ComunicationTest {
 
 String uddiURL = "http://localhost:8081";
-String name = "SDStore";
+String name = "SD-Store";
 String url = "http://localhost:8080/store-ws/endpoint";
 
 	
     //Tests UDDI server - publishes and checks if it's there
     @Test
-    public void UDDItest() throws JAXRException {
-     
+    public void UDDIsuccess() throws JAXRException {
+    	new MockUp<UDDINaming>() {
+            @Mock
+            private boolean publish(String orgName, String url) throws JAXRException {
+            	return true;
+            };
+            @Mock
+            private Collection<String> queryAll(String orgName) throws JAXRException {
+            	List<String> result = new ArrayList<String>();
+            	result.add(url);
+            	return result;
+            };
+        };
+        
         UDDINaming uddiNaming = new UDDINaming(uddiURL);
-        uddiNaming.rebind(name, url);
+        uddiNaming.bind(name, url);
 
         String endpointAddress = uddiNaming.lookup(name);
- 
-        if (uddiNaming != null)
-            uddiNaming.unbind(name);
         
         assertEquals(url, endpointAddress);
+    }
+    
+    //Tests arguments to new uddiNaming (only accepts HTTP)
+    @Test(expected=IllegalArgumentException.class)
+    public void UDDIInvalidArguments() throws JAXRException{
+
+    	String newuddiURL="www://localhost:8080/store-ws/endpoint";
+    	new UDDINaming(newuddiURL);
+    }
+    
+    //Connect to uddi while uddi server is offline
+    @Test(expected=JAXRException.class)
+    public void connectUDDIOffline() throws JAXRException{
+    	UDDINaming uddi = new UDDINaming(uddiURL);
+    	uddi.bind(name, url);
     }
     
 }

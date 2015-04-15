@@ -1,6 +1,7 @@
 package pt.tecnico.SDStore;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import pt.ulisboa.tecnico.sdis.store.ws.*;
 
@@ -78,7 +79,10 @@ public class userDirectory {
 		throw new DocDoesNotExist_Exception("Document does not exist", doc);
 	}
 
-	public ArrayList<document> getDocs(){
-		return storedDocs;
+	public List<String> getDocsNames(){
+		ArrayList<String> docs = new ArrayList<String>();
+		for(document doc: storedDocs)
+			docs.add(doc.getId());
+		return docs;
 	}
 }

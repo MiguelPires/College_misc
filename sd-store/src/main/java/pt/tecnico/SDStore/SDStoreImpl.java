@@ -42,14 +42,13 @@ private ArrayList <userDirectory> folders;
     	for(userDirectory aux : folders)
 			if(aux.getUser().equals(user)){
 				folder = aux;
-				folder.getDocs();
+				return folder.getDocsNames();
 			}
 
-		if(folder==null){
-			UserDoesNotExist userException = new UserDoesNotExist();
-			userException.setUserId(name);
-			throw UserDoesNotExist_Exception("User does not exist", userException);
-		}				
+		
+		UserDoesNotExist userException = new UserDoesNotExist();
+		userException.setUserId(user);
+		throw new UserDoesNotExist_Exception("User does not exist", userException);			
     }
     
 
@@ -77,37 +76,38 @@ private ArrayList <userDirectory> folders;
 
     	String user = docUserPair.getUserId();
     	String docId = docUserPair.getDocumentId();
-    	
+    	userDirectory folder = null;
+
     	for(userDirectory aux : folders)
 			if(aux.getUser().equals(user)){
 				folder = aux;
 				folder.storeContent(docId, contents);
 			}
 
-		if(folder==null){
-			UserDoesNotExist userException = new UserDoesNotExist();
-			userException.setUserId(name);
-			throw UserDoesNotExist_Exception("User does not exist", userException);
-		}		
+		
+		UserDoesNotExist userException = new UserDoesNotExist();
+		userException.setUserId(user);
+		throw new UserDoesNotExist_Exception("User does not exist", userException);
+			
 		
 	}
 
 	public byte[] load(DocUserPair docUserPair)
 			throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
-		
+		String user = docUserPair.getUserId();
 		String docId = docUserPair.getDocumentId();
-    	
+    	userDirectory folder = null;
+
     	for(userDirectory aux : folders)
 			if(aux.getUser().equals(user)){
 				folder = aux;
-				folder.loadContent(docId);
+				return folder.loadContent(docId);
 			}
 
-		if(folder==null){
-			UserDoesNotExist userException = new UserDoesNotExist();
-			userException.setUserId(name);
-			throw UserDoesNotExist_Exception("User does not exist", userException);	
-	
+		
+		UserDoesNotExist userException = new UserDoesNotExist();
+		userException.setUserId(user);
+		throw new UserDoesNotExist_Exception("User does not exist", userException);	
 	}
 
 }

@@ -34,9 +34,22 @@ private ArrayList <userDirectory> folders;
 		folders.add(new userDirectory("eduardo"));
 	}
 
-    public List<String> listDocs(String name) {
-    	//TO-DO
-    	 return null;
+     //list user stored documents; if user does not exists, throws exception
+    public List<String> listDocs(String name) throws UserDoesNotExist_Exception {
+    	String user = name;
+    	userDirectory folder = null;
+
+    	for(userDirectory aux : folders)
+			if(aux.getUser().equals(user)){
+				folder = aux;
+				folder.getDocs();
+			}
+
+		if(folder==null){
+			UserDoesNotExist userException = new UserDoesNotExist();
+			userException.setUserId(name);
+			throw UserDoesNotExist_Exception("User does not exist", userException);
+		}				
     }
     
 
@@ -61,15 +74,40 @@ private ArrayList <userDirectory> folders;
 	public void store(DocUserPair docUserPair, byte[] contents)
 			throws CapacityExceeded_Exception, DocDoesNotExist_Exception,
 			UserDoesNotExist_Exception {
-		//TO-DO
+
+    	String user = docUserPair.getUserId();
+    	String docId = docUserPair.getDocumentId();
+    	
+    	for(userDirectory aux : folders)
+			if(aux.getUser().equals(user)){
+				folder = aux;
+				folder.storeContent(docId, contents);
+			}
+
+		if(folder==null){
+			UserDoesNotExist userException = new UserDoesNotExist();
+			userException.setUserId(name);
+			throw UserDoesNotExist_Exception("User does not exist", userException);
+		}		
 		
 	}
 
 	public byte[] load(DocUserPair docUserPair)
 			throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
-				//TO-DO
-    	 return null;
-	}
+		
+		String docId = docUserPair.getDocumentId();
+    	
+    	for(userDirectory aux : folders)
+			if(aux.getUser().equals(user)){
+				folder = aux;
+				folder.loadContent(docId);
+			}
 
+		if(folder==null){
+			UserDoesNotExist userException = new UserDoesNotExist();
+			userException.setUserId(name);
+			throw UserDoesNotExist_Exception("User does not exist", userException);	
+	
+	}
 
 }

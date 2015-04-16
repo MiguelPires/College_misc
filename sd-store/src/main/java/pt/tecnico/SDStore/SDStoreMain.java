@@ -1,11 +1,39 @@
 package pt.tecnico.SDStore;
 
+import javax.xml.registry.JAXRException;
 import javax.xml.ws.Endpoint;
 
 import pt.tecnico.ws.uddi.UDDINaming;
+import pt.ulisboa.tecnico.sdis.store.ws.DocAlreadyExists_Exception;
+import pt.ulisboa.tecnico.sdis.store.ws.DocUserPair;
 
 public class SDStoreMain {
-
+	
+	private static SDStoreImpl Store;
+	
+	public static void setup() {
+        try{
+		DocUserPair pair = new DocUserPair();
+		pair.setDocumentId("Doc1");
+		pair.setUserId("alice");
+		Store.createDoc(pair);
+		
+		pair.setUserId("bruno");
+		Store.createDoc(pair);
+		
+		pair.setUserId("carla");
+		Store.createDoc(pair);
+		
+		pair.setUserId("duarte");
+		Store.createDoc(pair);
+		
+		pair.setUserId("eduardo");
+		Store.createDoc(pair);
+        } catch (DocAlreadyExists_Exception e1) {
+            ;
+        }
+	}
+	
     public static void main(String[] args) {
         // Check arguments
         if (args.length < 3) {
@@ -20,8 +48,13 @@ public class SDStoreMain {
         
         Endpoint endpoint = null;
         UDDINaming uddiNaming = null;
+        Store=new SDStoreImpl();
+        
+        
+		setup();
+        
         try {
-            endpoint = Endpoint.create(new SDStoreImpl());
+            endpoint = Endpoint.create(Store);
 
             // publish endpoint
             System.out.printf("Starting %s%n", url);
@@ -31,6 +64,7 @@ public class SDStoreMain {
             System.out.printf("Publishing '%s' to UDDI at %s%n", name, uddiURL);
             uddiNaming = new UDDINaming(uddiURL);
             uddiNaming.rebind(name, url);
+        
                         
             // wait
             System.out.println("Awaiting connections");

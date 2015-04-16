@@ -1,5 +1,10 @@
 package pt.tecnico.SDStore;
 
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import pt.ulisboa.tecnico.sdis.store.ws.*;
 
 import org.junit.*;
@@ -15,28 +20,47 @@ public class ContractTest {
      private static final String USERNOTEXIST = "ES";
      private static final String DOCNOTEXIST = "Lab";
 
-     private static final String CONTENT = "11110";
-     private static final byte[] CONTENTB = CONTENT.getBytes();
-     private static final byte[] CONTENTFULL = CONTENT; //Alterar para o max que consegue
+     private static final byte[] CONTENT = new byte[1];
+     private static final byte[] FULLCONTENT = new byte[10*1024];
+     private static final DocUserPair pair = new DocUserPair();
 
      private static SDStoreImpl sdStore;
 
-     sdStore = new SDStoreImpl();
-
-     @Override
-     public void populate() {
-       
-        userDirectory USER = new userDirectory();
-        sdStore.getFolders().add(USER);
-        sdStore.getUserRepository(USER).addDoc(DOC1USER);
-
+     @BeforeClass
+     public static void oneTimeSetUp(){
+    	 DocUserPair pair = new DocUserPair();
+    	 pair.setUserId(USER);
+       	 pair.setDocumentId(DOC1USER);
      }
-
+     
+     @Before
+     public void setup() throws DocAlreadyExists_Exception{
+      	pair.setUserId(USER);
+      	pair.setDocumentId(DOC1USER);
+      	sdStore= new SDStoreImpl();
+      	sdStore.createDoc(pair);
+     }
+     
+     
+     //SUCCESS: create doc - user exist
+     @Test
+     public void createUserExist() 
+             throws DocAlreadyExists_Exception, CapacityExceeded_Exception {
+     	
+     	pair.setDocumentId(DOCNOTEXIST);
+     	
+        sdStore.createDoc(pair);    
+     }
+     
     //SUCCESS: list user docs - user exist
     @Test
-    public void listDocsSuccess() throws UserDoesNotExist_Exception {
+    public void listDocsSuccess() throws UserDoesNotExist_Exception, DocAlreadyExists_Exception {
+    	List<String> expected = new ArrayList<String>();
+    	expected.add(DOC1USER);
+    	
+    	List<String> res = sdStore.listDocs(USER);
         
-        sdStore.listDocs(USER);
+        assertEquals(expected.get(0), res.get(0));
     }
  
     //FAIL: list user docs - user not exist
@@ -46,48 +70,30 @@ public class ContractTest {
         sdStore.listDocs(USERNOTEXIST);
     }
 
-    //SUCCESS: create doc - user exist
-    @Test
-    public void createUserExist() 
-            throws DocAlreadyExists_Exception, CapacityExceeded_Exception {
-        
-        sdStore.createDoc(DOCNOTEXIST, USER);    
-    }
-
     //SUCCESS: create doc - user not exist
     @Test
     public void createUserNotExist() 
             throws DocAlreadyExists_Exception, CapacityExceeded_Exception {
         
-        sdStore.createDoc(DOCNOTEXIST, USERNOTEXIST);
+    	pair.setUserId(USERNOTEXIST);
+    	
+        sdStore.createDoc(pair);
     }
 
     //FAIL: create doc - doc already exists
     @Test(expected = DocAlreadyExists_Exception.class)
     public void createDocAlreadyExists() 
             throws DocAlreadyExists_Exception, CapacityExceeded_Exception {
-        
-        sdStore.createDoc(DOC1USER, USER);    
+         
+        sdStore.createDoc(pair); 
     } 
-
-    //FAIL: create doc - user repository storage capacity is full
-    @Test(expected = CapacityExceeded_Exception.class)
-    public void createCapacityFull() 
-            throws DocAlreadyExists_Exception, CapacityExceeded_Exception {
-        
-        while (1) {
-            int i = 0;
-            sdStore.createDoc(DOCNOTEXIST+"i", USER);
-            i ++;
-        }
-    }   
 
     //SUCCESS: replace doc content - doc exist, user exist, capacity not full
     @Test
     public void replaceDocSuccess()  
-            throws CapacityExceeded_Exception, DocDoesNotExist_Exception {
-        
-        sdStore.store(DOC1USER, USER, CONTENT);    
+            throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception {
+
+        sdStore.store(pair, CONTENT);    
     }     
 
     //FAIL: replace doc content - user not exist 
@@ -96,7 +102,10 @@ public class ContractTest {
             throws CapacityExceeded_Exception, DocDoesNotExist_Exception, 
             UserDoesNotExist_Exception {
         
-        sdStore.store(DOCNOTEXIST, USERNOTEXIST, CONTENT);    
+    	pair.setUserId(USERNOTEXIST);
+    	pair.setDocumentId(DOCNOTEXIST);
+    	
+        sdStore.store(pair, CONTENT);    
     }
 
     //FAIL: replace doc content - user exist, doc not exist
@@ -105,73 +114,86 @@ public class ContractTest {
             throws CapacityExceeded_Exception, DocDoesNotExist_Exception, 
             UserDoesNotExist_Exception {
        
-       sdStore.store(DOCNOTEXIST, USER, CONTENT);    
+    	pair.setDocumentId(DOCNOTEXIST);
+    	
+       sdStore.store(pair, CONTENT);    
     }
 
     //FAIL: replace doc content - doc exist, user exist, capacity is full
     @Test(expected = CapacityExceeded_Exception.class)
     public void replaceCapacityFull() 
             throws CapacityExceeded_Exception, DocDoesNotExist_Exception, 
-            UserDoesNotExist_Exception {
+            UserDoesNotExist_Exception, DocAlreadyExists_Exception {
         
-        sdStore.store(DOC1USER, USER, CONTENTFULL);    
+    	sdStore.store(pair, FULLCONTENT); 
+    	
+    	pair.setDocumentId(DOCNOTEXIST);
+        sdStore.createDoc(pair); 
+        sdStore.store(pair, CONTENT);
     }
 
     //SUCCESS: load doc - doc exist, user exist
     @Test
     public void loadSuccess() 
-            throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
+            throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, CapacityExceeded_Exception, DocAlreadyExists_Exception {
+    	
+    	sdStore.store(pair, CONTENT); 
+        byte[] content = sdStore.load(pair); 
         
-        sdStore.load(DOC1USER, USER);    
+        assertEquals(CONTENT,content);
     }     
 
     //FAIL: load doc - user not exist 
     @Test(expected = UserDoesNotExist_Exception.class)
     public void loadUserNotExist() 
             throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
-        
-        sdStore.load(DOC1USER, USERNOTEXIST);    
+    	
+    	pair.setUserId(USERNOTEXIST);
+    	
+        sdStore.load(pair);    
     }
 
     //FAIL: load doc - user exist, doc not exist
     @Test(expected = DocDoesNotExist_Exception.class)
     public void loadDocNotExist() 
             throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
-        
-        sdStore.load(DOCNOTEXIST, USER);
+    	
+    	pair.setDocumentId(DOCNOTEXIST);
+    	
+        sdStore.load(pair);
     }
 
-    //SUCCESS: create doc, list user docs and load the new doc
+    //SUCCESS: create doc, list user docs and load the new doc (has no content)
     @Test
     public void createListAndLoad() 
             throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, 
             DocAlreadyExists_Exception, CapacityExceeded_Exception, 
             UserDoesNotExist_Exception {
         
-        sdStore.create(DOCNOTEXIST, USER);
+    	pair.setDocumentId(DOCNOTEXIST);
+    	
+        sdStore.createDoc(pair);
         sdStore.listDocs(USER);
-        sdStore.load(DOCNOTEXIST, USER);
+        byte[] content = sdStore.load(pair);
 
+        assertNull(content);
     }
 
-    //SUCCESS: create doc, replace the content and then load the doc
+    //SUCCESS: create doc, replace the content to its maximum and then load the doc
     @Test
     public void createStoreAndLoad() 
             throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, 
             DocAlreadyExists_Exception, CapacityExceeded_Exception,
             UserDoesNotExist_Exception {
+    	
+    	pair.setUserId(USERNOTEXIST);
+    	pair.setDocumentId(DOCNOTEXIST);
+    	
+        sdStore.createDoc(pair);
+        sdStore.store(pair, FULLCONTENT);
+        byte[] content = sdStore.load(pair);
         
-        sdStore.create(DOCNOTEXIST, USER);
-        sdStore.store(DOCNOTEXIST, USER, CONTENT);
-        sdStore.load(DOCNOTEXIST, USER);
+        assertEquals(FULLCONTENT,content);
     }
-
-
-            //1 duzia de testes / 2 duzias de testes
-            //teste exemplo: se criei, li e esta la
-            //testar excepcoes
-            //store com mais bytes
-            //implementacao local caso seja necessario
-            //mock para testar comunicacao, mock que se faz passar pelo UDDI 
     
 }

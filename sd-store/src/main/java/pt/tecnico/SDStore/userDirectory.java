@@ -61,6 +61,7 @@ public class userDirectory {
 		for(document doc: storedDocs)
 			if(doc.getId().equals(docId)){
 				doc.setContent(content);
+				capacity.setCurrentSize(content.length);
 				return;
 			}
 

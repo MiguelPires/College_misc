@@ -6,12 +6,8 @@
 Grupo de SD 67
 
 David Silva 76511 david.p.silva93@gmail.com
-
-... ... ...
-
-... ... ...
-*(preencher com nome, nÃºmero e email de membro do grupo)*
-
+Vanessa Gaspar 73995 vanessa.gaspar@tecnico.ulisboa.pt
+Marco Tomas 65921 m.ft.tomas@gmail.com
 
 RepositÃ³rio:
 [tecnico-softeng-distsys-2015/T_03_59_67-project](https://github.com/tecnico-softeng-distsys-2015/T_03_59_67-project/)
@@ -26,9 +22,7 @@ RepositÃ³rio:
 
 [0] Iniciar sistema operativo
 
-Indicar Windows
-*(escolher um dos dois, que esteja disponÃ­vel nos laboratÃ³rios)*
-
+Windows
 
 [1] Iniciar servidores de apoio
 
@@ -42,7 +36,7 @@ JUDDI:
 
 [3] Obter versÃ£o entregue
 
-> git clone ... 
+> git clone -b SD-STORE_R_1 https://github.com/tecnico-softeng-distsys-2015/T_03_59_67-project/
 *(comandos git para obter a versÃ£o entregue - tag)*
 
 

@@ -34,6 +34,20 @@ private ArrayList <userDirectory> folders;
 		folders.add(new userDirectory("eduardo"));
 	}
 
+    
+	public ArrayList<userDirectory> getFolders(){
+		return folders;
+	}
+
+	public getUserRepository(String name){
+		String user = name;
+    	
+		for (userDirectory aux : folders)
+            if (aux.getUser().equals(user))
+                return aux;
+	}
+
+
      //list user stored documents; if user does not exists, throws exception
     public List<String> listDocs(String name) throws UserDoesNotExist_Exception {
     	String user = name;
@@ -42,7 +56,11 @@ private ArrayList <userDirectory> folders;
     	for(userDirectory aux : folders)
 			if(aux.getUser().equals(user)){
 				folder = aux;
+<<<<<<< HEAD
+				return folder.getDocs();
+=======
 				return folder.getDocsNames();
+>>>>>>> origin/master
 			}
 
 		
@@ -55,7 +73,7 @@ private ArrayList <userDirectory> folders;
     //creates document for user; if user does not exists, creates user; if document already exists, throws exception
 	public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception {
 		String user = docUserPair.getUserId();
-		String doc = docUserPair.getDocumentId();
+		String docId = docUserPair.getDocumentId();
 		userDirectory folder = null;
 				
 		for(userDirectory aux : folders)
@@ -67,7 +85,7 @@ private ArrayList <userDirectory> folders;
 			folders.add(folder);
 		}
 		
-		folder.addDoc(doc);		
+		folder.addDoc(docId);		
 	}
 
 	public void store(DocUserPair docUserPair, byte[] contents)
@@ -77,37 +95,67 @@ private ArrayList <userDirectory> folders;
     	String user = docUserPair.getUserId();
     	String docId = docUserPair.getDocumentId();
     	userDirectory folder = null;
+<<<<<<< HEAD
+    	
+=======
 
+>>>>>>> origin/master
     	for(userDirectory aux : folders)
 			if(aux.getUser().equals(user)){
 				folder = aux;
 				folder.storeContent(docId, contents);
 			}
 
+<<<<<<< HEAD
+		if(folder==null){
+			UserDoesNotExist userException = new UserDoesNotExist();
+			userException.setUserId(user);
+			throw UserDoesNotExist_Exception("User does not exist", userException);
+		}		
+=======
 		
 		UserDoesNotExist userException = new UserDoesNotExist();
 		userException.setUserId(user);
 		throw new UserDoesNotExist_Exception("User does not exist", userException);
 			
+>>>>>>> origin/master
 		
 	}
 
 	public byte[] load(DocUserPair docUserPair)
 			throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
+<<<<<<< HEAD
+		
+		String user = docUserPair.getUserId();
+		String docId = docUserPair.getDocumentId();
+		userDirectory folder = null;
+    	
+=======
 		String user = docUserPair.getUserId();
 		String docId = docUserPair.getDocumentId();
     	userDirectory folder = null;
 
+>>>>>>> origin/master
     	for(userDirectory aux : folders)
 			if(aux.getUser().equals(user)){
 				folder = aux;
 				return folder.loadContent(docId);
 			}
 
+<<<<<<< HEAD
+		if(folder==null){
+			UserDoesNotExist userException = new UserDoesNotExist();
+			userException.setUserId(user);
+			throw UserDoesNotExist_Exception("User does not exist", userException);	
+	
+		}
+
+=======
 		
 		UserDoesNotExist userException = new UserDoesNotExist();
 		userException.setUserId(user);
 		throw new UserDoesNotExist_Exception("User does not exist", userException);	
+>>>>>>> origin/master
 	}
 
 }

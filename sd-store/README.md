@@ -32,12 +32,11 @@ JUDDI:
 [2] Criar pasta temporÃ¡ria
 
 > cd  C:\
-> mkdir ...
+> mkdir grupo67
 
 [3] Obter versÃ£o entregue
 
 > git clone -b SD-STORE_R_1 https://github.com/tecnico-softeng-distsys-2015/T_03_59_67-project/
-*(comandos git para obter a versÃ£o entregue - tag)*
 
 
 [4] Construir e executar **servidor**
@@ -65,14 +64,6 @@ JUDDI:
 
 > cd ...
 > mvn test
-
-
-[2] Executar ...
-
-
-
-...
-
 
 -------------------------------------------------------------------------------
 **FIM**

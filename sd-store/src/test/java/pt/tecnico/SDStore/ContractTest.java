@@ -26,13 +26,7 @@ public class ContractTest {
 
      private static SDStoreImpl sdStore;
 
-     @BeforeClass
-     public static void oneTimeSetUp(){
-    	 DocUserPair pair = new DocUserPair();
-    	 pair.setUserId(USER);
-       	 pair.setDocumentId(DOC1USER);
-     }
-     
+        
      @Before
      public void setup() throws DocAlreadyExists_Exception{
       	pair.setUserId(USER);
@@ -54,13 +48,11 @@ public class ContractTest {
      
     //SUCCESS: list user docs - user exist
     @Test
-    public void listDocsSuccess() throws UserDoesNotExist_Exception, DocAlreadyExists_Exception {
-    	List<String> expected = new ArrayList<String>();
-    	expected.add(DOC1USER);
+    public void listDocsSuccess() throws UserDoesNotExist_Exception {
     	
     	List<String> res = sdStore.listDocs(USER);
         
-        assertEquals(expected.get(0), res.get(0));
+        assertEquals(DOC1USER, res.get(0));
     }
  
     //FAIL: list user docs - user not exist
@@ -83,7 +75,7 @@ public class ContractTest {
     //FAIL: create doc - doc already exists
     @Test(expected = DocAlreadyExists_Exception.class)
     public void createDocAlreadyExists() 
-            throws DocAlreadyExists_Exception, CapacityExceeded_Exception {
+            throws DocAlreadyExists_Exception {
          
         sdStore.createDoc(pair); 
     } 
@@ -91,7 +83,7 @@ public class ContractTest {
     //SUCCESS: replace doc content - doc exist, user exist, capacity not full
     @Test
     public void replaceDocSuccess()  
-            throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception {
+            throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception {
 
         sdStore.store(pair, CONTENT);    
     }     
@@ -135,7 +127,7 @@ public class ContractTest {
     //SUCCESS: load doc - doc exist, user exist
     @Test
     public void loadSuccess() 
-            throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, CapacityExceeded_Exception, DocAlreadyExists_Exception {
+            throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, CapacityExceeded_Exception {
     	
     	sdStore.store(pair, CONTENT); 
         byte[] content = sdStore.load(pair); 
@@ -167,8 +159,7 @@ public class ContractTest {
     @Test
     public void createListAndLoad() 
             throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, 
-            DocAlreadyExists_Exception, CapacityExceeded_Exception, 
-            UserDoesNotExist_Exception {
+            DocAlreadyExists_Exception, CapacityExceeded_Exception  {
         
     	pair.setDocumentId(DOCNOTEXIST);
     	
@@ -183,8 +174,7 @@ public class ContractTest {
     @Test
     public void createStoreAndLoad() 
             throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, 
-            DocAlreadyExists_Exception, CapacityExceeded_Exception,
-            UserDoesNotExist_Exception {
+            DocAlreadyExists_Exception, CapacityExceeded_Exception {
     	
     	pair.setUserId(USERNOTEXIST);
     	pair.setDocumentId(DOCNOTEXIST);

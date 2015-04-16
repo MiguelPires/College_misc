@@ -111,7 +111,7 @@ String url = "http://localhost:8080/store-ws/endpoint";
         
     	port.createDoc(pair); // client operation
 
-		assertEquals(Store.listDocs("user").get(0), doc);
+		assertEquals(Store.listDocs("user").size(), 1);
 
     }
 }

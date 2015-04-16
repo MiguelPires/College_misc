@@ -44,30 +44,41 @@ public class userDirectory {
 		return false;
 	}
 
-	public boolean isFull(byte[] content){
-		if((capacity.getAllowedCapacity() - (capacity.getCurrentSize() + content.length))<0)
-			return true;
-		return false;
-	}
 	
 	public String getUser(){
 		return user;
 	}
 
 	public void storeContent(String docId, byte[] content) throws CapacityExceeded_Exception, DocDoesNotExist_Exception{
-		if(isFull(content))
+		if(isFull())
 			throw new CapacityExceeded_Exception("Repository storage capacity of the user is exceeded", capacity);
 
 		for(document doc: storedDocs)
 			if(doc.getId().equals(docId)){
-				doc.setContent(content);
-				capacity.setCurrentSize(content.length);
+				updateDoc(doc, content);
 				return;
 			}
 
 		DocDoesNotExist doc = new DocDoesNotExist();
 		doc.setDocId(docId);
 		throw new DocDoesNotExist_Exception("Document does not exist", doc);
+	}
+	
+	//makes verifications to know if it's possible to set the content without overflowing the user's capacity
+	public void updateDoc(document doc, byte[] content) throws CapacityExceeded_Exception{
+		byte[] current = doc.getContent();
+		int oldSize=capacity.getCurrentSize();
+		if(current != null)
+			capacity.setCurrentSize(oldSize + content.length - current.length);
+		else
+			capacity.setCurrentSize(oldSize + content.length);
+		
+		if(isFull()){
+			capacity.setCurrentSize(oldSize);
+			throw new CapacityExceeded_Exception("Repository storage capacity of the user is exceeded", capacity);
+		}
+		else
+			doc.setContent(content);
 	}
 
 	public byte[] loadContent(String docId) throws DocDoesNotExist_Exception{
@@ -85,5 +96,9 @@ public class userDirectory {
 		for(document doc: storedDocs)
 			docs.add(doc.getId());
 		return docs;
+	}
+	
+	public CapacityExceeded getCapacity(){
+		return capacity;
 	}
 }

@@ -41,7 +41,7 @@ JUDDI:
 
 [4] Construir e executar **servidor**
 
-> cd ...
+> cd T_03_59_67-project/sd-store
 > mvn clean package 
 > mvn exec:java
 
@@ -62,7 +62,7 @@ JUDDI:
 
 [1] Executar **cliente de testes** ...
 
-> cd ...
+> cd T_03_59_67-project/sd-store
 > mvn test
 
 -------------------------------------------------------------------------------

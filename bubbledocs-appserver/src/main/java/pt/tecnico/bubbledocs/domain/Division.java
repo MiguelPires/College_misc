@@ -35,7 +35,7 @@ public class Division extends Division_Base {
     public void delete() {
         super.delete();
     }
-    
+
     public Integer getValue() {
         return getFirstOperand().getValue() / getSecondOperand().getValue();
     }

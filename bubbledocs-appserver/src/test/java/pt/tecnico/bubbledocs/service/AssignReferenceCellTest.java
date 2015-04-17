@@ -32,7 +32,6 @@ public class AssignReferenceCellTest extends BubbleDocsServiceTest {
     private static final String EMPTY = "3;3";
     private static final String FULL = "4;2";
     private static final String OUT = "6;6";
-
     private static final String REFERENCE = "1;1";
 
     private int ssId;
@@ -69,7 +68,7 @@ public class AssignReferenceCellTest extends BubbleDocsServiceTest {
     @Test
     public void success() throws BubbleDocsException {
         Integer test1 = 19;
-         
+
         AssignReferenceCell service1 = new AssignReferenceCell(creatorToken, ssId, FULL, REFERENCE);
         service1.execute();
         assertEquals(test1, getSpreadSheet(SPREADSHEET).getCell(4, 2).getValue());
@@ -114,24 +113,23 @@ public class AssignReferenceCellTest extends BubbleDocsServiceTest {
                 REFERENCE);
         service.execute();
     }
-    
+
     @Test(expected = SpreadsheetNotFoundException.class)
     public void spreadSheetNotExist() throws BubbleDocsException {
         AssignReferenceCell service = new AssignReferenceCell(writerToken, 100, EMPTY, REFERENCE);
         service.execute();
     }
-    
+
     @Test(expected = UnauthorizedOperationException.class)
     public void invalidValue() throws BubbleDocsException {
         AssignReferenceCell service = new AssignReferenceCell(writerToken, ssId, EMPTY, "ola;adeus");
         service.execute();
     }
-    
+
     @Test(expected = UserNotInSessionException.class)
     public void accessUsernameNotExist() {
         removeUserFromSession(creatorToken);
         AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, EMPTY, REFERENCE);
-
         service.execute();
     }
 }

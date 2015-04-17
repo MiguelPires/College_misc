@@ -10,9 +10,9 @@ public class Root extends Root_Base {
         setEmail("root@root");
         setApplication(bubble);
     }
-    
+
     @Override
     public boolean isRoot() {
-    	return true;
+        return true;
     }
 }

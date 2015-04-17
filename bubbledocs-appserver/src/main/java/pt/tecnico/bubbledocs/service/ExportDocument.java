@@ -37,7 +37,7 @@ public class ExportDocument extends BubbleDocsService {
     @Override
     protected void dispatch() throws BubbleDocsException {
         User user = checkLogin(token);
-        
+
         Spreadsheet ss = getSpreadsheet(docId);
 
         if (ss.getCreator().equals(user) || ss.isWriter(user.getUsername())
@@ -53,4 +53,3 @@ public class ExportDocument extends BubbleDocsService {
             throw new UnauthorizedOperationException();
     }
 }
-

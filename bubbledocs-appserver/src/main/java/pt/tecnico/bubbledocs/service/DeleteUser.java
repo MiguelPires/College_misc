@@ -19,19 +19,18 @@ public class DeleteUser extends BubbleDocsService {
 
     @Override
     protected void dispatch() throws BubbleDocsException {
-    	IDRemoteServices remote = new IDRemoteServices();
+        IDRemoteServices remote = new IDRemoteServices();
         User user = checkLogin(userToken);
-        
+
         if (user.isRoot()) {
-        	try{
-        	remote.removeUser(deleteUsername);
-        	} catch (RemoteInvocationException e) {
-        		throw new UnavailableServiceException();
-        	}
+            try {
+                remote.removeUser(deleteUsername);
+            } catch (RemoteInvocationException e) {
+                throw new UnavailableServiceException();
+            }
 
             getBubbledocs().removeUser(deleteUsername);
         } else
             throw new UnauthorizedOperationException();
     }
-
 }

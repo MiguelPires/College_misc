@@ -67,16 +67,16 @@ public class Bubbledocs extends Bubbledocs_Base {
             getUser(user.getUsername());
             throw new DuplicateUsernameException();
         } catch (UnknownBubbleDocsUserException e) {
-        	
+
         }
-        
+
         try {
-        	getUserByEmail(user.getEmail());
-        	throw new DuplicateEmailException();
+            getUserByEmail(user.getEmail());
+            throw new DuplicateEmailException();
         } catch (UnknownBubbleDocsUserException e) {
-        	
+
         }
-        
+
         super.addUsers(user);
     }
 
@@ -101,7 +101,7 @@ public class Bubbledocs extends Bubbledocs_Base {
         }
         throw new UnknownBubbleDocsUserException("User '" + username + "' not found.");
     }
-    
+
     public User getUserByEmail(String email) throws UnknownBubbleDocsUserException {
         for (User user : getUsersSet()) {
             if (user.getEmail().equals(email)) {
@@ -143,7 +143,7 @@ public class Bubbledocs extends Bubbledocs_Base {
     }
 
     public Spreadsheet createSpreadsheet(User user, String name, int rows, int columns) {
-    	return user.createSpreadsheet(name, rows, columns);
+        return user.createSpreadsheet(name, rows, columns);
     }
 
     public ArrayList<Spreadsheet> getCreatedDocsByUser(User user, String name) {
@@ -160,34 +160,34 @@ public class Bubbledocs extends Bubbledocs_Base {
 
     public Spreadsheet getSpreadsheet(int id) {
         for (User user : getUsersSet()) {
-        	try {
-        		return user.getSpreadsheet(id); 
-        	} catch (SpreadsheetNotFoundException e) {
-        		;
-        	}
+            try {
+                return user.getSpreadsheet(id);
+            } catch (SpreadsheetNotFoundException e) {
+                ;
+            }
         }
         throw new SpreadsheetNotFoundException("Spreadsheet " + id + " not found"); // a spreadsheet nao pertence a este user
     }
-    
+
     // por indicação do professor, não serão inseridas Spreadsheets com o mesmo nome
     public Spreadsheet getSpreadsheet(String name) {
-    	for (User user : getUsersSet()) {
-    		try {
-        		return user.getSpreadsheet(name);       	
-        	} catch (SpreadsheetNotFoundException e) {
-        		; // a spreadsheet nao pertence a este user
-        	}        
-    	}
+        for (User user : getUsersSet()) {
+            try {
+                return user.getSpreadsheet(name);
+            } catch (SpreadsheetNotFoundException e) {
+                ; // a spreadsheet nao pertence a este user
+            }
+        }
         return null;
     }
-    
+
     public void renewPassword(User user) {
-    	user.setPassword(null);
+        user.setPassword(null);
     }
-    
-    public int getNewID(){
-    	int id = getLastID() + 1;
-        setLastID(id);        
+
+    public int getNewID() {
+        int id = getLastID() + 1;
+        setLastID(id);
         return id;
     }
 }

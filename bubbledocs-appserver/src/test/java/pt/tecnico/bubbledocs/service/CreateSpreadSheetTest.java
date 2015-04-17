@@ -20,12 +20,10 @@ public class CreateSpreadSheetTest extends BubbleDocsServiceTest {
     private Integer ROWS = 20;
     private Integer COL = 10;
 
-
     @Override
     public void populate4Test() throws BubbleDocsException {
         createUser(USERNAME, EMAIL, "Vanessa Gaspar");
         vany = addUserToSession(USERNAME);
-
     }
 
     @Test
@@ -38,7 +36,6 @@ public class CreateSpreadSheetTest extends BubbleDocsServiceTest {
         assertEquals(ROWS, createdSpreadsheet.getRows());
         assertEquals(COL, createdSpreadsheet.getColumns());
     }
-
 
     //Creation with empty name 
     @Test(expected = EmptySpreadSheetNameException.class)
@@ -53,7 +50,7 @@ public class CreateSpreadSheetTest extends BubbleDocsServiceTest {
         CreateSpreadSheet service = new CreateSpreadSheet(vany, "Negative", -5, 1);
         service.execute();
     }
-    
+
     @Test(expected = UserNotInSessionException.class)
     public void accessUsernameNotExist() {
         removeUserFromSession(vany);

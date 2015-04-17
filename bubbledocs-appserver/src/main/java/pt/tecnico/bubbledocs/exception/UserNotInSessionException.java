@@ -1,14 +1,12 @@
 package pt.tecnico.bubbledocs.exception;
 
 public class UserNotInSessionException extends BubbleDocsException {
-    public UserNotInSessionException()
-    {
+    public UserNotInSessionException() {
         super();
     }
-    
-    public UserNotInSessionException (String message)
-    {
-        super (message);
+
+    public UserNotInSessionException(String message) {
+        super(message);
     }
 
 }

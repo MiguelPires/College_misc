@@ -2,8 +2,8 @@ package pt.tecnico.bubbledocs.domain;
 
 import org.jdom2.Element;
 
-import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 import pt.tecnico.bubbledocs.exception.ImportDocumentException;
+import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 
 public class Reference extends Reference_Base {
 

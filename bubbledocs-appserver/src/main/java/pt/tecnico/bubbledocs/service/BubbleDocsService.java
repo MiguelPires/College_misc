@@ -25,7 +25,8 @@ public abstract class BubbleDocsService {
         return FenixFramework.getDomainRoot().getBubbledocs();
     }
 
-    public static User createUser(String username, String name, String email) throws BubbleDocsException {
+    public static User createUser(String username, String name, String email)
+                                                                             throws BubbleDocsException {
         return Bubbledocs.getInstance().createUser(username, name, email);
     }
 
@@ -37,7 +38,8 @@ public abstract class BubbleDocsService {
         return getBubbledocs().getUserByToken(token);
     }
 
-    public static ActiveUser getActiveUserByUsername(String username) throws UserNotInSessionException {
+    public static ActiveUser getActiveUserByUsername(String username)
+                                                                     throws UserNotInSessionException {
         return getBubbledocs().getActiveUserByUsername(username);
     }
 
@@ -57,7 +59,7 @@ public abstract class BubbleDocsService {
     public static Spreadsheet getSpreadsheet(int id) throws SpreadsheetNotFoundException {
         return getBubbledocs().getSpreadsheet(id);
     }
-    
+
     public static Spreadsheet getSpreadsheet(String name) {
         return getBubbledocs().getSpreadsheet(name);
     }
@@ -65,14 +67,12 @@ public abstract class BubbleDocsService {
     public static org.jdom2.Document exportToXML(int id) throws ShouldNotExecuteException {
         return getBubbledocs().exportToXML(id);
     }
-    
-    public static Spreadsheet importFromXML (org.jdom2.Document xml)
-    {
+
+    public static Spreadsheet importFromXML(org.jdom2.Document xml) {
         return getBubbledocs().importFromXML(xml.getRootElement());
     }
-    
-    public static void renewPassword (User user)
-    {
+
+    public static void renewPassword(User user) {
         getBubbledocs().renewPassword(user);
     }
 
@@ -84,13 +84,12 @@ public abstract class BubbleDocsService {
             return false;
         }
     }
-    
-    public static User checkLogin(String userToken){
-    	User user = getUserByToken(userToken);
+
+    public static User checkLogin(String userToken) {
+        User user = getUserByToken(userToken);
         if (!isLoggedIn(user))
             throw new UserNotInSessionException();
-        
+
         return user;
     }
-    
 }

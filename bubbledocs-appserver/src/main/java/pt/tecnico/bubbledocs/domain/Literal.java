@@ -1,9 +1,10 @@
 package pt.tecnico.bubbledocs.domain;
 
+import org.jdom2.DataConversionException;
+import org.jdom2.Element;
+
 import pt.tecnico.bubbledocs.exception.ImportDocumentException;
 import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
-import org.jdom2.Element;
-import org.jdom2.DataConversionException;
 
 public class Literal extends Literal_Base {
 

@@ -62,7 +62,7 @@ public class BinaryFunction extends BinaryFunction_Base {
         setSecondOperand(null);
         super.delete();
     }
-    
+
     public Integer getValue() {
         throw new ShouldNotExecuteException();
     }

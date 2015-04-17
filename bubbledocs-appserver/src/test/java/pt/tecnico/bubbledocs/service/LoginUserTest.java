@@ -8,7 +8,6 @@ import mockit.MockUp;
 
 import org.joda.time.LocalTime;
 import org.joda.time.Seconds;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import pt.tecnico.bubbledocs.domain.ActiveUser;
@@ -36,13 +35,14 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         ActiveUser user = getUserFromSession(userToken).getActiveUser();
         return user.getLastAccess().toLocalTime();
     }
-    
+
     @Test
     public void success() {
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void loginUser(String username, String password) throws LoginBubbleDocsException,
-                                                                            RemoteInvocationException {
+            public void loginUser(String username, String password)
+                                                                   throws LoginBubbleDocsException,
+                                                                   RemoteInvocationException {
                 ;
             }
         };
@@ -55,7 +55,7 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         User user = getUserFromSession(token);
         assertEquals(USERNAME, user.getUsername());
         assertEquals(EMAIL, user.getEmail());
-        
+
         int difference = Seconds.secondsBetween(getLastAccessTimeInSession(token), currentTime)
                 .getSeconds();
         assertTrue("Access time in session not correctly set", difference >= 0);
@@ -66,8 +66,9 @@ public class LoginUserTest extends BubbleDocsServiceTest {
     public void successLoginTwice() {
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void loginUser(String username, String password) throws LoginBubbleDocsException,
-                                                                            RemoteInvocationException {
+            public void loginUser(String username, String password)
+                                                                   throws LoginBubbleDocsException,
+                                                                   RemoteInvocationException {
                 ;
             }
         };
@@ -80,18 +81,19 @@ public class LoginUserTest extends BubbleDocsServiceTest {
 
         User user = getUserFromSession(token1);
         assertNull(user);
-        
+
         user = getUserFromSession(token2);
         assertEquals(USERNAME, user.getUsername());
         assertEquals(EMAIL, user.getEmail());
     }
- 
+
     @Test
     public void successNoServiceWithLocalCopy() {
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void loginUser(String username, String password) throws LoginBubbleDocsException,
-                                                                            RemoteInvocationException {
+            public void loginUser(String username, String password)
+                                                                   throws LoginBubbleDocsException,
+                                                                   RemoteInvocationException {
                 ;
             }
         };
@@ -103,15 +105,16 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         User user = getUserFromSession(token);
         assertEquals(USERNAME, user.getUsername());
         assertEquals(EMAIL, user.getEmail());
-        
+
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void loginUser(String username, String password) throws LoginBubbleDocsException,
-                                                                             RemoteInvocationException {
+            public void loginUser(String username, String password)
+                                                                   throws LoginBubbleDocsException,
+                                                                   RemoteInvocationException {
                 throw new RemoteInvocationException("Service unavailable");
             }
         };
-        
+
         service.execute();
         String token2 = service.getUserToken();
         user = getUserFromSession(token2);
@@ -123,8 +126,9 @@ public class LoginUserTest extends BubbleDocsServiceTest {
     public void loginUnknownUser() {
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void loginUser(String username, String password) throws LoginBubbleDocsException,
-                                                                            RemoteInvocationException {
+            public void loginUser(String username, String password)
+                                                                   throws LoginBubbleDocsException,
+                                                                   RemoteInvocationException {
                 throw new LoginBubbleDocsException("Unknown user");
             }
         };
@@ -132,13 +136,14 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         LoginUser service = new LoginUser("jp2", PASSWORD);
         service.execute();
     }
- 
+
     @Test(expected = LoginBubbleDocsException.class)
     public void loginUserWithinWrongPassword() {
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void loginUser(String username, String password) throws LoginBubbleDocsException,
-                                                                             RemoteInvocationException {
+            public void loginUser(String username, String password)
+                                                                   throws LoginBubbleDocsException,
+                                                                   RemoteInvocationException {
                 throw new LoginBubbleDocsException("Wrong password");
             }
         };
@@ -146,13 +151,14 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         LoginUser service = new LoginUser(USERNAME, "jp2");
         service.execute();
     }
-    
+
     @Test(expected = UnavailableServiceException.class)
     public void NoServiceAndNoLocalCopy() {
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void loginUser(String username, String password) throws LoginBubbleDocsException,
-                                                                             RemoteInvocationException {
+            public void loginUser(String username, String password)
+                                                                   throws LoginBubbleDocsException,
+                                                                   RemoteInvocationException {
                 throw new RemoteInvocationException("Service unavailable");
             }
         };

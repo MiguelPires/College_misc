@@ -3,8 +3,6 @@ package pt.tecnico.bubbledocs.service;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 
-import mockit.Mocked;
-
 import org.junit.After;
 import org.junit.Before;
 
@@ -56,7 +54,6 @@ public class BubbleDocsServiceTest {
     // returns a spreadsheet whose name is equal to name
     public Spreadsheet getSpreadSheet(String name) {
         return BubbleDocsService.getSpreadsheet(name);
-
     }
 
     // returns the user registered in the application whose username is equal to username
@@ -76,7 +73,6 @@ public class BubbleDocsServiceTest {
     // remove a user from session given its token
     public void removeUserFromSession(String token) throws UserNotInSessionException {
         BubbleDocsService.removeUserByToken(token);
-
     }
 
     // return the user registered in session whose token is equal to token
@@ -87,11 +83,11 @@ public class BubbleDocsServiceTest {
             return null;
         }
     }
-    
+
     public org.jdom2.Document exportToXML(int id) {
         return BubbleDocsService.exportToXML(id);
     }
-    
+
     public Spreadsheet importFromXML(org.jdom2.Document doc) {
         return BubbleDocsService.importFromXML(doc);
     }

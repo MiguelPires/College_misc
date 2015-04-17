@@ -35,8 +35,8 @@ public class Spreadsheet extends Spreadsheet_Base {
 
     @Override
     public void setCreator(User creator) {
-    	creator.addCreatedDocs(this);
-    	super.setCreator(creator);
+        creator.addCreatedDocs(this);
+        super.setCreator(creator);
     }
 
     public Cell getCell(Integer row, Integer column) {

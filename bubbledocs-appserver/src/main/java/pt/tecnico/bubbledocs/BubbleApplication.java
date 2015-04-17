@@ -25,7 +25,7 @@ public class BubbleApplication {
     private static Bubbledocs bubbleapp;
 
     public static void main(String[] args) throws ShouldNotExecuteException,
-            UnauthorizedOperationException {
+                                          UnauthorizedOperationException {
 
         System.out.println("+--------------------------------------------+");
         System.out.println("+   Welcome to the Bubbledocs application!   +");
@@ -91,7 +91,8 @@ public class BubbleApplication {
     }
 
     @Atomic
-    private static ArrayList<org.jdom2.Document> exportUserDocs(String userName) throws ShouldNotExecuteException {
+    private static ArrayList<org.jdom2.Document> exportUserDocs(String userName)
+                                                                                throws ShouldNotExecuteException {
         ArrayList<org.jdom2.Document> docList = new ArrayList<org.jdom2.Document>();
 
         try {
@@ -113,7 +114,8 @@ public class BubbleApplication {
     }
 
     @Atomic
-    public static void importUserDocs(String userName, org.jdom2.Document jdomDoc) throws UnauthorizedOperationException {
+    public static void importUserDocs(String userName, org.jdom2.Document jdomDoc)
+                                                                                  throws UnauthorizedOperationException {
         Element doc = jdomDoc.getRootElement();
         Element creatorElement = doc.getChild("creator");
         Element userElement = creatorElement.getChild("user");

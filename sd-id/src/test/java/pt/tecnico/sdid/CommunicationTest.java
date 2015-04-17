@@ -1,54 +1,65 @@
 package pt.tecnico.sdid;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import java.io.IOException;
 
 import javax.xml.registry.JAXRException;
 
 import mockit.Mock;
 import mockit.MockUp;
 
-import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import pt.tecnico.ws.uddi.UDDINaming;
+import pt.ulisboa.tecnico.sdis.id.ws.EmailAlreadyExists_Exception;
+import pt.ulisboa.tecnico.sdis.id.ws.InvalidEmail_Exception;
+import pt.ulisboa.tecnico.sdis.id.ws.InvalidUser_Exception;
+import pt.ulisboa.tecnico.sdis.id.ws.UserAlreadyExists_Exception;
 
 // Communication test
 public class CommunicationTest extends SDIdServiceTest {
-    
-    @BeforeClass
-    public void setUpOnce() {
-        ; // don't connect with the server
+    SDIdMain server;
+
+    @Before
+    public void setUp() throws JAXRException, EmailAlreadyExists_Exception, InvalidEmail_Exception,
+                       UserAlreadyExists_Exception, InvalidUser_Exception {
+        ; // don't create server
     }
-    
-    @After
-    public void tearDown() {
-        server = null;   
-        endpointAddress = null;
+
+    public void tearDown() throws JAXRException {
+        super.tearDown();
+        server.getEndpoint().stop();
     }
-    
+
     // publishes a server instance, looks it up and checks if it's valid
     @Test
     public void success() throws Exception {
-        connectToServer();
+        String[] args = new String[3];
+        args[0] = uddiURL;
+        args[1] = serverName;
+        args[2] = serverURL;
 
-        assertEquals(serverURL, endpointAddress);
-        assertNotNull(server);
+        server = new SDIdMain();
+        SDIdMain.setUp(args);
     }
-    
+
     @Test
-    public void successSingleUDDIFailure() throws JAXRException {
-        
+    public void successUDDIFailure() throws JAXRException, EmailAlreadyExists_Exception,
+                                    InvalidEmail_Exception, UserAlreadyExists_Exception,
+                                    IOException, InvalidUser_Exception {
+
         new MockUp<UDDINaming>() {
             @Mock
             public void rebind(String orgName, String url) throws JAXRException {
                 throw new JAXRException();
             }
         };
-        connectToServer();
+        String[] args = new String[3];
+        args[0] = uddiURL;
+        args[1] = serverName;
+        args[2] = serverURL;
 
-        assertEquals(serverURL, endpointAddress);
-        assertNotNull(server);
+        server = new SDIdMain();
+        SDIdMain.setUp(args);
     }
 }

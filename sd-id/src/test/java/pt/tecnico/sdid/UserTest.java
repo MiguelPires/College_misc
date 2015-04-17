@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import pt.ulisboa.tecnico.sdis.id.ws.EmailAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.InvalidEmail_Exception;
+import pt.ulisboa.tecnico.sdis.id.ws.InvalidUser_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.UserAlreadyExists;
 import pt.ulisboa.tecnico.sdis.id.ws.UserAlreadyExists_Exception;
 
@@ -22,7 +23,7 @@ public class UserTest {
     private static SDIdImpl server;
     
     @Before
-    public void setUp(){
+    public void setUp() throws EmailAlreadyExists_Exception, InvalidEmail_Exception, UserAlreadyExists_Exception, InvalidUser_Exception{
     	server = new SDIdImpl();
     }
     
@@ -57,7 +58,7 @@ public class UserTest {
     
     @Test (expected = UserAlreadyExists_Exception.class)
     public void userAlreadyExists() throws Exception {
-    	server.addUser(USERNAME2, EMAIL2, PASSWORD2);
-    	server.addUser(USERNAME2, EMAIL, PASSWORD2);
+        server.addUser(USERNAME2, EMAIL2, PASSWORD2);
+        server.addUser(USERNAME2, EMAIL, PASSWORD2);
     }
 }

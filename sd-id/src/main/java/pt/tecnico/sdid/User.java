@@ -15,7 +15,7 @@ public class User {
     private String password;
 
     public User(String userId, String email, String password) throws InvalidEmail_Exception,
-            InvalidUser_Exception {
+                                                             InvalidUser_Exception {
         setEmail(email);
         setUserId(userId);
         setPassword(password);

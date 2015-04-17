@@ -57,14 +57,17 @@ public class SDIdImpl implements SDId {
         getUsers().add(user);
     }
 
-    public SDIdImpl() {
+    public SDIdImpl() throws EmailAlreadyExists_Exception, InvalidEmail_Exception,
+        UserAlreadyExists_Exception, InvalidUser_Exception {
         setUsers(new ArrayList<User>());
     }
 
-    public User addUser(String username, String email, String password) throws EmailAlreadyExists_Exception,
-            InvalidEmail_Exception,
-            UserAlreadyExists_Exception, InvalidUser_Exception {
-        
+    public User addUser(String username, String email, String password)
+                                                                       throws EmailAlreadyExists_Exception,
+                                                                       InvalidEmail_Exception,
+                                                                       UserAlreadyExists_Exception,
+                                                                       InvalidUser_Exception {
+
         User user = new User(username, email, password);
         addUser(user);
         return user;
@@ -89,12 +92,14 @@ public class SDIdImpl implements SDId {
         }
         UserDoesNotExist userProblem = new UserDoesNotExist();
         userProblem.setUserId(email);
-        throw new UserDoesNotExist_Exception("User with email address" + email + " not found.", userProblem);
+        throw new UserDoesNotExist_Exception("User with email address" + email + " not found.",
+                userProblem);
     }
 
     public void createUser(String userId, String email) throws EmailAlreadyExists_Exception,
-            InvalidEmail_Exception,
-            UserAlreadyExists_Exception, InvalidUser_Exception {
+                                                       InvalidEmail_Exception,
+                                                       UserAlreadyExists_Exception,
+                                                       InvalidUser_Exception {
 
 
         try {
@@ -138,14 +143,15 @@ public class SDIdImpl implements SDId {
         users.remove(getUser(userId));
     }
 
-    public byte[] requestAuthentication(String userId, byte[] reserved) throws AuthReqFailed_Exception {
+    public byte[] requestAuthentication(String userId, byte[] reserved)
+                                                                       throws AuthReqFailed_Exception {
         byte[] byteTrue = new byte[1];
         byteTrue[0] = (byte) 1;
-        
+
         try {
             User user = getUser(userId);
             byte[] password = user.getPassword().getBytes();
-            
+
             if (Arrays.equals(reserved, password)) {
                 return byteTrue;
             } else {
@@ -155,7 +161,7 @@ public class SDIdImpl implements SDId {
             }
         } catch (UserDoesNotExist_Exception e) {
             byte[] userByte = userId.getBytes();
-            AuthReqFailed authProblem = new AuthReqFailed(); 
+            AuthReqFailed authProblem = new AuthReqFailed();
             authProblem.setReserved(userByte);
             throw new AuthReqFailed_Exception("User doesn't exist.", authProblem);
         }

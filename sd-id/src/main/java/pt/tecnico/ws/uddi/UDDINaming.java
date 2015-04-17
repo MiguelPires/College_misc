@@ -8,13 +8,9 @@ import javax.xml.registry.*;
 import javax.xml.registry.infomodel.*;
 
 /**
- *  This class defines simple methods to
- *  bind UDDI organizations to URL addresses:
- *  list, lookup, unbind, bind, rebind.
- *  It is inspired by the java.rmi.Naming class.
- *
- *  To achieve greater control of the underlying registry,
- *  the JAX-R API should be used instead.
+ * This class defines simple methods to bind UDDI organizations to URL addresses: list,
+ * lookup, unbind, bind, rebind. It is inspired by the java.rmi.Naming class. To achieve
+ * greater control of the underlying registry, the JAX-R API should be used instead.
  */
 public class UDDINaming {
 
@@ -34,8 +30,8 @@ public class UDDINaming {
     private char[] password = "password".toCharArray();
 
     /**
-     * option to establish connection automatically - Should the lookup method
-     * connect automatically? true - yes, false - no
+     * option to establish connection automatically - Should the lookup method connect
+     * automatically? true - yes, false - no
      */
     private boolean autoConnectFlag;
 
@@ -54,8 +50,8 @@ public class UDDINaming {
     }
 
     /**
-     * Create an UDDI client configured to access the specified URL and with the
-     * specified auto-connect option
+     * Create an UDDI client configured to access the specified URL and with the specified
+     * auto-connect option
      */
     public UDDINaming(String url, boolean autoConnect) throws JAXRException {
         if (!url.startsWith("http"))
@@ -65,8 +61,7 @@ public class UDDINaming {
 
         try {
             InitialContext context = new InitialContext();
-            connFactory = (ConnectionFactory) context
-                    .lookup("java:jboss/jaxr/ConnectionFactory");
+            connFactory = (ConnectionFactory) context.lookup("java:jboss/jaxr/ConnectionFactory");
         } catch (NamingException e) {
             // Could not find using JNDI
             if (debugFlag) {
@@ -79,21 +74,24 @@ public class UDDINaming {
 
         // define system properties used to perform replacements in uddi.xml
         if (System.getProperty("javax.xml.registry.queryManagerURL") == null)
-            System.setProperty("javax.xml.registry.queryManagerURL", url + "/juddiv3/services/inquiry");
+            System.setProperty("javax.xml.registry.queryManagerURL", url
+                    + "/juddiv3/services/inquiry");
 
         if (System.getProperty("javax.xml.registry.lifeCycleManagerURL") == null)
-            System.setProperty("javax.xml.registry.lifeCycleManagerURL", url + "/juddiv3/services/publish");
+            System.setProperty("javax.xml.registry.lifeCycleManagerURL", url
+                    + "/juddiv3/services/publish");
 
         if (System.getProperty("javax.xml.registry.securityManagerURL") == null)
-            System.setProperty("javax.xml.registry.securityManagerURL", url + "/juddiv3/services/security");
+            System.setProperty("javax.xml.registry.securityManagerURL", url
+                    + "/juddiv3/services/security");
 
         Properties props = new Properties();
         props.setProperty("scout.juddi.client.config.file", "uddi.xml");
         props.setProperty("javax.xml.registry.queryManagerURL",
-            System.getProperty("javax.xml.registry.queryManagerURL"));
+                System.getProperty("javax.xml.registry.queryManagerURL"));
         props.setProperty("scout.proxy.uddiVersion", "3.0");
         props.setProperty("scout.proxy.transportClass",
-            "org.apache.juddi.v3.client.transport.JAXWSTransport");
+                "org.apache.juddi.v3.client.transport.JAXWSTransport");
         connFactory.setProperties(props);
     }
 
@@ -128,15 +126,10 @@ public class UDDINaming {
 
 
     /**
-     *  Main method expects two arguments:
-     *  - UDDI server URL
-     *  - Organization name
-     *
-     *  Main performs a lookup on UDDI server using the organization name.
-     *  If a registration is found, the service URL is printed to standard output.
-     *  If not, nothing is printed.
-     *
-     *  Standard error is used to print error messages.
+     * Main method expects two arguments: - UDDI server URL - Organization name Main
+     * performs a lookup on UDDI server using the organization name. If a registration is
+     * found, the service URL is printed to standard output. If not, nothing is printed.
+     * Standard error is used to print error messages.
      */
     public static void main(String[] args) {
         // Check arguments
@@ -174,8 +167,7 @@ public class UDDINaming {
         conn = connFactory.createConnection();
 
         // Define credentials
-        PasswordAuthentication passwdAuth = new PasswordAuthentication(
-                username, password);
+        PasswordAuthentication passwdAuth = new PasswordAuthentication(username, password);
         Set<PasswordAuthentication> creds = new HashSet<PasswordAuthentication>();
         creds.add(passwdAuth);
         conn.setCredentials(creds);
@@ -218,8 +210,7 @@ public class UDDINaming {
             if (autoConnectFlag)
                 connect();
             else
-                throw new IllegalStateException(
-                        "Not connected! Cannot perform operation!");
+                throw new IllegalStateException("Not connected! Cannot perform operation!");
     }
 
     /** helper method to automatically disconnect from registry */
@@ -304,22 +295,25 @@ public class UDDINaming {
         namePatterns.add(orgName);
 
         // perform search
-        BulkResponse r = bqm.findOrganizations(findQualifiers, namePatterns,
-                null, null, null, null);
+        BulkResponse r = bqm
+                .findOrganizations(findQualifiers, namePatterns, null, null, null, null);
         @SuppressWarnings("unchecked")
         Collection<Organization> orgs = r.getCollection();
-        if (debugFlag) System.out.printf("Found %d organizations%n", orgs.size());
+        if (debugFlag)
+            System.out.printf("Found %d organizations%n", orgs.size());
 
         for (Organization o : orgs) {
             @SuppressWarnings("unchecked")
             Collection<Service> services = o.getServices();
-            if (debugFlag) System.out.printf("Found %d services%n", services.size());
+            if (debugFlag)
+                System.out.printf("Found %d services%n", services.size());
 
             for (Service s : services) {
                 @SuppressWarnings("unchecked")
                 Collection<ServiceBinding> serviceBindinds = (Collection<ServiceBinding>) s
                         .getServiceBindings();
-                if (debugFlag) System.out.printf("Found %d service bindings%n", serviceBindinds.size());
+                if (debugFlag)
+                    System.out.printf("Found %d service bindings%n", serviceBindinds.size());
 
                 for (ServiceBinding sb : serviceBindinds) {
                     result.add(sb.getAccessURI());
@@ -328,7 +322,8 @@ public class UDDINaming {
         }
 
         // service binding not found
-        if (debugFlag) System.out.printf("Returning list with size %d%n", result.size());
+        if (debugFlag)
+            System.out.printf("Returning list with size %d%n", result.size());
         return result;
     }
 
@@ -338,11 +333,14 @@ public class UDDINaming {
 
         if (listResultSize == 0) {
             // service binding not found
-            if (debugFlag) System.out.println("Service binding not found; Returning null");
+            if (debugFlag)
+                System.out.println("Service binding not found; Returning null");
             return null;
         } else {
             if (listResultSize > 1)
-                if (debugFlag) System.out.printf("Returning first service binding of %d found%n", listResultSize);
+                if (debugFlag)
+                    System.out.printf("Returning first service binding of %d found%n",
+                            listResultSize);
             return listResult.iterator().next();
         }
     }
@@ -356,8 +354,8 @@ public class UDDINaming {
         namePatterns.add(orgName);
 
         // Search existing
-        BulkResponse response = bqm.findOrganizations(findQualifiers,
-                namePatterns, null, null, null, null);
+        BulkResponse response = bqm.findOrganizations(findQualifiers, namePatterns, null, null,
+                null, null);
         @SuppressWarnings("unchecked")
         Collection<Organization> orgs = response.getCollection();
         Collection<Key> orgsToDelete = new ArrayList<Key>();
@@ -370,10 +368,10 @@ public class UDDINaming {
         if (orgsToDelete.isEmpty()) {
             return true;
         } else {
-            if (debugFlag) System.out.printf("%d organizations to delete%n", orgsToDelete.size());
+            if (debugFlag)
+                System.out.printf("%d organizations to delete%n", orgsToDelete.size());
 
-            BulkResponse deleteResponse = blcm
-                    .deleteOrganizations(orgsToDelete);
+            BulkResponse deleteResponse = blcm.deleteOrganizations(orgsToDelete);
             boolean result = (deleteResponse.getStatus() == JAXRResponse.STATUS_SUCCESS);
 
             if (debugFlag) {
@@ -401,8 +399,8 @@ public class UDDINaming {
         return publish(orgName, serviceName, bindingDesc, url);
     }
 
-    private boolean publish(String orgName, String serviceName,
-            String bindingDescription, String bindingURL) throws JAXRException {
+    private boolean publish(String orgName, String serviceName, String bindingDescription,
+                            String bindingURL) throws JAXRException {
 
         // Create organization
         Organization org = blcm.createOrganization(orgName);
@@ -414,8 +412,7 @@ public class UDDINaming {
         org.addService(service);
         // Create serviceBinding
         ServiceBinding serviceBinding = blcm.createServiceBinding();
-        serviceBinding.setDescription(blcm
-                .createInternationalString(bindingDescription));
+        serviceBinding.setDescription(blcm.createInternationalString(bindingDescription));
         serviceBinding.setValidateURI(false);
         // Define the Web Service endpoint address here
         serviceBinding.setAccessURI(bindingURL);

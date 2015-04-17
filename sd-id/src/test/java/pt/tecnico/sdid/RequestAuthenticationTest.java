@@ -22,20 +22,20 @@ public class RequestAuthenticationTest extends SDIdServiceTest {
 
     @Test
     public void success() throws AuthReqFailed_Exception {
-        result = server.requestAuthentication(USERNAME, PW_BYTE);
+        result = cServer.requestAuthentication(USERNAME, PW_BYTE);
         byte[] byteTrue = new byte[1];
         byteTrue[0] = (byte) 1;
-        
+
         assertEquals(byteTrue[0], result[0]);
     }
 
     @Test(expected = AuthReqFailed_Exception.class)
     public void userDoesNotExist() throws AuthReqFailed_Exception {
-        server.requestAuthentication("francisco", PW_BYTE);
+        cServer.requestAuthentication("francisco", PW_BYTE);
     }
 
     @Test(expected = AuthReqFailed_Exception.class)
     public void wrongPassword() throws AuthReqFailed_Exception {
-        server.requestAuthentication(USERNAME, WPW_BYTE);
+        cServer.requestAuthentication(USERNAME, WPW_BYTE);
     }
 }

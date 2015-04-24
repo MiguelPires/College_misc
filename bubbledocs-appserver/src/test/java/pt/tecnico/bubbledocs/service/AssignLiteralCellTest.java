@@ -30,7 +30,8 @@ public class AssignLiteralCellTest extends BubbleDocsServiceTest {
     private static final String PROTECTED = "2;2";
     private static final String EMPTY = "3;3";
     private static final String FULL = "4;2";
-    private static final String OUT = "6;6";
+    private static final String OUTX = "6;1";
+    private static final String OUTY = "1;6";
 
     private int ssId;
     private String creatorToken, writerToken, readerToken, notAllowedToken;
@@ -80,8 +81,14 @@ public class AssignLiteralCellTest extends BubbleDocsServiceTest {
     }
 
     @Test(expected = CellOutOfBoundsException.class)
-    public void accessToNonExistentCell() throws BubbleDocsException {
-        AssignLiteralCell service = new AssignLiteralCell(creatorToken, ssId, OUT, "88");
+    public void XCoordinateOutOfBounds() throws BubbleDocsException {
+        AssignLiteralCell service = new AssignLiteralCell(creatorToken, ssId, OUTX, "88");
+        service.execute();
+    }
+
+    @Test(expected = CellOutOfBoundsException.class)
+    public void YCoordinateOutOfBounds() throws BubbleDocsException {
+        AssignLiteralCell service = new AssignLiteralCell(creatorToken, ssId, OUTY, "88");
         service.execute();
     }
 

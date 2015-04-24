@@ -31,7 +31,8 @@ public class AssignReferenceCellTest extends BubbleDocsServiceTest {
     private static final String PROTECTED = "2;2";
     private static final String EMPTY = "3;3";
     private static final String FULL = "4;2";
-    private static final String OUT = "6;6";
+    private static final String OUTX = "6;1";
+    private static final String OUTY = "1;6";
     private static final String REFERENCE = "1;1";
 
     private int ssId;
@@ -90,14 +91,26 @@ public class AssignReferenceCellTest extends BubbleDocsServiceTest {
     }
 
     @Test(expected = CellOutOfBoundsException.class)
-    public void accessToNonExistentCell() {
-        AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, OUT, REFERENCE);
+    public void XCoordinateOutOfBounds() {
+        AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, OUTX, REFERENCE);
         service.execute();
     }
 
     @Test(expected = CellOutOfBoundsException.class)
-    public void referenceToNonExistentCell() {
-        AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, EMPTY, OUT);
+    public void YCoordinateOutOfBounds() {
+        AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, OUTY, REFERENCE);
+        service.execute();
+    }
+
+    @Test(expected = CellOutOfBoundsException.class)
+    public void XCoordinateOfReferenceOutOfBounds() {
+        AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, EMPTY, OUTX);
+        service.execute();
+    }
+
+    @Test(expected = CellOutOfBoundsException.class)
+    public void YCoordinateOfReferenceOutOfBounds() {
+        AssignReferenceCell service = new AssignReferenceCell(creatorToken, ssId, EMPTY, OUTY);
         service.execute();
     }
 

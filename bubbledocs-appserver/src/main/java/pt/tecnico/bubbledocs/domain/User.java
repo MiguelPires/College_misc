@@ -40,6 +40,12 @@ public class User extends User_Base {
         app.addUsers(this);
     }
 
+    @Override
+    public void setPassword(String password) {
+        super.setPassword(password);
+        setValidPassword(true);
+    }
+
     public Spreadsheet createSpreadsheet(String name, int rows, int columns) {
         if (rows < 1 || columns < 1)
             throw new InvalidSpreadsheetDimensionsException();
@@ -115,5 +121,9 @@ public class User extends User_Base {
 
     public boolean isRoot() {
         return false;
+    }
+
+    public void invalidatePassword() {
+        setValidPassword(false);
     }
 }

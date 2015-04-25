@@ -134,10 +134,4 @@ public class ExportDocumentIntegratorTest extends BubbleDocsServiceTest {
         service.execute();
     }
 
-    @Test(expected = SpreadsheetNotFoundException.class)
-    public void nullSpreadSheetID(){
-        ExportDocument service = new ExportDocument(ars, null);
-        service.execute();
-    }
-
 }

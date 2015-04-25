@@ -1,11 +1,28 @@
 package pt.tecnico.ws.uddi;
 
 import java.net.PasswordAuthentication;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
-import javax.naming.*;
-import javax.xml.registry.*;
-import javax.xml.registry.infomodel.*;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.xml.registry.BulkResponse;
+import javax.xml.registry.BusinessLifeCycleManager;
+import javax.xml.registry.BusinessQueryManager;
+import javax.xml.registry.Connection;
+import javax.xml.registry.ConnectionFactory;
+import javax.xml.registry.FindQualifier;
+import javax.xml.registry.JAXRException;
+import javax.xml.registry.JAXRResponse;
+import javax.xml.registry.RegistryService;
+import javax.xml.registry.infomodel.Key;
+import javax.xml.registry.infomodel.Organization;
+import javax.xml.registry.infomodel.Service;
+import javax.xml.registry.infomodel.ServiceBinding;
 
 /**
  * This class defines simple methods to bind UDDI organizations to URL addresses: list,

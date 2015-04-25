@@ -2,15 +2,9 @@ package pt.tecnico.sdid;
 
 import static org.junit.Assert.assertEquals;
 
-import java.nio.ByteBuffer;
-
-import org.junit.Before;
 import org.junit.Test;
 
 import pt.ulisboa.tecnico.sdis.id.ws.AuthReqFailed_Exception;
-import pt.ulisboa.tecnico.sdis.id.ws.EmailAlreadyExists_Exception;
-import pt.ulisboa.tecnico.sdis.id.ws.InvalidEmail_Exception;
-import pt.ulisboa.tecnico.sdis.id.ws.UserAlreadyExists;
 
 // WSDL contract test - Authentication Service
 public class RequestAuthenticationTest extends SDIdServiceTest {

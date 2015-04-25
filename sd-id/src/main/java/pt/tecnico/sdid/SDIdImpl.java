@@ -58,7 +58,7 @@ public class SDIdImpl implements SDId {
     }
 
     public SDIdImpl() throws EmailAlreadyExists_Exception, InvalidEmail_Exception,
-        UserAlreadyExists_Exception, InvalidUser_Exception {
+                     UserAlreadyExists_Exception, InvalidUser_Exception {
         setUsers(new ArrayList<User>());
     }
 
@@ -159,10 +159,12 @@ public class SDIdImpl implements SDId {
                 authProblem.setReserved(password);
                 throw new AuthReqFailed_Exception("Wrong password.", authProblem);
             }
-        } catch (UserDoesNotExist_Exception e) {
-            byte[] userByte = userId.getBytes();
+        } catch (Exception e) {
             AuthReqFailed authProblem = new AuthReqFailed();
-            authProblem.setReserved(userByte);
+            if (userId != null) {
+                byte[] userByte = userId.getBytes();
+                authProblem.setReserved(userByte);
+            }
             throw new AuthReqFailed_Exception("User doesn't exist.", authProblem);
         }
     }

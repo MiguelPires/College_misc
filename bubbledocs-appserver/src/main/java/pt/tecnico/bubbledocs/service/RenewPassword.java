@@ -6,18 +6,16 @@ import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 
-public class RenewPassword extends BubbleDocsService {
-
-    private String token;
+public class RenewPassword extends CheckLogin {
 
     public RenewPassword(String userToken) {
-        this.token = userToken;
+        this.userToken = userToken;
     }
 
     @Override
     protected void dispatch() throws BubbleDocsException {
         IDRemoteServices remote = new IDRemoteServices();
-        User user = checkLogin(token);
+        super.dispatch();
 
         try {
             remote.renewPassword(user.getUsername());
@@ -26,6 +24,6 @@ public class RenewPassword extends BubbleDocsService {
         }
 
         renewPassword(user);
-        removeUserByToken(token);
+        removeUserByToken(userToken);
     }
 }

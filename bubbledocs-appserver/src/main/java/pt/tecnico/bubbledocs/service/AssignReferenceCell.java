@@ -7,7 +7,7 @@ import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 
-public class AssignReferenceCell extends BubbleDocsService {
+public class AssignReferenceCell extends CheckLogin {
     private int docId;
     private int cellRow;
     private int cellColumn;
@@ -16,7 +16,6 @@ public class AssignReferenceCell extends BubbleDocsService {
 
     private String result;
     private String cellId;
-    private String userToken;
     private String reference;
 
     public String getResult() {
@@ -32,7 +31,7 @@ public class AssignReferenceCell extends BubbleDocsService {
 
     @Override
     protected void dispatch() throws BubbleDocsException {
-        User user = checkLogin(userToken);
+        super.dispatch();
 
         Spreadsheet doc = getBubbledocs().getSpreadsheet(docId);
 

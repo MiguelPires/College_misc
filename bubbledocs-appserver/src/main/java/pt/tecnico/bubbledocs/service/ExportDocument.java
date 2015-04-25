@@ -11,9 +11,8 @@ import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
 import pt.tecnico.bubbledocs.service.remote.StoreRemoteServices;
 
-public class ExportDocument extends BubbleDocsService {
+public class ExportDocument extends CheckLogin {
     private org.jdom2.Document docXML;
-    private String token;
     private int docId;
     private StoreRemoteServices storeService;
 
@@ -29,14 +28,14 @@ public class ExportDocument extends BubbleDocsService {
     }
 
     public ExportDocument(String userToken, int docId) {
-        this.token = userToken;
+        this.userToken = userToken;
         this.docId = docId;
         this.storeService = new StoreRemoteServices();
     }
 
     @Override
     protected void dispatch() throws BubbleDocsException {
-        User user = checkLogin(token);
+        super.dispatch();
 
         Spreadsheet ss = getSpreadsheet(docId);
 
@@ -45,7 +44,7 @@ public class ExportDocument extends BubbleDocsService {
 
             docXML = exportToXML(docId);
             try {
-                storeService.storeDocument(token, ss.getName(), convertToBytes(docXML));
+                storeService.storeDocument(userToken, ss.getName(), convertToBytes(docXML));
             } catch (RemoteInvocationException e) {
                 throw new UnavailableServiceException("The storage service is unavailable");
             }

@@ -7,9 +7,8 @@ import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 
-public class DeleteUser extends BubbleDocsService {
+public class DeleteUser extends CheckLogin {
 
-    private String userToken;
     private String deleteUsername;
 
     public DeleteUser(String userToken, String toDeleteUsername) {
@@ -20,7 +19,7 @@ public class DeleteUser extends BubbleDocsService {
     @Override
     protected void dispatch() throws BubbleDocsException {
         IDRemoteServices remote = new IDRemoteServices();
-        User user = checkLogin(userToken);
+        super.dispatch();
 
         if (user.isRoot()) {
             try {

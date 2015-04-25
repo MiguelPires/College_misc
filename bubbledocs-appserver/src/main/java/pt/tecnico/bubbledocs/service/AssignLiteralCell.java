@@ -7,9 +7,8 @@ import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 
-public class AssignLiteralCell extends BubbleDocsService {
+public class AssignLiteralCell extends CheckLogin {
     private String result;
-    private String token;
     private String cellId;
     private String literal;
     private int docId;
@@ -18,7 +17,7 @@ public class AssignLiteralCell extends BubbleDocsService {
     private int lit;
 
     public AssignLiteralCell(String userToken, int docId, String cellId, String literal) {
-        this.token = userToken;
+        this.userToken = userToken;
         this.cellId = cellId;
         this.literal = literal;
         this.docId = docId;
@@ -36,7 +35,7 @@ public class AssignLiteralCell extends BubbleDocsService {
 
     @Override
     protected void dispatch() throws BubbleDocsException {
-        User user = checkLogin(token);
+        super.dispatch();
 
         Spreadsheet ss = getSpreadsheet(docId);
 

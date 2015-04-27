@@ -1,4 +1,4 @@
-package pt.tecnico.bubbledocs.service;
+package pt.tecnico.bubbledocs.integration.component;
 
 import static org.junit.Assert.assertEquals;
 import mockit.Mock;
@@ -9,14 +9,20 @@ import org.junit.Test;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.DuplicateUsernameException;
+import pt.tecnico.bubbledocs.exception.DuplicateEmailException;
 import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
 import pt.tecnico.bubbledocs.exception.InvalidEmailException;
 import pt.tecnico.bubbledocs.exception.InvalidUsernameException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
+import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
+import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
+import pt.tecnico.bubbledocs.service.CreateUser;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 
-public class CreateUserTest extends BubbleDocsServiceTest {
+
+
+public class CreateUserIntegratorTest extends BubbleDocsServiceTest {
 
     private String root;
     private String ars;
@@ -35,15 +41,8 @@ public class CreateUserTest extends BubbleDocsServiceTest {
 
     @Test
     public void success() {
-        new MockUp<IDRemoteServices>() {
-            @Mock
-            public void createUser(String username, String email) {
-                //
-            }
-        };
-
         CreateUser service = new CreateUser(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
-                "José Ferreira");
+            "José Ferreira");
         service.execute();
 
         User user = getUserFromUsername(USERNAME_DOES_NOT_EXIST);
@@ -149,4 +148,29 @@ public class CreateUserTest extends BubbleDocsServiceTest {
                 "José Ferreira");
         service.execute();
     }
+
+    @Test
+    public void remoteServiceFails() {
+        
+        CreateUser service = new CreateUser(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
+                "José Ferreira");
+        service.execute();
+        
+        new MockUp<IDRemoteServices>() {
+            @Mock
+            public void createUser(String username, String email) throws InvalidUsernameException,
+                                                         DuplicateUsernameException,
+                                                         DuplicateEmailException,
+                                                         InvalidEmailException,
+                                                         RemoteInvocationException {
+
+                throw new RemoteInvocationException();
+            }
+        };
+
+        service.execute();
+    }
+
+
+
 }

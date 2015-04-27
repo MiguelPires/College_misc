@@ -1,5 +1,7 @@
-package pt.tecnico.bubbledocs.service;
+package pt.tecnico.bubbledocs.integration.component;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import mockit.Mock;
@@ -9,15 +11,21 @@ import org.junit.Test;
 
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
+import pt.tecnico.bubbledocs.exception.CannotStoreDocumentException;
+import pt.tecnico.bubbledocs.exception.LoginBubbleDocsException;
 import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
+import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
+import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
+import pt.tecnico.bubbledocs.service.DeleteUser;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
+import pt.tecnico.bubbledocs.service.remote.StoreRemoteServices;
 
 // add needed import declarations
 
-public class DeleteUserTest extends BubbleDocsServiceTest {
+public class DeleteUserIntegratorTest extends BubbleDocsServiceTest {
 
     private static final String USERNAME_TO_DELETE = "smf";
     private static final String USERNAME = "ars";
@@ -40,19 +48,12 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
     };
 
     public void success() {
-        new MockUp<IDRemoteServices>() {
-            @Mock
-            public void removeUser(String username) throws RemoteInvocationException {
-                ;
-            }
-        };
-
-        DeleteUser service = new DeleteUser(root, USERNAME_TO_DELETE);
+    	DeleteUser service = new DeleteUser(root, USERNAME_TO_DELETE);
         service.execute();
         boolean deleted = getUserFromUsername(USERNAME_TO_DELETE) == null;
 
-        assertTrue("user was not deleted", deleted);
-        assertNull("Spreadsheet was not deleted", getSpreadSheet(SPREADSHEET_NAME));
+        assertTrue(deleted);
+        assertNull(getSpreadSheet(SPREADSHEET_NAME));
     }
 
     /*
@@ -72,71 +73,54 @@ public class DeleteUserTest extends BubbleDocsServiceTest {
     public void successToDeleteIsInSession() {
         String token = addUserToSession(USERNAME_TO_DELETE);
         success();
-        assertNull("Removed user but not removed from session", getUserFromSession(token));
+        assertNull(getUserFromSession(token));
     }
-
+    
     @Test(expected = UnknownBubbleDocsUserException.class)
     public void userToDeleteDoesNotExist() {
-        new MockUp<IDRemoteServices>() {
-            @Mock
-            public void removeUser(String username) throws RemoteInvocationException {
-                throw new UnknownBubbleDocsUserException();
-            }
-        };
-
-        new DeleteUser(root, USERNAME_DOES_NOT_EXIST).execute();
+       DeleteUser service = new DeleteUser(root, USERNAME_DOES_NOT_EXIST);
+       service.execute();
+    }
+    
+    @Test(expected = UserNotInSessionException.class)
+    public void rootNotInSession() {
+        removeUserFromSession(root);
+        new DeleteUser(root, USERNAME_TO_DELETE).execute();
     }
 
     @Test(expected = UnauthorizedOperationException.class)
     public void notRootUser() {
-        new MockUp<IDRemoteServices>() {
-            @Mock
-            public void removeUser(String username) throws RemoteInvocationException {
-                throw new UnauthorizedOperationException();
-            }
-        };
-
         String ars = addUserToSession(USERNAME);
         new DeleteUser(ars, USERNAME_TO_DELETE).execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
-    public void rootNotInSession() {
-        new MockUp<IDRemoteServices>() {
-            @Mock
-            public void removeUser(String username) throws RemoteInvocationException {
-                throw new UserNotInSessionException();
-            }
-        };
-
-        removeUserFromSession(root);
-        new DeleteUser(root, USERNAME_TO_DELETE).execute();
-    }
-
-    @Test(expected = UserNotInSessionException.class)
     public void notInSessionAndNotRoot() {
-        new MockUp<IDRemoteServices>() {
-            @Mock
-            public void removeUser(String username) throws RemoteInvocationException {
-                throw new UserNotInSessionException();
-            }
-        };
-
         String ars = addUserToSession(USERNAME);
         removeUserFromSession(ars);
         new DeleteUser(ars, USERNAME_TO_DELETE).execute();
 
     }
-
-    @Test(expected = UserNotInSessionException.class)
-    public void accessUserDoesNotExist() {
+    
+    //Remote service fails but user is not deleted locally    
+    @Test
+    public void idServiceUnavailableUserNotDeleted() {
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void removeUser(String username) throws RemoteInvocationException {
-                throw new UserNotInSessionException();
+            public void removeUser(String username) throws LoginBubbleDocsException,
+                                                    RemoteInvocationException {
+                throw new RemoteInvocationException();
             }
         };
+        try{
+        	DeleteUser service = new DeleteUser(root, USERNAME_TO_DELETE);
+        	service.execute();
+        } catch (UnavailableServiceException e){
+        	boolean deleted = getUserFromUsername(USERNAME_TO_DELETE) == null;
 
-        new DeleteUser(USERNAME_DOES_NOT_EXIST, USERNAME_TO_DELETE).execute();
+            assertFalse(deleted);
+            assertNotNull(getSpreadSheet(SPREADSHEET_NAME));
+        }
     }
+
 }

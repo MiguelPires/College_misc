@@ -1,4 +1,4 @@
-package pt.tecnico.bubbledocs.service;
+package pt.tecnico.bubbledocs.integration.component;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -16,9 +16,13 @@ import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.LoginBubbleDocsException;
 import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
+import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
+import pt.tecnico.bubbledocs.exception.WrongPasswordException;
+import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
+import pt.tecnico.bubbledocs.service.LoginUser;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 
-public class LoginUserTest extends BubbleDocsServiceTest {
+public class LoginUserIntegratorTest extends BubbleDocsServiceTest {
 
     private static final String USERNAME = "jshp";
     private static final String PASSWORD = "jp#";
@@ -38,15 +42,6 @@ public class LoginUserTest extends BubbleDocsServiceTest {
 
     @Test
     public void success() {
-        new MockUp<IDRemoteServices>() {
-            @Mock
-            public void loginUser(String username, String password)
-                                                                   throws LoginBubbleDocsException,
-                                                                   RemoteInvocationException {
-                ;
-            }
-        };
-
         LoginUser service = new LoginUser(USERNAME, PASSWORD);
         service.execute();
         LocalTime currentTime = new LocalTime();
@@ -64,14 +59,6 @@ public class LoginUserTest extends BubbleDocsServiceTest {
 
     @Test
     public void successLoginTwice() {
-        new MockUp<IDRemoteServices>() {
-            @Mock
-            public void loginUser(String username, String password)
-                                                                   throws LoginBubbleDocsException,
-                                                                   RemoteInvocationException {
-                ;
-            }
-        };
         LoginUser service = new LoginUser(USERNAME, PASSWORD);
         service.execute();
         String token1 = service.getUserToken();
@@ -89,15 +76,6 @@ public class LoginUserTest extends BubbleDocsServiceTest {
 
     @Test
     public void successNoServiceWithLocalCopy() {
-        new MockUp<IDRemoteServices>() {
-            @Mock
-            public void loginUser(String username, String password)
-                                                                   throws LoginBubbleDocsException,
-                                                                   RemoteInvocationException {
-                ;
-            }
-        };
-
         LoginUser service = new LoginUser(USERNAME, PASSWORD);
         service.execute();
 
@@ -122,36 +100,19 @@ public class LoginUserTest extends BubbleDocsServiceTest {
         assertEquals(EMAIL, user.getEmail());
     }
 
-    @Test(expected = LoginBubbleDocsException.class)
+    @Test(expected = UnknownBubbleDocsUserException.class)
     public void loginUnknownUser() {
-        new MockUp<IDRemoteServices>() {
-            @Mock
-            public void loginUser(String username, String password)
-                                                                   throws LoginBubbleDocsException,
-                                                                   RemoteInvocationException {
-                throw new LoginBubbleDocsException("Unknown user");
-            }
-        };
-
         LoginUser service = new LoginUser("jp2", PASSWORD);
         service.execute();
     }
 
-    @Test(expected = LoginBubbleDocsException.class)
-    public void loginUserWithinWrongPassword() {
-        new MockUp<IDRemoteServices>() {
-            @Mock
-            public void loginUser(String username, String password)
-                                                                   throws LoginBubbleDocsException,
-                                                                   RemoteInvocationException {
-                throw new LoginBubbleDocsException("Wrong password");
-            }
-        };
-
+    @Test(expected = WrongPasswordException.class)
+    public void loginUserWrongPassword() {
         LoginUser service = new LoginUser(USERNAME, "jp2");
         service.execute();
     }
 
+    //SERVICE UNAVAILABLE, NO LOCAL COPY
     @Test(expected = UnavailableServiceException.class)
     public void NoServiceAndNoLocalCopy() {
         new MockUp<IDRemoteServices>() {
@@ -163,6 +124,21 @@ public class LoginUserTest extends BubbleDocsServiceTest {
             }
         };
         LoginUser service = new LoginUser(USERNAME, PASSWORD);
+        service.execute();
+    }
+    
+    //SERVICE UNAVAILABLE, LOCAL COPY, WRONG PASSWORD
+    @Test(expected = WrongPasswordException.class)
+    public void NoServiceWrongPassword() {
+        new MockUp<IDRemoteServices>() {
+            @Mock
+            public void loginUser(String username, String password)
+                                                                   throws LoginBubbleDocsException,
+                                                                   RemoteInvocationException {
+                throw new RemoteInvocationException("Service unavailable");
+            }
+        };
+        LoginUser service = new LoginUser(USERNAME, "olaola");
         service.execute();
     }
 }

@@ -25,13 +25,13 @@ public class SetupDomain {
         service.execute();
         String rootToken = service.getUserToken();
 
-        CreateUser service2 = new CreateUser(rootToken, "pf", "pf@tecnico.pt", "Paul Door");
+        CreateUser service2 = new CreateUser(rootToken, "pfs", "pf@tecnico.pt", "Paul Door");
         service2.execute();
-        LoginUser service3 = new LoginUser("pf", "sub");
+        LoginUser service3 = new LoginUser("pfs", "sub");
         service3.execute();
         String pfToken = service3.getUserToken();
 
-        CreateUser service4 = new CreateUser(rootToken, "ra", "ra@tecnico.pt", "Step Rabbit");
+        CreateUser service4 = new CreateUser(rootToken, "ras", "ra@tecnico.pt", "Step Rabbit");
         service4.execute();
 
         CreateSpreadSheet service5 = new CreateSpreadSheet(pfToken, "Notas ES", 300, 20);

@@ -10,7 +10,6 @@ public class Division extends Division_Base {
         super();
         setFirstOperand(arg1);
         setSecondOperand(arg2);
-
     }
 
     public Division() {

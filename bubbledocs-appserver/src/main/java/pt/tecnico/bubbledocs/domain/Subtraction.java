@@ -6,6 +6,12 @@ import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 
 public class Subtraction extends Subtraction_Base {
 
+    public Subtraction(Argument arg1, Argument arg2) {
+        super();
+        setFirstOperand(arg1);
+        setSecondOperand(arg2);
+    }
+    
     public Subtraction() {
         super();
     }

@@ -6,6 +6,12 @@ import pt.tecnico.bubbledocs.exception.ShouldNotExecuteException;
 
 public class Multiplication extends Multiplication_Base {
 
+    public Multiplication(Argument arg1, Argument arg2) {
+        super();
+        setFirstOperand(arg1);
+        setSecondOperand(arg2);
+    }
+    
     public Multiplication() {
         super();
     }

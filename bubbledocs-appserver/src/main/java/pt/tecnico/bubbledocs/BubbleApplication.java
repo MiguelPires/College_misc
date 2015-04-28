@@ -57,24 +57,24 @@ public class BubbleApplication {
         }
 
         printUsers();
-        printSpreadsheets("pf");
-        printSpreadsheets("ra");
+        printSpreadsheets("pfs");
+        printSpreadsheets("ras");
 
         //aceder as spreadsheets, converter e escrever o resultado
-        ArrayList<org.jdom2.Document> docList = exportUserDocs("pf");
+        ArrayList<org.jdom2.Document> docList = exportUserDocs("pfs");
 
         //remover a spreadsheet do pf
-        deleteSpreadsheet("pf", "Notas ES");
+        deleteSpreadsheet("pfs", "Notas ES");
 
-        printSpreadsheetsID("pf");
+        printSpreadsheetsID("pfs");
 
         //importar spreadsheet        
         for (org.jdom2.Document doc : docList) {
-            importUserDocs("pf", doc);
+            importUserDocs("pfs", doc);
         }
 
         //aceder as spreadsheets, converter e escrever o resultado
-        docList = exportUserDocs("pf");
+        docList = exportUserDocs("pfs");
     }
 
     // setup the initial state if Bubbledocs is empty

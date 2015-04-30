@@ -114,6 +114,7 @@
     <ws.url>http://localhost:8080/id-ws/endpoint</ws.url>
     <test.name>SD-ID: Test</test.name>
     <test.url>http://localhost:8079/id-ws/test/endpoint</test.url>
+    <test.key>bH7OZp6X11DNSrBr2MBt6g==</test.key>
 
   </properties>
   
@@ -194,6 +195,10 @@
               <name>test.url</name>
               <value>${test.url}</value>
             </property>            
+            <property>
+              <name>test.key</name>
+              <value>${test.key}</value>
+            </property>      
           </systemProperties>
         </configuration>
       </plugin>

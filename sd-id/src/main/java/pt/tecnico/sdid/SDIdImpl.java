@@ -100,8 +100,6 @@ public class SDIdImpl implements SDId {
                                                        InvalidEmail_Exception,
                                                        UserAlreadyExists_Exception,
                                                        InvalidUser_Exception {
-
-
         try {
             getUserByEmail(email);
 
@@ -159,7 +157,7 @@ public class SDIdImpl implements SDId {
                 authProblem.setReserved(password);
                 throw new AuthReqFailed_Exception("Wrong password.", authProblem);
             }
-        } catch (Exception e) {
+        } catch (UserDoesNotExist_Exception e) {
             AuthReqFailed authProblem = new AuthReqFailed();
             if (userId != null) {
                 byte[] userByte = userId.getBytes();

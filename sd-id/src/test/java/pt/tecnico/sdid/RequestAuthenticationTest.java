@@ -7,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Date;
 
-import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -41,9 +40,7 @@ public class RequestAuthenticationTest extends SDIdServiceTest {
         return Base64.getEncoder().encodeToString(newKey.getEncoded());
     }
 
-    private SecretKey getDecodedKey() {
-        String encodedKey = System.getProperty("test.key");
-        
+    private SecretKey getDecodedKey(String encodedKey) {        
         // decode the base64 encoded string
         byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
         // rebuild key using SecretKeySpec
@@ -52,14 +49,6 @@ public class RequestAuthenticationTest extends SDIdServiceTest {
 
     @Test
     public void success() throws Exception {
-
-        // get a AES cipher object
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-
-        // encrypt using the key and the plaintext
-        cipher.init(Cipher.ENCRYPT_MODE, getDecodedKey());
-        byte[] cipherBytes = cipher.doFinal(PW_BYTE);
-
         // create XML document
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -83,9 +72,8 @@ public class RequestAuthenticationTest extends SDIdServiceTest {
         
         // write to byte array
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        Result res = new StreamResult(bos);
         Transformer transformer = TransformerFactory.newInstance().newTransformer();
-        transformer.transform(new DOMSource(doc), res);
+        transformer.transform(new DOMSource(doc), new StreamResult(bos));
         byte[] docBytes = bos.toByteArray();
         
         result = cServer.requestAuthentication(USERNAME, docBytes);

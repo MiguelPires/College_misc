@@ -114,7 +114,9 @@
     <ws.url>http://localhost:8080/id-ws/endpoint</ws.url>
     <test.name>SD-ID: Test</test.name>
     <test.url>http://localhost:8079/id-ws/test/endpoint</test.url>
-    <test.key>bH7OZp6X11DNSrBr2MBt6g==</test.key>
+    <key.client>bH7OZp6X11DNSrBr2MBt6g==</key.client>
+    <key.server>CYd/FbnCGtfTyr8uzJKeAw==</key.server>
+
 
   </properties>
   
@@ -161,6 +163,8 @@
               <argument>${uddi.url}</argument>
               <argument>${ws.name}</argument>
               <argument>${ws.url}</argument>
+              <argument>${key.client}</argument>
+              <argument>${key.server}</argument>
             </arguments>
           </configuration>
       </plugin>
@@ -196,9 +200,13 @@
               <value>${test.url}</value>
             </property>            
             <property>
-              <name>test.key</name>
-              <value>${test.key}</value>
-            </property>      
+              <name>key.client</name>
+              <value>${key.client}</value>
+            </property>   
+            <property>
+              <name>key.server</name>
+              <value>${key.server}</value>
+            </property>   
           </systemProperties>
         </configuration>
       </plugin>

@@ -1,11 +1,35 @@
 package pt.tecnico.sdid;
 
+import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.jws.WebService;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 import pt.ulisboa.tecnico.sdis.id.ws.AuthReqFailed;
 import pt.ulisboa.tecnico.sdis.id.ws.AuthReqFailed_Exception;
@@ -146,24 +170,95 @@ public class SDIdImpl implements SDId {
         byte[] byteTrue = new byte[1];
         byteTrue[0] = (byte) 1;
 
+        if(reserved == null) {
+        	AuthReqFailed authProblem = new AuthReqFailed();
+            throw new AuthReqFailed_Exception("Byte array is null.", authProblem);
+        }        	
+        	
         try {
-            User user = getUser(userId);
-            byte[] password = user.getPassword().getBytes();
-
-            if (Arrays.equals(reserved, password)) {
-                return byteTrue;
-            } else {
-                AuthReqFailed authProblem = new AuthReqFailed();
-                authProblem.setReserved(password);
-                throw new AuthReqFailed_Exception("Wrong password.", authProblem);
-            }
+            getUser(userId);
         } catch (UserDoesNotExist_Exception e) {
-            AuthReqFailed authProblem = new AuthReqFailed();
+        	AuthReqFailed authProblem = new AuthReqFailed();
             if (userId != null) {
                 byte[] userByte = userId.getBytes();
                 authProblem.setReserved(userByte);
             }
             throw new AuthReqFailed_Exception("User doesn't exist.", authProblem);
         }
+    
+		try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			factory.setNamespaceAware(true);
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document doc = builder.parse(new ByteArrayInputStream(reserved));
+			String service = doc.getElementsByTagName("Server").item(0).getNodeValue();
+			String nonce = doc.getElementsByTagName("Nonce").item(0).getNodeValue();
+			     
+			TicketGranter tg = new TicketGranter(userId, service);
+			byte[] ticket = null; //byte[] ticket = tg.grant(); 
+			
+			byte[] session = createEncryptedSessionDoc(builder, tg, nonce);
+			return createResponse(builder, ticket, session);
+		} catch (Exception e){
+			e.printStackTrace();
+			AuthReqFailed authProblem = new AuthReqFailed();
+			throw new AuthReqFailed_Exception("Unable to authenticate user.", authProblem);
+		}
     }
+    
+    private byte[] createEncryptedSessionDoc(DocumentBuilder builder, TicketGranter tg, String nonce) throws Exception {
+		Document sessionDoc = builder.newDocument();
+		Element encryptedSess = sessionDoc.createElement("EncryptedSess");
+		sessionDoc.appendChild(encryptedSess);
+		
+		//append children nodes
+		Element sessionKey = sessionDoc.createElement("SessionKey");
+		encryptedSess.appendChild(sessionKey);
+		Element nonceEl = sessionDoc.createElement("Nonce");
+		encryptedSess.appendChild(nonceEl);
+		
+		//append text nodes
+		sessionKey.appendChild(sessionDoc.createTextNode(tg.getSessionKey()));
+		nonceEl.appendChild(sessionDoc.createTextNode(nonce));
+
+        // write to byte array
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+		transformer.transform(new DOMSource(sessionDoc), new StreamResult(bos));
+        byte[] docBytes = bos.toByteArray();
+        
+        SecretKey clientKey = getDecodedKey(System.getProperty("key.client"));
+		return cypherBytes(docBytes, clientKey);
+    }
+    
+    private byte[] createResponse (DocumentBuilder builder, byte[] sessionBytes, byte[] ticketBytes) {
+    	Document newDoc = builder.newDocument();
+		// create root node 
+        Element response = newDoc.createElement("Response");
+        newDoc.appendChild(response);
+        
+        // append children nodes
+        Element ticket = newDoc.createElement("Ticket");
+        response.appendChild(ticket);
+        Element session = newDoc.createElement("Session");
+        response.appendChild(session);
+        
+        String sessionString = printBase64Binary(sessionBytes);
+        String ticketString = printBase64Binary(ticketBytes);
+        
+        ticket.appendChild(newDoc.createTextNode(ticketString));
+        session.appendChild(newDoc.createTextNode(sessionString));
+		return ticketBytes;
+    }
+    private byte[] cypherBytes(byte[] plain, SecretKey key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        return cipher.doFinal(plain);
+    }
+    
+    private SecretKey getDecodedKey(String encodedKey) {        
+        byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
+        return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+    }
+	
 }

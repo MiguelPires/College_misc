@@ -49,12 +49,12 @@ public class SDStoreMain {
         Endpoint endpoint = null;
         UDDINaming uddiNaming = null;
         Store=new SDStoreImpl();
-        
+        SecureSDStore secureStore = new SecureSDStore(Store);
         
 		setup();
         
         try {
-            endpoint = Endpoint.create(Store);
+            endpoint = Endpoint.create(secureStore);
 
             // publish endpoint
             System.out.printf("Starting %s%n", url);

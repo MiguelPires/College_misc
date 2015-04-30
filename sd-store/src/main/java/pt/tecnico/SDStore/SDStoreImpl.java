@@ -47,6 +47,9 @@ private ArrayList <userDirectory> folders;
 	public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception {
 		String user = docUserPair.getUserId();
 		String doc = docUserPair.getDocumentId();
+		if(user == null || doc == null || user.isEmpty() || doc.isEmpty())
+			return;
+		
 		userDirectory folder = null;
 				
 		for(userDirectory aux : folders)
@@ -65,6 +68,9 @@ private ArrayList <userDirectory> folders;
 			throws CapacityExceeded_Exception, DocDoesNotExist_Exception,
 			UserDoesNotExist_Exception {
 
+		if (contents == null)
+			return;
+		
     	String user = docUserPair.getUserId();
     	String docId = docUserPair.getDocumentId();
     	userDirectory folder = null;

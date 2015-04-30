@@ -1,5 +1,7 @@
 package pt.tecnico.SDStore;
 
+import java.util.Collection;
+
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.Endpoint;
 
@@ -49,12 +51,29 @@ public class SDStoreMain {
         Endpoint endpoint = null;
         UDDINaming uddiNaming = null;
         Store=new SDStoreImpl();
-        SecureSDStore secureStore = new SecureSDStore(Store);
+        setup();
         
-		setup();
         
         try {
-            endpoint = Endpoint.create(secureStore);
+        	uddiNaming = new UDDINaming(uddiURL);
+        	Collection<String> endpointAddress=null;
+        	try {
+    			endpointAddress = uddiNaming.list(name);
+    		} catch (JAXRException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+        	
+        	if(endpointAddress.size() > 0){
+        		if(endpointAddress.size() >= 3){
+        			url = null;
+        			return;
+        		}
+        		url = args[2+endpointAddress.size()];
+        	}
+        	
+        	
+            endpoint = Endpoint.create(Store);
 
             // publish endpoint
             System.out.printf("Starting %s%n", url);
@@ -62,8 +81,7 @@ public class SDStoreMain {
 
             // publish to UDDI
             System.out.printf("Publishing '%s' to UDDI at %s%n", name, uddiURL);
-            uddiNaming = new UDDINaming(uddiURL);
-            uddiNaming.rebind(name, url);
+            uddiNaming.bind(name, url);
         
                         
             // wait
@@ -86,7 +104,7 @@ public class SDStoreMain {
                 System.out.printf("Caught exception when stopping: %s%n", e);
             }
             try {
-                if (uddiNaming != null) {
+                if (uddiNaming != null && url!=null) {
                     // delete from UDDI
                     uddiNaming.unbind(name);
                     System.out.printf("Deleted '%s' from UDDI%n", name);

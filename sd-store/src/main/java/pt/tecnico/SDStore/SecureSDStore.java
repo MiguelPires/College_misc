@@ -1,37 +1,20 @@
 package pt.tecnico.SDStore;
 
 import java.util.List;
-import javax.jws.*;
 import java.security.*;
 import javax.crypto.*;
 
 import pt.ulisboa.tecnico.sdis.store.ws.*; // classes generated from WSDL
 
-@WebService(
-	    endpointInterface="pt.ulisboa.tecnico.sdis.store.ws.SDStore", 
-	    wsdlLocation="SD-STORE.1_1.wsdl",
-	    name="SDStore",
-	    portName="SDStoreImplPort",
-	    targetNamespace="urn:pt:ulisboa:tecnico:sdis:store:ws",
-	    serviceName="SDStore"
-	)
 
-public class SecureSDStore implements SDStore {
+public class SecureSDStore {
 
 	private SDStoreImpl server;
 	private Key key;
 	 
-	public SecureSDStore(SDStoreImpl server){
+	public SecureSDStore(SDStoreImpl server, Key key){
 		this.server = server;
-		
-		try {
-			//Generates the key to encrypt the data
-			KeyGenerator keyGen = KeyGenerator.getInstance("AES"); 
-		    keyGen.init(128);
-		    key = keyGen.generateKey();
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
+		this.key = key;
 	}
 	
      //list user stored documents; if user does not exists, throws exception

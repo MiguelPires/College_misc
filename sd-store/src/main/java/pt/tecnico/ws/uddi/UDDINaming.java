@@ -253,6 +253,7 @@ public class UDDINaming {
             autoDisconnect();
         }
     }
+    
 
     /** Destroys the binding for the specified name */
     public void unbind(String orgName) throws JAXRException {

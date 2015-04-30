@@ -2,23 +2,16 @@ package pt.tecnico.SDStore;
 
 import pt.tecnico.ws.uddi.UDDINaming;
 import pt.ulisboa.tecnico.sdis.store.ws.*;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.registry.JAXRException;
-
 import org.junit.*;
-
 import static org.junit.Assert.*;
 import mockit.*;
-
 import javax.xml.ws.*;
-
 import com.sun.xml.ws.api.EndpointAddress;
-
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
 
@@ -76,15 +69,12 @@ String url = "http://localhost:8080/store-ws/endpoint";
     public void testEndpoint(){
     	 Endpoint endpoint = null;
          SDStoreImpl Store=new SDStoreImpl();
-
          endpoint = Endpoint.create(Store);
          endpoint.publish(url);
          
          assertEquals(true, endpoint.isPublished());
          assertEquals(Store.getClass(), endpoint.getImplementor().getClass()); 
-         
          endpoint.stop();
-         
          assertEquals(false, endpoint.isPublished());
     }
     
@@ -93,10 +83,9 @@ String url = "http://localhost:8080/store-ws/endpoint";
     public void testClientServer() throws DocAlreadyExists_Exception, UserDoesNotExist_Exception {
     	Endpoint endpoint = null;
     	SDStoreImpl Store=new SDStoreImpl();
-
         endpoint = Endpoint.create(Store);
         endpoint.publish(url);
-        
+ 
     	SDStore_Service service = new SDStore_Service();
     	SDStore port = service.getSDStoreImplPort();
     
@@ -107,10 +96,9 @@ String url = "http://localhost:8080/store-ws/endpoint";
     	DocUserPair pair = new DocUserPair();
     	String doc = "docx";
     	pair.setUserId("user");
-        pair.setDocumentId(doc);
-        
+        pair.setDocumentId(doc);        
     	port.createDoc(pair); // client operation
-
+    	
 		assertEquals(Store.listDocs("user").size(), 1);
 
     }

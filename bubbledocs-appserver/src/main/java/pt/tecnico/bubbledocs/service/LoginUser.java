@@ -20,8 +20,7 @@ public class LoginUser extends BubbleDocsService {
     }
 
     @Override
-    protected void dispatch() throws BubbleDocsException, LoginBubbleDocsException {    
-        try {
+    protected void dispatch() throws BubbleDocsException {    
         	user = getUser();
             if (user.getPassword() == null)
                 user.setPassword(password);
@@ -29,9 +28,6 @@ public class LoginUser extends BubbleDocsService {
                 user.setPassword(password);
             
              userToken = getBubbledocs().addUserToSession(user);         
-        } catch (UnknownBubbleDocsUserException e) {
-            throw new LoginBubbleDocsException();
-        }
     }
 
     public final String getUserToken() {

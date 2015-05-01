@@ -1,7 +1,6 @@
 package pt.tecnico.bubbledocs.service;
 
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
-import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 
 public class CreateSpreadSheet extends CheckLogin {

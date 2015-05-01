@@ -10,11 +10,11 @@ import mockit.MockUp;
 import org.junit.Before;
 import org.junit.Test;
 
-import pt.tecnico.ws.uddi.UDDINaming;
 import pt.ulisboa.tecnico.sdis.id.ws.EmailAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.InvalidEmail_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.InvalidUser_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.UserAlreadyExists_Exception;
+import uddi.UDDINaming;
 
 // Communication test
 public class CommunicationTest extends SDIdServiceTest {

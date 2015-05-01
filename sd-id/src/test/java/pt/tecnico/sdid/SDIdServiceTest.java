@@ -11,13 +11,13 @@ import javax.xml.ws.Endpoint;
 import org.junit.After;
 import org.junit.Before;
 
-import pt.tecnico.ws.uddi.UDDINaming;
 import pt.ulisboa.tecnico.sdis.id.ws.EmailAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.InvalidEmail_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.InvalidUser_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.SDId;
 import pt.ulisboa.tecnico.sdis.id.ws.SDId_Service;
 import pt.ulisboa.tecnico.sdis.id.ws.UserAlreadyExists_Exception;
+import uddi.UDDINaming;
 
 public class SDIdServiceTest {
 

@@ -12,6 +12,7 @@
         <module>bubbledocs-appserver</module>
         <module>SDId</module>
         <module>CryptoHelper</module>
+        <module>UDDI</module>
     </modules>
 
     <properties>

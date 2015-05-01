@@ -1,4 +1,4 @@
-package pt.tecnico.ws.uddi;
+package uddi;
 
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;

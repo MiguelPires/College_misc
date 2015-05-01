@@ -113,7 +113,12 @@
   	  <groupId>pt.tecnico</groupId>
   	  <artifactId>CryptoHelper</artifactId>    
   	  <version>1.0-SNAPSHOT</version>
-  	</dependency> 
+  	</dependency>
+  	<dependency>
+  	  <groupId>pt.tecnico</groupId>
+  	  <artifactId>UDDI</artifactId> 
+  	  <version>1.0-SNAPSHOT</version>
+  	</dependency>
   </dependencies>
   
   <properties>

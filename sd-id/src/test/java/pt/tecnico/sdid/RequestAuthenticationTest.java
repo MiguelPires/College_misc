@@ -32,21 +32,6 @@ public class RequestAuthenticationTest extends SDIdServiceTest {
     private static final byte[] WPW_BYTE = "aaa3".getBytes();
     private byte[] result;
 
-    @SuppressWarnings("unused")
-    private String generateEncodedKey() throws NoSuchAlgorithmException {
-        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-        keyGen.init(128);
-        SecretKey newKey = keyGen.generateKey();
-        return Base64.getEncoder().encodeToString(newKey.getEncoded());
-    }
-
-    private SecretKey getDecodedKey(String encodedKey) {        
-        // decode the base64 encoded string
-        byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
-        // rebuild key using SecretKeySpec
-        return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
-    }
-
     @Test
     public void success() throws Exception {
         // create XML document

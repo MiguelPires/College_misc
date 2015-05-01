@@ -10,7 +10,8 @@
 
     <modules>
         <module>bubbledocs-appserver</module>
-        <!-- Add modules here... -->
+        <module>SDId</module>
+        <module>CryptoHelper</module>
     </modules>
 
     <properties>

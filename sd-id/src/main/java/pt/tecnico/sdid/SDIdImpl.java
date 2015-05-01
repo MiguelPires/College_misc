@@ -4,7 +4,6 @@ import static javax.xml.bind.DatatypeConverter.printBase64Binary;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.jws.WebService;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -29,8 +27,8 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
+import pt.tecnico.CryptoHelper;
 import pt.ulisboa.tecnico.sdis.id.ws.AuthReqFailed;
 import pt.ulisboa.tecnico.sdis.id.ws.AuthReqFailed_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.EmailAlreadyExists;
@@ -49,7 +47,8 @@ public class SDIdImpl implements SDId {
     private int MINPASS = 1000000;
     private int MAXPASS = 9999999;
     private List<User> users;
-
+    private CryptoHelper crypto;
+    
     public List<User> getUsers() {
         return users;
     }
@@ -187,6 +186,8 @@ public class SDIdImpl implements SDId {
         }
     
 		try {
+	        crypto = new CryptoHelper("AES");
+
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			factory.setNamespaceAware(true);
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -227,8 +228,8 @@ public class SDIdImpl implements SDId {
 		transformer.transform(new DOMSource(sessionDoc), new StreamResult(bos));
         byte[] docBytes = bos.toByteArray();
         
-        SecretKey clientKey = getDecodedKey(System.getProperty("key.client"));
-		return cypherBytes(docBytes, clientKey);
+        SecretKey clientKey = crypto.decodeKey(System.getProperty("key.client"));
+		return crypto.cypherBytes(docBytes, clientKey);
     }
     
     private byte[] createResponse (DocumentBuilder builder, byte[] sessionBytes, byte[] ticketBytes) {
@@ -250,15 +251,4 @@ public class SDIdImpl implements SDId {
         session.appendChild(newDoc.createTextNode(sessionString));
 		return ticketBytes;
     }
-    private byte[] cypherBytes(byte[] plain, SecretKey key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, key);
-        return cipher.doFinal(plain);
-    }
-    
-    private SecretKey getDecodedKey(String encodedKey) {        
-        byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
-        return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
-    }
-	
 }

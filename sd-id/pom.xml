@@ -10,6 +10,12 @@
 
   <name>${project.artifactId}</name>
     
+  <parent>
+  	<groupId>pt.tecnico.ulisboa.essd</groupId>
+  	<artifactId>bubbledocs</artifactId>
+  	<version>1.0-SNAPSHOT</version>
+  </parent>
+
   <dependencies>
     <dependency>
       <groupId>com.sun.xml.ws</groupId>
@@ -102,7 +108,12 @@
       <artifactId>junit</artifactId>
       <version>4.11</version>
       <scope>test</scope>
-    </dependency>     
+    </dependency>
+    <dependency>
+  	  <groupId>pt.tecnico</groupId>
+  	  <artifactId>CryptoHelper</artifactId>    
+  	  <version>1.0-SNAPSHOT</version>
+  	</dependency> 
   </dependencies>
   
   <properties>

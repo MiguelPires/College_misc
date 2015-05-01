@@ -25,37 +25,24 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import pt.tecnico.CryptoHelper;
+
 public class TicketGranter {
 	private String client;
 	private String service;
 	private String sessionKey;
+	private CryptoHelper crypto;
 	
 	public TicketGranter(String client, String service) {
 		this.client = client;
 		this.service = service;		
+		this.crypto = new CryptoHelper("AES");
 	}
 	
 	public String getSessionKey () {
 		return sessionKey;
 	}
-    private String generateEncodedKey() throws NoSuchAlgorithmException {
-        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-        keyGen.init(128);
-        SecretKey newKey = keyGen.generateKey();
-        return Base64.getEncoder().encodeToString(newKey.getEncoded());
-    }
-    
-    private SecretKey getDecodedKey(String encodedKey) {        
-        byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
-        return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
-    }
-	
-    private byte[] cypherBytes(byte[] plain, SecretKey key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, key);
-        return cipher.doFinal(plain);
-    }
-    
+
 	public byte[] grant() throws Exception {
 		// create XML document
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -92,7 +79,7 @@ public class TicketGranter {
         expiresAt.appendChild(doc.createTextNode(newDate.toString()));
         
         // generate session key
-        sessionKey = generateEncodedKey();
+        sessionKey = crypto.encodeKey(crypto.generateKey());
         key.appendChild(doc.createTextNode(sessionKey));
         
         // write XML document to byte array
@@ -102,7 +89,7 @@ public class TicketGranter {
         transformer.transform(new DOMSource(doc), res);
         byte[] docBytes = bos.toByteArray();
         
-        SecretKey decodedKey = getDecodedKey(System.getProperty("key.server"));
-        return cypherBytes(docBytes, decodedKey);
+        SecretKey decodedKey = crypto.decodeKey(System.getProperty("key.server"));
+        return crypto.cypherBytes(docBytes, decodedKey);
 	}
 }

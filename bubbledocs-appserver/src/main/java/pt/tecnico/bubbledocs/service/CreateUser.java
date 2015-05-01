@@ -22,18 +22,11 @@ public class CreateUser extends CheckLogin {
 
     @Override
     protected void dispatch() throws BubbleDocsException {
-        IDRemoteServices remote = new IDRemoteServices();
         super.dispatch();
 
-        if (user.isRoot()) {
-            try {
-                remote.createUser(username, email);
-            } catch (RemoteInvocationException e) {
-                throw new UnavailableServiceException();
-            }
-
+        if (user.isRoot()) 
             createUser(username, name, email);
-        } else
+        else
             throw new UnauthorizedOperationException();
     }
 }

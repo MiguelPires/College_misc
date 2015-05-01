@@ -16,7 +16,6 @@ public abstract class BubbleDocsService {
 
     @Atomic
     public final void execute() throws BubbleDocsException {
-        
         dispatch();
     }
 

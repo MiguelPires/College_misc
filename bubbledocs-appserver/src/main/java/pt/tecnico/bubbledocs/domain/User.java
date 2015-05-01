@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.jdom2.Element;
 
+import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
 import pt.tecnico.bubbledocs.exception.ImportDocumentException;
 import pt.tecnico.bubbledocs.exception.InvalidSpreadsheetDimensionsException;
 import pt.tecnico.bubbledocs.exception.InvalidUsernameException;
@@ -14,9 +15,10 @@ public class User extends User_Base {
     public User(String username, String name, String email) {
         super();
 
-        if (username.length() < 3 || username.length() > 8) {
+        if (username == null || username.equals(""))
+            throw new EmptyUsernameException();
+        else if (username.length() < 3 || username.length() > 8)
             throw new InvalidUsernameException();
-        }
 
         setUsername(username);
         setName(name);
@@ -86,7 +88,6 @@ public class User extends User_Base {
         setName(userElement.getAttribute("name").getValue());
         setPassword(userElement.getAttribute("password").getValue());
         setEmail(userElement.getAttribute("email").getValue());
-
     }
 
     public Element exportToXML() {

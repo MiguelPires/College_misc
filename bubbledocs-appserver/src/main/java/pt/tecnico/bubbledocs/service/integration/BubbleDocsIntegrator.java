@@ -1,0 +1,17 @@
+package pt.tecnico.bubbledocs.service.integration;
+
+import pt.tecnico.bubbledocs.exception.BubbleDocsException;
+import pt.tecnico.bubbledocs.service.BubbleDocsService;
+
+public abstract class BubbleDocsIntegrator {
+    
+    public final void execute() throws BubbleDocsException {
+        dispatch();
+    }
+
+    protected abstract void dispatch() throws BubbleDocsException;
+    
+    protected void removeUser(String username) {
+        BubbleDocsService.getBubbledocs().removeUser(username);
+    }
+}

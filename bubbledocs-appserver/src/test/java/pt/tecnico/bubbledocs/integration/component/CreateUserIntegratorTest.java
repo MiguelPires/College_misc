@@ -1,6 +1,7 @@
 package pt.tecnico.bubbledocs.integration.component;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import mockit.Mock;
 import mockit.MockUp;
 
@@ -8,16 +9,17 @@ import org.junit.Test;
 
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
-import pt.tecnico.bubbledocs.exception.DuplicateUsernameException;
 import pt.tecnico.bubbledocs.exception.DuplicateEmailException;
+import pt.tecnico.bubbledocs.exception.DuplicateUsernameException;
 import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
 import pt.tecnico.bubbledocs.exception.InvalidEmailException;
 import pt.tecnico.bubbledocs.exception.InvalidUsernameException;
-import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
-import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
+import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
+import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
+import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
-import pt.tecnico.bubbledocs.service.CreateUser;
+import pt.tecnico.bubbledocs.service.integration.CreateUserIntegrator;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 
 
@@ -41,7 +43,7 @@ public class CreateUserIntegratorTest extends BubbleDocsServiceTest {
 
     @Test
     public void success() {
-        CreateUser service = new CreateUser(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
+        CreateUserIntegrator service = new CreateUserIntegrator(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
             "José Ferreira");
         service.execute();
 
@@ -61,7 +63,7 @@ public class CreateUserIntegratorTest extends BubbleDocsServiceTest {
             }
         };
 
-        CreateUser service = new CreateUser(root, USERNAME, "jose@tecnico.pt", "José Ferreira");
+        CreateUserIntegrator service = new CreateUserIntegrator(root, USERNAME, "jose@tecnico.pt", "José Ferreira");
         service.execute();
     }
 
@@ -74,7 +76,7 @@ public class CreateUserIntegratorTest extends BubbleDocsServiceTest {
             }
         };
 
-        CreateUser service = new CreateUser(root, "", "jose@tecnico.pt", "José Ferreira");
+        CreateUserIntegrator service = new CreateUserIntegrator(root, "", "jose@tecnico.pt", "José Ferreira");
         service.execute();
     }
 
@@ -87,7 +89,7 @@ public class CreateUserIntegratorTest extends BubbleDocsServiceTest {
             }
         };
 
-        CreateUser service = new CreateUser(root, "jo", "jose@tecnico.pt", "José Ferreira");
+        CreateUserIntegrator service = new CreateUserIntegrator(root, "jo", "jose@tecnico.pt", "José Ferreira");
         service.execute();
     }
 
@@ -100,7 +102,7 @@ public class CreateUserIntegratorTest extends BubbleDocsServiceTest {
             }
         };
 
-        CreateUser service = new CreateUser(root, "josejosejose", "jose@tecnico.pt",
+        CreateUserIntegrator service = new CreateUserIntegrator(root, "josejosejose", "jose@tecnico.pt",
                 "José Ferreira");
         service.execute();
     }
@@ -114,14 +116,14 @@ public class CreateUserIntegratorTest extends BubbleDocsServiceTest {
             }
         };
 
-        CreateUser service = new CreateUser(root, USERNAME_DOES_NOT_EXIST, "@tecnico.pt",
+        CreateUserIntegrator service = new CreateUserIntegrator(root, USERNAME_DOES_NOT_EXIST, "@tecnico.pt",
                 "José Ferreira");
         service.execute();
     }
 
     @Test(expected = UnauthorizedOperationException.class)
     public void unauthorizedUserCreation() {
-        CreateUser service = new CreateUser(ars, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
+        CreateUserIntegrator service = new CreateUserIntegrator(ars, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
                 "José Ferreira");
         service.execute();
     }
@@ -129,7 +131,7 @@ public class CreateUserIntegratorTest extends BubbleDocsServiceTest {
     @Test(expected = UserNotInSessionException.class)
     public void unauthorizedUserCreationNotInSession() {
         removeUserFromSession(ars);
-        CreateUser service = new CreateUser(ars, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
+        CreateUserIntegrator service = new CreateUserIntegrator(ars, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
                 "José Ferreira");
         service.execute();
     }
@@ -137,24 +139,22 @@ public class CreateUserIntegratorTest extends BubbleDocsServiceTest {
     @Test(expected = UserNotInSessionException.class)
     public void accessUsernameNotExist() {
         removeUserFromSession(root);
-        CreateUser service = new CreateUser(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
+        CreateUserIntegrator service = new CreateUserIntegrator(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
                 "José Ferreira");
         service.execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
     public void unauthorizedUserCreationDoesNotExist() {
-        CreateUser service = new CreateUser("ola", USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
+        CreateUserIntegrator service = new CreateUserIntegrator("ola2", USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
                 "José Ferreira");
         service.execute();
     }
 
     @Test
     public void remoteServiceFails() {
-        
-        CreateUser service = new CreateUser(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
+        CreateUserIntegrator service = new CreateUserIntegrator(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
                 "José Ferreira");
-        service.execute();
         
         new MockUp<IDRemoteServices>() {
             @Mock
@@ -167,10 +167,15 @@ public class CreateUserIntegratorTest extends BubbleDocsServiceTest {
                 throw new RemoteInvocationException();
             }
         };
+        
+        try {
+            service.execute();
 
-        service.execute();
+        } catch (UnavailableServiceException e){
+            boolean wasNotCreated = getUserFromUsername(USERNAME_DOES_NOT_EXIST) == null;
+            assertTrue(wasNotCreated);
+        }
+        
+        
     }
-
-
-
 }

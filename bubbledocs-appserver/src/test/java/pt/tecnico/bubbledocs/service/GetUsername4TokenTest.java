@@ -5,7 +5,7 @@ import org.junit.Test;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.service.*;
 import pt.tecnico.bubbledocs.exception.*;
-import pt.tecnico.bubbledocs.integration.component.ImportDocument;
+//import pt.tecnico.bubbledocs.integration.component.ImportDocument;
 
 public class GetUsername4TokenTest {
 	

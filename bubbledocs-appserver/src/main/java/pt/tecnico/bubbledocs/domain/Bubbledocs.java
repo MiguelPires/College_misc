@@ -182,7 +182,11 @@ public class Bubbledocs extends Bubbledocs_Base {
     }
 
     public void renewPassword(User user) {
-        user.setValidPassword(false);
+        user.invalidatePassword();
+    }
+    
+    public void validatePassword(User user) {
+        user.validatePassword();
     }
 
     public int getNewID() {

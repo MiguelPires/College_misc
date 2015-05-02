@@ -19,4 +19,8 @@ public abstract class BubbleDocsIntegrator {
     protected String addUserToSession(User user){
     	return BubbleDocsService.getBubbledocs().addUserToSession(user); 
     }
+    
+    protected void validatePassword(String username){
+    	BubbleDocsService.validatePassword(username); 
+    }
 }

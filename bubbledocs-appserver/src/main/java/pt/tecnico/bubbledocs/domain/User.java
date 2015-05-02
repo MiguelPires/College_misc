@@ -127,4 +127,8 @@ public class User extends User_Base {
     public void invalidatePassword() {
         setValidPassword(false);
     }
+    
+    public void validatePassword() {
+        setValidPassword(true);
+    }
 }

@@ -75,6 +75,10 @@ public abstract class BubbleDocsService {
     public static void renewPassword(User user) {
         getBubbledocs().renewPassword(user);
     }
+    
+    public static void validatePassword(String username) {
+        getBubbledocs().validatePassword(getUser(username));
+    }
 
     public static boolean isLoggedIn(User user) {
         try {

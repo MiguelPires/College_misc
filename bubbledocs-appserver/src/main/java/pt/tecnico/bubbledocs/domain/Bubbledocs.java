@@ -180,6 +180,11 @@ public class Bubbledocs extends Bubbledocs_Base {
         }
         return null;
     }
+    
+    public String[][] getSpreadsheetContent(int docId){
+    	Spreadsheet ss = getSpreadsheet(docId);
+    	return ss.getSpreadsheetContent();
+    }
 
     public void renewPassword(User user) {
         user.invalidatePassword();

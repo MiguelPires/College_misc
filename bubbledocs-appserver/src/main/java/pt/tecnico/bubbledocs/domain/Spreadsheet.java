@@ -65,6 +65,23 @@ public class Spreadsheet extends Spreadsheet_Base {
         }
         return counter;
     }
+    
+    public String[][] getSpreadsheetContent(){
+		String[][] sheetMatrix = new String[getRows()][getColumns()];
+		int row;
+		int column;
+		for(int i = 0; i < getRows(); i++){
+			for(int j = 0; j < getColumns(); j++){
+				sheetMatrix[i][j] = "";
+			}
+		}
+		for(Cell cell : getCellsSet()){
+			row = cell.getRow();
+			column = cell.getColumn();
+			sheetMatrix[row][column] = cell.getValue().toString();
+		}
+    	return sheetMatrix;
+    }
 
     public void addCellContent(Integer row, Integer column, Content content) {
         for (Cell cell : getCellsSet()) {

@@ -14,7 +14,6 @@ import pt.tecnico.bubbledocs.service.remote.StoreRemoteServices;
 public class ExportDocument extends CheckLogin {
     private org.jdom2.Document docXML;
     private int docId;
-    private StoreRemoteServices storeService;
 
     public byte[] convertToBytes(org.jdom2.Document doc) {
         XMLOutputter xml = new XMLOutputter();
@@ -30,7 +29,6 @@ public class ExportDocument extends CheckLogin {
     public ExportDocument(String userToken, int docId) {
         this.userToken = userToken;
         this.docId = docId;
-        this.storeService = new StoreRemoteServices();
     }
 
     @Override
@@ -43,11 +41,6 @@ public class ExportDocument extends CheckLogin {
                 || ss.isReader(user.getUsername())) {
 
             docXML = exportToXML(docId);
-            try {
-                storeService.storeDocument(userToken, ss.getName(), convertToBytes(docXML));
-            } catch (RemoteInvocationException e) {
-                throw new UnavailableServiceException("The storage service is unavailable");
-            }
         } else
             throw new UnauthorizedOperationException();
     }

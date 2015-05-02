@@ -28,4 +28,8 @@ public abstract class BubbleDocsIntegrator {
     protected Spreadsheet getSpreadsheet(int docId) {
     	return BubbleDocsService.getSpreadsheet(docId);
     }
+    
+    protected User getUserByToken(String userToken) {
+    	return BubbleDocsService.getUserByToken(userToken);
+    }
 }

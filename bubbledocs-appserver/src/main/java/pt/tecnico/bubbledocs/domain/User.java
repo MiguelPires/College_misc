@@ -15,12 +15,6 @@ public class User extends User_Base {
     public User(String username, String name, String email) {
         super();
 
-        if (username == null || username.equals(""))
-            throw new EmptyUsernameException();
-        else if (username.length() < 3 || username.length() > 8)
-            throw new InvalidUsernameException();
-
-        setUsername(username);
         setName(name);
         setEmail(email);
     }
@@ -42,6 +36,16 @@ public class User extends User_Base {
         app.addUsers(this);
     }
 
+    @Override
+    public void setUsername(String username) {
+    	if (username == null || username.equals(""))
+            throw new EmptyUsernameException();
+        else if (username.length() < 3 || username.length() > 8)
+            throw new InvalidUsernameException();
+
+        super.setUsername(username);
+    }
+    
     @Override
     public void setPassword(String password) {
         super.setPassword(password);

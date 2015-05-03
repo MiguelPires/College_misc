@@ -4,12 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
-import pt.tecnico.bubbledocs.service.CreateUser;
-
 
 
 public class GetUserInfoTest extends BubbleDocsServiceTest {
@@ -31,30 +28,24 @@ public class GetUserInfoTest extends BubbleDocsServiceTest {
     
     @Test
     public void success() throws BubbleDocsException {
-    	User user = getUserFromUsername(USERNAME);
-
-        GetUserInfo service = new GetUserInfo(user);
+    	GetUserInfo service = new GetUserInfo(USERNAME);
     	service.execute();
     	
-    	assertEquals(USERNAME, user.getUsername());
-        assertEquals(EMAIL, user.getEmail());
-        assertEquals("António Rito Silva", user.getName());
+    	assertEquals(USERNAME, service.getUsername());
+        assertEquals(EMAIL, service.getEmail());
+        assertEquals("António Rito Silva", service.getName());
     	
     }
     
     @Test(expected = UserNotInSessionException.class)
     public void userDoesNotExist(){
-    	User user = getUserFromUsername(USERNAME_DOES_NOT_EXIST);
-
-        GetUserInfo service = new GetUserInfo(user);
+    	GetUserInfo service = new GetUserInfo(USERNAME_DOES_NOT_EXIST);
         service.execute();
     }
 
      @Test(expected = UserNotInSessionException.class)
-    public void nullUser(){
-        User user = null;
-
-        GetUserInfo service = new GetUserInfo(user);
+    public void nullUsername(){
+        GetUserInfo service = new GetUserInfo(null);
         service.execute();
     }
 

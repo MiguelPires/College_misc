@@ -29,7 +29,4 @@ public abstract class BubbleDocsIntegrator {
     	return BubbleDocsService.getSpreadsheet(docId);
     }
     
-    protected User getUserByToken(String userToken) {
-    	return BubbleDocsService.getUserByToken(userToken);
-    }
 }

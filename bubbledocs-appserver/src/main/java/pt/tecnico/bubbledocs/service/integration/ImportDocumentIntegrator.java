@@ -13,31 +13,33 @@ import pt.tecnico.bubbledocs.service.ImportDocument;
 
 public class ImportDocumentIntegrator extends BubbleDocsIntegrator {
     
-	private String userToken;
-	private int docId;
+  private String userToken;
+  private String username;
+  private int docId;
 	
-	private User user;
-	private Spreadsheet doc;
-	private ImportDocument importService;
+  private Spreadsheet doc;
+  
    
-    public ImportDocumentIntegrator(int docId, String userToken) {
-        this.docId = docId;
-        this.userToken = userToken;
-    }
+  public ImportDocumentIntegrator(int docId, String userToken) {
+      this.docId = docId;
+      this.userToken = userToken;
+  }
 
-    protected void dispatch() throws BubbleDocsException {
-    	StoreRemoteServices remote = new StoreRemoteServices();
-    	importService = new ImportDocument(docId, userToken);
+  protected void dispatch() throws BubbleDocsException {
+    StoreRemoteServices remote = new StoreRemoteServices();
+    ImportDocument importService = new ImportDocument(docId, userToken);
     	
-    	user = getUserByToken(userToken);
-    	doc = getSpreadsheet(docId);
+    GetUsername4Token getUsernameService = new GetUsername4Token(userToken);
+    username = getUsernameService.getUsername();
+
+    doc = getSpreadsheet(docId);
     	
-    	try {
-    		remote.loadDocument(user.getUsername(), doc.getName());
-   			importService.execute();
-   		} catch (RemoteInvocationException e) {
-   			throw new UnavailableServiceException();
-   		}
-   }
+    try {
+    	remote.loadDocument(username, doc.getName());
+   		importService.execute();
+   	} catch (RemoteInvocationException e) {
+   		throw new UnavailableServiceException();
+   	}
+  }
     
 }    

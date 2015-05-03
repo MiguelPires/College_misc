@@ -15,6 +15,7 @@ public class User extends User_Base {
     public User(String username, String name, String email) {
         super();
 
+        setUsername(username);
         setName(name);
         setEmail(email);
     }

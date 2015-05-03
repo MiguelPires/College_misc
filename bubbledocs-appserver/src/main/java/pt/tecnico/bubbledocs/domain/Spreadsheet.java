@@ -1,5 +1,8 @@
 package pt.tecnico.bubbledocs.domain;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import org.jdom2.DataConversionException;
 import org.jdom2.Element;
 import org.joda.time.DateTime;
@@ -119,6 +122,20 @@ public class Spreadsheet extends Spreadsheet_Base {
         return false;
     }
 
+    public Map <Integer,User> getPrivileges() {
+    	
+    	Map <Integer, User> privileges = new HashMap <Integer, User>();
+    	
+    	for (User user : getReadersSet()) {
+    		if (isWriter(user.getUsername()))
+    			privileges.put(2, user); // write-read
+    		else
+    			privileges.put(1, user); // read-only
+    	}
+    	
+    	return privileges;	 
+    }
+    
     public void delete() {
 
         for (Cell c : getCellsSet()) {

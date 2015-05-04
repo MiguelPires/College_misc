@@ -40,4 +40,8 @@ public class ExportDocumentIntegrator extends BubbleDocsIntegrator {
             throw new UnavailableServiceException("The storage service is unavailable");
         }
     }
+    
+    public org.jdom2.Document getDocXML() {
+        return localService.getDocXML();
+    }
 }

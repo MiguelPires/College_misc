@@ -1,13 +1,10 @@
 package pt.tecnico.bubbledocs.integration.component;
 
 import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import mockit.Mock;
 import mockit.MockUp;
-
 import org.junit.Test;
 
 import pt.tecnico.bubbledocs.domain.Addition;
@@ -24,9 +21,9 @@ import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
+import pt.tecnico.bubbledocs.service.integration.ExportDocumentIntegrator;
 import pt.tecnico.bubbledocs.service.remote.StoreRemoteServices;
 import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
-import pt.tecnico.bubbledocs.service.ExportDocument;
 
 public class ExportDocumentIntegratorTest extends BubbleDocsServiceTest {
     private String ars;
@@ -66,7 +63,7 @@ public class ExportDocumentIntegratorTest extends BubbleDocsServiceTest {
 
     @Test
     public void success() throws BubbleDocsException {
-        ExportDocument service = new ExportDocument(ars, docs.get(0).getID());
+        ExportDocumentIntegrator service = new ExportDocumentIntegrator(ars, docs.get(0).getID());
         service.execute();
 
         Spreadsheet doc = importFromXML(service.getDocXML());
@@ -86,20 +83,20 @@ public class ExportDocumentIntegratorTest extends BubbleDocsServiceTest {
 
     @Test(expected = UnauthorizedOperationException.class)
     public void unauthorizedExport() throws BubbleDocsException {
-        ExportDocument service = new ExportDocument(js, docs.get(1).getID());
+    	ExportDocumentIntegrator service = new ExportDocumentIntegrator(js, docs.get(1).getID());
         service.execute();
     }
 
     @Test(expected = SpreadsheetNotFoundException.class)
     public void spreadSheetNotExist() throws BubbleDocsException {
-        ExportDocument service = new ExportDocument(ars, 100);
+    	ExportDocumentIntegrator service = new ExportDocumentIntegrator(ars, 100);
         service.execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
     public void accessUsernameNotExist() {
         removeUserFromSession(ars);
-        ExportDocument service = new ExportDocument(ars, docs.get(0).getID());
+        ExportDocumentIntegrator service = new ExportDocumentIntegrator(ars, docs.get(0).getID());
         service.execute();
     }
 
@@ -114,25 +111,25 @@ public class ExportDocumentIntegratorTest extends BubbleDocsServiceTest {
             }
         };
         
-        ExportDocument service = new ExportDocument(ars, docs.get(0).getID());
+        ExportDocumentIntegrator service = new ExportDocumentIntegrator(ars, docs.get(0).getID());
         service.execute();
     }
 
     @Test(expected = CannotStoreDocumentException.class)
     public void storeIsFull() {
-        ExportDocument service = new ExportDocument(ars, full.getID());
+    	ExportDocumentIntegrator service = new ExportDocumentIntegrator(ars, full.getID());
         service.execute();
     }
 
     @Test(expected = EmptyUsernameException.class)
     public void nullUser(){
-        ExportDocument service = new ExportDocument(null, docs.get(0).getID());
+    	ExportDocumentIntegrator service = new ExportDocumentIntegrator(null, docs.get(0).getID());
         service.execute();
     }
 
     @Test(expected = EmptyUsernameException.class)
     public void emptyUser(){
-        ExportDocument service = new ExportDocument("", docs.get(0).getID());
+    	ExportDocumentIntegrator service = new ExportDocumentIntegrator("", docs.get(0).getID());
         service.execute();
     }
 

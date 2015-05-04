@@ -1,13 +1,11 @@
 package pt.tecnico.bubbledocs.service.integration;
 
-import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
-
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
-
 import pt.tecnico.bubbledocs.service.remote.StoreRemoteServices;
+import pt.tecnico.bubbledocs.service.GetUsername4Token;
 import pt.tecnico.bubbledocs.service.ImportDocument;
 
 

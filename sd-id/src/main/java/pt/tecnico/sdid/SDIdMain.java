@@ -70,7 +70,6 @@ public class SDIdMain {
         String name = args[1];
         String url = args[2];
 
-
         server = new SDIdImpl();
         populate(server);
         endpoint = Endpoint.create(server);

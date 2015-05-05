@@ -1,21 +1,13 @@
 package pt.tecnico.sdid;
 
 import java.io.ByteArrayOutputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -36,7 +28,7 @@ public class TicketGranter {
 	public TicketGranter(String client, String service) {
 		this.client = client;
 		this.service = service;		
-		this.crypto = new CryptoHelper("AES");
+		this.crypto = new CryptoHelper("AES", "CBC", "PKCS5Padding");
 	}
 	
 	public String getSessionKey () {
@@ -86,10 +78,16 @@ public class TicketGranter {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         Result res = new StreamResult(bos);
         Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+
         transformer.transform(new DOMSource(doc), res);
         byte[] docBytes = bos.toByteArray();
         
-        SecretKey decodedKey = crypto.decodeKey(System.getProperty("key.server"));
-        return crypto.cypherBytes(docBytes, decodedKey);
+        // switch to system.getProperty
+        String SERVER_KEY = "CYd/FbnCGtfTyr8uzJKeAw==";
+        //System.out.println("KEY: "+System.getProperty("key.server"));
+        
+        SecretKey decodedKey = crypto.decodeKey(SERVER_KEY);
+        return crypto.cipherBytes(docBytes, decodedKey);
 	}
 }

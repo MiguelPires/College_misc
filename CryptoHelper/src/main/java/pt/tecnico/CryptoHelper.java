@@ -1,5 +1,6 @@
 package pt.tecnico;
 
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -10,6 +11,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class CryptoHelper {
@@ -22,13 +24,6 @@ public class CryptoHelper {
 
     public String getTransformation() {
         return transformation;
-    }
-    
-    public CryptoHelper(String algorithm) {
-        this.algorithm = algorithm;
-        this.mode = "CBC";
-        this.padding = "PKCS5Padding";
-        this.transformation = algorithm + "/" + mode + "/" + padding;
     }
 
     public CryptoHelper(String algorithm, String mode, String padding) {
@@ -43,15 +38,29 @@ public class CryptoHelper {
         return lastKey;
     }
 
-    // cyphers a given byte array with a given key
-    public byte[] cypherBytes(byte[] plain, SecretKey key) throws NoSuchAlgorithmException,
+    // ciphers or deciphers a given byte array with a given key
+    public byte[] cipherBytes(byte[] bytes, SecretKey key) throws NoSuchAlgorithmException,
                                                           NoSuchPaddingException,
                                                           InvalidKeyException,
                                                           IllegalBlockSizeException,
-                                                          BadPaddingException {
+                                                          BadPaddingException, InvalidAlgorithmParameterException {
         Cipher cipher = Cipher.getInstance(transformation);
-        cipher.init(Cipher.ENCRYPT_MODE, key);
-        return cipher.doFinal(plain);
+        byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        IvParameterSpec ivspec = new IvParameterSpec(iv);
+        cipher.init(Cipher.ENCRYPT_MODE, key, ivspec);
+        return cipher.doFinal(bytes);
+    }
+
+    public byte[] decipherBytes(byte[] bytes, SecretKey key) throws NoSuchAlgorithmException,
+                                                          NoSuchPaddingException,
+                                                          InvalidKeyException,
+                                                          IllegalBlockSizeException,
+                                                          BadPaddingException, InvalidAlgorithmParameterException {
+        Cipher cipher = Cipher.getInstance(transformation);
+        byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        IvParameterSpec ivspec = new IvParameterSpec(iv);
+        cipher.init(Cipher.DECRYPT_MODE, key, ivspec);
+        return cipher.doFinal(bytes);
     }
 
     // generates key of the type specified in the constructor

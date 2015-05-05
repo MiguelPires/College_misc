@@ -1,22 +1,16 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <!-- http://maven.apache.org/pom.html#Quick_Overview -->
-
   <groupId>pt.tecnico</groupId>
-  <artifactId>SDId</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <artifactId>cli</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
 
-  <name>${project.artifactId}</name>
-    
   <parent>
   	<groupId>pt.tecnico.ulisboa.essd</groupId>
   	<artifactId>bubbledocs</artifactId>
   	<version>1.0-SNAPSHOT</version>
   </parent>
 
-  <dependencies>
+ <dependencies>
     <dependency>
       <groupId>com.sun.xml.ws</groupId>
       <artifactId>jaxws-rt</artifactId>
@@ -119,25 +113,23 @@
   	  <artifactId>UDDI</artifactId> 
   	  <version>1.0-SNAPSHOT</version>
   	</dependency>
-     <dependency>
-      <groupId>org.jdom</groupId>
-      <artifactId>jdom2</artifactId>
-      <version>${version.org.jdom.jdom}</version>
-    </dependency>
+  	<dependency>
+  	  <groupId>pt.tecnico</groupId>
+  	  <artifactId>SDId</artifactId> 
+  	  <version>1.0-SNAPSHOT</version>
+  	</dependency>
   </dependencies>
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <mainclass>pt.tecnico.sdid.SDIdMain</mainclass>
-
+    <mainclass>pt.tecnico.ClientMain</mainclass>
     <uddi.url>http://localhost:8081</uddi.url>
     <ws.name>SD-ID</ws.name>
     <ws.url>http://localhost:8080/id-ws/endpoint</ws.url>
-    <test.name>SD-ID: Test</test.name>
-    <test.url>http://localhost:8079/id-ws/test/endpoint</test.url>
     <key.client>bH7OZp6X11DNSrBr2MBt6g==</key.client>
     <key.server>CYd/FbnCGtfTyr8uzJKeAw==</key.server>
-    <version.org.jdom.jdom>2.0.5</version.org.jdom.jdom>
+
+
   </properties>
   
   <build>
@@ -182,9 +174,7 @@
             <arguments>
               <argument>${uddi.url}</argument>
               <argument>${ws.name}</argument>
-              <argument>${ws.url}</argument>
               <argument>${key.client}</argument>
-              <argument>${key.server}</argument>
             </arguments>
           </configuration>
       </plugin>
@@ -196,38 +186,9 @@
           <programs>
             <program>
               <mainClass>${mainclass}</mainClass>
-              <id>SDId-ws</id>
+              <id>cli</id>
             </program>
           </programs>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12.4</version>
-        <configuration>
-          <systemProperties>
-            <property>
-              <name>uddi.url</name>
-              <value>${uddi.url}</value>
-            </property>
-            <property>
-              <name>test.name</name>
-              <value>${test.name}</value>
-            </property>
-            <property>
-              <name>test.url</name>
-              <value>${test.url}</value>
-            </property>            
-            <property>
-              <name>key.client</name>
-              <value>${key.client}</value>
-            </property>   
-            <property>
-              <name>key.server</name>
-              <value>${key.server}</value>
-            </property>   
-          </systemProperties>
         </configuration>
       </plugin>
     </plugins>

@@ -4,23 +4,17 @@ import static javax.xml.bind.DatatypeConverter.printBase64Binary;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import javax.jws.WebService;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -166,9 +160,6 @@ public class SDIdImpl implements SDId {
 
     public byte[] requestAuthentication(String userId, byte[] reserved)
                                                                        throws AuthReqFailed_Exception {
-        byte[] byteTrue = new byte[1];
-        byteTrue[0] = (byte) 1;
-
         if(reserved == null) {
         	AuthReqFailed authProblem = new AuthReqFailed();
             throw new AuthReqFailed_Exception("Byte array is null.", authProblem);
@@ -186,17 +177,21 @@ public class SDIdImpl implements SDId {
         }
     
 		try {
-	        crypto = new CryptoHelper("AES");
+	        crypto = new CryptoHelper("AES", "CBC", "PKCS5Padding");
 
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			factory.setNamespaceAware(true);
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(new ByteArrayInputStream(reserved));
-			String service = doc.getElementsByTagName("Server").item(0).getNodeValue();
-			String nonce = doc.getElementsByTagName("Nonce").item(0).getNodeValue();
-			     
+			String service = doc.getElementsByTagName("Server").item(0).getTextContent();
+			String nonce = doc.getElementsByTagName("Nonce").item(0).getTextContent();
+			
+			if (service == null || service.isEmpty() || nonce == null || nonce.isEmpty())
+			    throw new Exception();
+			
 			TicketGranter tg = new TicketGranter(userId, service);
-			byte[] ticket = null; //byte[] ticket = tg.grant(); 
+			byte[] ticket = tg.grant(); 
+			
 			
 			byte[] session = createEncryptedSessionDoc(builder, tg, nonce);
 			return createResponse(builder, ticket, session);
@@ -225,14 +220,18 @@ public class SDIdImpl implements SDId {
         // write to byte array
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         Transformer transformer = TransformerFactory.newInstance().newTransformer();
+      // transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 		transformer.transform(new DOMSource(sessionDoc), new StreamResult(bos));
         byte[] docBytes = bos.toByteArray();
+
+        // switch to system.getProperty
+        String CLIENT_KEY = "bH7OZp6X11DNSrBr2MBt6g==";
         
-        SecretKey clientKey = crypto.decodeKey(System.getProperty("key.client"));
-		return crypto.cypherBytes(docBytes, clientKey);
+        SecretKey clientKey = crypto.decodeKey(CLIENT_KEY);
+		return crypto.cipherBytes(docBytes, clientKey);
     }
     
-    private byte[] createResponse (DocumentBuilder builder, byte[] sessionBytes, byte[] ticketBytes) {
+    private byte[] createResponse (DocumentBuilder builder, byte[] ticketBytes, byte[] sessionBytes) throws TransformerException {
     	Document newDoc = builder.newDocument();
 		// create root node 
         Element response = newDoc.createElement("Response");
@@ -249,6 +248,12 @@ public class SDIdImpl implements SDId {
         
         ticket.appendChild(newDoc.createTextNode(ticketString));
         session.appendChild(newDoc.createTextNode(sessionString));
-		return ticketBytes;
+
+        // write to byte array
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        transformer.transform(new DOMSource(newDoc), new StreamResult(bos));
+        return bos.toByteArray();
     }
 }

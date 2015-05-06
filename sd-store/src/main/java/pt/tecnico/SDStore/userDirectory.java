@@ -26,7 +26,10 @@ public class userDirectory {
 			throw new DocAlreadyExists_Exception("A document already exists with the same id", faultinfo);
 		}
 		
-		storedDocs.add(new document(id));
+		document doc = new document(id);
+		//doc.setTagID(Integer.parseInt(tag[1]));
+		//doc.setTagNumber(Integer.parseInt(tag[0]));
+		storedDocs.add(doc);
 	}
 	
 	public boolean docExists(String id){
@@ -49,13 +52,17 @@ public class userDirectory {
 		return user;
 	}
 
-	public void storeContent(String docId, byte[] content) throws CapacityExceeded_Exception, DocDoesNotExist_Exception{
+	public void storeContent(String docId, byte[] content, String[] tag) throws CapacityExceeded_Exception, DocDoesNotExist_Exception{
 		if(isFull())
 			throw new CapacityExceeded_Exception("Repository storage capacity of the user is exceeded", capacity);
 
 		for(document doc: storedDocs)
 			if(doc.getId().equals(docId)){
-				updateDoc(doc, content);
+				if(!doc.getTag().isGreater(new tag(Integer.parseInt(tag[0]), Integer.parseInt(tag[1])))){ // tests if tag is grater than old tag, and only updates if soo..
+					updateDoc(doc, content);
+					doc.setTagID(Integer.parseInt(tag[1]));
+					doc.setTagNumber(Integer.parseInt(tag[0]));
+				}
 				return;
 			}
 
@@ -86,6 +93,16 @@ public class userDirectory {
 			if(doc.getId().equals(docId))
 				return doc.getContent();
 
+		DocDoesNotExist doc = new DocDoesNotExist();
+		doc.setDocId(docId);
+		throw new DocDoesNotExist_Exception("Document does not exist", doc);
+	}
+	
+	public document searchDoc(String docId) throws DocDoesNotExist_Exception{
+		for(document doc: storedDocs)
+			if(doc.getId().equals(docId))
+				return doc;
+		
 		DocDoesNotExist doc = new DocDoesNotExist();
 		doc.setDocId(docId);
 		throw new DocDoesNotExist_Exception("Document does not exist", doc);

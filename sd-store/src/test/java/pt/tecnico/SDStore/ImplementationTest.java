@@ -5,7 +5,14 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.registry.JAXRException;
+import javax.xml.ws.handler.MessageContext;
+
+import pt.tecnico.SDStore.handler.RelayServerHandler;
+import pt.tecnico.ws.uddi.UDDINaming;
 import pt.ulisboa.tecnico.sdis.store.ws.*;
+import mockit.Mock;
+import mockit.MockUp;
 
 import org.junit.*;
 
@@ -37,8 +44,9 @@ public class ImplementationTest {
      //Tests if directory has space after one document store (1 byte)  (tests isFull() function);
      @Test
      public void addContent() throws DocAlreadyExists_Exception, CapacityExceeded_Exception, DocDoesNotExist_Exception {
+    	 String[] tag = {"1","1"};
       directory.addDoc(DOCID);
-      directory.storeContent(DOCID, CONTENT);
+      directory.storeContent(DOCID, CONTENT, tag);
       
       assertEquals(false, directory.isFull());
      }

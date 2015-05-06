@@ -8,33 +8,13 @@ import javax.xml.ws.Endpoint;
 import pt.tecnico.ws.uddi.UDDINaming;
 import pt.ulisboa.tecnico.sdis.store.ws.DocAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocUserPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.Key;
+import javax.crypto.KeyGenerator;
 
 public class SDStoreMain {
 	
 	private static SDStoreImpl Store;
-	
-	public static void setup() {
-        try{
-		DocUserPair pair = new DocUserPair();
-		pair.setDocumentId("Doc1");
-		pair.setUserId("alice");
-		Store.createDoc(pair);
-		
-		pair.setUserId("bruno");
-		Store.createDoc(pair);
-		
-		pair.setUserId("carla");
-		Store.createDoc(pair);
-		
-		pair.setUserId("duarte");
-		Store.createDoc(pair);
-		
-		pair.setUserId("eduardo");
-		Store.createDoc(pair);
-        } catch (DocAlreadyExists_Exception e1) {
-            ;
-        }
-	}
 	
     public static void main(String[] args) {
         // Check arguments
@@ -51,8 +31,16 @@ public class SDStoreMain {
         Endpoint endpoint = null;
         UDDINaming uddiNaming = null;
         Store=new SDStoreImpl();
-        setup();
-        
+        KeyGenerator keyGen = null;
+        try {
+            keyGen = KeyGenerator.getInstance("AES");
+        } catch (NoSuchAlgorithmException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        keyGen.init(128);
+        Key key = keyGen.generateKey();
+        SecureSDStore secureStore = new SecureSDStore(Store, key);
         
         try {
         	uddiNaming = new UDDINaming(uddiURL);
@@ -69,11 +57,17 @@ public class SDStoreMain {
         			url = null;
         			return;
         		}
-        		url = args[2+endpointAddress.size()];
+        		
+        		// creates next url (changing the port number) for the next server to be created
+        		String[] split = url.split("/store-ws");
+        		char[] newString = split[0].toCharArray();
+        		newString[newString.length-1] = new Integer(2+endpointAddress.size()).toString().toCharArray()[0];
+        		split[0] = String.valueOf(newString);
+        		url = split[0] + "/store-ws" + split[1];
         	}
         	
         	
-            endpoint = Endpoint.create(Store);
+            endpoint = Endpoint.create(secureStore);
 
             // publish endpoint
             System.out.printf("Starting %s%n", url);

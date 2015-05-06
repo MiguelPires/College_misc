@@ -2,16 +2,23 @@ package pt.tecnico.SDStore;
 
 import pt.tecnico.ws.uddi.UDDINaming;
 import pt.ulisboa.tecnico.sdis.store.ws.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
 import javax.xml.registry.JAXRException;
+
 import org.junit.*;
+
 import static org.junit.Assert.*;
 import mockit.*;
+
 import javax.xml.ws.*;
+
 import com.sun.xml.ws.api.EndpointAddress;
+
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
 
@@ -22,7 +29,7 @@ public class ComunicationTest {
 
 String uddiURL = "http://localhost:8081";
 String name = "SD-Store";
-String url = "http://localhost:8080/store-ws/endpoint";
+String url = "http://localhost:8082/store-ws/endpoint";
 
 	
     //Tests UDDI server - publishes and checks if it's there
@@ -93,6 +100,18 @@ String url = "http://localhost:8080/store-ws/endpoint";
     	Map<String, Object> requestContext = bindingProvider.getRequestContext();
     	requestContext.put(ENDPOINT_ADDRESS_PROPERTY, url);
 
+    	new MockUp<SDStoreImpl>() {
+    	 @Mock
+         private void sendToHandler(){
+    		 ;
+     		}
+         @Mock
+         private String[] getFromHandler(){
+        	 String[] ar = {"1","2"};
+             return ar;
+     		}
+    	};
+    	
     	DocUserPair pair = new DocUserPair();
     	String doc = "docx";
     	pair.setUserId("user");

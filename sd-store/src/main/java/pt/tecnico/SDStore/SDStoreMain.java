@@ -44,29 +44,21 @@ public class SDStoreMain {
         
         try {
         	uddiNaming = new UDDINaming(uddiURL);
-        	Collection<String> endpointAddress=null;
-        	try {
-    			endpointAddress = uddiNaming.list(name);
-    		} catch (JAXRException e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
-    		}
-        	
-        	if(endpointAddress.size() > 0){
-        		if(endpointAddress.size() >= 3){
-        			url = null;
-        			return;
-        		}
-        		
-        		// creates next url (changing the port number) for the next server to be created
-        		String[] split = url.split("/store-ws");
-        		char[] newString = split[0].toCharArray();
-        		newString[newString.length-1] = new Integer(2+endpointAddress.size()).toString().toCharArray()[0];
-        		split[0] = String.valueOf(newString);
-        		url = split[0] + "/store-ws" + split[1];
+        	String endpointAddress=null;
+        	int id=0;
+        	String auxName = name;
+        	while(uddiNaming.lookup(name)!=null){
+        		id++;
+        		name = auxName + id;
         	}
-        	
-        	
+        		
+       		// creates next url (changing the port number) for the next server to be created
+        	String[] split = url.split("/store-ws");
+        	char[] newString = split[0].toCharArray();
+        	newString[newString.length-1] = new Integer(2+id).toString().toCharArray()[0];
+        	split[0] = String.valueOf(newString);
+        	url = split[0] + "/store-ws" + split[1];
+
             endpoint = Endpoint.create(secureStore);
 
             // publish endpoint

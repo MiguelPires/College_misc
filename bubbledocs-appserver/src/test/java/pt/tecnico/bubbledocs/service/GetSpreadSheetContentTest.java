@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import pt.tecnico.bubbledocs.domain.Cell;
 import pt.tecnico.bubbledocs.domain.Content;
 import pt.tecnico.bubbledocs.domain.Literal;
 import pt.tecnico.bubbledocs.domain.Reference;
@@ -47,37 +48,41 @@ public class GetSpreadSheetContentTest extends BubbleDocsServiceTest{
 	
 	@Test
 	public void success() throws BubbleDocsException {
-		GetSpreadSheetContentTest service = new GetSpreadSheetContent(spread.getID(), token);
+		GetSpreadSheetContent service = new GetSpreadSheetContent(spread.getID(), token);
         service.execute();
 		
+        Cell cellcontent1 = spread.getCell(5, 5);
+        Cell cellcontent2 = spread.getCell(5, 6);
+        Cell cellcontent3 = spread.getCell(15, 10);
+        
         assertEquals(js.getUsername(), USERNAME);
-        assertEquals(content, Literal(100));
-        assertEquals(content_1, Reference());
-        assertEquals(content_1, Reference());
+        assertEquals(content, cellcontent1);
+        assertEquals(content_1, cellcontent2);
+        assertEquals(content_2, cellcontent3);
 	}
 	
 	@Test(expected = SpreadsheetNotFoundException.class)
 	public void invalidSpreadsheetIdentifier(){
-		GetSpreadSheetContentTest service = new GetSpreadSheetContent(spread.getID()+10, token);
+		GetSpreadSheetContent service = new GetSpreadSheetContent(spread.getID()+10, token);
         service.execute();
 	}
 	
 	@Test(expected = UnauthorizedOperationException.class)
 	public void invalidUserTokenNotAllowed(){
-		GetSpreadSheetContentTest service = new GetSpreadSheetContent(spread.getID(), USERNAME_DOES_NOT_EXIST);
+		GetSpreadSheetContent service = new GetSpreadSheetContent(spread.getID(), USERNAME_DOES_NOT_EXIST);
         service.execute();
 	}
 	
 	@Test(expected = SpreadsheetNotFoundException.class)
 	public void invalidUserTokenNotInSession(){
 		removeUserFromSession(js.getUsername());
-    	GetSpreadSheetContentTest service = new GetSpreadSheetContent(spread.getID(), USERNAME);	
+    	GetSpreadSheetContent service = new GetSpreadSheetContent(spread.getID(), USERNAME);	
     	service.execute();
 	}
 	
 	@Test(expected = SpreadsheetNotFoundException.class)
 	public void invalidUserTokenDoesNotExist(){
-    	GetSpreadSheetContentTest service = new GetSpreadSheetContent(spread.getID(), USERNAME);
+    	GetSpreadSheetContent service = new GetSpreadSheetContent(spread.getID(), USERNAME);
     	service.execute();
     	assertEquals(js.getUsername(), "notExist");
 	}

@@ -32,7 +32,6 @@ public class LoginUserIntegrator extends BubbleDocsIntegrator {
         service.execute();
         }
         catch(RemoteInvocationException e){
-        	
         	String pass = service.getUserPassword();
         	 if (pass == null)
                  throw new UnavailableServiceException();
@@ -40,6 +39,8 @@ public class LoginUserIntegrator extends BubbleDocsIntegrator {
                  userToken = addUserToSession(service.getUser());
              else
                  throw new WrongPasswordException();	
+        } catch(LoginBubbleDocsException e){
+        	 throw new WrongPasswordException();	
         }
     }
     

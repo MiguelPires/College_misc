@@ -24,9 +24,13 @@ import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
+import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
+import pt.tecnico.bubbledocs.service.ExportDocument;
+import pt.tecnico.bubbledocs.service.ImportDocument;
+import pt.tecnico.bubbledocs.service.integration.ImportDocumentIntegrator;
 import pt.tecnico.bubbledocs.service.remote.StoreRemoteServices;
 
-public class ImportDocumentIntegratorTest {
+public class ImportDocumentIntegratorTest extends BubbleDocsServiceTest{
 	private String ars;
     private String js;
 
@@ -70,10 +74,10 @@ public class ImportDocumentIntegratorTest {
     
     @Test
     public void success() throws BubbleDocsException {
-        ImportDocument service = new ImportDocument(ssId, ars);
+        ImportDocumentIntegrator service = new ImportDocumentIntegrator(ssId, ars);
         service.execute();
 
-        Spreadsheet doc = service.getDocXML();
+        Spreadsheet doc = service.getSpread();
         Spreadsheet expected = docs.get(1);
 
         assertEquals(doc.getRows(), expected.getRows());
@@ -90,32 +94,32 @@ public class ImportDocumentIntegratorTest {
     
     @Test(expected = SpreadsheetNotFoundException.class)
     public void spreadSheetNotExist() throws BubbleDocsException {
-        ImportDocument service = new ImportDocument(100, ars);
+    	ImportDocumentIntegrator service = new ImportDocumentIntegrator(100, ars);
         service.execute();
     } 
     
     @Test(expected = UnauthorizedOperationException.class)
     public void unauthorizedImport() throws BubbleDocsException {
-        ImportDocument service = new ImportDocument(docs.get(1).getID(), js);
+    	ImportDocumentIntegrator service = new ImportDocumentIntegrator(docs.get(1).getID(), js);
         service.execute();
     }
     
     @Test(expected = UserNotInSessionException.class)
     public void accessUsernameNotExist() {
         removeUserFromSession(ars);
-        ImportDocument service = new ImportDocument(docs.get(0).getID(), ars);
+        ImportDocumentIntegrator service = new ImportDocumentIntegrator(docs.get(0).getID(), ars);
         service.execute();
     }
     
     @Test(expected = EmptyUsernameException.class)
     public void nullUser(){
-        ImportDocument service = new ImportDocument(docs.get(0).getID(), null);
+    	ImportDocumentIntegrator service = new ImportDocumentIntegrator(docs.get(0).getID(), null);
         service.execute();
     }
 
     @Test(expected = EmptyUsernameException.class)
     public void emptyUser(){
-        ImportDocument service = new ImportDocument(docs.get(0).getID(), "");
+    	ImportDocumentIntegrator service = new ImportDocumentIntegrator(docs.get(0).getID(), "");
         service.execute();
     }
     
@@ -123,13 +127,13 @@ public class ImportDocumentIntegratorTest {
     public void storeServiceUnavailable() {
         new MockUp<StoreRemoteServices>() {
             @Mock
-            public void loadDocument(String username, String docName) throws CannotLoadDocumentException,
+            public byte[] loadDocument(String username, String docName) throws CannotLoadDocumentException,
                                                                              RemoteInvocationException {
                 throw new RemoteInvocationException();
             }
         };
         
-        ImportDocument service = new ImportDocument(docs.get(0).getID(), ars);
+        ImportDocumentIntegrator service = new ImportDocumentIntegrator(docs.get(0).getID(), ars);
         service.execute();
     }
 }

@@ -9,6 +9,7 @@ import org.jdom2.input.SAXBuilder;
 
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
+import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 
 public class ImportDocument extends CheckLogin {

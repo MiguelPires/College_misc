@@ -21,13 +21,13 @@ public class LoginUser extends BubbleDocsService {
 
     @Override
     protected void dispatch() throws BubbleDocsException {    
-        	user = getUser();
-            if (user.getPassword() == null)
-                user.setPassword(password);
-            else if (!user.getPassword().equals(password))
-                user.setPassword(password);
+        user = getUser();
+        if (user.getPassword() == null)
+            user.setPassword(password);
+        else if (!user.getPassword().equals(password))
+            user.setPassword(password);
             
-             userToken = getBubbledocs().addUserToSession(user);         
+        userToken = getBubbledocs().addUserToSession(user);         
     }
 
     public final String getUserToken() {

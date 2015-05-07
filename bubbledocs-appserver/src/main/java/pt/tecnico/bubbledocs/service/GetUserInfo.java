@@ -12,10 +12,7 @@ public class GetUserInfo extends BubbleDocsService {
     private String name;
 
     public GetUserInfo(String username) {
-		user = getUser(username);
         this.username = username;
-        this.name = user.getName();
-        this.email = user.getEmail();
     }
     
     public String getUsername(){
@@ -32,6 +29,8 @@ public class GetUserInfo extends BubbleDocsService {
 
     @Override
     protected void dispatch() throws BubbleDocsException {
-    	 dispatch();
+    	user = getUser(username);
+    	this.name = user.getName();
+    	this.email = user.getEmail();
     }
 }

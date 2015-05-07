@@ -115,12 +115,6 @@ public class ExportDocumentIntegratorTest extends BubbleDocsServiceTest {
         service.execute();
     }
 
-    @Test(expected = CannotStoreDocumentException.class)
-    public void storeIsFull() {
-    	ExportDocumentIntegrator service = new ExportDocumentIntegrator(ars, full.getID());
-        service.execute();
-    }
-
     @Test(expected = EmptyUsernameException.class)
     public void nullUser(){
     	ExportDocumentIntegrator service = new ExportDocumentIntegrator(null, docs.get(0).getID());

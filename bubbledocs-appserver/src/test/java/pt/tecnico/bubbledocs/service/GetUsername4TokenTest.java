@@ -1,13 +1,14 @@
 package pt.tecnico.bubbledocs.service;
 
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 import pt.tecnico.bubbledocs.domain.User;
-import pt.tecnico.bubbledocs.service.*;
 import pt.tecnico.bubbledocs.exception.*;
 //import pt.tecnico.bubbledocs.integration.component.ImportDocument;
 
-public class GetUsername4TokenTest {
+public class GetUsername4TokenTest extends BubbleDocsServiceTest{
 	
 	private static final String TOKEN = "arstoken";
 	private static final String USERNAME = "ars";
@@ -17,12 +18,14 @@ public class GetUsername4TokenTest {
 	
 	
     private User as;
+    private String root;
+    private String token;
     
     @Override
     public void populate4Test() throws BubbleDocsException {
-        as = createUser(TOKEN, USERNAME, EMAIL, "António Rito Silva");
+        as = createUser(USERNAME, EMAIL, "António Rito Silva");
         root = addUserToSession(ROOT_USERNAME);
-        ars = addUserToSession("ars");
+        token = addUserToSession("ars");
         
     }
     
@@ -32,24 +35,15 @@ public class GetUsername4TokenTest {
     	
     	service.execute();
     	
-    	assertEquals(as.getUsername(), service.getUsername(TOKEN));
+    	assertEquals(as.getUsername(), service.getUsername());
     	
     }
     
     @Test(expected = UserNotInSessionException.class)
     public void userDidNotLoginYet(){
-    	removeUserFromSession(as);
-    	
-    	GetUsername4Token service = new GetUsername4Token("token");
+    	GetUsername4Token service = new GetUsername4Token(USERNAME_DOES_NOT_EXIST);
     	
     	service.execute();
-    }
-    
-    @Test(expected = InvalidUsernameException.class)
-    public void userDoesNotExist(){
-    	
-    	GetUsername4Token service = new GetUsername4Token("token_user_not_exist");
-        service.execute();
     }
     
     @Test(expected = EmptyUsernameException.class)

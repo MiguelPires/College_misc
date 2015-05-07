@@ -2,6 +2,7 @@ package pt.tecnico.bubbledocs.service;
 
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
+import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
 
 public class GetUsername4Token extends CheckLogin {
 
@@ -11,7 +12,6 @@ public class GetUsername4Token extends CheckLogin {
 
     public GetUsername4Token(String userToken) {
 		this.userToken = userToken;
-        this.username = user.getUsername();
     }
     
     public String getUsername() {
@@ -20,6 +20,10 @@ public class GetUsername4Token extends CheckLogin {
 
     @Override
     protected void dispatch() throws BubbleDocsException {
+    	if(userToken == null || userToken.isEmpty())
+    		throw new EmptyUsernameException();
+    	
     	 super.dispatch();
+    	 this.username = user.getUsername();
     }
 }

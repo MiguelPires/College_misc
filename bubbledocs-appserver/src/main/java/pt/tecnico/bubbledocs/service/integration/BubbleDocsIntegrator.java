@@ -13,6 +13,10 @@ public abstract class BubbleDocsIntegrator {
 
     protected abstract void dispatch() throws BubbleDocsException;
     
+    protected void createUser(String username, String name, String email) {
+        BubbleDocsService.getBubbledocs().createUser(username, name, email);
+    }
+    
     protected void removeUser(String username) {
         BubbleDocsService.getBubbledocs().removeUser(username);
     }

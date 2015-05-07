@@ -24,13 +24,12 @@ import pt.tecnico.bubbledocs.exception.SpreadsheetNotFoundException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
-import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
-import pt.tecnico.bubbledocs.service.ExportDocument;
-import pt.tecnico.bubbledocs.service.ImportDocument;
+import pt.tecnico.bubbledocs.service.integration.ExportDocumentIntegrator;
 import pt.tecnico.bubbledocs.service.integration.ImportDocumentIntegrator;
 import pt.tecnico.bubbledocs.service.remote.StoreRemoteServices;
+import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
 
-public class ImportDocumentIntegratorTest extends BubbleDocsServiceTest{
+public class ImportDocumentIntegratorTest extends BubbleDocsServiceTest {
 	private String ars;
     private String js;
 
@@ -63,12 +62,7 @@ public class ImportDocumentIntegratorTest extends BubbleDocsServiceTest{
             doc.addCellContent(5, 6, new Addition(new Literal(2), new Reference(doc.getCell(3, 4))));
         }
 
-        /*full = createSpreadSheet(as, "FULL", 10, 10); // has around 13.000 bytes (maximum is 10*1024 = 10MB)
-        for(int i=0; i<10; i++)
-            for(int j=0;j<10;j++)
-                full.addCellContent(i, j, new Literal(5));*/
-        
-        ExportDocument service = new ExportDocument(ars, docs.get(0).getID());
+        ExportDocumentIntegrator service = new ExportDocumentIntegrator(ars, docs.get(0).getID());
         service.execute();
     }
     
@@ -77,7 +71,7 @@ public class ImportDocumentIntegratorTest extends BubbleDocsServiceTest{
         ImportDocumentIntegrator service = new ImportDocumentIntegrator(ssId, ars);
         service.execute();
 
-        Spreadsheet doc = service.getSpread();
+        Spreadsheet doc = importFromXML(service.getDocXML());
         Spreadsheet expected = docs.get(1);
 
         assertEquals(doc.getRows(), expected.getRows());
@@ -127,7 +121,7 @@ public class ImportDocumentIntegratorTest extends BubbleDocsServiceTest{
     public void storeServiceUnavailable() {
         new MockUp<StoreRemoteServices>() {
             @Mock
-            public byte[] loadDocument(String username, String docName) throws CannotLoadDocumentException,
+            public void loadDocument(String username, String docName) throws CannotLoadDocumentException,
                                                                              RemoteInvocationException {
                 throw new RemoteInvocationException();
             }

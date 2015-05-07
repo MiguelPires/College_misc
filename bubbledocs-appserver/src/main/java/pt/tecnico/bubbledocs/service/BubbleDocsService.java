@@ -29,6 +29,10 @@ public abstract class BubbleDocsService {
                                                                              throws BubbleDocsException {
         return Bubbledocs.getInstance().createUser(username, name, email);
     }
+    
+    public static void deleteUser(String username) throws BubbleDocsException {
+    	Bubbledocs.getInstance().removeUser(username);
+    }
 
     public static User getUser(String username) throws UnknownBubbleDocsUserException {
         return getBubbledocs().getUser(username);

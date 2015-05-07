@@ -9,7 +9,6 @@ import org.jdom2.input.SAXBuilder;
 
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
-import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 
 public class ImportDocument extends CheckLogin {
@@ -34,6 +33,10 @@ public class ImportDocument extends CheckLogin {
 
     public void setDocXML(byte[] doc) {
     	docXML = convertFromBytes(doc);
+    }
+    
+    public org.jdom2.Document getDocXML() {
+        return docXML;
     }
 
     public ImportDocument(int docId, String userToken) {

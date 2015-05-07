@@ -46,6 +46,13 @@ public class GetUsername4TokenTest extends BubbleDocsServiceTest{
     	service.execute();
     }
     
+    @Test(expected = InvalidUsernameException.class)
+     public void userDoesNotExist(){
+        
+        GetUsername4Token service = new GetUsername4Token("token_user_not_exist");
+        service.execute();
+    }
+
     @Test(expected = EmptyUsernameException.class)
     public void userNull(){
     	GetUsername4Token service = new GetUsername4Token(null);

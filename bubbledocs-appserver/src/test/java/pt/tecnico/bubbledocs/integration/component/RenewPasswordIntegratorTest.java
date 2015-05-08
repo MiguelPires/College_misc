@@ -18,7 +18,7 @@ import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
-import pt.tecnico.bubbledocs.service.RenewPassword;
+import pt.tecnico.bubbledocs.service.integration.RenewPasswordIntegrator;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 
 public class RenewPasswordIntegratorTest extends BubbleDocsServiceTest {
@@ -36,7 +36,7 @@ public class RenewPasswordIntegratorTest extends BubbleDocsServiceTest {
 
     @Test
     public void success() {
-        RenewPassword service = new RenewPassword(ars);
+        RenewPasswordIntegrator service = new RenewPasswordIntegrator(ars);
         service.execute();
 
         User user = getUserFromUsername(USERNAME);
@@ -55,44 +55,44 @@ public class RenewPasswordIntegratorTest extends BubbleDocsServiceTest {
                 throw new RemoteInvocationException();
             }
         };
-        RenewPassword service = new RenewPassword(ars);
+        RenewPasswordIntegrator service = new RenewPasswordIntegrator(ars);
         service.execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
     public void unauthorizedRenewalUserNotInSession() {
         removeUserFromSession(ars);
-        RenewPassword service = new RenewPassword(ars);
+        RenewPasswordIntegrator service = new RenewPasswordIntegrator(ars);
         service.execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
     public void unauthorizedRenewalUserDoesNotExist() {
-        RenewPassword service = new RenewPassword("ola9");
+        RenewPasswordIntegrator service = new RenewPasswordIntegrator("ola9");
         service.execute();
     }
 
     @Test(expected = EmptyUsernameException.class)
     public void nullUserToken() {
-        RenewPassword service = new RenewPassword(null);
+        RenewPasswordIntegrator service = new RenewPasswordIntegrator(null);
         service.execute();
     }
 
     @Test(expected = EmptyUsernameException.class)
     public void emptyUserToken() {
-        RenewPassword service = new RenewPassword("");
+        RenewPasswordIntegrator service = new RenewPasswordIntegrator("");
         service.execute();
     }
-    
+
     @Test(expected = InvalidUsernameException.class)
     public void smallUserToken() {
-        RenewPassword service = new RenewPassword("ab");
+        RenewPasswordIntegrator service = new RenewPasswordIntegrator("ab");
         service.execute();
     }
-    
+
     @Test(expected = InvalidUsernameException.class)
     public void largeUserToken() {
-        RenewPassword service = new RenewPassword("abwdqwwdwww9");
+        RenewPasswordIntegrator service = new RenewPasswordIntegrator("abwdqwwdwww9");
         service.execute();
     }
 }

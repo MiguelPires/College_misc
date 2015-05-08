@@ -17,8 +17,8 @@ public class CreateSpreadSheetTest extends BubbleDocsServiceTest {
     private static final String USERNAME = "vany";
     private static final String EMAIL = "vanessag@tecnico.pt";
     private static final String SPNAME = "Notas LEIC";
-    private Integer ROWS = 20;
-    private Integer COL = 10;
+    private final Integer ROWS = 20;
+    private final Integer COL = 10;
 
     @Override
     public void populate4Test() throws BubbleDocsException {
@@ -28,9 +28,9 @@ public class CreateSpreadSheetTest extends BubbleDocsServiceTest {
 
     @Test
     public void success() {
-        CreateSpreadSheet service = new CreateSpreadSheet(vany, SPNAME, ROWS, COL);
+        final CreateSpreadSheet service = new CreateSpreadSheet(vany, SPNAME, ROWS, COL);
         service.execute();
-        Spreadsheet createdSpreadsheet = getSpreadSheet(SPNAME);
+        final Spreadsheet createdSpreadsheet = getSpreadSheet(SPNAME);
 
         assertEquals(SPNAME, createdSpreadsheet.getName());
         assertEquals(ROWS, createdSpreadsheet.getRows());
@@ -40,21 +40,21 @@ public class CreateSpreadSheetTest extends BubbleDocsServiceTest {
     //Creation with empty name 
     @Test(expected = EmptySpreadSheetNameException.class)
     public void emptyName() {
-        CreateSpreadSheet service = new CreateSpreadSheet(vany, "", ROWS, COL);
+        final CreateSpreadSheet service = new CreateSpreadSheet(vany, "", ROWS, COL);
         service.execute();
     }
 
     //rows e columns negativos
     @Test(expected = InvalidSpreadsheetDimensionsException.class)
     public void negativeDimensions() {
-        CreateSpreadSheet service = new CreateSpreadSheet(vany, "Negative", -5, 1);
+        final CreateSpreadSheet service = new CreateSpreadSheet(vany, "Negative", -5, 1);
         service.execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
     public void accessUsernameNotExist() {
         removeUserFromSession(vany);
-        CreateSpreadSheet service = new CreateSpreadSheet(vany, SPNAME, ROWS, COL);
+        final CreateSpreadSheet service = new CreateSpreadSheet(vany, SPNAME, ROWS, COL);
         service.execute();
     }
 }

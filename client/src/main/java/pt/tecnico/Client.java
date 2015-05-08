@@ -1,46 +1,11 @@
 package pt.tecnico;
+
 import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
-import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
-import static javax.xml.bind.DatatypeConverter.printBase64Binary;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-import javax.crypto.SecretKey;
-import javax.jws.WebService;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import pt.tecnico.CryptoHelper;
-import pt.tecnico.frontend.SecurityHandler;
-import pt.ulisboa.tecnico.sdis.id.ws.AuthReqFailed;
-import pt.ulisboa.tecnico.sdis.id.ws.AuthReqFailed_Exception;
-import pt.ulisboa.tecnico.sdis.id.ws.EmailAlreadyExists;
-import pt.ulisboa.tecnico.sdis.id.ws.EmailAlreadyExists_Exception;
-import pt.ulisboa.tecnico.sdis.id.ws.InvalidEmail_Exception;
-import pt.ulisboa.tecnico.sdis.id.ws.InvalidUser_Exception;
-import pt.ulisboa.tecnico.sdis.id.ws.SDId;
-import pt.ulisboa.tecnico.sdis.id.ws.UserAlreadyExists;
-import pt.ulisboa.tecnico.sdis.id.ws.UserAlreadyExists_Exception;
-import pt.ulisboa.tecnico.sdis.id.ws.UserDoesNotExist;
-import pt.ulisboa.tecnico.sdis.id.ws.UserDoesNotExist_Exception;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
-import java.util.Map;
+import java.util.List;
 
 import javax.crypto.SecretKey;
 import javax.xml.parsers.DocumentBuilder;
@@ -53,49 +18,56 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.ws.BindingProvider;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import pt.tecnico.handler.SecurityHandler;
 import pt.ulisboa.tecnico.sdis.id.ws.SDId;
-import pt.ulisboa.tecnico.sdis.id.ws.SDId_Service;
-import uddi.UDDINaming;
+import pt.ulisboa.tecnico.sdis.store.ws.DocUserPair;
 
 public class Client {
-    private static SDId cServer;
-    private static String endpointAddress;
+
+    private String clientKey;
+
+    // obtained from authentication server
+    private String sessionKey;
+    private String ticket;
     private String nonce;
-    private BindingProvider bindingProvider;
-    
-    public Client(String uddiURL, String serverName) throws TransformerFactoryConfigurationError,
-                                                    Exception {
-        UDDINaming uddiNaming = new UDDINaming(uddiURL);
-        endpointAddress = uddiNaming.lookup(serverName);
 
-        if (endpointAddress == null) {
-            System.out.println("The server \"" + serverName + "\" wasn't found");
-            return;
-        } else {
-            System.out.println("The address \"" + endpointAddress + "\" was found");
-        }
+    public Client(String uddiURL, String idName, String clientKey, String storeName) throws TransformerFactoryConfigurationError, Exception {
 
-        System.out.println("Creating stub");
-        SDId_Service service = new SDId_Service();
-        cServer = service.getSDIdImplPort();
+        this.clientKey = clientKey;
+        SDId idClient = IDClient.getInstance(uddiURL, idName);
+        StoreClient storeClient = StoreClient.getInstance(uddiURL, storeName);
+        
+        storeClient.getRequestContext().put(SecurityHandler.INIT_SESS, true);
 
-        System.out.println("Setting endpoint address");
-        bindingProvider = (BindingProvider) cServer;
-        Map<String, Object> requestContext = bindingProvider.getRequestContext();
-
-        requestContext.put(ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
-
-        byte[] credentials = cServer.requestAuthentication("alice", getRequest());
+        byte[] credentials = idClient.requestAuthentication("alice", getRequest());
         parseCredentials(credentials);
+
+        storeClient.getRequestContext().put(SecurityHandler.SESSION_KEY, this.sessionKey);
+        storeClient.getRequestContext().put(SecurityHandler.TICKET, this.ticket);
+        storeClient.getRequestContext().put(SecurityHandler.CLIENT, this.clientKey);
+
+        DocUserPair du = new DocUserPair();
+        du.setUserId("alice");
+        du.setDocumentId("Doc1");
+        storeClient.createDoc(du);
+        
+        du.setUserId("alice");
+        du.setDocumentId("Doc2");
+        storeClient.createDoc(du);
+        
+        List<String> docs = storeClient.listDocs("alice");
+        
+        for (String doc: docs) {
+            System.out.println(doc);
+        }
+        
     }
 
-    private byte[] getRequest() throws TransformerFactoryConfigurationError,
-                               ParserConfigurationException, TransformerException {
+    private byte[] getRequest() throws TransformerFactoryConfigurationError, ParserConfigurationException, TransformerException {
         // create XML document
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -133,39 +105,27 @@ public class Client {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
-        
+
         Document doc = builder.parse(new ByteArrayInputStream(credentials));
 
         String strSession = doc.getElementsByTagName("Session").item(0).getTextContent();
-        String strTicket = doc.getElementsByTagName("Ticket").item(0).getTextContent();
+        this.ticket = doc.getElementsByTagName("Ticket").item(0).getTextContent();
 
-        if (strSession == null || strSession.isEmpty() || strTicket == null || strTicket.isEmpty())
+        if (strSession == null || strSession.isEmpty() || this.ticket == null || this.ticket.isEmpty())
             throw new Exception("Response is empty");
 
         byte[] encryptedSession = parseBase64Binary(strSession);
-
-        // switch to system.getProperty
-        String CLIENT_KEY = "bH7OZp6X11DNSrBr2MBt6g==";
-        
-        SecretKey clientKey = crypto.decodeKey(CLIENT_KEY);
-        
-      /*  byte[] b = "abc".getBytes();
-        byte[] c = crypto.cipherBytes(b, clientKey);
-        byte[] d = crypto.decipherBytes(c, clientKey);
-        System.out.println("ABCD: "+new String(d, "UTF-8"));*/
-
+        SecretKey clientKey = crypto.decodeKey(this.clientKey);
         byte[] plainBytes = crypto.decipherBytes(encryptedSession, clientKey);
         Document newDoc = builder.parse(new ByteArrayInputStream(plainBytes));
 
-        String strSessionKey = newDoc.getElementsByTagName("SessionKey").item(0).getTextContent();
+        this.sessionKey = newDoc.getElementsByTagName("SessionKey").item(0).getTextContent();
         String strNonce = newDoc.getElementsByTagName("Nonce").item(0).getTextContent();
 
-        if (strSessionKey == null || strSessionKey.isEmpty() || strNonce == null
-                || strNonce.isEmpty())
+        if (this.sessionKey == null || this.sessionKey.isEmpty() || strNonce == null || strNonce.isEmpty())
             throw new Exception("Response is empty");
 
         if (!this.nonce.equals(strNonce))
-            throw new Exception("NONCE IS DIFFERENT");
-        
+            throw new Exception("Nonce is different");
     }
 }

@@ -20,12 +20,14 @@ import uddi.UDDINaming;
 public class CommunicationTest extends SDIdServiceTest {
     SDIdMain server;
 
+    @Override
     @Before
     public void setUp() throws JAXRException, EmailAlreadyExists_Exception, InvalidEmail_Exception,
                        UserAlreadyExists_Exception, InvalidUser_Exception {
         ; // don't create server
     }
 
+    @Override
     public void tearDown() throws JAXRException {
         super.tearDown();
         server.getEndpoint().stop();

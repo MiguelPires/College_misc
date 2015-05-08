@@ -70,7 +70,8 @@ public class SDIdMain {
         String name = args[1];
         String url = args[2];
 
-        server = new SDIdImpl();
+        // client and server keys
+        server = new SDIdImpl(args[3], args[4]);
         populate(server);
         endpoint = Endpoint.create(server);
 
@@ -90,7 +91,9 @@ public class SDIdMain {
 
                 SDId_Service service = new SDId_Service();
                 SDId newServer = service.getSDIdImplPort();
-
+                
+                //  BindingProvider bindingProvider = (BindingProvider) server ????
+                // rever
                 BindingProvider bindingProvider = (BindingProvider) newServer;
                 Map<String, Object> requestContext = bindingProvider.getRequestContext();
                 Object v = requestContext.getOrDefault(ENDPOINT_ADDRESS_PROPERTY, "");

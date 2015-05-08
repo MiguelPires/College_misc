@@ -24,7 +24,7 @@ public class UserTest {
     @Before
     public void setUp() throws EmailAlreadyExists_Exception, InvalidEmail_Exception,
                        UserAlreadyExists_Exception, InvalidUser_Exception {
-        server = new SDIdImpl();
+        server = new SDIdImpl(System.getProperty("key.client"), System.getProperty("key.server"));
     }
 
     @Test

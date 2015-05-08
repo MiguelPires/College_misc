@@ -59,7 +59,7 @@ public class SDIdServiceTest {
                                     InvalidEmail_Exception, UserAlreadyExists_Exception,
                                     InvalidUser_Exception {
 
-        SDIdImpl sServer = new SDIdImpl();
+        SDIdImpl sServer = new SDIdImpl(System.getProperty("key.client"), System.getProperty("key.server"));
         SDIdMain.populate(sServer);
         endpoint = Endpoint.create(sServer);
 

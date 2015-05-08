@@ -113,19 +113,15 @@
   	  <artifactId>UDDI</artifactId> 
   	  <version>1.0-SNAPSHOT</version>
   	</dependency>
-  	<dependency>
-  	  <groupId>pt.tecnico</groupId>
-  	  <artifactId>SDId</artifactId> 
-  	  <version>1.0-SNAPSHOT</version>
-  	</dependency>
+
   </dependencies>
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mainclass>pt.tecnico.ClientMain</mainclass>
     <uddi.url>http://localhost:8081</uddi.url>
-    <ws.name>SD-ID</ws.name>
-    <ws.url>http://localhost:8080/id-ws/endpoint</ws.url>
+    <id.name>SD-ID</id.name>
+    <store.name>SD-STORE</store.name>
     <key.client>bH7OZp6X11DNSrBr2MBt6g==</key.client>
     <key.server>CYd/FbnCGtfTyr8uzJKeAw==</key.server>
 
@@ -148,6 +144,12 @@
         <configuration>
           <!-- https://jax-ws-commons.java.net/jaxws-maven-plugin/wsimport-mojo.html -->
           <wsdlDirectory>${basedir}/src/main/resources</wsdlDirectory>
+          <!--<wsdlFiles>
+            <wsdlFile>SD-STORE.1_1.wsdl</wsdlFile>
+          </wsdlFiles>  
+          <wsdlFiles>
+            <wsdlFile>SD-ID.1_1.wsdl</wsdlFile>
+          </wsdlFiles>-->
         </configuration>
         <dependencies>
           <dependency>
@@ -173,8 +175,9 @@
             <mainClass>${mainclass}</mainClass>
             <arguments>
               <argument>${uddi.url}</argument>
-              <argument>${ws.name}</argument>
+              <argument>${id.name}</argument>
               <argument>${key.client}</argument>
+              <argument>${store.name}</argument>
             </arguments>
           </configuration>
       </plugin>

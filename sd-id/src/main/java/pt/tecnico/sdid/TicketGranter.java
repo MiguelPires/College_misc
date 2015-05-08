@@ -20,19 +20,24 @@ import org.w3c.dom.Element;
 import pt.tecnico.CryptoHelper;
 
 public class TicketGranter {
-	private String client;
-	private String service;
+	private String clientName;
+	private String serviceName;
 	private String sessionKey;
+	private String serverKey;
 	private CryptoHelper crypto;
 	
-	public TicketGranter(String client, String service) {
-		this.client = client;
-		this.service = service;		
+    private String getServerKey() {
+        return serverKey;
+    }
+    public String getSessionKey () {
+        return sessionKey;
+    }
+    
+	public TicketGranter(String clientName, String serviceName, String serverKey) {
+		this.clientName = clientName;
+		this.serviceName = serviceName;		
+		this.serverKey = serverKey;
 		this.crypto = new CryptoHelper("AES", "CBC", "PKCS5Padding");
-	}
-	
-	public String getSessionKey () {
-		return sessionKey;
 	}
 
 	public byte[] grant() throws Exception {
@@ -59,8 +64,8 @@ public class TicketGranter {
         ticket.appendChild(key);
         
         // append text to children nodes
-        client.appendChild(doc.createTextNode(this.client));
-        server.appendChild(doc.createTextNode(this.service));
+        client.appendChild(doc.createTextNode(this.clientName));
+        server.appendChild(doc.createTextNode(this.serviceName));
         
         Date d = new Date();
         beginsAt.appendChild(doc.createTextNode(d.toString()));
@@ -72,7 +77,7 @@ public class TicketGranter {
         
         // generate session key
         sessionKey = crypto.encodeKey(crypto.generateKey());
-        key.appendChild(doc.createTextNode(sessionKey));
+        key.appendChild(doc.createTextNode(getSessionKey()));
         
         // write XML document to byte array
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -83,11 +88,7 @@ public class TicketGranter {
         transformer.transform(new DOMSource(doc), res);
         byte[] docBytes = bos.toByteArray();
         
-        // switch to system.getProperty
-        String SERVER_KEY = "CYd/FbnCGtfTyr8uzJKeAw==";
-        //System.out.println("KEY: "+System.getProperty("key.server"));
-        
-        SecretKey decodedKey = crypto.decodeKey(SERVER_KEY);
+        SecretKey decodedKey = crypto.decodeKey(getServerKey());
         return crypto.cipherBytes(docBytes, decodedKey);
 	}
 }

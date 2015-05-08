@@ -11,3 +11,6 @@ hs_err_pid*
 # eclipse stuff
 .project
 .settings
+
+#sd minimal project - SDID only
+sd-min/

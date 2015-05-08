@@ -42,7 +42,25 @@ public class SDIdImpl implements SDId {
     private int MAXPASS = 9999999;
     private List<User> users;
     private CryptoHelper crypto;
-    
+    private String clientKey;
+    private String serverKey;
+
+    private String getClientKey() {
+        return clientKey;
+    }
+
+    private String getServerKey() {
+        return serverKey;
+    }
+
+    public void setClientKey(String key) {
+        this.clientKey = key;
+    }
+
+    public void setServerKey(String key) {
+        this.serverKey = key;
+    }
+
     public List<User> getUsers() {
         return users;
     }
@@ -66,24 +84,15 @@ public class SDIdImpl implements SDId {
             getUserByEmail(email);
             EmailAlreadyExists emailProblem = new EmailAlreadyExists();
             emailProblem.setEmailAddress(email);
-            throw new EmailAlreadyExists_Exception("Email " + email + " already exists",
-                    emailProblem);
+            throw new EmailAlreadyExists_Exception("Email " + email + " already exists", emailProblem);
         } catch (UserDoesNotExist_Exception e) {
             //Email does not exist: proceed as normal
         }
         getUsers().add(user);
     }
 
-    public SDIdImpl() throws EmailAlreadyExists_Exception, InvalidEmail_Exception,
-                     UserAlreadyExists_Exception, InvalidUser_Exception {
-        setUsers(new ArrayList<User>());
-    }
-
-    public User addUser(String username, String email, String password)
-                                                                       throws EmailAlreadyExists_Exception,
-                                                                       InvalidEmail_Exception,
-                                                                       UserAlreadyExists_Exception,
-                                                                       InvalidUser_Exception {
+    public User addUser(String username, String email, String password) throws EmailAlreadyExists_Exception, InvalidEmail_Exception,
+                                                                       UserAlreadyExists_Exception, InvalidUser_Exception {
 
         User user = new User(username, email, password);
         addUser(user);
@@ -109,14 +118,25 @@ public class SDIdImpl implements SDId {
         }
         UserDoesNotExist userProblem = new UserDoesNotExist();
         userProblem.setUserId(email);
-        throw new UserDoesNotExist_Exception("User with email address" + email + " not found.",
-                userProblem);
+        throw new UserDoesNotExist_Exception("User with email address" + email + " not found.", userProblem);
     }
 
-    public void createUser(String userId, String email) throws EmailAlreadyExists_Exception,
-                                                       InvalidEmail_Exception,
-                                                       UserAlreadyExists_Exception,
-                                                       InvalidUser_Exception {
+    /*
+     *  Constructor 
+     */
+    public SDIdImpl(String clientKey, String serverKey) throws EmailAlreadyExists_Exception, InvalidEmail_Exception,
+                                                       UserAlreadyExists_Exception, InvalidUser_Exception {
+        setUsers(new ArrayList<User>());
+        this.clientKey = clientKey;
+        this.serverKey = serverKey;
+    }
+
+    /*
+     * WSDL Contract Methods
+     * 
+     */
+    public void createUser(String userId, String email) throws EmailAlreadyExists_Exception, InvalidEmail_Exception,
+                                                       UserAlreadyExists_Exception, InvalidUser_Exception {
         try {
             getUserByEmail(email);
 
@@ -158,94 +178,90 @@ public class SDIdImpl implements SDId {
         users.remove(getUser(userId));
     }
 
-    public byte[] requestAuthentication(String userId, byte[] reserved)
-                                                                       throws AuthReqFailed_Exception {
-        if(reserved == null) {
-        	AuthReqFailed authProblem = new AuthReqFailed();
+    public byte[] requestAuthentication(String userId, byte[] reserved) throws AuthReqFailed_Exception {
+        if (reserved == null) {
+            AuthReqFailed authProblem = new AuthReqFailed();
             throw new AuthReqFailed_Exception("Byte array is null.", authProblem);
-        }        	
-        	
+        }
+
         try {
             getUser(userId);
         } catch (UserDoesNotExist_Exception e) {
-        	AuthReqFailed authProblem = new AuthReqFailed();
+            AuthReqFailed authProblem = new AuthReqFailed();
             if (userId != null) {
                 byte[] userByte = userId.getBytes();
                 authProblem.setReserved(userByte);
             }
             throw new AuthReqFailed_Exception("User doesn't exist.", authProblem);
         }
-    
-		try {
-	        crypto = new CryptoHelper("AES", "CBC", "PKCS5Padding");
 
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			factory.setNamespaceAware(true);
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(new ByteArrayInputStream(reserved));
-			String service = doc.getElementsByTagName("Server").item(0).getTextContent();
-			String nonce = doc.getElementsByTagName("Nonce").item(0).getTextContent();
-			
-			if (service == null || service.isEmpty() || nonce == null || nonce.isEmpty())
-			    throw new Exception();
-			
-			TicketGranter tg = new TicketGranter(userId, service);
-			byte[] ticket = tg.grant(); 
-			
-			
-			byte[] session = createEncryptedSessionDoc(builder, tg, nonce);
-			return createResponse(builder, ticket, session);
-		} catch (Exception e){
-			e.printStackTrace();
-			AuthReqFailed authProblem = new AuthReqFailed();
-			throw new AuthReqFailed_Exception("Unable to authenticate user.", authProblem);
-		}
+        try {
+            crypto = new CryptoHelper("AES", "CBC", "PKCS5Padding");
+
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(new ByteArrayInputStream(reserved));
+            String service = doc.getElementsByTagName("Server").item(0).getTextContent();
+            String nonce = doc.getElementsByTagName("Nonce").item(0).getTextContent();
+
+            if (service == null || service.isEmpty() || nonce == null || nonce.isEmpty())
+                throw new Exception();
+
+            TicketGranter tg = new TicketGranter(userId, service, getServerKey());
+            byte[] ticket = tg.grant();
+
+
+            byte[] session = createEncryptedSessionDoc(builder, tg, nonce);
+            return createResponse(builder, ticket, session);
+        } catch (Exception e) {
+            e.printStackTrace();
+            AuthReqFailed authProblem = new AuthReqFailed();
+            throw new AuthReqFailed_Exception("Unable to authenticate user.", authProblem);
+        }
     }
-    
+
     private byte[] createEncryptedSessionDoc(DocumentBuilder builder, TicketGranter tg, String nonce) throws Exception {
-		Document sessionDoc = builder.newDocument();
-		Element encryptedSess = sessionDoc.createElement("EncryptedSess");
-		sessionDoc.appendChild(encryptedSess);
-		
-		//append children nodes
-		Element sessionKey = sessionDoc.createElement("SessionKey");
-		encryptedSess.appendChild(sessionKey);
-		Element nonceEl = sessionDoc.createElement("Nonce");
-		encryptedSess.appendChild(nonceEl);
-		
-		//append text nodes
-		sessionKey.appendChild(sessionDoc.createTextNode(tg.getSessionKey()));
-		nonceEl.appendChild(sessionDoc.createTextNode(nonce));
+        Document sessionDoc = builder.newDocument();
+        Element encryptedSess = sessionDoc.createElement("EncryptedSess");
+        sessionDoc.appendChild(encryptedSess);
+
+        //append children nodes
+        Element sessionKey = sessionDoc.createElement("SessionKey");
+        encryptedSess.appendChild(sessionKey);
+        Element nonceEl = sessionDoc.createElement("Nonce");
+        encryptedSess.appendChild(nonceEl);
+
+        //append text nodes
+        sessionKey.appendChild(sessionDoc.createTextNode(tg.getSessionKey()));
+        nonceEl.appendChild(sessionDoc.createTextNode(nonce));
 
         // write to byte array
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         Transformer transformer = TransformerFactory.newInstance().newTransformer();
-      // transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-		transformer.transform(new DOMSource(sessionDoc), new StreamResult(bos));
+        // transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        transformer.transform(new DOMSource(sessionDoc), new StreamResult(bos));
         byte[] docBytes = bos.toByteArray();
 
-        // switch to system.getProperty
-        String CLIENT_KEY = "bH7OZp6X11DNSrBr2MBt6g==";
-        
-        SecretKey clientKey = crypto.decodeKey(CLIENT_KEY);
-		return crypto.cipherBytes(docBytes, clientKey);
+        SecretKey clientKey = crypto.decodeKey(getClientKey());
+        return crypto.cipherBytes(docBytes, clientKey);
     }
-    
-    private byte[] createResponse (DocumentBuilder builder, byte[] ticketBytes, byte[] sessionBytes) throws TransformerException {
-    	Document newDoc = builder.newDocument();
-		// create root node 
+
+    private byte[] createResponse(DocumentBuilder builder, byte[] ticketBytes, byte[] sessionBytes) throws TransformerException {
+        Document newDoc = builder.newDocument();
+        // create root node 
         Element response = newDoc.createElement("Response");
         newDoc.appendChild(response);
-        
+
         // append children nodes
         Element ticket = newDoc.createElement("Ticket");
         response.appendChild(ticket);
         Element session = newDoc.createElement("Session");
         response.appendChild(session);
-        
+
         String sessionString = printBase64Binary(sessionBytes);
         String ticketString = printBase64Binary(ticketBytes);
-        
+
         ticket.appendChild(newDoc.createTextNode(ticketString));
         session.appendChild(newDoc.createTextNode(sessionString));
 

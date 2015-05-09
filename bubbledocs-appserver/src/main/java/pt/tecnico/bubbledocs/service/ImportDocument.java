@@ -13,53 +13,52 @@ import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 
 public class ImportDocument extends CheckLogin {
 	private org.jdom2.Document docXML;
-    private int docId;
-    private Spreadsheet spread;
+	private Spreadsheet spreadsheet;
 
-    public org.jdom2.Document convertFromBytes(byte[] doc) {
-       String xml = new String(doc);
-       SAXBuilder builder = new SAXBuilder();
-       org.jdom2.Document newDoc=null;
-	try {
-		newDoc = builder.build(new StringReader(xml));
-	} catch (JDOMException e) {
-		e.printStackTrace();
-	} catch (IOException e) {
-		e.printStackTrace();
+	public org.jdom2.Document convertFromBytes(byte[] doc) {
+		String xml = new String(doc);
+		SAXBuilder builder = new SAXBuilder();
+		org.jdom2.Document newDoc = null;
+		try {
+			newDoc = builder.build(new StringReader(xml));
+		} catch (JDOMException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return newDoc;
 	}
-       
-       return newDoc;
-    }
 
-    public void setDocXML(byte[] doc) {
-    	docXML = convertFromBytes(doc);
-    }
-    
-    public org.jdom2.Document getDocXML() {
-        return docXML;
-    }
+	public void setDocXML(byte[] doc) {
+		docXML = convertFromBytes(doc);
+	}
 
-    public ImportDocument(int docId, String userToken) {
-        this.userToken = userToken;
-        this.docId = docId;
-    }
+	public org.jdom2.Document getDocXML() {
+		return docXML;
+	}
 
-    @Override
-    protected void dispatch() throws BubbleDocsException {
-        super.dispatch();
+	public ImportDocument(byte[] doc, String userToken) {
+		this.userToken = userToken;
+		this.docXML = convertFromBytes(doc);
+	}
 
-        Element doc = docXML.getRootElement();
-        Element creatorElement = doc.getChild("creator");
-        Element userElement = creatorElement.getChild("user");
-        String xmlUsername = userElement.getAttribute("username").getValue();
-        
-        if(!getUserByToken(userToken).getUsername().equals(xmlUsername))
-        	throw new UnauthorizedOperationException();
-        
-        spread = importFromXML(docXML);;
-    }
+	@Override
+	protected void dispatch() throws BubbleDocsException {
+		super.dispatch();
 
-    public Spreadsheet getSpread(){
-    	return spread;
-    }
+		Element doc = docXML.getRootElement();
+		Element creatorElement = doc.getChild("creator");
+		Element userElement = creatorElement.getChild("user");
+		String xmlUsername = userElement.getAttribute("username").getValue();
+
+		if (!getUserByToken(userToken).getUsername().equals(xmlUsername))
+			throw new UnauthorizedOperationException();
+
+		spreadsheet = importFromXML(docXML);
+	}
+
+	public Spreadsheet getSpreadsheet() {
+		return spreadsheet;
+	}
 }

@@ -14,7 +14,7 @@ import pt.tecnico.bubbledocs.domain.Subtraction;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 
-public class AssignBinaryFunctionCell extends CheckLogin {
+public class AssignBinaryFunctionToCell extends CheckLogin {
 	private int docId;
     private int cellRow;
     private int cellColumn;
@@ -27,7 +27,7 @@ public class AssignBinaryFunctionCell extends CheckLogin {
         return this.result;
     }
 
-    public AssignBinaryFunctionCell(String cellId, String function, int docId, String userToken) {
+    public AssignBinaryFunctionToCell(String cellId, String function, int docId, String userToken) {
     	this.userToken = userToken;
         this.docId = docId;
         this.cellId = cellId;

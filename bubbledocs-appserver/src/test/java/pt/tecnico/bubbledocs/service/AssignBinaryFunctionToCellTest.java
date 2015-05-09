@@ -1,6 +1,8 @@
 package pt.tecnico.bubbledocs.service;
 
-import static org.junit.Assert.assertEquals;
+
+
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -67,37 +69,41 @@ public class AssignBinaryFunctionToCellTest extends BubbleDocsServiceTest {
 
     @Test
     public void success() throws BubbleDocsException {
+    	Integer integer4 = 4;
+        Integer integer1 = 1;
+        Integer integer0 = 0;
+        
         AssignBinaryFunctionToCell addService = new AssignBinaryFunctionToCell(EMPTY, ADDITION, ssId, creatorToken);
         addService.execute();
-        assertEquals(4, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
+        assertEquals(integer4, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
         
         AssignBinaryFunctionToCell divService = new AssignBinaryFunctionToCell(EMPTY, DIVISION, ssId, creatorToken);
         divService.execute();
-        assertEquals(1, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
+        assertEquals(integer1, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
         
         AssignBinaryFunctionToCell mulService = new AssignBinaryFunctionToCell(EMPTY, MULTIPLICATION, ssId, creatorToken);
         mulService.execute();
-        assertEquals(4, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
+        assertEquals(integer4, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
         
         AssignBinaryFunctionToCell subService = new AssignBinaryFunctionToCell(EMPTY, SUBTRACTION, ssId, creatorToken);
         subService.execute();
-        assertEquals(0, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
+        assertEquals(integer0, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
         
         AssignBinaryFunctionToCell addServiceFull = new AssignBinaryFunctionToCell(FULL, ADDITION, ssId, creatorToken);
         addServiceFull.execute();
-        assertEquals(4, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
+        assertEquals(integer4, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
         
         AssignBinaryFunctionToCell divServiceFull = new AssignBinaryFunctionToCell(FULL, DIVISION, ssId, creatorToken);
         divServiceFull.execute();
-        assertEquals(1, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
+        assertEquals(integer1, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
         
         AssignBinaryFunctionToCell mulServiceFull = new AssignBinaryFunctionToCell(FULL, MULTIPLICATION, ssId, creatorToken);
         mulServiceFull.execute();
-        assertEquals(4, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
+        assertEquals(integer4, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
         
         AssignBinaryFunctionToCell subServiceFull = new AssignBinaryFunctionToCell(FULL, SUBTRACTION, ssId, creatorToken);
         subServiceFull.execute();
-        assertEquals(0, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
+        assertEquals(integer0, getSpreadSheet(SPREADSHEET).getCell(3, 3).getValue());
     }
 
     @Test(expected = CellOutOfBoundsException.class)
@@ -246,7 +252,7 @@ public class AssignBinaryFunctionToCellTest extends BubbleDocsServiceTest {
     
     @Test(expected = SpreadsheetNotFoundException.class)
     public void spreadSheetNotExist() throws BubbleDocsException {
-    	AssignBinaryFunctionToCell service = new AssignBinaryFunctionToCell(EMPTY, ADDITION, "88", creatorToken);
+    	AssignBinaryFunctionToCell service = new AssignBinaryFunctionToCell(EMPTY, ADDITION, 88, creatorToken);
         service.execute();
     }
     

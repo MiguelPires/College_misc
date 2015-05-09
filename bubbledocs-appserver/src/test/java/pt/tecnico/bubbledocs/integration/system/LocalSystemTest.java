@@ -41,15 +41,7 @@ public class LocalSystemTest extends BubbleDocsServiceTest {
     
     @Test
     public void success() {
-    	new MockUp<IDRemoteServices>(){
-    		@Mock
-            private Collection<String> queryAll(String orgName) throws JAXRException {
-            	List<String> result = new ArrayList<String>();
-            	result.add(USERNAME);
-            	return result;
-            }; 
-    		
-    	};
+    	
     	LoginUserIntegrator loginService = new LoginUserIntegrator(USERNAME, PASSWORD);
         loginService.execute();
         String aliceToken = loginService.getUserToken();

@@ -7,36 +7,36 @@ import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 
 public class ExportDocument extends CheckLogin {
-    private org.jdom2.Document docXML;
-    private int docId;
+	private org.jdom2.Document docXML;
+	private int docId;
 
-    public byte[] convertToBytes(org.jdom2.Document doc) {
-        XMLOutputter xml = new XMLOutputter();
-        xml.setFormat(Format.getPrettyFormat());
-        String str = xml.outputString(doc);
-        return str.getBytes();
-    }
+	public byte[] convertToBytes(org.jdom2.Document doc) {
+		XMLOutputter xml = new XMLOutputter();
+		xml.setFormat(Format.getPrettyFormat());
+		String str = xml.outputString(doc);
+		return str.getBytes();
+	}
 
-    public org.jdom2.Document getDocXML() {
-        return docXML;
-    }
+	public org.jdom2.Document getDocXML() {
+		return docXML;
+	}
 
-    public ExportDocument(String userToken, int docId) {
-        this.userToken = userToken;
-        this.docId = docId;
-    }
+	public ExportDocument(String userToken, int docId) {
+		this.userToken = userToken;
+		this.docId = docId;
+	}
 
-    @Override
-    protected void dispatch() throws BubbleDocsException {
-        super.dispatch();
+	@Override
+	protected void dispatch() throws BubbleDocsException {
+		super.dispatch();
 
-        Spreadsheet ss = getSpreadsheet(docId);
+		Spreadsheet ss = getSpreadsheet(docId);
 
-        if (ss.getCreator().equals(user) || ss.isWriter(user.getUsername())
-                || ss.isReader(user.getUsername())) {
+		if (ss.getCreator().equals(user) || ss.isWriter(user.getUsername())
+				|| ss.isReader(user.getUsername())) {
 
-            docXML = exportToXML(docId);
-        } else
-            throw new UnauthorizedOperationException();
-    }
+			docXML = exportToXML(docId);
+		} else
+			throw new UnauthorizedOperationException();
+	}
 }

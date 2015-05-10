@@ -4,7 +4,7 @@
   <!-- http://maven.apache.org/pom.html#Quick_Overview -->
 
   <groupId>pt.tecnico</groupId>
-  <artifactId>sd-store-cli</artifactId>
+  <artifactId>SDStore-cli</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
@@ -89,7 +89,7 @@
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <mainclass>pt.tecnico.SDStore.StoreClient</mainclass>
+    <mainclass>pt.tecnico.SDStore.Main</mainclass>
 
     <uddi.url>http://localhost:8081</uddi.url>
     <ws.name>SD-STORE</ws.name>
@@ -152,7 +152,7 @@
           <programs>
             <program>
               <mainClass>${mainclass}</mainClass>
-              <id>bubbledocs</id>
+              <id>Main</id>
             </program>
           </programs>
         </configuration>

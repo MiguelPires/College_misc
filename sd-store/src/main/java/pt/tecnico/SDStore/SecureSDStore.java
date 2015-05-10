@@ -8,8 +8,6 @@ import javax.annotation.Resource;
 import javax.jws.*;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
-
-import pt.tecnico.SDStore.handler.RelayServerHandler;
 import pt.ulisboa.tecnico.sdis.store.ws.*; // classes generated from WSDL
 
 @WebService(
@@ -50,8 +48,10 @@ public class SecureSDStore implements SDStore {
 	}
 
 	public void store(DocUserPair docUserPair, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception {
+		byte[]  cipheredContent=null;
+		if(contents!=null)
+			cipheredContent = cipher(contents);
 		server.setcontext(webServiceContext);
-		byte[]  cipheredContent = cipher(contents);
 		server.store(docUserPair, cipheredContent);
 		webServiceContext = server.getcontext();
 	}
@@ -59,7 +59,9 @@ public class SecureSDStore implements SDStore {
 	public byte[] load(DocUserPair docUserPair) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
 		server.setcontext(webServiceContext);
 		byte[] message = server.load(docUserPair);
-		byte[] ret = decipher(message);
+		byte[] ret = null;
+		if(message!=null)
+			ret = decipher(message);
 		webServiceContext = server.getcontext();
 		return ret;
 	}

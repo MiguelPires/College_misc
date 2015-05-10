@@ -42,7 +42,7 @@ public class ImplementationTest {
      }
     
      //Tests if directory has space after one document store (1 byte)  (tests isFull() function);
-     @Test
+    /* @Test
      public void addContent() throws DocAlreadyExists_Exception, CapacityExceeded_Exception, DocDoesNotExist_Exception {
     	 String[] tag = {"1","1"};
       directory.addDoc(DOCID);
@@ -71,7 +71,7 @@ public class ImplementationTest {
          }
          
          assertEquals((int)directory.getCapacity().getCurrentSize(), FULLCONTENT.length);
-     }
+     }*/
     
      
 

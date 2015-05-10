@@ -8,7 +8,7 @@ import javax.jws.*;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
-import pt.tecnico.SDStore.handler.RelayServerHandler;
+import pt.tecnico.SDStore.handler.StoreServerHandler;
 import pt.ulisboa.tecnico.sdis.store.ws.*; // classes generated from WSDL
 
 @WebService(
@@ -30,6 +30,13 @@ private WebServiceContext webServiceContext;
 
 	public SDStoreImpl(){
 		folders = new ArrayList<userDirectory>();
+		
+		try{
+		setup();
+	} catch(DocAlreadyExists_Exception e)
+		{
+			;
+		}
 	}
 	
 	public void setup() throws DocAlreadyExists_Exception{
@@ -51,10 +58,11 @@ private WebServiceContext webServiceContext;
     public List<String> listDocs(String name) throws UserDoesNotExist_Exception {
     	String user = name;
     	userDirectory folder = null;
-
+    	
     	for(userDirectory aux : folders)
 			if(aux.getUser().equals(user)){
 				folder = aux;
+				sendToHandler();
 				return folder.getDocsNames();
 			}
 
@@ -83,14 +91,10 @@ private WebServiceContext webServiceContext;
 			folders.add(folder);
 		}
 		
-		//String[] tag = getFromHandler();
 		folder.addDoc(doc);	
-		sendToHandler();
 	}
 
-	public void store(DocUserPair docUserPair, byte[] contents)
-			throws CapacityExceeded_Exception, DocDoesNotExist_Exception,
-			UserDoesNotExist_Exception {
+	public void store(DocUserPair docUserPair, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception {
 
 		if (contents == null)
 			return;
@@ -112,24 +116,20 @@ private WebServiceContext webServiceContext;
 		UserDoesNotExist userException = new UserDoesNotExist();
 		userException.setUserId(user);
 		throw new UserDoesNotExist_Exception("User does not exist", userException);
-			
-		
 	}
 
-	public byte[] load(DocUserPair docUserPair)
-			throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
+	public byte[] load(DocUserPair docUserPair) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
 		String user = docUserPair.getUserId();
 		String docId = docUserPair.getDocumentId();
     	userDirectory folder = null;
-
+    	
     	for(userDirectory aux : folders)
 			if(aux.getUser().equals(user)){
 				folder = aux;
-				document doc = folder.searchDoc(docId);
+				document doc = folder.loadDoc(docId);
 				sendToHandler(doc.getSeqNumber(), doc.getTagID());
-				return folder.loadContent(docId);
+				return doc.getContent();
 			}
-
 		
 		UserDoesNotExist userException = new UserDoesNotExist();
 		userException.setUserId(user);
@@ -139,22 +139,22 @@ private WebServiceContext webServiceContext;
 	// get tag from SOAP message
 	private String[] getFromHandler(){
         MessageContext messageContext = webServiceContext.getMessageContext();
-        String propertyValue = (String) messageContext.get(RelayServerHandler.REQUEST_PROPERTY);
+        String propertyValue = (String) messageContext.get(StoreServerHandler.REQUEST_PROPERTY);
         String[] result = {propertyValue.split(";")[0].split(":")[1], propertyValue.split(";")[1].split(":")[1]};
         return result;
 	}
 
-	// set tag into SOAP message for client <--- necessário?
+	// set tag into SOAP message for client
 	private void sendToHandler(int newSeq, int newID){
 		MessageContext messageContext = webServiceContext.getMessageContext();
         String newValue = newSeq + ";" + newID;
-        messageContext.put(RelayServerHandler.RESPONSE_PROPERTY, newValue);
+        messageContext.put(StoreServerHandler.RESPONSE_PROPERTY, newValue);
 	}
 	
 	private void sendToHandler(){
 		MessageContext messageContext = webServiceContext.getMessageContext();
         String newValue = "ack";
-        messageContext.put(RelayServerHandler.RESPONSE_PROPERTY, newValue);
+        messageContext.put(StoreServerHandler.RESPONSE_PROPERTY, newValue);
 	}
 	
 	public void setcontext(WebServiceContext newService){

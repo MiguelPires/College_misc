@@ -44,21 +44,23 @@ public class SDStoreMain {
         
         try {
         	uddiNaming = new UDDINaming(uddiURL);
-        	String endpointAddress=null;
         	int id=0;
         	String auxName = name;
+        	name=name+id;
         	while(uddiNaming.lookup(name)!=null){
         		id++;
         		name = auxName + id;
         	}
         		
-       		// creates next url (changing the port number) for the next server to be created
-        	String[] split = url.split("/store-ws");
-        	char[] newString = split[0].toCharArray();
-        	newString[newString.length-1] = new Integer(2+id).toString().toCharArray()[0];
-        	split[0] = String.valueOf(newString);
-        	url = split[0] + "/store-ws" + split[1];
-
+        	if(id!=0){
+        		// creates next url (changing the port number) for the next server to be created
+        		String[] split = url.split("/store-ws");
+        		char[] newString = split[0].toCharArray();
+        		newString[newString.length-1] = new Integer(2+id).toString().toCharArray()[0];
+        		split[0] = String.valueOf(newString);
+        		url = split[0] + "/store-ws" + split[1];
+        	}
+        	
             endpoint = Endpoint.create(secureStore);
 
             // publish endpoint
@@ -67,7 +69,7 @@ public class SDStoreMain {
 
             // publish to UDDI
             System.out.printf("Publishing '%s' to UDDI at %s%n", name, uddiURL);
-            uddiNaming.bind(name, url);
+            uddiNaming.rebind(name, url);
         
                         
             // wait
@@ -90,7 +92,7 @@ public class SDStoreMain {
                 System.out.printf("Caught exception when stopping: %s%n", e);
             }
             try {
-                if (uddiNaming != null && url!=null) {
+                if (uddiNaming != null) {
                     // delete from UDDI
                     uddiNaming.unbind(name);
                     System.out.printf("Deleted '%s' from UDDI%n", name);

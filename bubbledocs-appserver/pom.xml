@@ -117,6 +117,11 @@
             <artifactId>jdom2</artifactId>
             <version>${version.org.jdom.jdom}</version>
         </dependency>
+        <dependency>
+        	<groupId>pt.tecnico</groupId>
+        	<artifactId>cli</artifactId>
+        	<version>0.0.1-SNAPSHOT</version>
+       	</dependency>
     </dependencies>
 
     <repositories>

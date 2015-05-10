@@ -1,152 +1,59 @@
-package pt.tecnico.SDStore;
-
-import java.util.*;
-
-import javax.xml.registry.JAXRException;
-import javax.xml.ws.*;
-
-import com.sun.xml.ws.api.EndpointAddress;
+package pt.tecnico;
 
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 import static javax.xml.bind.DatatypeConverter.printHexBinary;
+import pt.ulisboa.tecnico.sdis.store.ws.SDStore_Service;
+import java.util.Map;
 
-import java.security.Key;
+import pt.tecnico.SDStore.FrontEndSDStore;
+import pt.tecnico.ws.uddi.UDDINaming;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import pt.tecnico.uddi.UDDINaming;
+public class StoreClient implements FrontEndStore{
 
-import pt.ulisboa.tecnico.sdis.store.ws.*;
-import pt.tecnico.SDStore.handler.RelayClientHandler;
+	private FrontEndSDStore storeServer;
+	private Map<String, Object> requestContext;
+    private static FrontEndSDStore instance;
 
-public class StoreClient {
+    public Map<String, Object> getRequestContext() {
+        return requestContext;
+    }
+	
+	private StoreClient(String uddiURL, String serverName) throws JAXRException {
+        UDDINaming uddiNaming = new UDDINaming(uddiURL);
 
-
-    public static void main(String[] args) {
-    	// Check arguments
-        if (args.length < 2) {
-            System.err.println("Argument(s) missing!");
-            System.err.printf("Usage: java %s uddiURL name%n", StoreClient.class.getName());
-            return;
-        }
-
-        String uddiURL = args[0];
-        String name = args[1];
-        System.out.printf("Contacting UDDI at %s%n", uddiURL);
-        UDDINaming uddiNaming=null;
-        
-		try {
-			uddiNaming = new UDDINaming(uddiURL);
-		} catch (JAXRException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-        System.out.printf("Looking for '%s'%n", name);
-        String endpointAddress=null;
-		try {
-			endpointAddress = uddiNaming.lookup(name+0);
-		} catch (JAXRException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-        if (endpointAddress == null) {
-            System.out.println("Not found!");
+        String storeAddress = uddiNaming.lookup(serverName);
+        if (storeAddress == null) {
+            System.out.println("The server \"" + serverName + "\" wasn't found");
             return;
         } else {
-            System.out.printf("Found %s%n", endpointAddress);
+            System.out.println("The address \"" + storeAddress + "\" was found");
         }
 
-        System.out.println("Creating stub ...");
-        SDStore_Service service = new SDStore_Service();
-        SDStore port = service.getSDStoreImplPort();
+        SDStore_Service storeService = new SDStore_Service();
+        storeServer = storeService.getSDStoreImplPort();
 
-        BindingProvider bindingProvider = (BindingProvider) port;
-        Map<String, Object> requestContext = bindingProvider.getRequestContext();
-         
-        requestContext.put(ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
-
-        StoreClient client = new StoreClient(port);
-        client.startClient();
+        BindingProvider storeBindingProvider = (BindingProvider) storeServer;
+        requestContext = storeBindingProvider.getRequestContext();
+        requestContext.put(ENDPOINT_ADDRESS_PROPERTY, storeAddress);
+    }
+	
+	
+    public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception {
+        storeServer.createDoc(docUserPair);
     }
 
-    private SDStore port;
-    private Scanner scanner;
-
-    public StoreClient(SDStore port){
-        this.port = port;
-        scanner = new Scanner(System.in);
+    public List<String> listDocs(String userId) throws UserDoesNotExist_Exception {
+        return storeServer.listDocs(userId);
     }
 
-    public void startClient(){
-        int command=-1;
-
-        while(command!=0){
-            System.out.println("Escolha um comando:");
-            command = scanner.nextInt();
-            if(command==1){
-                ;
-            }
-
-            if(command==2){
-                DocUserPair pair = new DocUserPair();
-                pair.setDocumentId("doc");
-                pair.setUserId("user");
-
-                BindingProvider bindingProvider = (BindingProvider) port;
-         Map<String, Object> requestContext = bindingProvider.getRequestContext();
-         String initialValue = "009;444";
-         requestContext.put(RelayClientHandler.REQUEST_PROPERTY, initialValue);
-                
-                try{
-                port.createDoc(pair);
-            }catch (DocAlreadyExists_Exception e){
-                ;
-            }
-            
-                  Map<String, Object> responseContext = bindingProvider.getResponseContext();
-                 String finalValue = (String) responseContext.get(RelayClientHandler.RESPONSE_PROPERTY);
-            System.out.printf("%s got token '%s' from response context%n", "dwedwe", finalValue);
-                    }
-
-            if(command==3){
-                String s = "9B7D2C34A366BF81";
-                DocUserPair pair = new DocUserPair();
-                pair.setDocumentId("doc");
-                pair.setUserId("user");
-                 try{
-                port.createDoc(pair);
-            }catch (DocAlreadyExists_Exception e){
-                ;
-            }
-
-            //BindingProvider bindingProvider = (BindingProvider) port;
-              //  Map<String, Object> requestContext = bindingProvider.getRequestContext();
-               
-                try{
-                port.store(pair, s.getBytes());
-            } catch(Exception e){
-                System.out.println("ERRORRRR");
-            }
-
-                System.out.println(s.getBytes());
-                byte[] ss=null;
-                try{
-                ss = port.load(pair);
-            } catch(Exception e){
-                System.out.println("ERRORRRR");
-            }
-                System.out.println(new String(ss));
-
-                
-            }
-
-            if(command==4){
-                ;
-            }
-
-        }
+    public void store(DocUserPair docUserPair, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception,
+                                                               UserDoesNotExist_Exception {
+        storeServer.store(docUserPair, contents);
     }
 
+    public byte[] load(DocUserPair docUserPair) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
+        return storeServer.load(docUserPair);
+    }
+	
+	
 }

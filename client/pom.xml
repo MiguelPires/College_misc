@@ -144,12 +144,6 @@
         <configuration>
           <!-- https://jax-ws-commons.java.net/jaxws-maven-plugin/wsimport-mojo.html -->
           <wsdlDirectory>${basedir}/src/main/resources</wsdlDirectory>
-          <!--<wsdlFiles>
-            <wsdlFile>SD-STORE.1_1.wsdl</wsdlFile>
-          </wsdlFiles>  
-          <wsdlFiles>
-            <wsdlFile>SD-ID.1_1.wsdl</wsdlFile>
-          </wsdlFiles>-->
         </configuration>
         <dependencies>
           <dependency>
@@ -171,6 +165,20 @@
             </execution>
           </executions>
           <configuration>
+         <!--   <systemProperties>-->
+              <property>
+                <store.name>SD-STORE</store.name>
+              </property>
+
+               <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                <mainclass>pt.tecnico.ClientMain</mainclass>
+                <uddi.url>http://localhost:8081</uddi.url>
+                <id.name>SD-ID</id.name>
+                <store.name>SD-STORE</store.name>
+                <key.client>bH7OZp6X11DNSrBr2MBt6g==</key.client>
+                <key.server>CYd/FbnCGtfTyr8uzJKeAw==</key.server>
+              </properties>-->
+           <!-- </systemProperties>-->
             <killAfter>-1</killAfter><!-- to prevent deprecation warning -->
             <mainClass>${mainclass}</mainClass>
             <arguments>

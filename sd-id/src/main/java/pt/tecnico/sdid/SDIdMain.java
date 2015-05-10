@@ -3,6 +3,8 @@ package pt.tecnico.sdid;
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
 
 import javax.xml.registry.JAXRException;
@@ -28,7 +30,7 @@ public class SDIdMain {
 
     public static void populate(SDIdImpl server) throws EmailAlreadyExists_Exception,
                                                 InvalidEmail_Exception,
-                                                UserAlreadyExists_Exception, InvalidUser_Exception {
+                                                UserAlreadyExists_Exception, InvalidUser_Exception, NoSuchAlgorithmException, InvalidKeySpecException {
         server.addUser("alice", "alice@tecnico.pt", "Aaa1");
         server.addUser("bruno", "bruno@tecnico.pt", "Bbb2");
         server.addUser("carla", "carla@tecnico.pt", "Ccc3");
@@ -45,8 +47,7 @@ public class SDIdMain {
 
             // wait
             System.out.println("Awaiting connections");
-            System.out.println("Press enter to shutdown");
-
+            System.out.println("\n ******* SD-ID *******");
             System.in.read();
         } catch (Exception e) {
         }
@@ -57,7 +58,7 @@ public class SDIdMain {
 
     public static void setUp(String[] args) throws EmailAlreadyExists_Exception,
                                            InvalidEmail_Exception, UserAlreadyExists_Exception,
-                                           IOException, InvalidUser_Exception {
+                                           IOException, InvalidUser_Exception, NoSuchAlgorithmException, InvalidKeySpecException {
 
         // Check arguments
         if (args.length < 1) {
@@ -92,8 +93,6 @@ public class SDIdMain {
                 SDId_Service service = new SDId_Service();
                 SDId newServer = service.getSDIdImplPort();
                 
-                //  BindingProvider bindingProvider = (BindingProvider) server ????
-                // rever
                 BindingProvider bindingProvider = (BindingProvider) newServer;
                 Map<String, Object> requestContext = bindingProvider.getRequestContext();
                 Object v = requestContext.getOrDefault(ENDPOINT_ADDRESS_PROPERTY, "");

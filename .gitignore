@@ -12,5 +12,3 @@ hs_err_pid*
 .project
 .settings
 
-#sd minimal project - SDID only
-sd-min/

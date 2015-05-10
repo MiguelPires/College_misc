@@ -1,8 +1,15 @@
 package pt.tecnico.sdid;
 
+import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.crypto.SecretKey;
+
+import pt.tecnico.CryptoHelper;
 import pt.ulisboa.tecnico.sdis.id.ws.InvalidEmail;
 import pt.ulisboa.tecnico.sdis.id.ws.InvalidEmail_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.InvalidUser;
@@ -12,21 +19,27 @@ public class User {
 
     private String userId;
     private String email;
-    private String password;
+    private SecretKey key;
 
-    public User(String userId, String email, String password) throws InvalidEmail_Exception,
-                                                             InvalidUser_Exception {
+    public User(String userId, String email, String pass) throws InvalidEmail_Exception, InvalidUser_Exception, NoSuchAlgorithmException,
+                                                         InvalidKeySpecException {
         setEmail(email);
         setUserId(userId);
-        setPassword(password);
+        setKey(userId, pass);
     }
 
-    public String getPassword() {
-        return password;
+    public SecretKey getKey() {
+        return key;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    private void setKey(SecretKey key) {
+        this.key = key;
+    }
+    
+    protected void setKey (String userId, String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        CryptoHelper crypto = new CryptoHelper("AES", "CBC", "PKCS5Padding");
+        SecretKey key = crypto.generateKeyFromPassword(printBase64Binary(password.getBytes()), userId);
+        setKey(key);
     }
 
     public String getUserId() {

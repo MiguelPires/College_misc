@@ -4,6 +4,8 @@ import static javax.xml.bind.DatatypeConverter.printBase64Binary;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -42,19 +44,10 @@ public class SDIdImpl implements SDId {
     private int MAXPASS = 9999999;
     private List<User> users;
     private CryptoHelper crypto;
-    private String clientKey;
     private String serverKey;
-
-    private String getClientKey() {
-        return clientKey;
-    }
 
     private String getServerKey() {
         return serverKey;
-    }
-
-    public void setClientKey(String key) {
-        this.clientKey = key;
     }
 
     public void setServerKey(String key) {
@@ -92,7 +85,8 @@ public class SDIdImpl implements SDId {
     }
 
     public User addUser(String username, String email, String password) throws EmailAlreadyExists_Exception, InvalidEmail_Exception,
-                                                                       UserAlreadyExists_Exception, InvalidUser_Exception {
+                                                                       UserAlreadyExists_Exception, InvalidUser_Exception,
+                                                                       NoSuchAlgorithmException, InvalidKeySpecException {
 
         User user = new User(username, email, password);
         addUser(user);
@@ -127,8 +121,8 @@ public class SDIdImpl implements SDId {
     public SDIdImpl(String clientKey, String serverKey) throws EmailAlreadyExists_Exception, InvalidEmail_Exception,
                                                        UserAlreadyExists_Exception, InvalidUser_Exception {
         setUsers(new ArrayList<User>());
-        this.clientKey = clientKey;
         this.serverKey = serverKey;
+        this.crypto = new CryptoHelper("AES", "CBC", "PKCS5Padding");
     }
 
     /*
@@ -158,8 +152,12 @@ public class SDIdImpl implements SDId {
 
         Integer randInt = new Integer(new Random().nextInt((MAXPASS - MINPASS) + 1) + MINPASS);
         String pass = randInt.toString();
-
-        addUser(userId, email, pass);
+        
+        try {
+            addUser(userId, email, pass);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
 
         System.out.println("Create user - password: " + pass);
     }
@@ -169,8 +167,11 @@ public class SDIdImpl implements SDId {
 
         Integer randInt = new Integer(new Random().nextInt((MAXPASS - MINPASS) + 1) + MINPASS);
         String pass = randInt.toString();
-        user.setPassword(pass);
-
+        try {
+            user.setKey(userId, pass);
+        } catch (NoSuchAlgorithmException |InvalidKeySpecException e) {
+            e.printStackTrace();
+        }
         System.out.println("Renew Password - password: " + pass);
     }
 
@@ -183,7 +184,7 @@ public class SDIdImpl implements SDId {
             AuthReqFailed authProblem = new AuthReqFailed();
             throw new AuthReqFailed_Exception("Byte array is null.", authProblem);
         }
-
+        
         try {
             getUser(userId);
         } catch (UserDoesNotExist_Exception e) {
@@ -196,8 +197,7 @@ public class SDIdImpl implements SDId {
         }
 
         try {
-            crypto = new CryptoHelper("AES", "CBC", "PKCS5Padding");
-
+            System.out.println(userId+" requested a ticket");
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -211,8 +211,8 @@ public class SDIdImpl implements SDId {
             TicketGranter tg = new TicketGranter(userId, service, getServerKey());
             byte[] ticket = tg.grant();
 
-
-            byte[] session = createEncryptedSessionDoc(builder, tg, nonce);
+            byte[] session = createEncryptedSessionDoc(userId, builder, tg, nonce);
+            System.out.println("Granting ticket to "+userId);
             return createResponse(builder, ticket, session);
         } catch (Exception e) {
             e.printStackTrace();
@@ -221,7 +221,7 @@ public class SDIdImpl implements SDId {
         }
     }
 
-    private byte[] createEncryptedSessionDoc(DocumentBuilder builder, TicketGranter tg, String nonce) throws Exception {
+    private byte[] createEncryptedSessionDoc(String userId, DocumentBuilder builder, TicketGranter tg, String nonce) throws Exception {
         Document sessionDoc = builder.newDocument();
         Element encryptedSess = sessionDoc.createElement("EncryptedSess");
         sessionDoc.appendChild(encryptedSess);
@@ -243,8 +243,7 @@ public class SDIdImpl implements SDId {
         transformer.transform(new DOMSource(sessionDoc), new StreamResult(bos));
         byte[] docBytes = bos.toByteArray();
 
-        SecretKey clientKey = crypto.decodeKey(getClientKey());
-        return crypto.cipherBytes(docBytes, clientKey);
+        return crypto.cipherBytes(docBytes, getUser(userId).getKey());
     }
 
     private byte[] createResponse(DocumentBuilder builder, byte[] ticketBytes, byte[] sessionBytes) throws TransformerException {

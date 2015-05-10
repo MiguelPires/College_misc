@@ -80,7 +80,7 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
                     addDigest();
 
                 } catch (Exception e) {
-                    System.out.println("Handler failed to process message outbound to SD-Store");
+                    System.out.println("Handler failed to process message outbound to SD-Store: " + e.getMessage());
                     e.printStackTrace();
                 }
             }
@@ -89,7 +89,7 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
     private void addDigest() throws SOAPException, NoSuchAlgorithmException {
-        System.out.println("Adding digest...");
+        System.out.printf("Adding digest...\n");
         SOAPEnvelope se = getEnvelope();
         SOAPHeader sh = se.getHeader();
 
@@ -113,7 +113,7 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
     private void addTicket() throws SOAPException, NoSuchAlgorithmException {
-        System.out.println("Adding ticket...");
+        System.out.printf("Adding ticket... ");
 
         // get token from response SOAP header
         SOAPEnvelope se = getEnvelope();
@@ -133,7 +133,7 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
     private void addAuthenticator() throws SOAPException, ParserConfigurationException, InvalidKeyException, NoSuchAlgorithmException,
                                    NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException,
                                    InvalidAlgorithmParameterException, TransformerFactoryConfigurationError, TransformerException {
-        System.out.println("Adding authenticator...");
+        System.out.printf("Adding authenticator... ");
 
         SOAPEnvelope se = getEnvelope();
         SOAPHeader sh = se.getHeader();
@@ -141,7 +141,6 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
         if (sh == null)
             sh = se.addHeader();
 
-        String clientName = (String) smc.get(CLIENT);
         Name name = se.createName(AUTH_HEADER, "e", NAMESPACE);
         SOAPHeaderElement element = sh.addHeaderElement(name);
 

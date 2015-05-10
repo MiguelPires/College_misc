@@ -8,7 +8,7 @@ import java.util.List;
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.handler.MessageContext;
 
-import pt.tecnico.SDStore.handler.RelayServerHandler;
+import pt.tecnico.SDStore.handler.StoreServerHandler;
 import pt.tecnico.ws.uddi.UDDINaming;
 import pt.ulisboa.tecnico.sdis.store.ws.*;
 import mockit.Mock;

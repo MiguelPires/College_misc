@@ -10,8 +10,8 @@ public class tag {
 	}
 	
 	public tag(){
-		seqNumber = -1;
-		clientID = -1;
+		seqNumber = 0;
+		clientID = 0;
 	}
 	
 	public void setID(int ID){

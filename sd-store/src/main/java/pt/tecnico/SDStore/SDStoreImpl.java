@@ -22,10 +22,10 @@ import pt.ulisboa.tecnico.sdis.store.ws.*; // classes generated from WSDL
 @HandlerChain(file="/handler-chain.xml")
 public class SDStoreImpl implements SDStore {
 
-private ArrayList <userDirectory> folders;
-private String[] tag;
-@Resource
-private WebServiceContext webServiceContext;
+	private ArrayList <userDirectory> folders;
+	private String[] tag;
+	@Resource
+	private WebServiceContext webServiceContext;
 
 
 	public SDStoreImpl(){
@@ -54,7 +54,7 @@ private WebServiceContext webServiceContext;
 		folders.add(new userDirectory("eduardo"));
 	}
 	
-     //list user stored documents; if user does not exists, throws exception
+     //list user stored documents; if user does not exists, throws exception 
     public List<String> listDocs(String name) throws UserDoesNotExist_Exception {
     	String user = name;
     	userDirectory folder = null;
@@ -62,11 +62,9 @@ private WebServiceContext webServiceContext;
     	for(userDirectory aux : folders)
 			if(aux.getUser().equals(user)){
 				folder = aux;
-				sendToHandler();
 				return folder.getDocsNames();
 			}
 
-		
 		UserDoesNotExist userException = new UserDoesNotExist();
 		userException.setUserId(user);
 		throw new UserDoesNotExist_Exception("User does not exist", userException);			
@@ -92,6 +90,7 @@ private WebServiceContext webServiceContext;
 		}
 		
 		folder.addDoc(doc);	
+		sendToHandler();
 	}
 
 	public void store(DocUserPair docUserPair, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception {
@@ -112,7 +111,7 @@ private WebServiceContext webServiceContext;
 				return;
 			}
     	
-		
+    	sendToHandler();
 		UserDoesNotExist userException = new UserDoesNotExist();
 		userException.setUserId(user);
 		throw new UserDoesNotExist_Exception("User does not exist", userException);
@@ -131,6 +130,7 @@ private WebServiceContext webServiceContext;
 				return doc.getContent();
 			}
 		
+    	sendToHandler();
 		UserDoesNotExist userException = new UserDoesNotExist();
 		userException.setUserId(user);
 		throw new UserDoesNotExist_Exception("User does not exist", userException);	

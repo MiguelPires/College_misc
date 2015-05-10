@@ -46,14 +46,16 @@ public class StoreServerHandler implements SOAPHandler<SOAPMessageContext> {
                 String[] args = null;
                 String newValue;
                 
-                if(propertyValue.equals("ack"))
-                    newValue = "ack";
-                else if(propertyValue!=null){
-                	args = propertyValue.split(";");
-                	newValue = "Seq Number:"+args[0]+";"+"client:"+args[1];
-                	}
-                else
+                if(propertyValue!=null){
+                    if(propertyValue.equals("ack"))
+                        newValue = "ack";
+                    else {
+                	   args = propertyValue.split(";");
+                	   newValue = "Seq Number:"+args[0]+";"+"client:"+args[1];
+                	   }
+                }else
                 	newValue = "Seq Number:"+args+";"+"client:"+args;
+                    
                 element.addTextNode(newValue);
 
 

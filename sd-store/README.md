@@ -33,10 +33,11 @@ JUDDI:
 
 > cd  C:\
 > mkdir grupo67
+> cd grupo67
 
 [3] Obter versÃ£o entregue
 
-> git clone -b SD-STORE_R_1 https://github.com/tecnico-softeng-distsys-2015/T_03_59_67-project/
+> git clone -b SD-STORE_R_2 https://github.com/tecnico-softeng-distsys-2015/T_03_59_67-project/
 
 
 [4] Construir e executar **servidor**
@@ -48,8 +49,10 @@ JUDDI:
 
 [5] Construir **cliente**
 
-> cd ...
-> mvn clean package
+> cd ..
+> cd sd-store-cli
+> mvn clean
+> mvn generate-sources
 
 ...
 

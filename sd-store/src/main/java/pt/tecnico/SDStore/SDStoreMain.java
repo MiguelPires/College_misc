@@ -10,7 +10,6 @@ import pt.ulisboa.tecnico.sdis.store.ws.DocAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocUserPair;
 import java.security.NoSuchAlgorithmException;
 
-
 public class SDStoreMain {
 	
 	private static SDStoreImpl Store;
@@ -30,15 +29,16 @@ public class SDStoreMain {
         Endpoint endpoint = null;
         UDDINaming uddiNaming = null;
         Store=new SDStoreImpl();
+        
         SecureSDStore secureStore = null;
-       
-       try { 
-          secureStore = new SecureSDStore(Store);
-        } catch(NoSuchAlgorithmException e) {
+              
+        try {          
+        	secureStore = new SecureSDStore(Store);
+        	} catch(NoSuchAlgorithmException e) {
             System.out.printf("Caught exception when generating key", e);
         }
-
-       if(secureStore != null) {
+        
+        if(secureStore != null) {
         try {
         	uddiNaming = new UDDINaming(uddiURL);
         	int id=0;
@@ -98,8 +98,8 @@ public class SDStoreMain {
                 System.out.printf("Caught exception when deleting: %s%n", e);
             }
         }
-      }
-      else System.out.printf("Caught exception when generating key");  
+        }
+        else System.out.printf("Caught exception when generating key"); 
     }
 
 }

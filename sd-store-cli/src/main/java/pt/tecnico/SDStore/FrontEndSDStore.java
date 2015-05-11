@@ -8,6 +8,7 @@ import javax.jws.*;
 import javax.xml.registry.JAXRException;
 
 import java.util.concurrent.ExecutionException;
+
 import javax.xml.ws.AsyncHandler;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Response;
@@ -126,6 +127,7 @@ public class FrontEndSDStore {
 			for(Response<StoreResponse> response : StoreResponses){
 				if(response.isDone())
 					numberResponses++;
+				
 			}
     	
     }

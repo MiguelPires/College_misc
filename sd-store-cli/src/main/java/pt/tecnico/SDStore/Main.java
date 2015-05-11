@@ -9,7 +9,6 @@ public class Main {
 	private static int id=0;
 	private static Scanner scanner;
 
-	//Various client tests - not working at 100% <------------------------------------------------ file just to test cliente-server
     public static void main(String[] args) {
     	// Check arguments
         if (args.length < 2) {
@@ -17,6 +16,7 @@ public class Main {
             System.err.printf("Usage: java %s uddiURL name%n", StoreClient.class.getName());
             return;
         }
+        
         scanner = new Scanner(System.in);
         String uddiURL = args[0];
         String name = args[1];
@@ -25,63 +25,77 @@ public class Main {
         pair.setUserId("alice");
         pair.setDocumentId("aaaaaaaaaa");
         System.out.println("Choose method");
+        
+        System.out.println("############## WELCOME ##############");
+        System.out.println("1 - List Documents of user");
+        System.out.println("2 - Create new document");
+        System.out.println("3 - Store document content");
+        System.out.println("4 - Load document  content");
+        System.out.println("5 - Change user or document ID");
+        System.out.println("0 - Exit");
+
         int command= -1;
         while(command!=0){
+        	System.out.println("# Choose command");
         	command= scanner.nextInt();
-        if(command==3){
-        try {
-        	System.out.println("Choose string to store");
-        	String file="9B7D2C34A366BF81";
-        	String newfile = scanner.next();
         	
-        	if(!newfile.equals("."))
-        		file = newfile;
+        	if(command==1){
+        		try {
+               		System.out.println("# Choose username to list docs");
+                   	String user = scanner.next();
+       				List<String> result = client.listDocs(user);
+       				for(String doc : result)
+       					System.out.println(doc);
+       			} catch (UserDoesNotExist_Exception e) {
+       		        System.out.println("# User does not exists");
+       			}
+            }
         	
-			client.store(pair,file.getBytes());
-		} catch (CapacityExceeded_Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (DocDoesNotExist_Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (UserDoesNotExist_Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-        System.out.println("stored");
-        }
+        	if(command==2){
+            	try {
+            		System.out.println("# Choose doc ID");
+            		pair.setDocumentId(scanner.next());
+    				client.createDoc(pair);
+    				System.out.println("# Created");
+    			} catch (DocAlreadyExists_Exception e) {
+    				System.out.println("# Document already exists");
+    			}
+            }
+        	
+        	if(command==3){
+        		try {
+        			System.out.println("# Insert content to store"); 
+        			scanner.nextLine();
+        			String file = scanner.nextLine();
+        			client.store(pair, file.getBytes());
+        			System.out.println("# File stored");
+        		} catch (CapacityExceeded_Exception e1) {
+        			System.out.println("# Capacity exceeded - should never happen");
+        		} catch (DocDoesNotExist_Exception e1) {
+        			System.out.println("# Document does not exist");
+        		} catch (UserDoesNotExist_Exception e1) {
+        			System.out.println("# User does not exist");
+        		}
+        	}
          
-        if(command == 4){
-        	System.out.println("Loading");
-			try {
-				System.out.println(client.load(pair));
-			} catch (UserDoesNotExist_Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (DocDoesNotExist_Exception e) {
-			e.printStackTrace();
-		}
-    }
-        if(command==2){
-        	try {
-				client.createDoc(pair);
-			} catch (DocAlreadyExists_Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        	if(command == 4){
+        		try {
+        			System.out.println(new String(client.load(pair)));
+        		} catch (UserDoesNotExist_Exception e) {
+            		System.out.println("# User does not exist");
+        		} catch (DocDoesNotExist_Exception e) {
+            		System.out.println("# Document does not exist");
+        		}
+        	}
+        	
+        	if(command==5){
+        		System.out.println("# Choose username");
+        		pair.setUserId(scanner.next());
+        		System.out.println("# Choose doc ID");
+        		pair.setDocumentId(scanner.next());
+        	}
         }
-        if(command==1){
-        	try {
-        		System.out.println("Choose string list docs");
-            	String user = scanner.next();
-				client.listDocs(user);
-			} catch (UserDoesNotExist_Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        }
-        }
-        
-        System.out.println("bye-bye - ERROR MAIN NEVER ENDS");
+        scanner.close();
+        System.out.println("# bye-bye");
     }
 }

@@ -1,7 +1,7 @@
 # Bubble Docs SD-STORE
 # Projecto de Sistemas DistribuÃ­dos #
 
-## Primeira entrega ##
+## Segunda entrega ##
 
 Grupo de SD 67
 

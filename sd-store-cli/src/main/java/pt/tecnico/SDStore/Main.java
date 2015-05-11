@@ -2,6 +2,8 @@ package pt.tecnico.SDStore;
 
 import java.util.*;
 
+import javax.xml.registry.JAXRException;
+
 import pt.ulisboa.tecnico.sdis.store.ws.*;
 
 public class Main {
@@ -9,7 +11,7 @@ public class Main {
 	private static int id=0;
 	private static Scanner scanner;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws JAXRException {
     	// Check arguments
         if (args.length < 2) {
             System.err.println("Argument(s) missing!");

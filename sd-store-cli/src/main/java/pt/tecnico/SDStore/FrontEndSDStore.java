@@ -38,26 +38,22 @@ public class FrontEndSDStore {
 			RT++;
 	}
 	
-	public FrontEndSDStore(String uddiURL, String name, int ClientID) { 
+	public FrontEndSDStore(String uddiURL, String name, int ClientID) throws JAXRException { 
 		
 		IDClient = ClientID;
 		System.out.printf("Contacting UDDI at %s%n", uddiURL);
 		UDDINaming uddiNaming = null;
-        try {
-			uddiNaming = new UDDINaming(uddiURL);
-		} catch (JAXRException e) {
-			e.printStackTrace();
-		}
+       
+		uddiNaming = new UDDINaming(uddiURL);
+	
 
         String endpointAddress = null;
         for(int num = 0; num < 3 ; num++) {
             	
         	System.out.printf("Looking for '%s'%n", name + num);
-        	try {
-				endpointAddress = uddiNaming.lookup(name + num);
-			} catch (JAXRException e) {
-				e.printStackTrace();
-			}  
+       
+			endpointAddress = uddiNaming.lookup(name + num);
+			
 
         	if (endpointAddress == null) {
         		System.out.println("Server " + name + num + " not Found!");
@@ -88,14 +84,11 @@ public class FrontEndSDStore {
     // Send client listDocs request to all replica managers and returns the last one response
  	public List<String> listDocs(String name) throws UserDoesNotExist_Exception {
     
-    	int aux = -1;
-		for(SDStore server : repManager) {
-			server.listDocs(name);
-			aux++;
-		}
+ 		List<String> docs = new ArrayList<String>();
+		for(SDStore server : repManager) 
+			docs = server.listDocs(name);
 
-		SDStore lastServer = repManager.get(aux);
-		return lastServer.listDocs(name);
+		return docs;
     }
 
     // Send client createDoc request to all replica managers 
@@ -125,9 +118,11 @@ public class FrontEndSDStore {
     	int numberResponses=0;
 		while(numberResponses<WT)
 			for(Response<StoreResponse> response : StoreResponses){
-				if(response.isDone())
+				if(response.isDone()){
 					numberResponses++;
-				
+					StoreResponses.remove(response);
+					break;
+				}	
 			}
     	
     }
@@ -168,6 +163,8 @@ public class FrontEndSDStore {
 							e.printStackTrace();
 						}
 					}
+					LoadResponses.remove(response);
+					break;
 				}
 			}
 		

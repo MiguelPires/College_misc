@@ -9,8 +9,7 @@ import pt.tecnico.ws.uddi.UDDINaming;
 import pt.ulisboa.tecnico.sdis.store.ws.DocAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocUserPair;
 import java.security.NoSuchAlgorithmException;
-import java.security.Key;
-import javax.crypto.KeyGenerator;
+
 
 public class SDStoreMain {
 	
@@ -31,17 +30,15 @@ public class SDStoreMain {
         Endpoint endpoint = null;
         UDDINaming uddiNaming = null;
         Store=new SDStoreImpl();
-        KeyGenerator keyGen = null;
-        try {
-            keyGen = KeyGenerator.getInstance("AES");
-        } catch (NoSuchAlgorithmException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+        SecureSDStore secureStore = null;
+       
+       try { 
+          secureStore = new SecureSDStore(Store);
+        } catch(NoSuchAlgorithmException e) {
+            System.out.printf("Caught exception when generating key", e);
         }
-        keyGen.init(128);
-        Key key = keyGen.generateKey();
-        SecureSDStore secureStore = new SecureSDStore(Store, key);
-        
+
+       if(secureStore != null) {
         try {
         	uddiNaming = new UDDINaming(uddiURL);
         	int id=0;
@@ -101,7 +98,8 @@ public class SDStoreMain {
                 System.out.printf("Caught exception when deleting: %s%n", e);
             }
         }
-
+      }
+      else System.out.printf("Caught exception when generating key");  
     }
 
 }

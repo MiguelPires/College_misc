@@ -28,11 +28,11 @@ public class Client implements SDId, SDStore {
     protected Map<String, String> tickets;
     protected Map<String, String> sessionKeys;
     private static Client instance;
-    
-    public static SDId getInstanceID() throws TransformerFactoryConfigurationError, JAXRException {
+
+    public static Client getInstanceID() throws TransformerFactoryConfigurationError, JAXRException {
         if (instance == null)
             instance = new Client();
-        return (SDId) instance;
+        return  instance;
     }
     
     Client() throws TransformerFactoryConfigurationError, JAXRException {
@@ -42,44 +42,36 @@ public class Client implements SDId, SDStore {
         sessionKeys = new HashMap<String, String>();
     }
 
-    @Override
     public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception, UnauthorizedOperation_Exception {
         storeClient.createDoc(docUserPair);
     }
 
-    @Override
     public List<String> listDocs(String userId) throws UserDoesNotExist_Exception, UnauthorizedOperation_Exception {
         return storeClient.listDocs(userId);
     }
 
-    @Override
     public void store(DocUserPair docUserPair, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception,
                                                                UserDoesNotExist_Exception {
         storeClient.store(docUserPair, contents);
     }
 
-    @Override
     public byte[] load(DocUserPair docUserPair) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
         return storeClient.load(docUserPair);
     }
 
-    @Override
     public void createUser(String userId, String emailAddress) throws EmailAlreadyExists_Exception, InvalidEmail_Exception,
                                                               InvalidUser_Exception, UserAlreadyExists_Exception {
         idClient.createUser(userId, emailAddress);
     }
 
-    @Override
     public void renewPassword(String userId) throws pt.ulisboa.tecnico.sdis.id.ws.UserDoesNotExist_Exception {
         idClient.renewPassword(userId);
     }
 
-    @Override
     public void removeUser(String userId) throws pt.ulisboa.tecnico.sdis.id.ws.UserDoesNotExist_Exception {
         idClient.removeUser(userId);
     }
 
-    @Override
     public byte[] requestAuthentication(String userId, byte[] reserved) throws AuthReqFailed_Exception {
         return idClient.requestAuthentication(userId, reserved);
     }

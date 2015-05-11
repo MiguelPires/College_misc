@@ -2,6 +2,8 @@ package pt.tecnico.sdid;
 
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
 
 import javax.xml.registry.JAXRException;
@@ -38,7 +40,7 @@ public class SDIdServiceTest {
 
     @Before
     public void setUp() throws JAXRException, EmailAlreadyExists_Exception, InvalidEmail_Exception,
-                       UserAlreadyExists_Exception, InvalidUser_Exception {
+                       UserAlreadyExists_Exception, InvalidUser_Exception, NoSuchAlgorithmException, InvalidKeySpecException {
         setUpServer();
         connectToServer();
     }
@@ -57,7 +59,7 @@ public class SDIdServiceTest {
 
     public static void setUpServer() throws JAXRException, EmailAlreadyExists_Exception,
                                     InvalidEmail_Exception, UserAlreadyExists_Exception,
-                                    InvalidUser_Exception {
+                                    InvalidUser_Exception, NoSuchAlgorithmException, InvalidKeySpecException {
 
         SDIdImpl sServer = new SDIdImpl(System.getProperty("key.client"), System.getProperty("key.server"));
         SDIdMain.populate(sServer);

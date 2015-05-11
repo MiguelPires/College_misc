@@ -1,12 +1,15 @@
 package pt.tecnico.bubbledocs.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 import pt.tecnico.bubbledocs.domain.User;
-import pt.tecnico.bubbledocs.exception.*;
+import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 //import pt.tecnico.bubbledocs.integration.component.ImportDocument;
+import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
+import pt.tecnico.bubbledocs.exception.InvalidUsernameException;
+import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 public class GetUsername4TokenTest extends BubbleDocsServiceTest{
 	

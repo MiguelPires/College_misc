@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
-import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
 
 
 public class GetUserInfoTest extends BubbleDocsServiceTest {

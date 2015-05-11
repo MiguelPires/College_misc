@@ -30,8 +30,8 @@
                 <configuration>
                     <source>${version.java}</source>
                     <target>${version.java}</target>
-                    <verbose>true</verbose>
-                    <fork>true</fork>
+                   <!-- <verbose>true</verbose> -->
+               <!--     <fork>true</fork> -->
                 </configuration>
             </plugin>
 

@@ -11,6 +11,11 @@
   </parent>
 
  <dependencies>
+  <dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-log4j12</artifactId>
+    <version>${version.slf4j.api}</version>
+  </dependency>
     <dependency>
       <groupId>com.sun.xml.ws</groupId>
       <artifactId>jaxws-rt</artifactId>
@@ -125,7 +130,15 @@
     <key.client>bH7OZp6X11DNSrBr2MBt6g==</key.client>
     <key.server>CYd/FbnCGtfTyr8uzJKeAw==</key.server>
 
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+    <version.fenixframework>2.6.0</version.fenixframework>
+    <version.java>1.8</version.java>
+    <version.junit>4.11</version.junit>
+    <version.jmockit>1.16</version.jmockit>
+    <version.maven.build-helper-plugin>1.7</version.maven.build-helper-plugin>
+    <version.org.jdom.jdom>2.0.5</version.org.jdom.jdom>
+    <version.slf4j.api>1.7.2</version.slf4j.api>
   </properties>
   
   <build>

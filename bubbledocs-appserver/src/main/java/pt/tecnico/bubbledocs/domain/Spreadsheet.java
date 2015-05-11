@@ -1,7 +1,7 @@
 package pt.tecnico.bubbledocs.domain;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.jdom2.DataConversionException;
 import org.jdom2.Element;

@@ -6,6 +6,8 @@ import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Map;
 
@@ -25,7 +27,6 @@ import javax.xml.ws.BindingProvider;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import pt.tecnico.handler.SecurityHandler;
 import pt.ulisboa.tecnico.sdis.id.ws.AuthReqFailed;
 import pt.ulisboa.tecnico.sdis.id.ws.AuthReqFailed_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.EmailAlreadyExists_Exception;
@@ -42,8 +43,6 @@ public class IDClient implements SDId{
     private static SDId instance;
     private SecretKey clientKey;
     
-    // from the authentication server
-    private String sessionKey;
     private String nonceStr;
     private Client genericClient;
     
@@ -101,10 +100,10 @@ public class IDClient implements SDId{
         try {
             CryptoHelper crypto = new CryptoHelper("AES", "CBC", "PKCS5Padding");
             clientKey = crypto.generateKeyFromPassword(printBase64Binary(reserved), userId);
-          
+            
             byte[] response = authServer.requestAuthentication(userId, composeMessage(userId));
             System.out.println("Requesting ticket for "+userId);
-
+   
             parseCredentials(userId, response);
             System.out.println(userId+" obtained ticket");
 

@@ -4,19 +4,20 @@ import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 
 public class RenewPassword extends CheckLogin {
 
-	private String username;
+    private String username;
+
     public RenewPassword(String userToken) {
         this.userToken = userToken;
-        this.username = user.getUsername();
     }
-    
-    public String getUsername(){
-    	return username;
+
+    public String getUsername() {
+        return username;
     }
 
     @Override
     protected void dispatch() throws BubbleDocsException {
         super.dispatch();
+        this.username = user.getUsername();
         renewPassword(user);
         removeUserByToken(userToken);
     }

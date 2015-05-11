@@ -50,10 +50,10 @@ public class Session extends Session_Base {
     public User getUserByToken(String token) throws UserNotInSessionException {
         if (token == null || token.equals(""))
             throw new EmptyUsernameException();
-        
+
         else if (token.length() < 4 || token.length() > 9)
-            throw new InvalidUsernameException("The "+token+" token is invalid");
-        
+            throw new InvalidUsernameException("The " + token + " token is invalid");
+
         for (ActiveUser user : getActiveUsersSet()) {
             if (user.getToken().equals(token))
                 return user.getLoggedUser();

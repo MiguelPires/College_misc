@@ -3,8 +3,6 @@ package pt.tecnico.bubbledocs.service;
 import pt.tecnico.bubbledocs.domain.ActiveUser;
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
-import pt.tecnico.bubbledocs.exception.LoginBubbleDocsException;
-import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 
 public class LoginUser extends BubbleDocsService {

@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
-import pt.tecnico.bubbledocs.exception.CannotStoreDocumentException;
 import pt.tecnico.bubbledocs.exception.LoginBubbleDocsException;
 import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
@@ -21,7 +20,6 @@ import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
 import pt.tecnico.bubbledocs.service.DeleteUser;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
-import pt.tecnico.bubbledocs.service.remote.StoreRemoteServices;
 
 // add needed import declarations
 

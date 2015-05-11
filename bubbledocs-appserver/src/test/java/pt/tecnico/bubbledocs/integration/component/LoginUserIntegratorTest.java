@@ -19,7 +19,6 @@ import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
 import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 import pt.tecnico.bubbledocs.exception.WrongPasswordException;
 import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
-import pt.tecnico.bubbledocs.service.LoginUser;
 import pt.tecnico.bubbledocs.service.integration.LoginUserIntegrator;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 

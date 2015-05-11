@@ -1,7 +1,5 @@
 package pt.tecnico.bubbledocs.service.remote;
 
-import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
-
 import javax.xml.registry.JAXRException;
 
 import pt.tecnico.Client;
@@ -18,6 +16,7 @@ import pt.ulisboa.tecnico.sdis.id.ws.InvalidEmail_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.InvalidUser_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.UserAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.id.ws.UserDoesNotExist_Exception;
+
 
 public class IDRemoteServices {
 
@@ -39,7 +38,7 @@ public class IDRemoteServices {
 
     public void loginUser(String username, String password) {
         try {
-            Client.getInstanceID().requestAuthentication(username, parseBase64Binary(password));
+            Client.getInstanceID().requestAuthentication(username, password.getBytes());
         } catch (JAXRException e) {
             throw new RemoteInvocationException();
         } catch (AuthReqFailed_Exception e) {

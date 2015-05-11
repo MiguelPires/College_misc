@@ -15,7 +15,7 @@ public class CheckLogin extends BubbleDocsService {
     @Override
     protected void dispatch() throws BubbleDocsException {
         user = getUserByToken(userToken);
-        
+
         if (!isLoggedIn(user))
             throw new UserNotInSessionException();
     }

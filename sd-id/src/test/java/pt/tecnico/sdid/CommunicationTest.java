@@ -1,6 +1,8 @@
 package pt.tecnico.sdid;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 import javax.xml.registry.JAXRException;
 
@@ -48,7 +50,7 @@ public class CommunicationTest extends SDIdServiceTest {
     @Test
     public void successUDDIFailure() throws JAXRException, EmailAlreadyExists_Exception,
                                     InvalidEmail_Exception, UserAlreadyExists_Exception,
-                                    IOException, InvalidUser_Exception {
+                                    IOException, InvalidUser_Exception, NoSuchAlgorithmException, InvalidKeySpecException {
 
         new MockUp<UDDINaming>() {
             @Mock

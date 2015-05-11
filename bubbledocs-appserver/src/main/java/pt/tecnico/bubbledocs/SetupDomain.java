@@ -45,8 +45,10 @@ public class SetupDomain {
 
         Spreadsheet doc = Bubbledocs.getInstance().getSpreadsheet(id);
         doc.addCellContent(5, 6, new Addition(new Literal(2), new Reference(doc.getCell(3, 4))));
-        doc.addCellContent(2, 2,
-                new Division(new Reference(doc.getCell(1, 1)), new Reference(doc.getCell(3, 4))));
+        doc.addCellContent(2, 2, new Division(new Reference(doc.getCell(1, 1)), new Reference(doc.getCell(3, 4))));
+
+        CreateUser createAlice = new CreateUser(rootToken, "alice", "alice@tecnico.pt", "Alice");
+        createAlice.execute();
     }
 
 }

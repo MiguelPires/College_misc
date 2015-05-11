@@ -22,25 +22,25 @@ import pt.tecnico.bubbledocs.service.integration.RenewPasswordIntegrator;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 
 public class RenewPasswordIntegratorTest extends BubbleDocsServiceTest {
-    private String ars;
+    private String alice;
 
-    private static final String USERNAME = "ars";
-    private static final String EMAIL = "ars@tecnico.pt";
-    private static final String NAME = "António Rito Silva";
+    private static final String USERNAME = "alice";
+    private static final String EMAIL = "alice@tecnico.pt";
+    private static final String NAME = "Alice Sheepires";
 
     @Override
     public void populate4Test() throws BubbleDocsException {
         createUser(USERNAME, EMAIL, NAME);
-        ars = addUserToSession(USERNAME);
+        alice = addUserToSession(USERNAME);
     }
 
     @Test
     public void success() {
-        RenewPasswordIntegrator service = new RenewPasswordIntegrator(ars);
+        RenewPasswordIntegrator service = new RenewPasswordIntegrator(alice);
         service.execute();
 
         User user = getUserFromUsername(USERNAME);
-        boolean loggedOut = getUserFromSession(ars) == null;
+        boolean loggedOut = getUserFromSession(alice) == null;
 
         assertFalse("Password renewed: no local copy.", user.getValidPassword());
         assertTrue("User is logged out", loggedOut);
@@ -55,14 +55,14 @@ public class RenewPasswordIntegratorTest extends BubbleDocsServiceTest {
                 throw new RemoteInvocationException();
             }
         };
-        RenewPasswordIntegrator service = new RenewPasswordIntegrator(ars);
+        RenewPasswordIntegrator service = new RenewPasswordIntegrator(alice);
         service.execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
     public void unauthorizedRenewalUserNotInSession() {
-        removeUserFromSession(ars);
-        RenewPasswordIntegrator service = new RenewPasswordIntegrator(ars);
+        removeUserFromSession(alice);
+        RenewPasswordIntegrator service = new RenewPasswordIntegrator(alice);
         service.execute();
     }
 

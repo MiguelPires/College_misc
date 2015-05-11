@@ -29,36 +29,38 @@ import pt.tecnico.bubbledocs.service.integration.ExportDocumentIntegrator;
 import pt.tecnico.bubbledocs.service.remote.StoreRemoteServices;
 
 public class ExportDocumentIntegratorTest extends BubbleDocsServiceTest {
-    private String ars;
-    private String js;
+    private String alice;
+    private String bruno;
 
-    private static final String USERNAME = "ars";
-    private static final String PASSWORD = "ars";
-    private static final String EMAIL = "ars@tecnico.pt";
+    private static final String USERNAME = "alice";
+    private static final String PASSWORD = "Aaa1";
+    private static final String EMAIL = "alice@tecnico.pt";
 
     private List<Spreadsheet> docs = new ArrayList<Spreadsheet>();
     private Spreadsheet full;
-    private User as;
+    private User userAlice;
+    private User userBruno;
 
     @Override
     public void populate4Test() throws BubbleDocsException {
 
-        as = createUser(USERNAME, EMAIL, "Antonio Rito Silva");
-        as.setPassword(PASSWORD);
-        ars = addUserToSession("ars");
+        userAlice = createUser(USERNAME, EMAIL, "Alice Sheepires");
+        userAlice.setPassword(PASSWORD);
+        alice = addUserToSession("alice");
 
-        createUser("jshp", "1234", "João Sheepires");
-        js = addUserToSession("jshp");
+        userBruno = createUser("bruno", "bruno@tecnico.pt", "Bruno Sheepires");
+        userBruno.setPassword("Bbb2");
+        bruno = addUserToSession("bruno");
 
-        docs.add(createSpreadSheet(as, "ES", 30, 20));
-        docs.add(createSpreadSheet(as, "ES", 30, 20));
+        docs.add(createSpreadSheet(userAlice, "ES", 30, 20));
+        docs.add(createSpreadSheet(userAlice, "ES", 30, 20));
 
         for (Spreadsheet doc : docs) {
             doc.addCellContent(3, 4, new Literal(5));
             doc.addCellContent(5, 6, new Addition(new Literal(2), new Reference(doc.getCell(3, 4))));
         }
 
-        full = createSpreadSheet(as, "FULL", 10, 10); // has around 13.000 bytes (maximum is 10*1024 = 10MB)
+        full = createSpreadSheet(userAlice, "FULL", 10, 10); // has around 13.000 bytes (maximum is 10*1024 = 10MB)
         for(int i=0; i<10; i++)
             for(int j=0;j<10;j++)
                 full.addCellContent(i, j, new Literal(5));
@@ -66,7 +68,7 @@ public class ExportDocumentIntegratorTest extends BubbleDocsServiceTest {
 
     @Test
     public void success() throws BubbleDocsException {
-        ExportDocumentIntegrator service = new ExportDocumentIntegrator(ars, docs.get(0).getID());
+        ExportDocumentIntegrator service = new ExportDocumentIntegrator(alice, docs.get(0).getID());
         service.execute();
 
         Spreadsheet doc = importFromXML(service.getDocXML());
@@ -86,20 +88,20 @@ public class ExportDocumentIntegratorTest extends BubbleDocsServiceTest {
 
     @Test(expected = UnauthorizedOperationException.class)
     public void unauthorizedExport() throws BubbleDocsException {
-    	ExportDocumentIntegrator service = new ExportDocumentIntegrator(js, docs.get(1).getID());
+    	ExportDocumentIntegrator service = new ExportDocumentIntegrator(bruno, docs.get(1).getID());
         service.execute();
     }
 
     @Test(expected = SpreadsheetNotFoundException.class)
     public void spreadSheetNotExist() throws BubbleDocsException {
-    	ExportDocumentIntegrator service = new ExportDocumentIntegrator(ars, 100);
+    	ExportDocumentIntegrator service = new ExportDocumentIntegrator(alice, 100);
         service.execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
     public void accessUsernameNotExist() {
-        removeUserFromSession(ars);
-        ExportDocumentIntegrator service = new ExportDocumentIntegrator(ars, docs.get(0).getID());
+        removeUserFromSession(alice);
+        ExportDocumentIntegrator service = new ExportDocumentIntegrator(alice, docs.get(0).getID());
         service.execute();
     }
 
@@ -114,7 +116,7 @@ public class ExportDocumentIntegratorTest extends BubbleDocsServiceTest {
             }
         };
         
-        ExportDocumentIntegrator service = new ExportDocumentIntegrator(ars, docs.get(0).getID());
+        ExportDocumentIntegrator service = new ExportDocumentIntegrator(alice, docs.get(0).getID());
         service.execute();
     }
 

@@ -24,13 +24,13 @@ import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 
 public class LoginUserIntegratorTest extends BubbleDocsServiceTest {
 
-    private static final String USERNAME = "jshp";
-    private static final String PASSWORD = "jp#";
-    private static final String EMAIL = "joao@ulisboa.pt";
+    private static final String USERNAME = "alice";
+    private static final String PASSWORD = "Aaa1";
+    private static final String EMAIL = "alice@tecnico.pt";
 
     @Override
     public void populate4Test() throws BubbleDocsException {
-        createUser(USERNAME, EMAIL, "João Pereira");
+        createUser(USERNAME, EMAIL, "Alice");
     }
 
     // returns the time of the last access for the user with token userToken.

@@ -30,30 +30,32 @@ import pt.tecnico.bubbledocs.service.integration.ImportDocumentIntegrator;
 import pt.tecnico.bubbledocs.service.remote.StoreRemoteServices;
 
 public class ImportDocumentIntegratorTest extends BubbleDocsServiceTest {
-	private String ars;
-    private String js;
+	private String alice; //ars;
+    private String bruno; //js;
 
-    private static final String USERNAME = "ars";
-    private static final String PASSWORD = "ars";
-    private static final String EMAIL = "ars@tecnico.pt";
+    private static final String USERNAME = "alice";
+    private static final String PASSWORD = "Aaa1";
+    private static final String EMAIL = "alice@tecnico.pt";
 
     private List<Spreadsheet> docs = new ArrayList<Spreadsheet>();
     private Spreadsheet full;
-    private User as;
+    private User userAlice; //as;
+    private User userBruno; 
     private int ssId;
 
     @Override
     public void populate4Test() throws BubbleDocsException {
 
-        as = createUser(USERNAME, EMAIL, "Antonio Rito Silva");
-        as.setPassword(PASSWORD);
-        ars = addUserToSession("ars");
+    	userAlice = createUser(USERNAME, EMAIL, "Antonio Rito Silva");
+    	userAlice.setPassword(PASSWORD);
+        alice = addUserToSession("alice");
 
-        createUser("jshp", "1234", "João Sheepires");
-        js = addUserToSession("jshp");
+        userBruno = createUser("bruno", "bruno@tecnico.pt", "Bruno Sheepires");
+        userBruno.setPassword("Bbb2");
+        bruno = addUserToSession("bruno");
 
-        docs.add(createSpreadSheet(as, "ES", 30, 20));
-        docs.add(createSpreadSheet(as, "ES", 30, 20));
+        docs.add(createSpreadSheet(userAlice, "ES", 30, 20));
+        docs.add(createSpreadSheet(userAlice, "ES", 30, 20));
         
         ssId = docs.get(0).getID();
 
@@ -62,13 +64,13 @@ public class ImportDocumentIntegratorTest extends BubbleDocsServiceTest {
             doc.addCellContent(5, 6, new Addition(new Literal(2), new Reference(doc.getCell(3, 4))));
         }
 
-        ExportDocumentIntegrator service = new ExportDocumentIntegrator(ars, docs.get(0).getID());
+        ExportDocumentIntegrator service = new ExportDocumentIntegrator(alice, docs.get(0).getID());
         service.execute();
     }
     
     @Test
     public void success() throws BubbleDocsException {
-        ImportDocumentIntegrator service = new ImportDocumentIntegrator(ssId, ars);
+        ImportDocumentIntegrator service = new ImportDocumentIntegrator(ssId, alice);
         service.execute();
 
         Spreadsheet doc = importFromXML(service.getDocXML());
@@ -88,20 +90,20 @@ public class ImportDocumentIntegratorTest extends BubbleDocsServiceTest {
     
     @Test(expected = SpreadsheetNotFoundException.class)
     public void spreadSheetNotExist() throws BubbleDocsException {
-    	ImportDocumentIntegrator service = new ImportDocumentIntegrator(100, ars);
+    	ImportDocumentIntegrator service = new ImportDocumentIntegrator(100, alice);
         service.execute();
     } 
     
     @Test(expected = UnauthorizedOperationException.class)
     public void unauthorizedImport() throws BubbleDocsException {
-    	ImportDocumentIntegrator service = new ImportDocumentIntegrator(docs.get(1).getID(), js);
+    	ImportDocumentIntegrator service = new ImportDocumentIntegrator(docs.get(1).getID(), bruno);
         service.execute();
     }
     
     @Test(expected = UserNotInSessionException.class)
     public void accessUsernameNotExist() {
-        removeUserFromSession(ars);
-        ImportDocumentIntegrator service = new ImportDocumentIntegrator(docs.get(0).getID(), ars);
+        removeUserFromSession(alice);
+        ImportDocumentIntegrator service = new ImportDocumentIntegrator(docs.get(0).getID(), alice);
         service.execute();
     }
     
@@ -127,7 +129,7 @@ public class ImportDocumentIntegratorTest extends BubbleDocsServiceTest {
             }
         };
         
-        ImportDocumentIntegrator service = new ImportDocumentIntegrator(docs.get(0).getID(), ars);
+        ImportDocumentIntegrator service = new ImportDocumentIntegrator(docs.get(0).getID(), alice);
         service.execute();
     }
 }

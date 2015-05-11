@@ -25,9 +25,9 @@ import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 
 public class DeleteUserIntegratorTest extends BubbleDocsServiceTest {
 
-    private static final String USERNAME_TO_DELETE = "smf";
-    private static final String USERNAME = "ars";
-    private static final String EMAIL = "ars@tecnico.pt";
+    private static final String USERNAME_TO_DELETE = "bruno";
+    private static final String USERNAME = "alice";
+    private static final String EMAIL = "alice@tecnico.pt";
     private static final String ROOT_USERNAME = "root";
     private static final String USERNAME_DOES_NOT_EXIST = "no-one";
     private static final String SPREADSHEET_NAME = "spread";
@@ -37,9 +37,9 @@ public class DeleteUserIntegratorTest extends BubbleDocsServiceTest {
 
     @Override
     public void populate4Test() {
-        createUser(USERNAME, EMAIL, "António Rito Silva");
-        User smf = createUser(USERNAME_TO_DELETE, "smf@tecnico.pt", "Sérgio Fernandes");
-        Spreadsheet ss = createSpreadSheet(smf, SPREADSHEET_NAME, 20, 20);
+        createUser(USERNAME, EMAIL, "Alice Sheepires");
+        User bruno = createUser(USERNAME_TO_DELETE, "bruno@tecnico.pt", "Bruno Sheepires");
+        Spreadsheet ss = createSpreadSheet(bruno, SPREADSHEET_NAME, 20, 20);
 
         ssId = ss.getID();
         root = addUserToSession(ROOT_USERNAME);
@@ -88,15 +88,15 @@ public class DeleteUserIntegratorTest extends BubbleDocsServiceTest {
 
     @Test(expected = UnauthorizedOperationException.class)
     public void notRootUser() {
-        String ars = addUserToSession(USERNAME);
-        new DeleteUser(ars, USERNAME_TO_DELETE).execute();
+        String alice = addUserToSession(USERNAME);
+        new DeleteUser(alice, USERNAME_TO_DELETE).execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
     public void notInSessionAndNotRoot() {
-        String ars = addUserToSession(USERNAME);
-        removeUserFromSession(ars);
-        new DeleteUser(ars, USERNAME_TO_DELETE).execute();
+        String alice = addUserToSession(USERNAME);
+        removeUserFromSession(alice);
+        new DeleteUser(alice, USERNAME_TO_DELETE).execute();
 
     }
     

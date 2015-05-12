@@ -56,9 +56,10 @@ public class SecureSDStore implements SDStore {
 
 	public void store(DocUserPair docUserPair, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception {
 		byte[]  cipheredContent=null;
+		server.setcontext(webServiceContext);
 		if(contents!=null)
 			cipheredContent = cipher(docUserPair.getDocumentId(), contents);
-		server.setcontext(webServiceContext);
+		
 		server.store(docUserPair, cipheredContent);
 		webServiceContext = server.getcontext();
 	}

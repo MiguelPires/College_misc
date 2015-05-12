@@ -22,7 +22,8 @@ public class Main {
         scanner = new Scanner(System.in);
         String uddiURL = args[0];
         String name = args[1];
-        StoreClient client = new StoreClient(uddiURL, name, id++);
+        id++;
+        StoreClient client = new StoreClient(uddiURL, name, id);
         System.out.println("Choose method");
         
         System.out.println("############## WELCOME ##############");
@@ -30,7 +31,6 @@ public class Main {
         System.out.println("2 - Create new document");
         System.out.println("3 - Store document content");
         System.out.println("4 - Load document  content");
-        System.out.println("5 - Change user or document ID");
         System.out.println("0 - Exit");
 
         int command= -1;
@@ -89,7 +89,11 @@ public class Main {
             		String user =scanner.next();
             		System.out.println("# Choose doc ID");
             		String doc = scanner.next();
-        			System.out.println(new String(client.load(user, doc)));
+        			byte[] value = client.load(user, doc);
+        			if(value!=null)
+        				System.out.println(new String(value));
+        			else
+        				System.out.println("No content");
         		} catch (UserDoesNotExist_Exception e) {
             		System.out.println("# User does not exist");
         		} catch (DocDoesNotExist_Exception e) {

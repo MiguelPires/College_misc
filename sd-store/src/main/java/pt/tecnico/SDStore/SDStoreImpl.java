@@ -111,7 +111,6 @@ public class SDStoreImpl implements SDStore {
 				return;
 			}
     	
-    	sendToHandler();
 		UserDoesNotExist userException = new UserDoesNotExist();
 		userException.setUserId(user);
 		throw new UserDoesNotExist_Exception("User does not exist", userException);
@@ -130,7 +129,6 @@ public class SDStoreImpl implements SDStore {
 				return doc.getContent();
 			}
 		
-    	sendToHandler();
 		UserDoesNotExist userException = new UserDoesNotExist();
 		userException.setUserId(user);
 		throw new UserDoesNotExist_Exception("User does not exist", userException);	

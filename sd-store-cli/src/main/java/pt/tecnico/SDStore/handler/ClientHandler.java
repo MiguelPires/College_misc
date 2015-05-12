@@ -26,18 +26,14 @@ public class ClientHandler implements SOAPHandler<SOAPMessageContext> {
         if (outbound) {
             // outbound message
 
-            // *** #2 ***
-            // get token from request context
             String propertyValue = (String) smc.get(REQUEST_PROPERTY);
 
             // put token in request SOAP header
             try {
-                // get SOAP envelope
                 SOAPMessage msg = smc.getMessage();
                 SOAPPart sp = msg.getSOAPPart();
                 SOAPEnvelope se = sp.getEnvelope();
 
-                // add header
                 SOAPHeader sh = se.getHeader();
                 if (sh == null)
                     sh = se.addHeader();
@@ -46,8 +42,6 @@ public class ClientHandler implements SOAPHandler<SOAPMessageContext> {
                 Name name = se.createName(REQUEST_HEADER, "e", REQUEST_NS);
                 SOAPHeaderElement element = sh.addHeaderElement(name);
 
-                // *** #3 ***
-                // add header element value
                 String[] args = null;
                 String newValue;
                 if(propertyValue!=null){
@@ -66,36 +60,27 @@ public class ClientHandler implements SOAPHandler<SOAPMessageContext> {
         } else {
             // inbound message
 
-            // get token from response SOAP header
             try {
-                // get SOAP envelope header
                 SOAPMessage msg = smc.getMessage();
                 SOAPPart sp = msg.getSOAPPart();
                 SOAPEnvelope se = sp.getEnvelope();
                 SOAPHeader sh = se.getHeader();
 
-                // check header
                 if (sh == null) {
                     System.out.println("Header not found.");
                     return true;
                 }
 
-                // get first header element
                 Name name = se.createName(RESPONSE_HEADER, "e", RESPONSE_NS);
                 Iterator it = sh.getChildElements(name);
-                // check header element
                 if (!it.hasNext()) {
                     System.out.printf("Header element %s not found.%n", RESPONSE_HEADER);
                     return true;
                 }
                 SOAPElement element = (SOAPElement) it.next();
 
-                // *** #10 ***
-                // get header element value
                 String headerValue = element.getValue();
 
-                // *** #11 ***
-                // put token in response context
                 String newValue = headerValue + "";
                 smc.put(RESPONSE_PROPERTY, newValue);
                 // set property scope to application so that client class can access property

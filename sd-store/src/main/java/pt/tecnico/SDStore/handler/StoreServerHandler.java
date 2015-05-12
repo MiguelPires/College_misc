@@ -26,9 +26,7 @@ public class StoreServerHandler implements SOAPHandler<SOAPMessageContext> {
         if (outbound) {
             String propertyValue = (String) smc.get(RESPONSE_PROPERTY);
 
-            // put token in response SOAP header
             try {
-                // get SOAP envelope
                 SOAPMessage msg = smc.getMessage();
                 SOAPPart sp = msg.getSOAPPart();
                 SOAPEnvelope se = sp.getEnvelope();
@@ -38,11 +36,9 @@ public class StoreServerHandler implements SOAPHandler<SOAPMessageContext> {
                 if (sh == null)
                     sh = se.addHeader();
 
-                // add header element (name, namespace prefix, namespace)
                 Name name = se.createName(RESPONSE_HEADER, "e", RESPONSE_NS);
                 SOAPHeaderElement element = sh.addHeaderElement(name);
 
-                // add header element value
                 String[] args = null;
                 String newValue;
                 
@@ -66,33 +62,27 @@ public class StoreServerHandler implements SOAPHandler<SOAPMessageContext> {
 
         } else {
             // inbound message
-            // get token from request SOAP header
             try {
-                // get SOAP envelope header
                 SOAPMessage msg = smc.getMessage();
                 SOAPPart sp = msg.getSOAPPart();
                 SOAPEnvelope se = sp.getEnvelope();
                 SOAPHeader sh = se.getHeader();
 
-                // check header
                 if (sh == null) {
                     System.out.println("Header not found.");
                     return true;
                 }
 
-                // get first header element
                 Name name = se.createName(REQUEST_HEADER, "e", REQUEST_NS);
                 Iterator it = sh.getChildElements(name);
-                // check header element
+                
                 if (!it.hasNext()) {
                     System.out.printf("Header element %s not found.%n", REQUEST_HEADER);
                     return true;
                 }
                 SOAPElement element = (SOAPElement) it.next();
 
-                // get header element value
                 String headerValue = element.getValue();
-                // put token in request context
                 String newValue = headerValue + "";
                 smc.put(REQUEST_PROPERTY, newValue);
                 // set property scope to application so that server class can access property

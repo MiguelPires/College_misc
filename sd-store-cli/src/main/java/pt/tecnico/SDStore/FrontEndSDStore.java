@@ -101,8 +101,34 @@ public class FrontEndSDStore {
 
     public void store(DocUserPair docUserPair, byte[] contents, String[] tag) throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception {
     	if(tag==null){
-    		String[] newTag={(sequencial++)+"", IDClient+""};
+    		sequencial++;
+    		String[] newTag={sequencial+"", IDClient+""};
     		tag = newTag;
+    		
+    		List<Response<LoadResponse>> LoadResponses = new ArrayList<Response<LoadResponse>>();
+    		for(SDStore server : repManager) {
+    			sendToHandler(server, tag);
+    			Response<LoadResponse> response = server.loadAsync(docUserPair);
+    			LoadResponses.add(response);
+    		}
+    		
+    		int numberResponses=0;
+    		while(numberResponses<RT) // reads max tag
+    			for(Response<LoadResponse> response : LoadResponses){
+    				if(response.isDone()){
+    					numberResponses++;
+    					String[] maxTag=null;
+    					if(hasTag(response))
+    						maxTag = getTag(response);
+    					if(maxTag != null && isGreater(maxTag,tag)){
+    						tag = maxTag;
+    					}
+    					LoadResponses.remove(response);
+    					break;
+    				}
+    			}
+    		
+    		
     	}
     	else
     		sequencial = Integer.parseInt(tag[0]);
@@ -116,15 +142,26 @@ public class FrontEndSDStore {
     	
     	//waits for Q acks
     	int numberResponses=0;
+    	Response<StoreResponse> savedResponse=null;
 		while(numberResponses<WT)
 			for(Response<StoreResponse> response : StoreResponses){
 				if(response.isDone()){
 					numberResponses++;
 					StoreResponses.remove(response);
+					savedResponse=response;
 					break;
 				}	
 			}
     	
+		if(savedResponse!=null)
+			try {
+				savedResponse.get();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				String[] exc = e.getMessage().split(":");
+				throwException(exc, docUserPair);
+			}
     }
     
 	// Send client store request to all replica managers
@@ -137,7 +174,8 @@ public class FrontEndSDStore {
 	public byte[] load(DocUserPair docUserPair) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
 		
 		List<Response<LoadResponse>> LoadResponses = new ArrayList<Response<LoadResponse>>();
-		String[] tag = {(sequencial++)+"",IDClient+""};
+		sequencial++;
+		String[] tag = {sequencial+"",IDClient+""};
 		for(SDStore server : repManager) {
 			sendToHandler(server, tag);
 			Response<LoadResponse> response = server.loadAsync(docUserPair);
@@ -152,15 +190,18 @@ public class FrontEndSDStore {
 			for(Response<LoadResponse> response : LoadResponses){
 				if(response.isDone()){
 					numberResponses++;
-					String[] newTag = getTag(response);
+					String[] newTag=null;
+					if(hasTag(response))
+						newTag = getTag(response);
 					if(tag == null || isGreater(newTag,tag)){
 						tag = newTag;
 						try {
 							value = response.get().getContents();
 						} catch (InterruptedException e) {
 							e.printStackTrace();
-						} catch (ExecutionException e) {
-							e.printStackTrace();
+						} catch (ExecutionException e) { // catch and checks wich exceptions it is
+							String[] exc = e.getMessage().split(":");
+							throwException(exc, docUserPair);
 						}
 					}
 					LoadResponses.remove(response);
@@ -192,6 +233,15 @@ public class FrontEndSDStore {
         return result;
 	}
 	
+	public boolean hasTag(Response<LoadResponse> response){
+		Map<String, Object> responseContext = response.getContext();
+        String propertyValue = (String) responseContext.get(ClientHandler.RESPONSE_PROPERTY);
+        if(propertyValue!=null)
+        	return true;
+        else
+        	return false;
+	}
+	
 	//compare 2 tags
 	public boolean isGreater(String[] tag1, String[] tag2){
 		int seqNumber1 = Integer.parseInt(tag1[0]);
@@ -205,6 +255,19 @@ public class FrontEndSDStore {
 				return true;
 		
 		return false;
+	}
+	
+	public void throwException(String[] exc, DocUserPair docUserPair) throws UserDoesNotExist_Exception, DocDoesNotExist_Exception{
+		if(exc[1].equals(" User does not exist")){
+			UserDoesNotExist userException = new UserDoesNotExist();
+			userException.setUserId(docUserPair.getUserId());
+			throw new UserDoesNotExist_Exception("User does not exist", userException);	
+		}
+		else{
+			DocDoesNotExist doc = new DocDoesNotExist();
+			doc.setDocId(docUserPair.getDocumentId());
+			throw new DocDoesNotExist_Exception("Document does not exist", doc);
+		}
 	}
 }
 

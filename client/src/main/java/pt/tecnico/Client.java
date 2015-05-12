@@ -17,22 +17,23 @@ import pt.ulisboa.tecnico.sdis.store.ws.CapacityExceeded_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocDoesNotExist_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocUserPair;
+import pt.ulisboa.tecnico.sdis.store.ws.InvalidArgument_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.SDStore;
 import pt.ulisboa.tecnico.sdis.store.ws.UnauthorizedOperation_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.UserDoesNotExist_Exception;
 
-public class Client implements SDId, SDStore {
+public class Client {
 
     protected StoreClient storeClient;
-    protected SDId idClient;
+    protected IDClient idClient;
     protected Map<String, String> tickets;
     protected Map<String, String> sessionKeys;
     private static Client instance;
-
-    public static Client getInstanceID() throws TransformerFactoryConfigurationError, JAXRException {
+    
+    public static SDId getInstanceID() throws TransformerFactoryConfigurationError, JAXRException {
         if (instance == null)
             instance = new Client();
-        return  instance;
+        return (SDId) instance;
     }
     
     Client() throws TransformerFactoryConfigurationError, JAXRException {
@@ -42,11 +43,11 @@ public class Client implements SDId, SDStore {
         sessionKeys = new HashMap<String, String>();
     }
 
-    public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception, UnauthorizedOperation_Exception {
+    public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
         storeClient.createDoc(docUserPair);
     }
 
-    public List<String> listDocs(String userId) throws UserDoesNotExist_Exception, UnauthorizedOperation_Exception {
+    public List<String> listDocs(String userId) throws UserDoesNotExist_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
         return storeClient.listDocs(userId);
     }
 

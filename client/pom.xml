@@ -172,20 +172,10 @@
             </execution>
           </executions>
           <configuration>
-         <!--   <systemProperties>-->
-              <property>
-                <store.name>SD-STORE</store.name>
-              </property>
-
-               <!-- <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-                <mainclass>pt.tecnico.ClientMain</mainclass>
-                <uddi.url>http://localhost:8081</uddi.url>
-                <id.name>SD-ID</id.name>
-                <store.name>SD-STORE</store.name>
-                <key.client>bH7OZp6X11DNSrBr2MBt6g==</key.client>
-                <key.server>CYd/FbnCGtfTyr8uzJKeAw==</key.server>
-              </properties>-->
-           <!-- </systemProperties>-->
+            <property>
+              <store.name>SD-STORE</store.name>
+            </property>
+            <cleanupDaemonThreads>false</cleanupDaemonThreads>
             <killAfter>-1</killAfter><!-- to prevent deprecation warning -->
             <mainClass>${mainclass}</mainClass>
             <arguments>

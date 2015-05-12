@@ -43,6 +43,7 @@ import org.xml.sax.SAXException;
 import pt.tecnico.CryptoHelper;
 import pt.ulisboa.tecnico.sdis.store.ws.UnauthorizedOperation;
 import pt.ulisboa.tecnico.sdis.store.ws.UnauthorizedOperation_Exception;
+import pt.ulisboa.tecnico.sdis.store.ws.impl.StoreMain;
 
 /**
  * This SOAPHandler outputs the contents of inbound and outbound messages.
@@ -64,7 +65,7 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
     private String sessionKey;
     private static final String serverKey = "CYd/FbnCGtfTyr8uzJKeAw==";
     private static final String serviceName = "SD-STORE";
-    
+
     public boolean handleMessage(SOAPMessageContext smc) {
         this.smc = smc;
         Boolean outbound = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
@@ -78,12 +79,13 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
             } catch (Exception e) {
                 System.out.println("Handler failed to process message inbound from client");
             }
-        }
+        } 
         return true;
     }
 
     private void processDigest() throws Exception {
-        System.out.println("Processing digest...");
+        if (StoreMain.HANDLER_PRINT)
+            System.out.println("Processing digest...");
         SOAPEnvelope se = getEnvelope();
         SOAPHeader sh = se.getHeader();
 
@@ -116,7 +118,8 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
     private void processAuthenticator() throws Exception {
-        System.out.printf("Processing authenticator... ");
+        if (StoreMain.HANDLER_PRINT)
+            System.out.printf("Processing authenticator... ");
         SOAPEnvelope se = getEnvelope();
         SOAPHeader sh = se.getHeader();
 
@@ -131,7 +134,7 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
             System.out.printf("Header element %s not found.%n", AUTH_HEADER);
             throw new Exception("Header not found");
         }
-        
+
         SOAPElement element = (SOAPElement) it.next();
         String strAuth = element.getValue();
         Document doc = buildAuthenticator(strAuth);
@@ -181,7 +184,8 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
      * @throws Exception
      */
     private void processTicket() throws Exception {
-        System.out.printf("Processing ticket... ");
+        if (StoreMain.HANDLER_PRINT)
+            System.out.printf("Processing ticket... ");
         SOAPEnvelope se = getEnvelope();
         SOAPHeader sh = se.getHeader();
 
@@ -248,7 +252,6 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
 
         this.sessionKey = doc.getElementsByTagName("SessionKey").item(0).getTextContent();
         String client = doc.getElementsByTagName("Client").item(0).getTextContent();
-        
         smc.put(CLIENT, client);
         smc.setScope(CLIENT, Scope.APPLICATION);
     }

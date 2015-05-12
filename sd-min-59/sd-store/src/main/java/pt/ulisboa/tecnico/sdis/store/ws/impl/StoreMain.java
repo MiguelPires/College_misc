@@ -7,59 +7,63 @@ import uddi.UDDINaming;
 
 public class StoreMain {
 
+    public static final String SERVER_KEY = "CYd/FbnCGtfTyr8uzJKeAw==";
+    public static final String STORE_NAME = "SD-STORE";
+    public static final boolean HANDLER_PRINT = false;
+    private static final int REPLICAS_NUMBER = 3;
+    public static boolean REPL_DEMO = true;
+
     public static void main(String[] args) {
-        // Check arguments
         if (args.length == 0 || args.length == 2) {
             System.err.println("Argument(s) missing!");
-            System.err.println("Usage: java " + StoreMain.class.getName()
-                    + " wsURL OR uddiURL wsName wsURL");
+            System.err.println("Usage: java " + StoreMain.class.getName() + " wsURL OR uddiURL wsName wsURL");
             return;
         }
         String uddiURL = null;
-        String wsName = null;
         String wsURL = null;
-        String key = null;
+
+        String iWsURL = null;
+
         if (args.length == 1) {
             wsURL = args[0];
         } else if (args.length >= 3) {
             uddiURL = args[0];
-            wsName = args[1];
             wsURL = args[2];
-            key = args[3];
         }
-        String wsTestUrl = wsURL + "/test";
 
-        Endpoint endpoint = null;
-        Endpoint testEndpoint = null;
+        Endpoint[] endpoint = new Endpoint[REPLICAS_NUMBER];
+
+        for (int i = 0; i < REPLICAS_NUMBER; i++) {
+            endpoint[i] = null;
+        }
 
         UDDINaming uddiNaming = null;
 
         try {
-            StoreImpl impl = new StoreImpl(key, wsName);
 
-            if (System.getProperty("store-ws.test") != null) {
-                System.out.println("Populating test data...");
-            }
-            endpoint = Endpoint.create(impl);
+            for (int i = 0; i < REPLICAS_NUMBER; i++) {
+                String serverName = STORE_NAME + "-" + i;
+                String[] split = wsURL.split("localhost:");
+                String[] oldPort = split[1].split("/");
 
-            // publish endpoint
-            System.out.printf("Starting %s%n", wsURL);
-            endpoint.publish(wsURL);
+                Integer port = Integer.parseInt(oldPort[0]) + 1;
+                String newPort = port.toString();
+                iWsURL = split[0] + "localhost:" + newPort + "/" + oldPort[1] + "/" + oldPort[2] + "-" + i;
 
-            // publish to UDDI
-            if (uddiURL != null) {
-                System.out.printf("Publishing '%s' to UDDI at %s%n", wsName,
-                        uddiURL);
-                uddiNaming = new UDDINaming(uddiURL);
-                uddiNaming.rebind(wsName, wsURL);
-            }
+                StoreImpl impl = new StoreImpl(SERVER_KEY, serverName);
 
-            if ("true".equalsIgnoreCase(System.getProperty("ws.test"))) {
-                StoreImpl.reset();
-                
-                System.out.printf("Starting %s%n", wsTestUrl);
-                testEndpoint = Endpoint.create(new TestControl());
-                testEndpoint.publish(wsTestUrl);
+                endpoint[i] = Endpoint.create(impl);
+
+                // publish endpoint
+                System.out.printf("Starting %s%n", iWsURL);
+                endpoint[i].publish(iWsURL);
+
+                // publish to UDDI
+                if (uddiURL != null) {
+                    System.out.printf("Publishing '%s' to UDDI at %s%n", serverName, uddiURL);
+                    uddiNaming = new UDDINaming(uddiURL);
+                    uddiNaming.rebind(serverName, iWsURL);
+                }
             }
 
             // wait
@@ -73,24 +77,22 @@ public class StoreMain {
 
         } finally {
             try {
-                if (endpoint != null) {
-                    // stop endpoint
-                    endpoint.stop();
-                    System.out.printf("Stopped %s%n", wsURL);
-                }
-                if (testEndpoint != null) {
-                    // stop test endpoint
-                    testEndpoint.stop();
-                    System.out.printf("Stopped %s%n", wsTestUrl);
+                for (int i = 0; i < REPLICAS_NUMBER; i++) {
+                    if (endpoint[i] != null) {
+                        // stop endpoint
+                        endpoint[i].stop();
+                        System.out.printf("Stopped %s%n", iWsURL);
+                    }
                 }
             } catch (Exception e) {
                 System.out.printf("Caught exception when stopping: %s%n", e);
             }
             try {
-                if (uddiNaming != null) {
-                    // delete from UDDI
-                    uddiNaming.unbind(wsName);
-                    System.out.printf("Deleted '%s' from UDDI%n", wsName);
+                for (int i = 0; i < REPLICAS_NUMBER; i++) {
+                    if (uddiNaming != null) {
+                        uddiNaming.unbind(iWsURL);
+                        System.out.printf("Deleted '%s' from UDDI%n", iWsURL);
+                    }
                 }
             } catch (Exception e) {
                 System.out.printf("Caught exception when deleting: %s%n", e);

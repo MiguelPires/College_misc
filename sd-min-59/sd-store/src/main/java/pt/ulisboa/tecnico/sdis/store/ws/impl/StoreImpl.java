@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.sdis.store.ws.impl;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.activity.InvalidActivityException;
 import javax.annotation.Resource;
 import javax.jws.HandlerChain;
 import javax.jws.WebService;
@@ -14,6 +15,8 @@ import pt.ulisboa.tecnico.sdis.store.ws.DocAlreadyExists;
 import pt.ulisboa.tecnico.sdis.store.ws.DocAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocDoesNotExist_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocUserPair;
+import pt.ulisboa.tecnico.sdis.store.ws.InvalidArgument;
+import pt.ulisboa.tecnico.sdis.store.ws.InvalidArgument_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.SDStore;
 import pt.ulisboa.tecnico.sdis.store.ws.UnauthorizedOperation;
 import pt.ulisboa.tecnico.sdis.store.ws.UnauthorizedOperation_Exception;
@@ -37,7 +40,7 @@ public class StoreImpl implements SDStore {
     }
 
 
-    public static HashMap<String, DocumentRepository> userRepositories = new HashMap<String, DocumentRepository>();
+    public HashMap<String, DocumentRepository> userRepositories = new HashMap<String, DocumentRepository>();
 
     /*
      * From WSDL: <!-- Creates a new document in the provided user's repository.
@@ -45,14 +48,17 @@ public class StoreImpl implements SDStore {
      * created for the new user. Faults: a document already exists with the same
      * id -->
      */
-    public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception, UnauthorizedOperation_Exception {
+    public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception, UnauthorizedOperation_Exception,
+                                                  InvalidArgument_Exception {
         String userId = docUserPair.getUserId();
 
-        if (userId != null || userId != "" || docUserPair.getDocumentId() != null || docUserPair.getDocumentId() != "") {
+        if (docUserPair == null || userId == null || userId.isEmpty() || docUserPair.getDocumentId() == null
+                || docUserPair.getDocumentId().isEmpty())
+            throw new InvalidArgument_Exception("Argument is invalid", new InvalidArgument());
 
+        else {
             MessageContext smc = webServiceContext.getMessageContext();
             String ticketClient = (String) smc.get(SecurityHandler.CLIENT);
-
             if (!ticketClient.equals(userId)) {
 
                 UnauthorizedOperation fault = new UnauthorizedOperation();
@@ -60,7 +66,7 @@ public class StoreImpl implements SDStore {
                 throw new UnauthorizedOperation_Exception("The client name in the ticket doesn't match the request", fault);
             }
 
-            System.out.println("Creating document \""+docUserPair.getDocumentId()+"\" for "+userId);
+            System.out.println(serviceName + ": Creating document \"" + docUserPair.getDocumentId() + "\" for " + userId);
             DocumentRepository rep = userRepositories.get(docUserPair.getUserId());
 
             if (rep == null) {
@@ -70,7 +76,6 @@ public class StoreImpl implements SDStore {
 
             if (rep.addNewDocument(docUserPair.getDocumentId()) == false) {
                 DocAlreadyExists faultInfo = new DocAlreadyExists();
-                // fi.setMessage("Document already exists");
                 faultInfo.setDocId(docUserPair.getDocumentId());
                 throw new DocAlreadyExists_Exception("Document already exists", faultInfo);
             }
@@ -81,12 +86,16 @@ public class StoreImpl implements SDStore {
      * From WSDL: <!-- Lists the document ids of the user's repository. Faults:
      * user does not exist -->
      */
-    public List<String> listDocs(String userId) throws UserDoesNotExist_Exception, UnauthorizedOperation_Exception {
+    public List<String> listDocs(String userId) throws UserDoesNotExist_Exception, UnauthorizedOperation_Exception,
+                                               InvalidArgument_Exception {
 
-        if (userId == null || userId.equalsIgnoreCase("") || userRepositories.get(userId) == null) {
+        if (userId == null || userId.isEmpty())
+            throw new InvalidArgument_Exception("Argument is invalid", new InvalidArgument());
+
+        else if (userRepositories.get(userId) == null) {
             UserDoesNotExist faultInfo = new UserDoesNotExist();
             faultInfo.setUserId(userId);
-            // fi.setMessage("User does not exist");
+            System.out.println(serviceName+": No documents stored for "+userId);
             throw new UserDoesNotExist_Exception("User does not exist **", faultInfo);
         }
 
@@ -94,15 +103,16 @@ public class StoreImpl implements SDStore {
         String ticketClient = (String) smc.get(SecurityHandler.CLIENT);
 
         if (!ticketClient.equals(userId)) {
-
             UnauthorizedOperation fault = new UnauthorizedOperation();
             fault.setUserId(userId);
             throw new UnauthorizedOperation_Exception("The client name in the ticket doesn't match the request", fault);
         }
-        
-        System.out.println("Listing "+userId+"'s documents");
+
+        System.out.println(serviceName+": Listing " + userId + "'s documents");
         DocumentRepository rep = userRepositories.get(userId);
+        System.out.println(rep.listDocs(userId));
         return rep.listDocs(userId);
+        
     }
 
     /*
@@ -126,7 +136,7 @@ public class StoreImpl implements SDStore {
     }
 
     // for testing
-    static void reset() {
+    void reset() {
         userRepositories.clear();
         // as specified in:
         // http://disciplinas.tecnico.ulisboa.pt/leic-sod/2014-2015/labs/proj/test.html

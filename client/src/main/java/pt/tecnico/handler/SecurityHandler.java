@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -44,6 +45,7 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import pt.tecnico.ClientMain;
 import pt.tecnico.CryptoHelper;
 
 /**
@@ -85,11 +87,13 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
                 }
             }
         }
+
         return true;
     }
 
     private void addDigest() throws SOAPException, NoSuchAlgorithmException {
-        System.out.printf("Adding digest...\n");
+        if (ClientMain.HANDLER_PRINT)
+            System.out.printf("Adding digest...\n");
         SOAPEnvelope se = getEnvelope();
         SOAPHeader sh = se.getHeader();
 
@@ -113,7 +117,8 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
     private void addTicket() throws SOAPException, NoSuchAlgorithmException {
-        System.out.printf("Adding ticket... ");
+        if (ClientMain.HANDLER_PRINT)
+            System.out.printf("Adding ticket... ");
 
         // get token from response SOAP header
         SOAPEnvelope se = getEnvelope();
@@ -126,14 +131,15 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
         Name name = se.createName(TICKET_HEADER, "e", NAMESPACE);
         SOAPHeaderElement element = sh.addHeaderElement(name);
 
-        String newValue = (String) smc.get(TICKET); //+ "," + TOKEN;
+        String newValue = (String) smc.get(TICKET);
         element.addTextNode(newValue);
     }
 
     private void addAuthenticator() throws SOAPException, ParserConfigurationException, InvalidKeyException, NoSuchAlgorithmException,
                                    NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException,
                                    InvalidAlgorithmParameterException, TransformerFactoryConfigurationError, TransformerException {
-        System.out.printf("Adding authenticator... ");
+        if (ClientMain.HANDLER_PRINT)
+            System.out.printf("Adding authenticator... ");
 
         SOAPEnvelope se = getEnvelope();
         SOAPHeader sh = se.getHeader();
@@ -189,7 +195,6 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
         SOAPMessage msg = smc.getMessage();
         SOAPPart sp = msg.getSOAPPart();
         SOAPEnvelope se = sp.getEnvelope();
-        SOAPHeader sh = se.getHeader();
 
         return se;
     }

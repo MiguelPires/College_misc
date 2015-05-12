@@ -7,7 +7,7 @@ public class TestControl {
 
     public void reset() {
         System.out.println("Resetting data for tests...");
-        StoreImpl.reset();
+      //  StoreImpl.reset();
     }
 
     public void terminate() {

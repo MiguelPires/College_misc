@@ -64,13 +64,6 @@ String url = "http://localhost:8082/store-ws/endpoint";
     	new UDDINaming(newuddiURL);
     }
     
-    //Connect to uddi while uddi server is offline
-    @Test(expected=JAXRException.class)
-    public void connectUDDIOffline() throws JAXRException{
-    	UDDINaming uddi = new UDDINaming(uddiURL);
-    	uddi.bind(name, url);
-    }
-    
     //Tests if Endpoint object is creating and publishing properly
     @Test
     public void testEndpoint(){

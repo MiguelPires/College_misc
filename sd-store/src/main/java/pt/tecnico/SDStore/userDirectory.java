@@ -56,7 +56,8 @@ public class userDirectory {
 
 		for(document doc: storedDocs)
 			if(doc.getId().equals(docId)){
-				if(!doc.getTag().isGreater(new tag(Integer.parseInt(tag[0]), Integer.parseInt(tag[1])))){ // tests if tag is greater than old tag, and only updates if soo
+				tag newTag = new tag(Integer.parseInt(tag[0]), Integer.parseInt(tag[1]));
+				if(newTag.isGreater(doc.getTag())){ // tests if tag is greater than old tag, and only updates if soo
 					doc.setContent(content); //updateDoc(doc, content);
 					doc.setTagID(Integer.parseInt(tag[1]));
 					doc.setTagNumber(Integer.parseInt(tag[0]));

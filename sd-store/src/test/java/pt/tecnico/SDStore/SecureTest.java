@@ -1,8 +1,10 @@
 package pt.tecnico.SDStore;
 
 import org.junit.*;
+
 import static org.junit.Assert.*;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import pt.ulisboa.tecnico.sdis.store.ws.*;
@@ -19,14 +21,12 @@ public class SecureTest {
      private static final String NOTEXISTALGORITHM = "SDist";
      private static final String EXISTALGORITHM = "AES";
 
-     private static final byte[] CONTENT = new byte[1];
-     private static final byte[] HACKEDCONTENT_SAMELENGTH = new byte[1];
-     private static final byte[] HACKEDCONTENT_DIFLENGTH = new byte[5];
+     private static final byte[] CONTENT = "HELLO".getBytes();
      
      private static DocUserPair pair;
 
      private static SDStoreImpl Store;
-
+     private static SecureSDStore secureStore;
         
      @Before
      public void setup() throws DocAlreadyExists_Exception {
@@ -34,13 +34,9 @@ public class SecureTest {
     	pair.setUserId(USER);
         pair.setDocumentId(DOC1USER);
         
-        Arrays.fill(CONTENT, (byte) 1);
-        Arrays.fill(HACKEDCONTENT_SAMELENGTH, (byte) 2);
-        Arrays.fill(HACKEDCONTENT_DIFLENGTH, (byte) 0);
-        
         Store = new SDStoreImpl();
         
-        SecureSDStore secureStore = null;
+        secureStore = null;
               
         try {          
             secureStore = new SecureSDStore(Store);
@@ -59,39 +55,39 @@ public class SecureTest {
     @Test
     public void serverGenerateKey() throws Exception {
      
-        secureStore.generateKey(EXISTALGO);
+        assertNotNull(secureStore.generateKey(EXISTALGORITHM));
     }
 
     //FAIL: Generate key with nonexistent algorithm
-    @Test(expected = NoSuchAlgorithmException)
+    @Test(expected = NoSuchAlgorithmException.class)
     public void serverFailGenerateKey() throws Exception {
      
-        secureStore.generateKey(NOEXISTALGO);
+        secureStore.generateKey(NOTEXISTALGORITHM);
     }
 
-    //SUCCESS: Test if server encripts properly a given content
+    //SUCCESS: Test if server encrypts properly a given content
     @Test
     public void serverCipher() throws Exception {
 
     	byte[] cipheredContent = secureStore.cipher(pair.getDocumentId(), CONTENT);
+    	assertNotNull(cipheredContent);
     }
 
-    //SUCCESS: Test if server decripts properly a given content
+    //SUCCESS: Test if server encrypts/decrypts properly a given content
     @Test
-    public void serverDecipher() throws Exception {
+    public void MACDecipher() throws Exception {
 
         byte[] cipheredContent = secureStore.cipher(pair.getDocumentId(), CONTENT);
         byte[] decipheredContent = secureStore.decipher(pair.getDocumentId(), cipheredContent);
-        assertEquals(CONTENT, decipheredContent); 
+        assertTrue(new String(CONTENT).equals(new String(decipheredContent))); 
     } 
-
-    //SUCCESS: Store content and load it, checking if it's the same after encriptation/decriptation
+    
     @Test
-    public void storeAndLoad() throws Exception {
-     
-        secureStore.store(pair, CONTENT);
-        byte[] doc = secureStore.load(pair);
-        assertEquals(doc, CONTENT);
+    public void simpleDecipher() throws Exception {
+
+        byte[] cipheredContent = secureStore.cipherMessage("Encrypt", CONTENT);
+        byte[] decipheredContent = secureStore.cipherMessage("Decrypt", cipheredContent);
+        assertTrue(new String(CONTENT).equals(new String(decipheredContent))); 
     } 
 
 }

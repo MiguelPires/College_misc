@@ -24,32 +24,6 @@
     <build>
         <plugins>
             <plugin>
-        <groupId>org.jvnet.jax-ws-commons</groupId>
-        <artifactId>jaxws-maven-plugin</artifactId>
-        <version>2.3</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>wsimport</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <!-- https://jax-ws-commons.java.net/jaxws-maven-plugin/wsimport-mojo.html -->
-         <!-- <wsdlUrls>
-            <wsdlUrl>${wsdl.url}</wsdlUrl>
-          </wsdlUrls> -->
-            <wsdlDirectory>${basedir}/src/main/resources</wsdlDirectory>
-        </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>com.sun.xml.ws</groupId>
-            <artifactId>jaxws-tools</artifactId>
-            <version>2.2.10</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.1</version>
@@ -143,11 +117,11 @@
             <artifactId>jdom2</artifactId>
             <version>${version.org.jdom.jdom}</version>
         </dependency>
-        <!--<dependency>
+        <dependency>
         	<groupId>pt.tecnico</groupId>
         	<artifactId>cli</artifactId>
         	<version>0.0.1-SNAPSHOT</version>
-       	</dependency>-->
+       	</dependency>
         <dependency>
             <groupId>pt.tecnico</groupId>
             <artifactId>SDStore-cli</artifactId>

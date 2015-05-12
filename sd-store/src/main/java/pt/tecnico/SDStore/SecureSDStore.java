@@ -2,14 +2,18 @@ package pt.tecnico.SDStore;
 
 import java.util.*;
 import java.security.*;
+
 import javax.crypto.*;
 import javax.annotation.Resource;
 import javax.jws.*;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
+
 import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
 import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+
 import java.util.Base64;
+
 import pt.ulisboa.tecnico.sdis.store.ws.*; // classes generated from WSDL
 
 @WebService(
@@ -95,12 +99,7 @@ public class SecureSDStore implements SDStore {
         	// store the digest to compare later
 	       	digestMap.put(docId, digest);
 						
-			// get a AES cipher object
-			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-						
-			// encrypt the message using the key
-			cipher.init(Cipher.ENCRYPT_MODE, key);
-			byte[] cipherMessage = cipher.doFinal(message);
+			byte[] cipherMessage = cipherMessage("Encrypt", message);
 						
         	return cipherMessage;
 			 } catch(Exception e){
@@ -114,13 +113,7 @@ public class SecureSDStore implements SDStore {
 		try{		
 		// Decrypt and verify MAC
 		
-			// get a AES cipher object
-			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-						
-			// decrypt the message using the same key
- 			cipher.init(Cipher.DECRYPT_MODE, key);
-			byte[] decipheredMessage = cipher.doFinal(message); 
-			 
+			byte[] decipheredMessage = cipherMessage("Decrypt", message); 
 			       
 			// convert message and key to string and concatenate both
 	       	String convertedMessage = printBase64Binary(decipheredMessage);
@@ -156,5 +149,18 @@ public class SecureSDStore implements SDStore {
 			 	return null;
 				}
 			}	
+	
+	public byte[] cipherMessage(String mode, byte[] message) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException{
+		// get a AES cipher object
+		Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+								
+		// decrypt the message using the same key
+		if(mode.equals("Decrypt"))
+			cipher.init(Cipher.DECRYPT_MODE, key);
+		else
+			cipher.init(Cipher.ENCRYPT_MODE, key);
+		
+		return cipher.doFinal(message); 
+	}
 			
 }

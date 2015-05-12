@@ -22,7 +22,7 @@ import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
 public class FrontEndSDStore {
 
-	private List<SDStore> repManager = new ArrayList<SDStore>();
+	public List<SDStore> repManager = new ArrayList<SDStore>();
 	private int WT=0;
 	private int RT=0;
 	private int IDClient;

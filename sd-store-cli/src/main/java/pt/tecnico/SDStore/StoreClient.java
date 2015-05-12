@@ -8,7 +8,7 @@ import pt.ulisboa.tecnico.sdis.store.ws.*;
 
 public class StoreClient {
 
-    private FrontEndSDStore front;
+    public FrontEndSDStore front;
 
     public StoreClient(String uddiURL, String name, int id) throws JAXRException{
         front = new FrontEndSDStore(uddiURL, name, id);
@@ -22,15 +22,24 @@ public class StoreClient {
     	return front.listDocs(name);
     }
     
-    public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception {
-    	front.createDoc(docUserPair);
+    public void createDoc(String username, String docId) throws DocAlreadyExists_Exception {
+        DocUserPair pair = new DocUserPair();
+        pair.setUserId(username);
+        pair.setDocumentId(docId);
+    	front.createDoc(pair);
     }
     
-	public void store(DocUserPair docUserPair, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception {
-		front.store(docUserPair, contents);
+	public void store(String username, String docId, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception {
+        DocUserPair pair = new DocUserPair();
+        pair.setUserId(username);
+        pair.setDocumentId(docId);
+		front.store(pair, contents);
 	}
 	
-	public byte[] load(DocUserPair docUserPair) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
-		return front.load(docUserPair);
+	public byte[] load(String username, String docId) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
+        DocUserPair pair = new DocUserPair();
+        pair.setUserId(username);
+        pair.setDocumentId(docId);
+		return front.load(pair);
 	}
 }

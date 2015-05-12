@@ -23,9 +23,6 @@ public class Main {
         String uddiURL = args[0];
         String name = args[1];
         StoreClient client = new StoreClient(uddiURL, name, id++);
-        DocUserPair pair = new DocUserPair();
-        pair.setUserId("alice");
-        pair.setDocumentId("aaaaaaaaaa");
         System.out.println("Choose method");
         
         System.out.println("############## WELCOME ##############");
@@ -55,9 +52,11 @@ public class Main {
         	
         	if(command==2){
             	try {
+            		System.out.println("# Choose username");
+            		String user =scanner.next();
             		System.out.println("# Choose doc ID");
-            		pair.setDocumentId(scanner.next());
-    				client.createDoc(pair);
+            		String doc = scanner.next();
+    				client.createDoc(user, doc);
     				System.out.println("# Created");
     			} catch (DocAlreadyExists_Exception e) {
     				System.out.println("# Document already exists");
@@ -69,7 +68,11 @@ public class Main {
         			System.out.println("# Insert content to store"); 
         			scanner.nextLine();
         			String file = scanner.nextLine();
-        			client.store(pair, file.getBytes());
+        			System.out.println("# Choose username");
+            		String user =scanner.next();
+            		System.out.println("# Choose doc ID");
+            		String doc = scanner.next();
+        			client.store(user, doc, file.getBytes());
         			System.out.println("# File stored");
         		} catch (CapacityExceeded_Exception e1) {
         			System.out.println("# Capacity exceeded - should never happen");
@@ -82,7 +85,11 @@ public class Main {
          
         	if(command == 4){
         		try {
-        			System.out.println(new String(client.load(pair)));
+        			System.out.println("# Choose username");
+            		String user =scanner.next();
+            		System.out.println("# Choose doc ID");
+            		String doc = scanner.next();
+        			System.out.println(new String(client.load(user, doc)));
         		} catch (UserDoesNotExist_Exception e) {
             		System.out.println("# User does not exist");
         		} catch (DocDoesNotExist_Exception e) {
@@ -90,12 +97,6 @@ public class Main {
         		}
         	}
         	
-        	if(command==5){
-        		System.out.println("# Choose username");
-        		pair.setUserId(scanner.next());
-        		System.out.println("# Choose doc ID");
-        		pair.setDocumentId(scanner.next());
-        	}
         }
         scanner.close();
         System.out.println("# bye-bye");

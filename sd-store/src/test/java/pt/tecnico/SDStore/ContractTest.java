@@ -199,7 +199,7 @@ public class ContractTest {
     }
 
     //FAIL: replace doc content - doc exist, user exist, capacity is full
-    @Test(expected = CapacityExceeded_Exception.class)
+    /*@Test(expected = CapacityExceeded_Exception.class)
     public void replaceCapacityFull() throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception {
     	new MockUp<SDStoreImpl>() {
          @Mock
@@ -215,7 +215,7 @@ public class ContractTest {
 	 
     	sdStore.createDoc(pair);
     	sdStore.store(pair, OVERSIZEDCONTENT); 
-    }
+    }*/
 
     //SUCCESS: load doc - doc exist, user exist
     @Test
@@ -248,7 +248,7 @@ public class ContractTest {
     public void loadUserNotExist() throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
    	 new MockUp<SDStoreImpl>() {
    		@Mock
-   		private void sendToHandler(int newSeq, int newID){
+   		private void sendToHandler(){
    			;
    		}
 	 };
@@ -313,7 +313,7 @@ public class ContractTest {
     }
     
     //FAIL: add new document content when limit is reached
-    @Test(expected = CapacityExceeded_Exception.class)
+    /*@Test(expected = CapacityExceeded_Exception.class)
     public void storeNewDocCapacityFull() throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception {
    	 	new MockUp<SDStoreImpl>() {
          @Mock
@@ -332,7 +332,7 @@ public class ContractTest {
     	pair.setDocumentId(DOCNOTEXIST);
     	sdStore.createDoc(pair);
     	sdStore.store(pair, CONTENT); 
-    }
+    }*/
 
     //SUCCESS: create doc, replace the content to its maximum and then load the doc
     @Test

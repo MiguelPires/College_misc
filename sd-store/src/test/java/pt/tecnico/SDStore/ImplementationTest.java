@@ -73,6 +73,34 @@ public class ImplementationTest {
          assertEquals((int)directory.getCapacity().getCurrentSize(), FULLCONTENT.length);
      }*/
     
+     //Tests if tags compare properly
+     @Test
+     public void compareTags() {
+      tag tag1 = new tag();
+      tag tag2 = new tag(1,1);
+      tag tag3 = new tag(0,1);
+      
+      assertTrue(tag2.isGreater(tag1));
+      assertTrue(tag3.isGreater(tag1));
+      assertFalse(tag1.isGreater(tag3));
+     }
      
+     //Tests if storing docs only store if tag is greater
+     @Test
+     public void storeTestTags() throws DocDoesNotExist_Exception, CapacityExceeded_Exception, DocAlreadyExists_Exception {
+        
+		directory.addDoc(DOCID);
+         byte[] content = "CONTENT".getBytes();
+         byte[] newContent = "NEWCONTENT".getBytes();
+         String[] tag = {"1", "1"};
+         
+		 directory.storeContent(DOCID, content, tag);
+		
+		assertEquals(directory.loadDoc(DOCID).getContent(), content);
+         
+ 		directory.storeContent(DOCID, newContent, tag);
+         
+ 		assertEquals(directory.loadDoc(DOCID).getContent(), content);
+        }
 
 }

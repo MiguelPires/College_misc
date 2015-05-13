@@ -1,4 +1,4 @@
-# Bubble Docs SD-STORE
+﻿# Bubble Docs SD-STORE
 # Projecto de Sistemas DistribuÃ­dos #
 
 ## Segunda entrega ##
@@ -66,6 +66,9 @@ JUDDI:
 [1] Executar **cliente de testes** ...
 
 > cd T_03_59_67-project/sd-store
+> mvn test
+> cd ..
+> cd sd-store-cli
 > mvn test
 
 -------------------------------------------------------------------------------

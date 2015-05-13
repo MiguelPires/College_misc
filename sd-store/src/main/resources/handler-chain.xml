@@ -5,5 +5,8 @@
         <handler>
             <handler-class>pt.tecnico.SDStore.handler.StoreServerHandler</handler-class>
         </handler>
+	<handler>
+            <handler-class>pt.tecnico.SDStore.handler.SecurityHandler</handler-class>
+        </handler>
     </handler-chain>
 </handler-chains>

@@ -8,12 +8,16 @@ import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 
 public class GetSpreadSheetContent extends CheckLogin {
 
-	private User user;
+	private String username;
     private int docId;
     private String[][] result;
 
     public GetSpreadSheetContent(int id, String token) {
-        this.user = getUserByToken(token);
+    	GetUsername4Token service = new GetUsername4Token(token);
+    	service.execute(); 
+    	
+    	this.userToken = token;
+    	this.username = service.getUsername();
         this.docId = id;
     }
     
@@ -22,9 +26,8 @@ public class GetSpreadSheetContent extends CheckLogin {
     	super.dispatch();
     	
     	Spreadsheet ss = getSpreadsheet(docId);
-
-        if (ss.getCreator().equals(user) || ss.isWriter(user.getUsername()) || ss.isReader(user.getUsername())) {
-            result = ss.getSpreadsheetContent();
+        if (ss.getCreator().getUsername().equals(username) || ss.isWriter(username) || ss.isReader(username)) {
+        	result = ss.getSpreadsheetContent();
         } else
             throw new UnauthorizedOperationException();
     }

@@ -33,16 +33,8 @@ public class StoreClient {
 		DocUserPair pair = new DocUserPair();
         pair.setUserId(username);
         pair.setDocumentId(docId);
-        try{
-        	front.store(pair, contents);
-        } catch (DocDoesNotExist_Exception e){
-        	try {
-				createDoc(username, docId);
-			} catch (DocAlreadyExists_Exception e1) {
-				e1.printStackTrace();
-			}
-        	front.store(pair, contents);
-        }
+        front.store(pair, contents);
+        
 	}
 	
 	public byte[] load(String username, String docId) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {

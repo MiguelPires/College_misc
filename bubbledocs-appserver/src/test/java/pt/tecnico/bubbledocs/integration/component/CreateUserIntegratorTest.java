@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import pt.tecnico.bubbledocs.domain.User;
 import pt.tecnico.bubbledocs.exception.BubbleDocsException;
-import pt.tecnico.bubbledocs.exception.DuplicateEmailException;
 import pt.tecnico.bubbledocs.exception.DuplicateUsernameException;
 import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
 import pt.tecnico.bubbledocs.exception.InvalidEmailException;
@@ -43,8 +42,7 @@ public class CreateUserIntegratorTest extends BubbleDocsServiceTest {
 
     @Test
     public void success() {
-        CreateUserIntegrator service = new CreateUserIntegrator(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
-            "José Ferreira");
+        CreateUserIntegrator service = new CreateUserIntegrator(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt", "José Ferreira");
         service.execute();
 
         User user = getUserFromUsername(USERNAME_DOES_NOT_EXIST);
@@ -102,8 +100,7 @@ public class CreateUserIntegratorTest extends BubbleDocsServiceTest {
             }
         };
 
-        CreateUserIntegrator service = new CreateUserIntegrator(root, "josejosejose", "jose@tecnico.pt",
-                "José Ferreira");
+        CreateUserIntegrator service = new CreateUserIntegrator(root, "josejosejose", "jose@tecnico.pt", "José Ferreira");
         service.execute();
     }
 
@@ -116,66 +113,54 @@ public class CreateUserIntegratorTest extends BubbleDocsServiceTest {
             }
         };
 
-        CreateUserIntegrator service = new CreateUserIntegrator(root, USERNAME_DOES_NOT_EXIST, "@tecnico.pt",
-                "José Ferreira");
+        CreateUserIntegrator service = new CreateUserIntegrator(root, USERNAME_DOES_NOT_EXIST, "@tecnico.pt", "José Ferreira");
         service.execute();
     }
 
     @Test(expected = UnauthorizedOperationException.class)
     public void unauthorizedUserCreation() {
-        CreateUserIntegrator service = new CreateUserIntegrator(ars, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
-                "José Ferreira");
+        CreateUserIntegrator service = new CreateUserIntegrator(ars, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt", "José Ferreira");
         service.execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
     public void unauthorizedUserCreationNotInSession() {
         removeUserFromSession(ars);
-        CreateUserIntegrator service = new CreateUserIntegrator(ars, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
-                "José Ferreira");
+        CreateUserIntegrator service = new CreateUserIntegrator(ars, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt", "José Ferreira");
         service.execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
     public void accessUsernameNotExist() {
         removeUserFromSession(root);
-        CreateUserIntegrator service = new CreateUserIntegrator(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
-                "José Ferreira");
+        CreateUserIntegrator service = new CreateUserIntegrator(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt", "José Ferreira");
         service.execute();
     }
 
     @Test(expected = UserNotInSessionException.class)
     public void unauthorizedUserCreationDoesNotExist() {
-        CreateUserIntegrator service = new CreateUserIntegrator("ola2", USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
-                "José Ferreira");
+        CreateUserIntegrator service = new CreateUserIntegrator("ola2", USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt", "José Ferreira");
         service.execute();
     }
 
     @Test
     public void remoteServiceFails() {
-        CreateUserIntegrator service = new CreateUserIntegrator(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt",
-                "José Ferreira");
-        
+        CreateUserIntegrator service = new CreateUserIntegrator(root, USERNAME_DOES_NOT_EXIST, "jose@tecnico.pt", "José Ferreira");
+
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void createUser(String username, String email) throws InvalidUsernameException,
-                                                         DuplicateUsernameException,
-                                                         DuplicateEmailException,
-                                                         InvalidEmailException,
-                                                         RemoteInvocationException {
+            public void createUser(String username, String email) {
 
                 throw new RemoteInvocationException();
             }
         };
-        
+
         try {
             service.execute();
 
-        } catch (UnavailableServiceException e){
+        } catch (UnavailableServiceException e) {
             boolean wasNotCreated = getUserFromUsername(USERNAME_DOES_NOT_EXIST) == null;
             assertTrue(wasNotCreated);
         }
-        
-        
     }
 }

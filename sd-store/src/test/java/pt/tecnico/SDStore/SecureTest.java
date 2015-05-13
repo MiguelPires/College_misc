@@ -34,12 +34,12 @@ public class SecureTest {
     	pair.setUserId(USER);
         pair.setDocumentId(DOC1USER);
         
-        Store = new SDStoreImpl();
+        Store = new SDStoreImpl("SD");
         
         secureStore = null;
               
         try {          
-            secureStore = new SecureSDStore(Store);
+            secureStore = new SecureSDStore(Store, "KEY");
             } catch(NoSuchAlgorithmException e) {
             System.out.printf("Caught exception when generating key", e);
         }      

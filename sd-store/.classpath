@@ -33,5 +33,14 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/Miguel/.m2/repository/pt/tecnico/UDDI/1.0-SNAPSHOT/UDDI-1.0-SNAPSHOT.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="maven.groupId" value="pt.tecnico"/>
+			<attribute name="maven.artifactId" value="UDDI"/>
+			<attribute name="maven.version" value="1.0-SNAPSHOT"/>
+			<attribute name="maven.scope" value="compile"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

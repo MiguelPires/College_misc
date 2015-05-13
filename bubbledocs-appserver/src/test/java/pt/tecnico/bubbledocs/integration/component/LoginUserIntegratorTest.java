@@ -16,7 +16,6 @@ import pt.tecnico.bubbledocs.exception.BubbleDocsException;
 import pt.tecnico.bubbledocs.exception.LoginBubbleDocsException;
 import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
-import pt.tecnico.bubbledocs.exception.UnknownBubbleDocsUserException;
 import pt.tecnico.bubbledocs.exception.WrongPasswordException;
 import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
 import pt.tecnico.bubbledocs.service.integration.LoginUserIntegrator;
@@ -30,7 +29,7 @@ public class LoginUserIntegratorTest extends BubbleDocsServiceTest {
 
     @Override
     public void populate4Test() throws BubbleDocsException {
-        createUser(USERNAME, EMAIL, "Alice");
+        //createUser(USERNAME, EMAIL, "Alice");
     }
 
     // returns the time of the last access for the user with token userToken.
@@ -51,15 +50,14 @@ public class LoginUserIntegratorTest extends BubbleDocsServiceTest {
         assertEquals(USERNAME, user.getUsername());
         assertEquals(EMAIL, user.getEmail());
 
-        int difference = Seconds.secondsBetween(getLastAccessTimeInSession(token), currentTime)
-                .getSeconds();
+        int difference = Seconds.secondsBetween(getLastAccessTimeInSession(token), currentTime).getSeconds();
         assertTrue("Access time in session not correctly set", difference >= 0);
         assertTrue("diference in seconds greater than expected", difference < 2);
     }
 
     @Test
     public void successLoginTwice() {
-    	LoginUserIntegrator service = new LoginUserIntegrator(USERNAME, PASSWORD);
+        LoginUserIntegrator service = new LoginUserIntegrator(USERNAME, PASSWORD);
         service.execute();
         String token1 = service.getUserToken();
 
@@ -76,7 +74,7 @@ public class LoginUserIntegratorTest extends BubbleDocsServiceTest {
 
     @Test
     public void successNoServiceWithLocalCopy() {
-    	LoginUserIntegrator service = new LoginUserIntegrator(USERNAME, PASSWORD);
+        LoginUserIntegrator service = new LoginUserIntegrator(USERNAME, PASSWORD);
         service.execute();
 
         String token = service.getUserToken();
@@ -86,9 +84,7 @@ public class LoginUserIntegratorTest extends BubbleDocsServiceTest {
 
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void loginUser(String username, String password)
-                                                                   throws LoginBubbleDocsException,
-                                                                   RemoteInvocationException {
+            public void loginUser(String username, String password) {
                 throw new RemoteInvocationException("Service unavailable");
             }
         };
@@ -100,15 +96,15 @@ public class LoginUserIntegratorTest extends BubbleDocsServiceTest {
         assertEquals(EMAIL, user.getEmail());
     }
 
-    @Test(expected = UnknownBubbleDocsUserException.class)
+    @Test(expected = LoginBubbleDocsException.class)
     public void loginUnknownUser() {
-    	LoginUserIntegrator service = new LoginUserIntegrator("jp2", PASSWORD);
+        LoginUserIntegrator service = new LoginUserIntegrator("jp2", PASSWORD);
         service.execute();
     }
 
-    @Test(expected = WrongPasswordException.class)
+    @Test(expected = LoginBubbleDocsException.class)
     public void loginUserWrongPassword() {
-    	LoginUserIntegrator service = new LoginUserIntegrator(USERNAME, "jp2");
+        LoginUserIntegrator service = new LoginUserIntegrator(USERNAME, "jp2");
         service.execute();
     }
 
@@ -117,31 +113,27 @@ public class LoginUserIntegratorTest extends BubbleDocsServiceTest {
     public void NoServiceAndNoLocalCopy() {
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void loginUser(String username, String password)
-                                                                   throws LoginBubbleDocsException,
-                                                                   RemoteInvocationException {
+            public void loginUser(String username, String password) {
                 throw new RemoteInvocationException("Service unavailable");
             }
         };
         LoginUserIntegrator service = new LoginUserIntegrator(USERNAME, PASSWORD);
         service.execute();
     }
-    
+
     //SERVICE UNAVAILABLE, LOCAL COPY, WRONG PASSWORD
     @Test(expected = WrongPasswordException.class)
     public void NoServiceWrongPassword() {
         LoginUserIntegrator service = new LoginUserIntegrator(USERNAME, PASSWORD);
         service.execute();
-        
+
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void loginUser(String username, String password)
-                                                                   throws LoginBubbleDocsException,
-                                                                   RemoteInvocationException {
+            public void loginUser(String username, String password) {
                 throw new RemoteInvocationException("Service unavailable");
             }
         };
-        
+
         service = new LoginUserIntegrator(USERNAME, "olaola");
         service.execute();
     }

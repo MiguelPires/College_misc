@@ -1,6 +1,6 @@
 package pt.tecnico.sdid;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
@@ -36,7 +36,7 @@ public class RequestAuthenticationTest extends SDIdServiceTest {
         // create root node 
         Element request = doc.createElement("Request");
         doc.appendChild(request);
-        
+
         // append children nodes
         Element server = doc.createElement("Server");
         request.appendChild(server);
@@ -45,21 +45,19 @@ public class RequestAuthenticationTest extends SDIdServiceTest {
 
         // append text to children nodes
         server.appendChild(doc.createTextNode("SD-STORE"));
-        
+
         Date d = new Date();
         nonce.appendChild(doc.createTextNode(d.toString()));
-        
+
         // write to byte array
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         Transformer transformer = TransformerFactory.newInstance().newTransformer();
         transformer.transform(new DOMSource(doc), new StreamResult(bos));
         byte[] docBytes = bos.toByteArray();
-        
-        result = cServer.requestAuthentication(USERNAME, docBytes);
-        byte[] byteTrue = new byte[1];
-        byteTrue[0] = (byte) 1;
 
-        assertEquals(byteTrue[0], result[0]);
+        result = cServer.requestAuthentication(USERNAME, docBytes);
+        boolean valid = (result != null);
+        assertTrue(valid);
     }
 
     @Test(expected = AuthReqFailed_Exception.class)

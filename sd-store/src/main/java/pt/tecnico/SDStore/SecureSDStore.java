@@ -29,17 +29,19 @@ public class SecureSDStore implements SDStore {
 
 	private SDStoreImpl server;
 	private Key key;
+	private String serverKey;
 	@Resource
 	private WebServiceContext webServiceContext;
 	private Map<String, byte[]> digestMap = new HashMap<String, byte[]>();
 	
-	public SecureSDStore(SDStoreImpl server) throws NoSuchAlgorithmException {
+	public SecureSDStore(SDStoreImpl server, String key) throws NoSuchAlgorithmException {
 		this.server = server;
 		this.key = generateKey("AES");
+		this.serverKey=key;
 	}
 	
      //list user stored documents; if user does not exists, throws exception
-    public List<String> listDocs(String name) throws UserDoesNotExist_Exception {
+    public List<String> listDocs(String name) throws UserDoesNotExist_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
     	server.setcontext(webServiceContext);
     	List<String> result = server.listDocs(name);
     	webServiceContext = server.getcontext();
@@ -48,7 +50,7 @@ public class SecureSDStore implements SDStore {
     
 
     //creates document for user; if user does not exists, creates user; if document already exists, throws exception
-	public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception {
+	public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
 		server.setcontext(webServiceContext);
 		server.createDoc(docUserPair);	
 		webServiceContext = server.getcontext();

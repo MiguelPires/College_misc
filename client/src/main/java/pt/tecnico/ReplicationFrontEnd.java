@@ -19,6 +19,7 @@ import javax.xml.ws.Response;
 import pt.tecnico.handler.SecurityHandler;
 import pt.ulisboa.tecnico.sdis.store.ws.CapacityExceeded_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.CreateDocResponse;
+import pt.ulisboa.tecnico.sdis.store.ws.DocAlreadyExists;
 import pt.ulisboa.tecnico.sdis.store.ws.DocAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocDoesNotExist_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocUserPair;
@@ -27,6 +28,7 @@ import pt.ulisboa.tecnico.sdis.store.ws.InvalidArgument_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.ListDocsResponse;
 import pt.ulisboa.tecnico.sdis.store.ws.SDStore;
 import pt.ulisboa.tecnico.sdis.store.ws.SDStore_Service;
+import pt.ulisboa.tecnico.sdis.store.ws.UnauthorizedOperation;
 import pt.ulisboa.tecnico.sdis.store.ws.UnauthorizedOperation_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.UserDoesNotExist_Exception;
 import uddi.UDDINaming;
@@ -34,6 +36,15 @@ import uddi.UDDINaming;
 public class ReplicationFrontEnd {
 
     private static final int REPLICAS_NUMBER = 3;
+    
+    /* The following equations must ALWAYS be true:
+    *
+    *   RT + WT > REPLICAS_NUMBER
+    *   2 * WT > REPLICAS_NUMBER
+    *
+    */
+    
+    private static final int RT = REPLICAS_NUMBER/2 + 1, WT = REPLICAS_NUMBER/2 + 1;
 
     private SDStore[] storeServer;
     private Map<String, Object>[] requestContext;
@@ -42,6 +53,10 @@ public class ReplicationFrontEnd {
     private List<List<String>> docLists;
     private int acks;
     private boolean finished;
+    private DocAlreadyExists_Exception alreadyExistsException;
+    private UnauthorizedOperation_Exception unauthorizedException;
+    private DocUserPair docPair;
+    private UnauthorizedOperation unauthorizedOperationFault;
 
     public ReplicationFrontEnd(Client gen) throws JAXRException {
         genericClient = gen;
@@ -84,21 +99,56 @@ public class ReplicationFrontEnd {
         return genericClient;
     }
 
+    private boolean reachedWT(){
+        return acks >= WT;
+    }
+    
+    private boolean reachedRT(){
+        return acks >= RT;
+    }
+    
     public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception, UnauthorizedOperation_Exception {
         acks = 0;
+        alreadyExistsException = null;
+        unauthorizedException = null;
+        docPair = docUserPair;
+        
         for (int i = 0; i < REPLICAS_NUMBER; i++) {
             if ((ClientMain.REPL_DEMO && i <= REPLICAS_NUMBER / 2) || !ClientMain.REPL_DEMO) {
+                requestContext[i].put(SecurityHandler.TYPE, "SDID");
+
                 storeServer[i].createDocAsync(docUserPair, new AsyncHandler<CreateDocResponse>() {
                     public void handleResponse(Response<CreateDocResponse> response) {
                         System.out.println();
                         ++acks;
+                        try {
+                            response.get();
+                        } catch (ExecutionException e) {
+                            if (e.getCause().toString().contains("DocAlreadyExists")) {
+                                DocAlreadyExists fault = new DocAlreadyExists();
+                                fault.setDocId(docPair.getDocumentId());
+                                alreadyExistsException = new DocAlreadyExists_Exception("Document " + docPair.getDocumentId()
+                                        + " already exists", fault);
+                            } else if (e.getCause().toString().contains("UnauthorizedOperation")) {
+                                UnauthorizedOperation fault = new UnauthorizedOperation();
+                                fault.setUserId(docPair.getUserId());
+                                unauthorizedException = new UnauthorizedOperation_Exception("Unauthorized operation", fault);
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } 
                     }
                 });
             }
         }
         // wait until Q acks arrive 
-        while (acks < REPLICAS_NUMBER / 2 + 1) {
+        while (!reachedWT()) {
             try {
+                if (unauthorizedException != null)
+                    throw unauthorizedException;
+                else if (alreadyExistsException != null)
+                    throw alreadyExistsException;
+
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -130,12 +180,20 @@ public class ReplicationFrontEnd {
                             docLists.add(docList);
 
                             ++acks;
-                        } catch (ExecutionException e) {   // replica has no documents, append the endpoint number only
-                            String address = (String) response.getContext().get("javax.xml.ws.service.endpoint.address");
-                            String endpointNumber = address.substring(address.length() - 1, address.length());
-                            ArrayList<String> docList = new ArrayList<String>();
-                            docList.add(endpointNumber);
-                            docLists.add(docList);
+                        } catch(ExecutionException e) {
+                            if (e.getCause().toString().contains("UserDoesNotExist")) {
+                                // replica has no documents, append the endpoint number only
+
+                                String address = (String) response.getContext().get("javax.xml.ws.service.endpoint.address");
+                                String endpointNumber = address.substring(address.length() - 1, address.length());
+                                ArrayList<String> docList = new ArrayList<String>();
+                                docList.add(endpointNumber);
+                                docLists.add(docList);
+                            } else if (e.getCause().toString().contains("UnauthorizedOperation")) {
+                                UnauthorizedOperation fault = new UnauthorizedOperation();
+                                fault.setUserId(docPair.getUserId());
+                                unauthorizedException = new UnauthorizedOperation_Exception("Unauthorized operation", fault);
+                            }
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -145,19 +203,22 @@ public class ReplicationFrontEnd {
         }
 
         // wait until Q acks arrive 
-        while (acks < REPLICAS_NUMBER / 2 + 1) {
+        while (!reachedRT()) {
             try {
+                if (unauthorizedException != null)
+                    throw unauthorizedException;
+                
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        
-        
-  
+
+
+
         if (acks < REPLICAS_NUMBER) {
             System.out.print("Waiting for remaining responses");
-            
+
             // wait a second for the remaining replicas and assume the request were lost after that
             while (!finished) {
                 try {
@@ -168,12 +229,12 @@ public class ReplicationFrontEnd {
                 }
             }
         }
-        
+
         ArrayList<String> answers = new ArrayList<String>();
         for (List<String> docList : docLists) {
             answers.add(docList.get(docList.size() - 1));
         }
-        
+
         // check which replicas didn't respond to the request
         for (int i = 0; i < REPLICAS_NUMBER; ++i) {
             String num = (new Integer(i)).toString();
@@ -183,7 +244,7 @@ public class ReplicationFrontEnd {
                 docLists.add(missing);
             }
         }
-        
+
         // computes the superset of all the replica's documents
         Set<String> totalSet = new TreeSet<String>();
         for (List<String> docs : docLists) {
@@ -205,13 +266,14 @@ public class ReplicationFrontEnd {
         return retList;
     }
 
-    private void writeBack(Set<String> totalSet, String userId) throws UnauthorizedOperation_Exception, DocAlreadyExists_Exception, InvalidArgument_Exception {
-        ClientMain.REPL_DEMO = false;  // ends the replication demo
+    private void writeBack(Set<String> totalSet, String userId) throws UnauthorizedOperation_Exception, DocAlreadyExists_Exception,
+                                                               InvalidArgument_Exception {
+        ClientMain.REPL_DEMO = false; // ends the replication demo
 
         for (String doc : totalSet) {
             for (List<String> docs : docLists) {
 
-                List<String> docsOnly = docs.subList(0, docs.size()-1);
+                List<String> docsOnly = docs.subList(0, docs.size() - 1);
                 if (!docsOnly.contains(doc)) {
                     DocUserPair newDoc = new DocUserPair();
                     newDoc.setUserId(userId);
@@ -223,14 +285,15 @@ public class ReplicationFrontEnd {
 
                     String sessionKey = genericClient.sessionKeys.get(userId);
                     String ticket = genericClient.tickets.get(userId);
-                    
+
                     if (ticket == null || ticket == "" || sessionKey == "" || sessionKey == null)
                         throw new InvalidArgument_Exception("Write back failed", new InvalidArgument());
 
                     requestContext[replicaNumber].put(SecurityHandler.SESSION_KEY, sessionKey);
                     requestContext[replicaNumber].put(SecurityHandler.TICKET, ticket);
                     requestContext[replicaNumber].put(SecurityHandler.CLIENT, userId);
-                    
+                    requestContext[replicaNumber].put(SecurityHandler.TYPE, "SDID");
+
                     storeServer[replicaNumber].createDoc(newDoc);
                 }
 

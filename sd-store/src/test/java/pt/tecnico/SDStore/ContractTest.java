@@ -44,7 +44,7 @@ public class ContractTest {
     	pair = new DocUserPair();
     	pair.setUserId(USER);
         pair.setDocumentId(DOC1USER);
-        sdStore= new SDStoreImpl();
+        sdStore= new SDStoreImpl("SD");
      }
      
      @After
@@ -55,7 +55,7 @@ public class ContractTest {
      
      //SUCCESS: create doc - user exist
      @Test
-     public void createUserExist() throws DocAlreadyExists_Exception, CapacityExceeded_Exception {
+     public void createUserExist() throws DocAlreadyExists_Exception, CapacityExceeded_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
     	 new MockUp<SDStoreImpl>() {
              @Mock
              private void sendToHandler(){
@@ -73,7 +73,7 @@ public class ContractTest {
      
     //SUCCESS: list user docs - user exist
     @Test
-    public void listDocsSuccess() throws UserDoesNotExist_Exception, DocAlreadyExists_Exception {
+    public void listDocsSuccess() throws UserDoesNotExist_Exception, DocAlreadyExists_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
    	 new MockUp<SDStoreImpl>() {
          @Mock
          private void sendToHandler(){
@@ -94,14 +94,14 @@ public class ContractTest {
  
     //FAIL: list user docs - user not exist
     @Test(expected = UserDoesNotExist_Exception.class)
-    public void listUserNotExist() throws UserDoesNotExist_Exception {
+    public void listUserNotExist() throws UserDoesNotExist_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
         
         sdStore.listDocs(USERNOTEXIST);
     }
 
     //SUCCESS: create doc - user not exist
     @Test
-    public void createUserNotExist() throws DocAlreadyExists_Exception, CapacityExceeded_Exception {
+    public void createUserNotExist() throws DocAlreadyExists_Exception, CapacityExceeded_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
    	 new MockUp<SDStoreImpl>() {
          @Mock
          private void sendToHandler(){
@@ -121,7 +121,7 @@ public class ContractTest {
 
     //FAIL: create doc - doc already exists
     @Test(expected = DocAlreadyExists_Exception.class)
-    public void createDocAlreadyExists() throws DocAlreadyExists_Exception {
+    public void createDocAlreadyExists() throws DocAlreadyExists_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
    	 new MockUp<SDStoreImpl>() {
          @Mock
          private void sendToHandler(){
@@ -140,7 +140,7 @@ public class ContractTest {
 
     //SUCCESS: replace doc content - doc exist, user exist, capacity not full
     @Test
-    public void replaceDocSuccess() throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception {
+    public void replaceDocSuccess() throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
    	 new MockUp<SDStoreImpl>() {
          @Mock
          private void sendToHandler(){
@@ -180,7 +180,7 @@ public class ContractTest {
 
     //FAIL: replace doc content - user exist, doc not exist
     @Test(expected = DocDoesNotExist_Exception.class)
-    public void replaceDocNotExist() throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception {
+    public void replaceDocNotExist() throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
    	 new MockUp<SDStoreImpl>() {
          @Mock
          private void sendToHandler(){
@@ -219,7 +219,7 @@ public class ContractTest {
 
     //SUCCESS: load doc - doc exist, user exist
     @Test
-    public void loadSuccess() throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, CapacityExceeded_Exception, DocAlreadyExists_Exception {
+    public void loadSuccess() throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, CapacityExceeded_Exception, DocAlreadyExists_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
     	new MockUp<SDStoreImpl>() {
          @Mock
          private void sendToHandler(){
@@ -261,7 +261,7 @@ public class ContractTest {
     //FAIL: load doc - user exist, doc not exist
     @Test(expected = DocDoesNotExist_Exception.class)
     public void loadDocNotExist() 
-            throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception {
+            throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
     	new MockUp<SDStoreImpl>() {
          @Mock
          private void sendToHandler(){
@@ -286,7 +286,7 @@ public class ContractTest {
 
     //SUCCESS: create doc, list user docs and load the new doc (has no content)
     @Test
-    public void createListAndLoad() throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception, CapacityExceeded_Exception  {
+    public void createListAndLoad() throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception, CapacityExceeded_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception  {
     	new MockUp<SDStoreImpl>() {
          @Mock
          private void sendToHandler(){
@@ -336,7 +336,7 @@ public class ContractTest {
 
     //SUCCESS: create doc, replace the content to its maximum and then load the doc
     @Test
-    public void createStoreAndLoad() throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception, CapacityExceeded_Exception {
+    public void createStoreAndLoad() throws DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception, CapacityExceeded_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
     	new MockUp<SDStoreImpl>() {
          @Mock
          private void sendToHandler(){

@@ -1,19 +1,23 @@
 package pt.tecnico.SDStore;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.Endpoint;
 
-import pt.tecnico.ws.uddi.UDDINaming;
+import uddi.UDDINaming;
 import pt.ulisboa.tecnico.sdis.store.ws.DocAlreadyExists_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocUserPair;
+import pt.ulisboa.tecnico.sdis.store.ws.SDStore;
+
 import java.security.NoSuchAlgorithmException;
 
 public class SDStoreMain {
-	
-	private static SDStoreImpl Store;
-	
+
+    private static final int REPLICAS_NUMBER = 3;
+    public static final boolean HANDLER_PRINT = false;
+
     public static void main(String[] args) {
         // Check arguments
         if (args.length < 3) {
@@ -25,81 +29,77 @@ public class SDStoreMain {
         String uddiURL = args[0];
         String name = args[1];
         String url = args[2];
-        
-        Endpoint endpoint = null;
+
+        ArrayList<Endpoint> endpoint = new ArrayList<Endpoint>(REPLICAS_NUMBER);
         UDDINaming uddiNaming = null;
-        Store=new SDStoreImpl();
-        
-        SecureSDStore secureStore = null;
-              
-        try {          
-        	secureStore = new SecureSDStore(Store);
-        	} catch(NoSuchAlgorithmException e) {
-            System.out.printf("Caught exception when generating key", e);
-        }
-        
-        if(secureStore != null) {
+        ArrayList <String> iWsURL = new ArrayList<String> (REPLICAS_NUMBER);
+
         try {
-        	uddiNaming = new UDDINaming(uddiURL);
-        	int id=0;
-        	String auxName = name;
-        	name=name+id;
-        	while(uddiNaming.lookup(name)!=null){
-        		id++;
-        		name = auxName + id;
-        	}
-        		
-        	if(id!=0){
-        		// creates next url (changing the port number) for the next server to be created
-        		String[] split = url.split("/store-ws");
-        		char[] newString = split[0].toCharArray();
-        		newString[newString.length-1] = new Integer(2+id).toString().toCharArray()[0];
-        		split[0] = String.valueOf(newString);
-        		url = split[0] + "/store-ws" + split[1];
-        	}
-        	
-            endpoint = Endpoint.create(secureStore);
+            uddiNaming = new UDDINaming(uddiURL);
+            
+            for (int i = 0; i < REPLICAS_NUMBER; i++) {
+                String serverName = name + "-" + i;
+                String[] split = url.split("localhost:");
+                String[] oldPort = split[1].split("/");
 
-            // publish endpoint
-            System.out.printf("Starting %s%n", url);
-            endpoint.publish(url);
+                Integer port = Integer.parseInt(oldPort[0]) + 1;
+                String newPort = port.toString();
+                iWsURL.add(i, split[0] + "localhost:" + newPort + "/" + oldPort[1] + "/" + oldPort[2] + "-" + i);
 
-            // publish to UDDI
-            System.out.printf("Publishing '%s' to UDDI at %s%n", name, uddiURL);
-            uddiNaming.rebind(name, url);
-        
-                        
+                SecureSDStore secureStore = null;
+                String key = "CYd/FbnCGtfTyr8uzJKeAw==";
+                try {
+                    secureStore = new SecureSDStore(new SDStoreImpl(serverName), key);
+                } catch (NoSuchAlgorithmException e) {
+                    System.out.printf("Caught exception when generating key", e);
+                }
+
+                endpoint.add(i, Endpoint.create(secureStore));
+
+                // publish endpoint
+                System.out.printf("Starting %s%n", iWsURL.get(i));
+                endpoint.get(i).publish(iWsURL.get(i));
+
+                // publish to UDDI
+                if (uddiURL != null) {
+                    System.out.printf("Publishing '%s' to UDDI at %s%n", serverName, uddiURL);
+                    uddiNaming.rebind(serverName, iWsURL.get(i));
+                }
+            }
+
             // wait
             System.out.println("Awaiting connections");
             System.out.println("Press enter to shutdown");
+            System.out.println("\n ******* SD-STORE *******");
             System.in.read();
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             System.out.printf("Caught exception: %s%n", e);
             e.printStackTrace();
 
         } finally {
             try {
-                if (endpoint != null) {
-                    // stop endpoint
-                    endpoint.stop();
-                    System.out.printf("Stopped %s%n", url);
+                for (int i = 0; i < REPLICAS_NUMBER; i++) {
+                    if (endpoint.get(i) != null) {
+                        // stop endpoint
+                        endpoint.get(i).stop();
+                        System.out.printf("Stopped %s%n", iWsURL.get(i));
+                    }
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 System.out.printf("Caught exception when stopping: %s%n", e);
             }
             try {
-                if (uddiNaming != null) {
-                    // delete from UDDI
-                    uddiNaming.unbind(name);
-                    System.out.printf("Deleted '%s' from UDDI%n", name);
+                for (int i = 0; i < REPLICAS_NUMBER; i++) {
+                    if (uddiNaming != null) {
+                        uddiNaming.unbind(iWsURL.get(i));
+                        System.out.printf("Deleted '%s' from UDDI%n", iWsURL.get(i));
+                    }
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 System.out.printf("Caught exception when deleting: %s%n", e);
             }
         }
-        }
-        else System.out.printf("Caught exception when generating key"); 
-    }
 
+    }
 }

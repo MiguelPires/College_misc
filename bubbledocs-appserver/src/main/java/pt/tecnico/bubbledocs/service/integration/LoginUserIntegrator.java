@@ -10,7 +10,7 @@ import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 
 public class LoginUserIntegrator extends BubbleDocsIntegrator {
 
-	private String userToken;
+    private String userToken;
     private String username;
     private String password;
     private LoginUser service;
@@ -26,29 +26,27 @@ public class LoginUserIntegrator extends BubbleDocsIntegrator {
         IDRemoteServices remote = new IDRemoteServices();
         service = new LoginUser(username, password);
         service.deleteIfLogged();
-        
-        try{
-        remote.loginUser(username, password);
-        service.execute();
+
+        try {
+            remote.loginUser(username, password);
+            service.execute();
+        } catch (RemoteInvocationException e) {
+            String pass = service.getUserPassword();
+            if (pass == null)
+                throw new UnavailableServiceException();
+            else if (pass.equals(password))
+                userToken = addUserToSession(service.getUser());
+            else
+                throw new WrongPasswordException();
         }
-        catch(RemoteInvocationException e){
-        	String pass = service.getUserPassword();
-        	 if (pass == null)
-                 throw new UnavailableServiceException();
-             else if (pass.equals(password))
-                 userToken = addUserToSession(service.getUser());
-             else
-                 throw new WrongPasswordException();	
-        } catch(LoginBubbleDocsException e){
-        	 throw new WrongPasswordException();	
-        }
+
     }
-    
+
     public final String getUserToken() {
-    	if(userToken!=null)
-    		return userToken;
-    	
+        if (userToken != null)
+            return userToken;
+
         return service.getUserToken();
     }
-    
+
 }

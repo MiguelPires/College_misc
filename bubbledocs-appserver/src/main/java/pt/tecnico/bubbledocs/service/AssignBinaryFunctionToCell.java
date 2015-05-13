@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 
 import pt.tecnico.bubbledocs.domain.Addition;
 import pt.tecnico.bubbledocs.domain.Argument;
+import pt.tecnico.bubbledocs.domain.Cell;
 import pt.tecnico.bubbledocs.domain.Division;
 import pt.tecnico.bubbledocs.domain.Literal;
 import pt.tecnico.bubbledocs.domain.Multiplication;
@@ -36,17 +37,26 @@ public class AssignBinaryFunctionToCell extends CheckLogin {
     
     public Argument getArgument(String arg, Spreadsheet doc){
     	Argument argument;
-    	Pattern pattern = Pattern.compile("([0-9]+)");
-        Matcher matcher = pattern.matcher(arg);
-        if(matcher.find()){
-        	argument = new Literal(Integer.parseInt(arg));
-        } else {
-        	String[] argCoords = cellId.split(";");
+    	Pattern patternLit = Pattern.compile("([0-9]+)");
+    	Pattern patternRef = Pattern.compile("([0-9]+;[0-9]+)");
+        Matcher matcherLit = patternLit.matcher(arg);
+        Matcher matcherRef = patternRef.matcher(arg);
+
+        if (matcherRef.find()){
+        	String[] argCoords = matcherRef.group(1).split(";");
             int argRow = Integer.parseInt(argCoords[0]);
             int argColumn = Integer.parseInt(argCoords[1]);
-        	argument = new Reference(doc.getCell(argRow, argColumn));
+            
+            Cell reference = doc.getCell(argRow, argColumn);
+            Reference ref = new Reference(reference);
+        	argument = ref;
+        } else if(matcherLit.find()) {
+        	argument = new Literal(Integer.parseInt(arg));
+        } else {
+        	throw new UnauthorizedOperationException("Wrong function " + function + ".");
         }
         return argument;
+        
     }
 
     @Override
@@ -101,8 +111,9 @@ public class AssignBinaryFunctionToCell extends CheckLogin {
 
             if (res == null)
                 this.result = null;
-            else
+            else 
                 this.result = res.toString();
+            
         } else
             throw new UnauthorizedOperationException();
     }

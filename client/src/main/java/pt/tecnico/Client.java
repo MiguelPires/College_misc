@@ -30,16 +30,16 @@ public class Client {
     protected Map<String, String> sessionKeys;
     private static Client instance;
     
-    public static SDId getInstanceID() throws TransformerFactoryConfigurationError, JAXRException {
+    public static Client getInstanceID() throws TransformerFactoryConfigurationError, JAXRException {
         if (instance == null)
             instance = new Client();
-        return (SDId) instance;
+        return instance;
     }
     
-    public static StoreClient getInstanceStore() throws TransformerFactoryConfigurationError, JAXRException {
+    public static Client getInstanceStore() throws TransformerFactoryConfigurationError, JAXRException {
         if (instance == null)
             instance = new Client();
-        return storeClient;
+        return instance;
     }
     
     Client() throws TransformerFactoryConfigurationError, JAXRException {
@@ -57,13 +57,12 @@ public class Client {
         return storeClient.listDocs(userId);
     }
 
-    public void store(DocUserPair docUserPair, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception,
-                                                               UserDoesNotExist_Exception {
-        storeClient.store(docUserPair, contents);
+    public void store(String username, String docId, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
+        storeClient.store(username, docId, contents);
     }
 
-    public byte[] load(DocUserPair docUserPair) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
-        return storeClient.load(docUserPair);
+    public byte[] load(String username, String docId) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
+        return storeClient.load(username, docId);
     }
 
     public void createUser(String userId, String emailAddress) throws EmailAlreadyExists_Exception, InvalidEmail_Exception,

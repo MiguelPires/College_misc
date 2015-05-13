@@ -93,19 +93,20 @@ public class ServersTest {
     	assertTrue(new String(CONTENT2).equals(new String(content)));
      }
      
-    /* @Test
+     @Test
      public void oneFails() throws JAXRException, UserDoesNotExist_Exception, CapacityExceeded_Exception, DocDoesNotExist_Exception{
     	 
     	 System.out.println("############# Shutdown 1 server please ################");
     	 try {
-			Thread.sleep(5000);
+			Thread.sleep(10000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	 
+    	 System.out.println("############# Resuming ################");
     	 client1.store(USER, DOCID, CONTENT1);
     	 byte[] content = client1.load(USER, DOCID);
     	 assertTrue(new String(CONTENT1).equals(new String(content)));
-     }*/
+     }
 }

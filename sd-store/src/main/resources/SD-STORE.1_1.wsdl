@@ -93,6 +93,26 @@ Version history:
       </xs:complexType>
 
       <!--
+      Fault element when authentications fails.
+      -->
+      <xs:element name="unauthorizedOperation" type="tns:unauthorizedOperation" />
+      <xs:complexType name="unauthorizedOperation">
+        <xs:sequence>
+          <xs:element name="userId" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:complexType>
+
+            <!--
+      Fault element when argument is invalid.
+      -->
+      <xs:element name="invalidArgument" type="tns:invalidArgument" />
+      <xs:complexType name="invalidArgument">
+        <xs:sequence>
+          <xs:element name="userId" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:complexType>
+      
+      <!--
       Fault element when user already exists.
       -->
       <xs:element name="userAlreadyExists" type="tns:userAlreadyExists" />
@@ -177,6 +197,14 @@ Version history:
     <wsdl:part name="parameters" element="tns:loadResponse"/>
   </wsdl:message>
 
+  <wsdl:message name="unauthorizedOperation">
+    <wsdl:part name="fault" element="tns:unauthorizedOperation" />
+  </wsdl:message>
+
+  <wsdl:message name="invalidArgument">
+    <wsdl:part name="fault" element="tns:invalidArgument" />
+  </wsdl:message>
+
   <wsdl:message name="UserAlreadyExists">
     <wsdl:part name="fault" element="tns:userAlreadyExists" />
   </wsdl:message>
@@ -209,6 +237,8 @@ Version history:
       <wsdl:input message="tns:createDoc" name="createDoc"/>
       <wsdl:output message="tns:createDocResponse" name="createDocResponse"/>
       <wsdl:fault message="tns:DocAlreadyExists" name="DocAlreadyExists" />
+      <wsdl:fault message="tns:unauthorizedOperation" name="unauthorizedOperation" />
+      <wsdl:fault message="tns:invalidArgument" name="invalidArgument" />
     </wsdl:operation>
 
     <!--
@@ -219,6 +249,8 @@ Version history:
       <wsdl:input message="tns:listDocs" name="listDocs"/>
       <wsdl:output message="tns:listDocsResponse" name="listDocsResponse"/>
       <wsdl:fault message="tns:UserDoesNotExist" name="UserDoesNotExist" />
+      <wsdl:fault message="tns:unauthorizedOperation" name="unauthorizedOperation" />
+      <wsdl:fault message="tns:invalidArgument" name="invalidArgument" />
     </wsdl:operation>
 
     <!--
@@ -259,6 +291,12 @@ Version history:
       <wsdl:fault name="DocAlreadyExists">
         <soap:fault name="DocAlreadyExists" use="literal" />
       </wsdl:fault>
+      <wsdl:fault name="unauthorizedOperation">
+        <soap:fault name="unauthorizedOperation" use="literal" />
+      </wsdl:fault>
+      <wsdl:fault name="invalidArgument">
+        <soap:fault name="invalidArgument" use="literal" />
+      </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="listDocs">
       <soap:operation soapAction=""/>
@@ -270,6 +308,12 @@ Version history:
       </wsdl:output>
       <wsdl:fault name="UserDoesNotExist">
         <soap:fault name="UserDoesNotExist" use="literal" />
+      </wsdl:fault>
+      <wsdl:fault name="unauthorizedOperation">
+        <soap:fault name="unauthorizedOperation" use="literal" />
+      </wsdl:fault>
+      <wsdl:fault name="invalidArgument">
+        <soap:fault name="invalidArgument" use="literal" />
       </wsdl:fault>
     </wsdl:operation>
     <wsdl:operation name="store">

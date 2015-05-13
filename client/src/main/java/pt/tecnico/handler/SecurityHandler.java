@@ -65,15 +65,18 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
     public static final String NAMESPACE = "urn:pt:ulisboa:tecnico:sdis:store:ws";
     public static final String TOKEN = "client-handler";
     public static final String INIT_SESS = "session_init";
+    public static final String TYPE = "type";
 
     private SOAPMessageContext smc;
 
     public boolean handleMessage(SOAPMessageContext smc) {
         this.smc = smc;
         String address = (String) smc.get(ENDPOINT_ADDRESS_PROPERTY);
+        String type = (String) smc.get(TYPE);
         Boolean outbound = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
-
-        if (address.contains("store")) {
+        if(type==null || !type.equals("SDID"))
+            return true;
+        
             if (outbound) {
                 try {
                     // if ((Boolean) smc.get(INIT_SESS))
@@ -86,7 +89,7 @@ public class SecurityHandler implements SOAPHandler<SOAPMessageContext> {
                     e.printStackTrace();
                 }
             }
-        }
+        
 
         return true;
     }

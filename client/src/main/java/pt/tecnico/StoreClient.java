@@ -1,14 +1,10 @@
 package pt.tecnico;
 
-import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
-
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.registry.JAXRException;
-import javax.xml.ws.BindingProvider;
 
-import pt.tecnico.SDStore.FrontEndSDStore;
 import pt.tecnico.handler.SecurityHandler;
 import pt.ulisboa.tecnico.sdis.store.ws.CapacityExceeded_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocAlreadyExists_Exception;
@@ -16,18 +12,14 @@ import pt.ulisboa.tecnico.sdis.store.ws.DocDoesNotExist_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocUserPair;
 import pt.ulisboa.tecnico.sdis.store.ws.InvalidArgument;
 import pt.ulisboa.tecnico.sdis.store.ws.InvalidArgument_Exception;
-import pt.ulisboa.tecnico.sdis.store.ws.SDStore;
-import pt.ulisboa.tecnico.sdis.store.ws.SDStore_Service;
 import pt.ulisboa.tecnico.sdis.store.ws.UnauthorizedOperation;
 import pt.ulisboa.tecnico.sdis.store.ws.UnauthorizedOperation_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.UserDoesNotExist_Exception;
-import uddi.UDDINaming;
 
 public class StoreClient {
 
     private static ReplicationFrontEnd frontEnd;
     private static FrontEndSDStore frontSDStore;
-    private SDStore storeServer;
     private Map<String, Object> requestContext;
     private static StoreClient instance;
     private Client genericClient;
@@ -65,29 +57,40 @@ public class StoreClient {
         frontEnd.createDoc(docUserPair);
     }
 
-    public List<String> listDocs(String userId) throws UserDoesNotExist_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
+    public List<String> listDocs(String userId) throws UserDoesNotExist_Exception, UnauthorizedOperation_Exception,
+                                               InvalidArgument_Exception {
         if (userId == null || userId.isEmpty())
-                throw new InvalidArgument_Exception("The argument is either empty or null", new InvalidArgument());
-        
+            throw new InvalidArgument_Exception("The argument is either empty or null", new InvalidArgument());
+
         if (loadContext(userId) != 0) {
             UnauthorizedOperation op = new UnauthorizedOperation();
             op.setUserId(userId);
             throw new UnauthorizedOperation_Exception("No authentication data", op);
         }
-        //loadContext(userId);
-        System.out.println("Requesting "+userId+"'s documents");
+        loadContext(userId);
+        System.out.println("Requesting " + userId + "'s documents");
         return frontEnd.listDocs(userId);
     }
 
-    public void store(DocUserPair docUserPair, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception,
-                                                               UserDoesNotExist_Exception {
-        loadContext(docUserPair.getUserId());
-        frontSDStore.store(docUserPair, contents);
+    public void store(String username, String docId, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception, DocAlreadyExists_Exception, UnauthorizedOperation_Exception, InvalidArgument_Exception {
+        DocUserPair pair = new DocUserPair();
+        pair.setUserId(username);
+        pair.setDocumentId(docId);
+    //    loadContext(username);
+        try{
+            frontSDStore.store(pair, contents);
+        } catch(DocDoesNotExist_Exception e){
+            createDoc(pair);
+            frontSDStore.store(pair, contents);
+        }
     }
 
-    public byte[] load(DocUserPair docUserPair) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
-        loadContext(docUserPair.getUserId());
-        return frontSDStore.load(docUserPair);
+    public byte[] load(String username, String docId) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
+  //      loadContext(username);
+        DocUserPair pair = new DocUserPair();
+        pair.setUserId(username);
+        pair.setDocumentId(docId);
+        return frontSDStore.load(pair);
     }
 
     int loadContext(String username) {
@@ -100,6 +103,7 @@ public class StoreClient {
         frontEnd.putRequestContext(SecurityHandler.SESSION_KEY, sessionKey);
         frontEnd.putRequestContext(SecurityHandler.TICKET, ticket);
         frontEnd.putRequestContext(SecurityHandler.CLIENT, username);
+        frontEnd.putRequestContext(SecurityHandler.TYPE, "SDID");
         return 0;
     }
 }

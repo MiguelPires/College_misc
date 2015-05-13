@@ -81,7 +81,7 @@ public class Spreadsheet extends Spreadsheet_Base {
 		for(Cell cell : getCellsSet()){
 			row = cell.getRow();
 			column = cell.getColumn();
-			sheetMatrix[row][column] = cell.getValue().toString();
+			sheetMatrix[row-1][column-1] = cell.getValue().toString();
 		}
     	return sheetMatrix;
     }

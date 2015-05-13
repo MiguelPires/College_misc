@@ -1,6 +1,6 @@
 package pt.tecnico.SDStore;
 
-import pt.tecnico.ws.uddi.UDDINaming;
+import uddi.UDDINaming;
 import pt.ulisboa.tecnico.sdis.store.ws.*;
 
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ String url = "http://localhost:8082/store-ws/endpoint";
     @Test
     public void testEndpoint(){
     	 Endpoint endpoint = null;
-         SDStoreImpl Store=new SDStoreImpl();
+         SDStoreImpl Store=new SDStoreImpl("SD-STORE");
          endpoint = Endpoint.create(Store);
          endpoint.publish(url);
          
@@ -80,9 +80,9 @@ String url = "http://localhost:8082/store-ws/endpoint";
     
     //Tests if after an createDoc from client (port) affects the server (Store)
     @Test
-    public void testClientServer() throws DocAlreadyExists_Exception, UserDoesNotExist_Exception {
+    public void testClientServer() throws DocAlreadyExists_Exception, UserDoesNotExist_Exception, InvalidArgument_Exception, UnauthorizedOperation_Exception {
     	Endpoint endpoint = null;
-    	SDStoreImpl Store=new SDStoreImpl();
+    	SDStoreImpl Store=new SDStoreImpl("SD-STORE");
         endpoint = Endpoint.create(Store);
         endpoint.publish(url);
  

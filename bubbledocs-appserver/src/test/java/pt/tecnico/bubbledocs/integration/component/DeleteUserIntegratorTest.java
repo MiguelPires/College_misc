@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import pt.tecnico.bubbledocs.domain.Spreadsheet;
 import pt.tecnico.bubbledocs.domain.User;
-import pt.tecnico.bubbledocs.exception.LoginBubbleDocsException;
 import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.UnauthorizedOperationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
@@ -46,7 +45,7 @@ public class DeleteUserIntegratorTest extends BubbleDocsServiceTest {
     };
 
     public void success() {
-    	DeleteUser service = new DeleteUser(root, USERNAME_TO_DELETE);
+        DeleteUser service = new DeleteUser(root, USERNAME_TO_DELETE);
         service.execute();
         boolean deleted = getUserFromUsername(USERNAME_TO_DELETE) == null;
 
@@ -73,13 +72,13 @@ public class DeleteUserIntegratorTest extends BubbleDocsServiceTest {
         success();
         assertNull(getUserFromSession(token));
     }
-    
+
     @Test(expected = UnknownBubbleDocsUserException.class)
     public void userToDeleteDoesNotExist() {
-       DeleteUser service = new DeleteUser(root, USERNAME_DOES_NOT_EXIST);
-       service.execute();
+        DeleteUser service = new DeleteUser(root, USERNAME_DOES_NOT_EXIST);
+        service.execute();
     }
-    
+
     @Test(expected = UserNotInSessionException.class)
     public void rootNotInSession() {
         removeUserFromSession(root);
@@ -99,22 +98,21 @@ public class DeleteUserIntegratorTest extends BubbleDocsServiceTest {
         new DeleteUser(alice, USERNAME_TO_DELETE).execute();
 
     }
-    
+
     //Remote service fails but user is not deleted locally    
     @Test
     public void idServiceUnavailableUserNotDeleted() {
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void removeUser(String username) throws LoginBubbleDocsException,
-                                                    RemoteInvocationException {
+            public void removeUser(String username) {
                 throw new RemoteInvocationException();
             }
         };
-        try{
-        	DeleteUser service = new DeleteUser(root, USERNAME_TO_DELETE);
-        	service.execute();
-        } catch (UnavailableServiceException e){
-        	boolean deleted = getUserFromUsername(USERNAME_TO_DELETE) == null;
+        try {
+            DeleteUser service = new DeleteUser(root, USERNAME_TO_DELETE);
+            service.execute();
+        } catch (UnavailableServiceException e) {
+            boolean deleted = getUserFromUsername(USERNAME_TO_DELETE) == null;
 
             assertFalse(deleted);
             assertNotNull(getSpreadSheet(SPREADSHEET_NAME));

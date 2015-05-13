@@ -2,9 +2,6 @@ package pt.tecnico.bubbledocs.integration.component;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import javax.naming.ServiceUnavailableException;
-
 import mockit.Mock;
 import mockit.MockUp;
 
@@ -18,6 +15,7 @@ import pt.tecnico.bubbledocs.exception.RemoteInvocationException;
 import pt.tecnico.bubbledocs.exception.UnavailableServiceException;
 import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
 import pt.tecnico.bubbledocs.service.BubbleDocsServiceTest;
+import pt.tecnico.bubbledocs.service.integration.LoginUserIntegrator;
 import pt.tecnico.bubbledocs.service.integration.RenewPasswordIntegrator;
 import pt.tecnico.bubbledocs.service.remote.IDRemoteServices;
 
@@ -28,10 +26,15 @@ public class RenewPasswordIntegratorTest extends BubbleDocsServiceTest {
     private static final String EMAIL = "alice@tecnico.pt";
     private static final String NAME = "Alice Sheepires";
 
+    private static final String PASSWORD = "Aaa1";
+
     @Override
     public void populate4Test() throws BubbleDocsException {
-        createUser(USERNAME, EMAIL, NAME);
-        alice = addUserToSession(USERNAME);
+        // createUser(USERNAME, EMAIL, NAME);
+        //alice = addUserToSession(USERNAME);
+        LoginUserIntegrator loginService = new LoginUserIntegrator(USERNAME, PASSWORD);
+        loginService.execute();
+        alice = loginService.getUserToken();
     }
 
     @Test
@@ -51,7 +54,7 @@ public class RenewPasswordIntegratorTest extends BubbleDocsServiceTest {
 
         new MockUp<IDRemoteServices>() {
             @Mock
-            public void renewPassword(String username) throws ServiceUnavailableException {
+            public void renewPassword(String username) {
                 throw new RemoteInvocationException();
             }
         };

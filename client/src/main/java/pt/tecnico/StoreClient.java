@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.BindingProvider;
 
+import pt.tecnico.SDStore.FrontEndSDStore;
 import pt.tecnico.handler.SecurityHandler;
 import pt.ulisboa.tecnico.sdis.store.ws.CapacityExceeded_Exception;
 import pt.ulisboa.tecnico.sdis.store.ws.DocAlreadyExists_Exception;
@@ -25,6 +26,7 @@ import uddi.UDDINaming;
 public class StoreClient {
 
     private static ReplicationFrontEnd frontEnd;
+    private static FrontEndSDStore frontSDStore;
     private SDStore storeServer;
     private Map<String, Object> requestContext;
     private static StoreClient instance;
@@ -43,6 +45,7 @@ public class StoreClient {
     private StoreClient(Client gen) throws JAXRException {
         frontEnd = new ReplicationFrontEnd(gen);
         genericClient = frontEnd.getGenericClient();
+        frontSDStore = new FrontEndSDStore(ClientMain.UDDI_URL, ClientMain.STORE_NAME, 1);
     }
 
     public void createDoc(DocUserPair docUserPair) throws DocAlreadyExists_Exception, UnauthorizedOperation_Exception,
@@ -79,12 +82,12 @@ public class StoreClient {
     public void store(DocUserPair docUserPair, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception,
                                                                UserDoesNotExist_Exception {
         loadContext(docUserPair.getUserId());
-        frontEnd.store(docUserPair, contents);
+        frontSDStore.store(docUserPair, contents);
     }
 
     public byte[] load(DocUserPair docUserPair) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
         loadContext(docUserPair.getUserId());
-        return frontEnd.load(docUserPair);
+        return frontSDStore.load(docUserPair);
     }
 
     int loadContext(String username) {

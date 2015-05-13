@@ -94,6 +94,7 @@ public class ImportDocumentIntegratorTest extends BubbleDocsServiceTest {
         service.execute();
     } 
     
+    //alterar excepção???
     @Test(expected = UnauthorizedOperationException.class)
     public void unauthorizedImport() throws BubbleDocsException {
     	ImportDocumentIntegrator service = new ImportDocumentIntegrator(docs.get(1).getID(), bruno);
@@ -123,7 +124,7 @@ public class ImportDocumentIntegratorTest extends BubbleDocsServiceTest {
     public void storeServiceUnavailable() {
         new MockUp<StoreRemoteServices>() {
             @Mock
-            public void loadDocument(String username, String docName) throws CannotLoadDocumentException,
+            public byte[] loadDocument(String username, String docName) throws CannotLoadDocumentException,
                                                                              RemoteInvocationException {
                 throw new RemoteInvocationException();
             }

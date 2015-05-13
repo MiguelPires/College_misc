@@ -30,10 +30,19 @@ public class StoreClient {
     }
     
 	public void store(String username, String docId, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception {
-        DocUserPair pair = new DocUserPair();
+		DocUserPair pair = new DocUserPair();
         pair.setUserId(username);
         pair.setDocumentId(docId);
-		front.store(pair, contents);
+        try{
+        	front.store(pair, contents);
+        } catch (DocDoesNotExist_Exception e){
+        	try {
+				createDoc(username, docId);
+			} catch (DocAlreadyExists_Exception e1) {
+				e1.printStackTrace();
+			}
+        	front.store(pair, contents);
+        }
 	}
 	
 	public byte[] load(String username, String docId) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {

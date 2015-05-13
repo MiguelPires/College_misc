@@ -89,7 +89,9 @@ public class SDStoreImpl implements SDStore {
 			folders.add(folder);
 		}
 		
+
 		folder.addDoc(doc);	
+		System.out.println("Document created");
 		sendToHandler();
 	}
 
@@ -107,6 +109,7 @@ public class SDStoreImpl implements SDStore {
 			if(aux.getUser().equals(user)){
 				folder = aux;
 				folder.storeContent(docId, contents, tag);
+				System.out.println("Stored content for " + user);
 				sendToHandler();
 				return;
 			}
@@ -124,6 +127,7 @@ public class SDStoreImpl implements SDStore {
     	for(userDirectory aux : folders)
 			if(aux.getUser().equals(user)){
 				folder = aux;
+				System.out.println("Loading content for user " + user);
 				document doc = folder.loadDoc(docId);
 				sendToHandler(doc.getSeqNumber(), doc.getTagID());
 				return doc.getContent();

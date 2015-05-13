@@ -22,7 +22,7 @@ import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
 public class FrontEndSDStore {
 
-	public List<SDStore> repManager = new ArrayList<SDStore>();
+	private List<SDStore> repManager = new ArrayList<SDStore>();
 	private int WT=0;
 	private int RT=0;
 	private int IDClient;
@@ -104,7 +104,6 @@ public class FrontEndSDStore {
     		sequencial++;
     		String[] newTag={sequencial+"", IDClient+""};
     		tag = newTag;
-    		
     		List<Response<LoadResponse>> LoadResponses = new ArrayList<Response<LoadResponse>>();
     		for(SDStore server : repManager) {
     			sendToHandler(server, tag);
@@ -121,7 +120,12 @@ public class FrontEndSDStore {
     					if(hasTag(response))
     						maxTag = getTag(response);
     					if(maxTag != null && isGreater(maxTag,tag)){
-    						tag = maxTag;
+    						int maxSeq = new Integer(maxTag[0]);
+    						maxSeq++;
+    						sequencial = maxSeq;
+    						tag[0] = sequencial+"";
+    						
+    						tag[1]=IDClient+"";
     					}
     					LoadResponses.remove(response);
     					break;
@@ -235,6 +239,8 @@ public class FrontEndSDStore {
 	
 	public boolean hasTag(Response<LoadResponse> response){
 		Map<String, Object> responseContext = response.getContext();
+		if(responseContext==null)
+			return false;
         String propertyValue = (String) responseContext.get(ClientHandler.RESPONSE_PROPERTY);
         if(propertyValue!=null)
         	return true;

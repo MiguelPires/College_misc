@@ -18,5 +18,6 @@ public class CheckLogin extends BubbleDocsService {
 
         if (!isLoggedIn(user))
             throw new UserNotInSessionException();
+        
     }
 }

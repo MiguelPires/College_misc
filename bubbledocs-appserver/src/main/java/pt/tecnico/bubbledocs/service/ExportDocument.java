@@ -40,4 +40,8 @@ public class ExportDocument extends CheckLogin {
 		} else
 			throw new UnauthorizedOperationException();
 	}
+	
+	public String getUsername(){
+		return user.getUsername();
+	}
 }

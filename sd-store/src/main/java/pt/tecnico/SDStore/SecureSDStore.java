@@ -57,21 +57,22 @@ public class SecureSDStore implements SDStore {
 	public void store(DocUserPair docUserPair, byte[] contents) throws CapacityExceeded_Exception, DocDoesNotExist_Exception, UserDoesNotExist_Exception {
 		byte[]  cipheredContent=null;
 		server.setcontext(webServiceContext);
-		if(contents!=null)
-			cipheredContent = cipher(docUserPair.getDocumentId(), contents);
+		//if(contents!=null)
+			//cipheredContent = cipher(docUserPair.getDocumentId(), contents);
 		
-		server.store(docUserPair, cipheredContent);
+		
+		server.store(docUserPair, contents);
 		webServiceContext = server.getcontext();
 	}
 
 	public byte[] load(DocUserPair docUserPair) throws DocDoesNotExist_Exception, UserDoesNotExist_Exception {
 		server.setcontext(webServiceContext);
 		byte[] cipheredDoc = server.load(docUserPair);
-		byte[] decipheredDoc = null;
-		if(cipheredDoc!=null)
-			decipheredDoc = decipher(docUserPair.getDocumentId(), cipheredDoc);
+		//byte[] decipheredDoc = null;
+		//if(cipheredDoc!=null)
+			//decipheredDoc = decipher(docUserPair.getDocumentId(), cipheredDoc);
 		webServiceContext = server.getcontext();
-		return decipheredDoc;
+		return cipheredDoc;
 	}
 
 	// generate key with the AES (Rijndael) algorithm
@@ -91,12 +92,12 @@ public class SecureSDStore implements SDStore {
 			String convertedMessage = printBase64Binary(message);
 			String convertedKey = Base64.getEncoder().encodeToString(key.getEncoded());
 			byte[] result = parseBase64Binary(convertedMessage+convertedKey);
-			        	
-        	// get a message digest object using the MD5 algorithm and create the digest
+
+			// get a message digest object using the MD5 algorithm and create the digest
         	MessageDigest messageDigest = MessageDigest.getInstance("MD5");
         	messageDigest.update(result); 
         	byte[] digest = messageDigest.digest();
-			
+        	
         	// store the digest to compare later
 	       	digestMap.put(docId, digest);
 						
@@ -120,8 +121,8 @@ public class SecureSDStore implements SDStore {
 	       	String convertedMessage = printBase64Binary(decipheredMessage);
 	      	String convertedKey = Base64.getEncoder().encodeToString(key.getEncoded());
 			byte[] result = parseBase64Binary(convertedMessage+convertedKey);
-			        	
-	       	// get a message digest object using the MD5 algorithm and create the digest
+
+			// get a message digest object using the MD5 algorithm and create the digest
         	MessageDigest messageDigest = MessageDigest.getInstance("MD5");
         	messageDigest.update(result); 
 			byte[] newDigest = messageDigest.digest();
@@ -146,7 +147,6 @@ public class SecureSDStore implements SDStore {
 			
 			} catch(Exception e){
 			    System.out.printf("The content has been modified!", e);
-			 	e.printStackTrace();
 			 	return null;
 				}
 			}	

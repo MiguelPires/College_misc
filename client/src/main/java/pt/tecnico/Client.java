@@ -24,7 +24,7 @@ import pt.ulisboa.tecnico.sdis.store.ws.UserDoesNotExist_Exception;
 
 public class Client {
 
-    protected StoreClient storeClient;
+    protected static StoreClient storeClient;
     protected IDClient idClient;
     protected Map<String, String> tickets;
     protected Map<String, String> sessionKeys;
@@ -34,6 +34,12 @@ public class Client {
         if (instance == null)
             instance = new Client();
         return (SDId) instance;
+    }
+    
+    public static StoreClient getInstanceStore() throws TransformerFactoryConfigurationError, JAXRException {
+        if (instance == null)
+            instance = new Client();
+        return storeClient;
     }
     
     Client() throws TransformerFactoryConfigurationError, JAXRException {

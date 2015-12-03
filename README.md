@@ -1,27 +1,8 @@
 # Bubble Docs
 
-This is the main README file for the Bubble Docs project.
+**Bubble Docs** is a remote spreadsheet application.
 
-The initial version of the repository contains the following structure:
-
-    .
-    |__ .gitignore
-    |__ .travis.yml
-    |__ README.md
-    |__ pom.xml
-    |__ bubbledocs-appserver
-    |   |__ .gitignore
-    |   |__ README.md
-    |   |__ pom.xml
-    |   \__ src
-    |       \__ main
-    |           |__ dml
-    |           |   \__ bubbledocs.dml
-    |           \__ resources
-    |               |__ fenix-framework-jvstm-ojb.properties
-    |               \__ log4j.properties
-    |__ sd-id
-    |   \__ README.md
-    \__ sd-store
-        \__ README.md
-
+### SD-ID 
+SD-ID is an authentication service based on Kerberos. Clients obtain tickets (that contain session keys, nonces, etc) and use them to establish a connection with the application. All messages are encrypted and contain MACs to ensure integrity and the password hashes kept in the authentication server are salted.
+### SD-STORE
+SD-STORE stores spreadsheet in a way that ensures authenticity, confidentiality and integrity.

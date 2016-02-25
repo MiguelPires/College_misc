@@ -25,6 +25,11 @@
 				</executions>
 				<configuration>
 					<mainClass>sec.blockfs.blocklibrary.BlockLibrary</mainClass>
+					<arguments>
+			            <argument>${service.port}</argument>
+			            <argument>${service.name}</argument>
+			            <argument>${service.url}</argument>
+			        </arguments>
 				</configuration>
 			</plugin>
 		</plugins>

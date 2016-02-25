@@ -6,17 +6,17 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 public class ServerImpl extends UnicastRemoteObject implements BlockServer{
-
-	protected ServerImpl() throws RemoteException {
+	public ServerImpl() throws RemoteException {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public static void main (String args[]) {
         try {
-	        Registry registry = LocateRegistry.createRegistry(5789);
-
-            registry.rebind("BlockFileSystem", new ServerImpl());
+        	String servicePort = args[0];
+        	String serviceName = args[1];
+        	
+	        Registry registry = LocateRegistry.createRegistry(new Integer(servicePort));
+            registry.rebind(serviceName, new ServerImpl());
             System.out.println("Server initiated");
             System.in.read();
         } catch (Exception e) {

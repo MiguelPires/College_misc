@@ -26,6 +26,10 @@
 				</executions>
 				<configuration>
 					<mainClass>sec.blockfs.blockserver.ServerImpl</mainClass>
+					<arguments>
+			            <argument>${service.port}</argument>
+			            <argument>${service.name}</argument>
+			        </arguments>
 				</configuration>
 			</plugin>
 		</plugins>

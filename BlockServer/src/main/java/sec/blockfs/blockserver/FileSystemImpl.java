@@ -1,20 +1,25 @@
 package sec.blockfs.blockserver;
 
-public class FileSystemImpl implements FileSystem{
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Signature;
 
-	public int FS_init() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+public class FileSystemImpl implements FileSystem {
+  
+  private Signature signature;
+  
+  public int FS_init(String pubKey) throws NoSuchAlgorithmException, NoSuchProviderException {
+    return 0;
+  }
 
-	public void FS_write(int position, int size, byte[] contents) {
-		// TODO Auto-generated method stub
-		
-	}
+  public void FS_write(String pubKey, int position, int size, byte[] contents) {
+    
 
-	public int FS_read(int id, int position, int size, byte[] buffer) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+  }
+
+  public int FS_read(int id, int position, int size, byte[] buffer) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
 
 }

@@ -7,7 +7,6 @@
   </parent>
   <groupId>sec6</groupId>
   <artifactId>BlockLibrary</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <build>

@@ -39,7 +39,6 @@ public class BlockLibrary {
             Signature rsa = Signature.getInstance("SHA512withRSA", "SunRsaSign");
             rsa.initSign(priv);
             rsa.update(textBytes, 0, byteLength);
-            rsa.update("a".getBytes(), 0, "a".getBytes().length);
             
             // sign and send data
             byte[] signature = rsa.sign();  

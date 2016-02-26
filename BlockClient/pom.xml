@@ -5,11 +5,20 @@
     <artifactId>BlockFS</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>sec6</groupId>
-  <artifactId>BlockLibrary</artifactId>
-  <packaging>jar</packaging>
+  	
+  	<artifactId>BlockClient</artifactId>
+  	<groupId>sec6</groupId>
+  	<version>0.0.1-SNAPSHOT</version>
+  	<packaging>jar</packaging>
 
-  <build>
+  	<dependencies>
+  		<dependency>
+  			<groupId>sec6</groupId>
+  			<artifactId>BlockLibrary</artifactId>
+  			<version>0.0.1-SNAPSHOT</version>
+  		</dependency>
+  	</dependencies>
+  	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -22,14 +31,15 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<mainClass>sec.blockfs.blockclient.Client</mainClass>
+					<arguments>
+			            <argument>${service.port}</argument>
+			            <argument>${service.name}</argument>
+			            <argument>${service.url}</argument>
+			        </arguments>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-  <dependencies>
-  	<dependency>
-  		<groupId>sec6</groupId>
-  		<artifactId>BlockServer</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
-  	</dependency>
-  </dependencies>
 </project>

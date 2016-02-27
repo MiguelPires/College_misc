@@ -9,8 +9,8 @@ public interface BlockServer extends Remote {
   byte[] get(int id) throws RemoteException;
 
   // stores a signed, public key block
-  byte[] put_k(byte[] data, byte[] signature, byte[] pub) throws RemoteException, ServerErrorException;
+  byte[] put_k(byte[] data, byte[] signature, byte[] pub) throws RemoteException, ServerErrorException, DataIntegrityFailureException;
 
   // stores a content hash block
-  int put_h(byte[] data) throws RemoteException;
+  byte[] put_h(byte[] data) throws RemoteException, ServerErrorException;
 }

@@ -1,31 +1,41 @@
 package sec.blockfs.blockserver;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.Signature;
-import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 
 @SuppressWarnings("serial")
 public class ServerImpl extends UnicastRemoteObject implements BlockServer {
-  private FileSystem fileSystem;
+  private FileSystemImpl fileSystem;
   private ArrayList<String> clients;
+  private MessageDigest digestAlgorithm;
 
-  public ServerImpl() throws RemoteException {
+  public ServerImpl() throws RemoteException, ServerErrorException {
     super();
 
     fileSystem = new FileSystemImpl();
     clients = new ArrayList<String>();
+    try {
+      digestAlgorithm = MessageDigest.getInstance("SHA-512");
+    } catch (NoSuchAlgorithmException e) {
+      throw new ServerErrorException(e.getMessage());
+    }
+
+    fileSystem.FS_init();
   }
 
   public static void main(String[] args) {
@@ -43,56 +53,90 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
     }
   }
 
+  /*
+   * (non-Javadoc) Interface methods
+   */
+
   public byte[] get(int id) {
     // TODO Auto-generated method stub
     return null;
   }
 
-  public byte[] put_k(byte[] data, byte[] signature, byte[] publicKeyBytes) throws ServerErrorException {
+  public byte[] put_k(byte[] data, byte[] signature, byte[] publicKeyBytes)
+      throws ServerErrorException, DataIntegrityFailureException {
+    // verify data integrity
+    if (!verifyDataIntegrity(data, signature, publicKeyBytes)) {
+      throw new DataIntegrityFailureException("Data integrity check failed");
+    }
+
     try {
-      MessageDigest digest = MessageDigest.getInstance("SHA");
 
-      // testar se o digest da chave existe e senao, chamar o FS_INIT
-      digest.update(publicKeyBytes);
-      byte[] keyDigest = digest.digest();
+      // write public key block
+      byte[] dataDigest = clearAndCompute(data);
+      byte[] keyDigest = writePublicKeyBlock(publicKeyBytes, dataDigest);
 
-      String base64Key = new String(Base64.getEncoder().encode(keyDigest));
-      if (!clients.contains(base64Key)) {
-        fileSystem.FS_init(base64Key);
-      }
-
-      // regenerate public key
-      X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(publicKeyBytes);
-      KeyFactory keyFactory = KeyFactory.getInstance("RSA", "SunRsaSign");
-      PublicKey publicKey = keyFactory.generatePublic(pubKeySpec);
-
-      // initialize signing algorithm
-      Signature rsa = Signature.getInstance("SHA512withRSA", "SunRsaSign");
-      rsa.initVerify(publicKey);
-      rsa.update(data, 0, data.length);
-      
-      // verify data integrity
-      if (rsa.verify(signature)) {
-        fileSystem.FS_write(base64Key, 0, data.length, data);
-        System.out.println("Data integrity check - Success");
-      } else
-      {
-        System.out.println("Data integrity check - Failure");
-        throw new DataIntegrityFailureException();
-      }
+      // write data block
+      fileSystem.FS_write(0, data.length, data);
 
       return keyDigest;
-
     } catch (Exception e) {
       e.printStackTrace();
       throw new ServerErrorException();
     }
-
   }
 
-  public int put_h(byte[] data) {
-    // TODO Auto-generated method stub
-    return 0;
+  public byte[] put_h(byte[] data) throws ServerErrorException {
+    try {
+      fileSystem.FS_write(0, data.length, data);
+      return clearAndCompute(data);
+    } catch (Exception e) {
+      throw new ServerErrorException(e.getMessage());
+    }
   }
 
+  /*
+   * (non Java-doc)
+   * 
+   * Auxiliary methods
+   */
+
+  private byte[] clearAndCompute(byte[] data) {
+    digestAlgorithm.reset();
+    digestAlgorithm.update(data);
+    return digestAlgorithm.digest();
+  }
+
+  private byte[] writePublicKeyBlock(byte[] publicKey, byte[] dataDigest) throws NoSuchAlgorithmException, IOException {
+    byte[] keyDigest = clearAndCompute(publicKey);
+    String fileName = Base64.getEncoder().encode(keyDigest).toString();
+
+    System.out.println("Writing public key block: " + FileSystemImpl.BASE_PATH + File.separatorChar + fileName);
+    FileOutputStream stream = new FileOutputStream(FileSystemImpl.BASE_PATH + File.separatorChar + fileName);
+    stream.write(dataDigest, 0, dataDigest.length);
+    stream.close();
+
+    return keyDigest;
+  }
+
+  private boolean verifyDataIntegrity(byte[] data, byte[] signature, byte[] publicKeyBytes) {
+    try {
+      PublicKey publicKey = regeneratePublicKey(publicKeyBytes);
+      // initialize signing algorithm
+      Signature rsa = Signature.getInstance("SHA512withRSA", "SunRsaSign");
+      rsa.initVerify(publicKey);
+      rsa.update(data, 0, data.length);
+
+      // verify data integrity
+      return rsa.verify(signature);
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  private PublicKey regeneratePublicKey(byte[] publicKeyBytes)
+      throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+    X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+    KeyFactory keyFactory = KeyFactory.getInstance("RSA", "SunRsaSign");
+    return keyFactory.generatePublic(pubKeySpec);
+  }
 }

@@ -11,9 +11,9 @@ import java.util.Base64;
 
 public class FileSystemImpl implements FileSystem {
 
-  private static final String BASE_PATH = "C:\\Temp";
+  public static final String BASE_PATH = "C:\\Temp";
 
-  public int FS_init(String pubKey) throws NoSuchAlgorithmException, NoSuchProviderException {
+  public int FS_init() {
     File file = new File(BASE_PATH);
     if (!file.exists()) {
       file.mkdir();
@@ -21,14 +21,14 @@ public class FileSystemImpl implements FileSystem {
     return 0;
   }
 
-  public void FS_write(String pubKey, int position, int size, byte[] contents) throws IOException {
+  public void FS_write(int position, int size, byte[] contents) throws IOException {
     try {
       MessageDigest md = MessageDigest.getInstance("SHA-512");
-      md.update(pubKey.getBytes());
+      md.update(contents);
       byte[] digest = md.digest();
       String fileName = Base64.getEncoder().encode(digest).toString();
 
-      System.out.println("Creating file " + BASE_PATH + File.separatorChar + fileName);
+      System.out.println("Writing data block: " + BASE_PATH + File.separatorChar + fileName);
       FileOutputStream stream = new FileOutputStream(BASE_PATH + File.separatorChar + fileName);
       stream.write(contents, position, size);
       stream.close();

@@ -18,23 +18,18 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 
+import sec.blockfs.blockutility.BlockUtility;
+
 @SuppressWarnings("serial")
 public class ServerImpl extends UnicastRemoteObject implements BlockServer {
   private FileSystemImpl fileSystem;
   private ArrayList<String> clients;
-  private MessageDigest digestAlgorithm;
 
   public ServerImpl() throws RemoteException, ServerErrorException {
     super();
 
     fileSystem = new FileSystemImpl();
     clients = new ArrayList<String>();
-    try {
-      digestAlgorithm = MessageDigest.getInstance("SHA-512");
-    } catch (NoSuchAlgorithmException e) {
-      throw new ServerErrorException(e.getMessage());
-    }
-
     fileSystem.FS_init();
   }
 
@@ -72,9 +67,9 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
     try {
 
       // write public key block
-      byte[] dataDigest = clearAndCompute(data);
+      byte[] dataDigest = BlockUtility.clearAndCompute(data);
       byte[] keyDigest = writePublicKeyBlock(publicKeyBytes, dataDigest);
-
+      
       // write data block
       fileSystem.FS_write(0, data.length, data);
 
@@ -88,7 +83,7 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
   public byte[] put_h(byte[] data) throws ServerErrorException {
     try {
       fileSystem.FS_write(0, data.length, data);
-      return clearAndCompute(data);
+      return BlockUtility.clearAndCompute(data);
     } catch (Exception e) {
       throw new ServerErrorException(e.getMessage());
     }
@@ -100,18 +95,13 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
    * Auxiliary methods
    */
 
-  private byte[] clearAndCompute(byte[] data) {
-    digestAlgorithm.reset();
-    digestAlgorithm.update(data);
-    return digestAlgorithm.digest();
-  }
-
   private byte[] writePublicKeyBlock(byte[] publicKey, byte[] dataDigest) throws NoSuchAlgorithmException, IOException {
-    byte[] keyDigest = clearAndCompute(publicKey);
-    String fileName = Base64.getEncoder().encode(keyDigest).toString();
-
-    System.out.println("Writing public key block: " + FileSystemImpl.BASE_PATH + File.separatorChar + fileName);
-    FileOutputStream stream = new FileOutputStream(FileSystemImpl.BASE_PATH + File.separatorChar + fileName);
+    byte[] keyDigest = BlockUtility.clearAndCompute(publicKey);
+    String fileName = BlockUtility.getKeyString(keyDigest);
+    String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+    
+    System.out.println("Writing public key block: " + filePath);
+    FileOutputStream stream = new FileOutputStream(filePath);
     stream.write(dataDigest, 0, dataDigest.length);
     stream.close();
 

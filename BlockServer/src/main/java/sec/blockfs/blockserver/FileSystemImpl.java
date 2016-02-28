@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Base64;
+import sec.blockfs.blockutility.*;
 
 public class FileSystemImpl implements FileSystem {
 
@@ -23,16 +24,16 @@ public class FileSystemImpl implements FileSystem {
 
   public void FS_write(int position, int size, byte[] contents) throws IOException {
     try {
-      MessageDigest md = MessageDigest.getInstance("SHA-512");
-      md.update(contents);
-      byte[] digest = md.digest();
-      String fileName = Base64.getEncoder().encode(digest).toString();
-
-      System.out.println("Writing data block: " + BASE_PATH + File.separatorChar + fileName);
-      FileOutputStream stream = new FileOutputStream(BASE_PATH + File.separatorChar + fileName);
+      byte[] dataDigest = BlockUtility.clearAndCompute(contents);
+      String fileName = BlockUtility.getKeyString(dataDigest);
+      String filePath = BASE_PATH + File.separatorChar + fileName;
+      
+      System.out.println("Writing data block: " + filePath);
+      FileOutputStream stream = new FileOutputStream(filePath);
+      
       stream.write(contents, position, size);
       stream.close();
-    } catch (NoSuchAlgorithmException | IOException e) {
+    } catch (IOException e) {
       System.out.println("Filesystem error - write operation failed" + e.getMessage());
       throw new FileSystemException("Write operation failed");
     }

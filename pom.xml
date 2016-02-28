@@ -9,6 +9,7 @@
   	<module>BlockServer</module>
   	<module>BlockLibrary</module>
   	<module>BlockClient</module>
+  	<module>BlockUtility</module>
   </modules>
 
   <properties>
@@ -59,7 +60,6 @@
           <target>1.7</target>
         </configuration>
     </plugin>
-
     </plugins>
   </build>
 

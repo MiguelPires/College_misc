@@ -1,5 +1,8 @@
 package sec.blockfs.blocklibrary;
 
+import static org.junit.Assert.*;
+
+import java.io.File;
 import java.net.MalformedURLException;
 import java.rmi.AccessException;
 import java.rmi.Naming;
@@ -7,12 +10,18 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.MessageDigest;
+import java.util.Base64;
+
+import javax.swing.text.html.BlockView;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import sec.blockfs.blockserver.FileSystemImpl;
 import sec.blockfs.blockserver.ServerImpl;
+import sec.blockfs.blockutility.BlockUtility;
 
 public class LibraryTest {
     private static String servicePort = System.getProperty("service.port");
@@ -77,5 +86,51 @@ public class LibraryTest {
     public void failNullWrite() throws Exception {
         BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
         library.write(null);
+    }
+
+    @Test
+    public void publicKeyBlockCheck() throws Exception {
+        // write a message 
+        String text = "Some random content";
+        byte[] textBytes = text.getBytes();
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.write(textBytes);
+        
+        // compute hash of public key
+        byte[] keyDigest = BlockUtility.clearAndCompute(library.publicKey.getEncoded());
+        String fileName = BlockUtility.getKeyString(keyDigest);
+        
+        // check for public key block
+        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        File file = new File(filePath);
+        assertTrue("Public key block '" + filePath + "' doesn't exist", file.exists());
+    }
+
+    @Test
+    public void dataBlockCheck() throws Exception {
+        // write a message 
+        String text = "Some random content";
+        byte[] textBytes = text.getBytes();
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.write(textBytes);
+        
+        // compute hash of data
+        byte[] keyDigest = BlockUtility.clearAndCompute(textBytes);
+        String fileName = BlockUtility.getKeyString(keyDigest);
+        
+        // check for data block
+        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        File file = new File(filePath);
+        assertTrue("Data block '" + filePath + "' doesn't exist", file.exists());
+    }
+    
+    @Test
+    public void publicKeyBlockContentsCheck() {
+        //TODO
+    }
+    
+    @Test
+    public void dataBlockContentsCheck() {
+        //TODO
     }
 }

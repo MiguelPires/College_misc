@@ -34,4 +34,11 @@
 			</plugin>
 		</plugins>
 	</build>
+	<dependencies>
+		<dependency>
+  			<groupId>sec6</groupId>
+  			<artifactId>BlockUtility</artifactId>
+  			<version>0.0.1-SNAPSHOT</version>
+  		</dependency>
+  	</dependencies>
 </project>

@@ -1,25 +1,30 @@
 package sec.blockfs.blocklibrary;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.Arrays;
 
 import sec.blockfs.blockserver.BlockServer;
+import sec.blockfs.blockutility.BlockUtility;;
 
 public class BlockLibrary {
-    private static final int KEY_SIZE = 2048;
     private static BlockServer blockServer;
     private PrivateKey privateKey;
-    private PublicKey publicKey;
+    PublicKey publicKey;
     private Signature signAlgorithm;
 
     public BlockLibrary(String serviceName, String servicePort, String serviceUrl)
@@ -38,13 +43,13 @@ public class BlockLibrary {
         // instantiate key generator
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA", "SunRsaSign");
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-        keyGen.initialize(KEY_SIZE, random);
+        keyGen.initialize(BlockUtility.KEY_SIZE, random);
 
         // generate keys
         KeyPair pair = keyGen.generateKeyPair();
         privateKey = pair.getPrivate();
         publicKey = pair.getPublic();
-
+        
         // initialize signing algorithm
         signAlgorithm = Signature.getInstance("SHA512withRSA", "SunRsaSign");
     }

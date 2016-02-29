@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.FileSystemException;
+import java.util.Arrays;
 
 import sec.blockfs.blockutility.BlockUtility;
 
@@ -28,6 +29,15 @@ public class FileSystemImpl implements FileSystem {
       System.out.println("Writing data block: " + filePath);
       FileOutputStream stream = new FileOutputStream(filePath);
       stream.write(contents, position, size);
+
+      // pad rest of file with zeroes if needed 
+      int restLength = size-contents.length;
+      if (restLength > 0) {
+        byte[] zeroBytes = new byte[restLength];
+        Arrays.fill(zeroBytes, (byte) 0 );
+        stream.write(zeroBytes, contents.length, restLength);
+      }
+      
       stream.close();
     } catch (IOException e) {
       System.out.println("Filesystem error - write operation failed" + e.getMessage());

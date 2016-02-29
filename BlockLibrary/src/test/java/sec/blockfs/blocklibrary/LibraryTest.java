@@ -141,7 +141,7 @@ public class LibraryTest {
         String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
         FileInputStream stream = new FileInputStream(filePath);
         byte[] buffer = new byte[dataDigest.length];
-        stream.read(buffer);
+        stream.read(buffer, 0, dataDigest.length);
         stream.close();
         assertTrue("Public key block contains wrong data", Arrays.equals(buffer, dataDigest));
     }
@@ -162,7 +162,7 @@ public class LibraryTest {
         // verify data block contents
         FileInputStream stream = new FileInputStream(filePath);
         byte[] buffer = new byte[textBytes.length];
-        stream.read(buffer);
+        stream.read(buffer, 0, textBytes.length);
         stream.close();
         assertTrue("Data block contains wrong data", Arrays.equals(buffer, textBytes));
     }

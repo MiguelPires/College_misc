@@ -21,13 +21,10 @@ import sec.blockfs.blockutility.BlockUtility;
 @SuppressWarnings("serial")
 public class ServerImpl extends UnicastRemoteObject implements BlockServer {
   private FileSystemImpl fileSystem;
-  private ArrayList<String> clients;
 
   public ServerImpl() throws RemoteException, ServerErrorException {
     super();
-
     fileSystem = new FileSystemImpl();
-    clients = new ArrayList<String>();
     fileSystem.FS_init();
   }
 
@@ -74,7 +71,7 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
       return keyDigest;
     } catch (Exception e) {
       e.printStackTrace();
-      throw new ServerErrorException();
+      throw new ServerErrorException(e.getMessage());
     }
   }
 

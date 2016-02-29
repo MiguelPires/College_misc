@@ -18,7 +18,7 @@ public class BlockUtility {
         return keyString;
     }
 
-    public static byte[] clearAndCompute(byte[] data) {
+    public static byte[] digest(byte[] data) {
         MessageDigest digestAlgorithm = null;
         try {
             digestAlgorithm = MessageDigest.getInstance(DIGEST_ALGORITHM);

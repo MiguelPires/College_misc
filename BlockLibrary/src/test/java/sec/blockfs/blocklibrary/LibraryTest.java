@@ -1,8 +1,9 @@
 package sec.blockfs.blocklibrary;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.MalformedURLException;
 import java.rmi.AccessException;
 import java.rmi.Naming;
@@ -10,10 +11,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.security.MessageDigest;
-import java.util.Base64;
-
-import javax.swing.text.html.BlockView;
+import java.util.Arrays;
 
 import org.junit.After;
 import org.junit.Before;
@@ -95,11 +93,11 @@ public class LibraryTest {
         byte[] textBytes = text.getBytes();
         BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
         library.write(textBytes);
-        
+
         // compute hash of public key
-        byte[] keyDigest = BlockUtility.clearAndCompute(library.publicKey.getEncoded());
+        byte[] keyDigest = BlockUtility.digest(library.publicKey.getEncoded());
         String fileName = BlockUtility.getKeyString(keyDigest);
-        
+
         // check for public key block
         String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
         File file = new File(filePath);
@@ -113,24 +111,59 @@ public class LibraryTest {
         byte[] textBytes = text.getBytes();
         BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
         library.write(textBytes);
-        
+
         // compute hash of data
-        byte[] keyDigest = BlockUtility.clearAndCompute(textBytes);
-        String fileName = BlockUtility.getKeyString(keyDigest);
-        
+        byte[] dataDigest = BlockUtility.digest(textBytes);
+        String fileName = BlockUtility.getKeyString(dataDigest);
+
         // check for data block
         String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
         File file = new File(filePath);
         assertTrue("Data block '" + filePath + "' doesn't exist", file.exists());
     }
-    
+
     @Test
-    public void publicKeyBlockContentsCheck() {
-        //TODO
+    public void publicKeyBlockContentsCheck() throws Exception {
+        // write a message 
+        String text = "Some random content";
+        byte[] textBytes = text.getBytes();
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.write(textBytes);
+
+        // compute hash of public key
+        byte[] keyDigest = BlockUtility.digest(library.publicKey.getEncoded());
+        String fileName = BlockUtility.getKeyString(keyDigest);
+
+        // hash of data block - expected contents 
+        byte[] dataDigest = BlockUtility.digest(textBytes);
+
+        // verify public key block contents
+        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        FileInputStream stream = new FileInputStream(filePath);
+        byte[] buffer = new byte[dataDigest.length];
+        stream.read(buffer);
+        stream.close();
+        assertTrue("Public key block contains wrong data", Arrays.equals(buffer, dataDigest));
     }
-    
+
     @Test
-    public void dataBlockContentsCheck() {
-        //TODO
+    public void dataBlockContentsCheck() throws Exception {
+        // write a message 
+        String text = "Some random content";
+        byte[] textBytes = text.getBytes();
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.write(textBytes);
+
+        // hash of data - expected contents
+        byte[] dataDigest = BlockUtility.digest(textBytes);
+        String fileName = BlockUtility.getKeyString(dataDigest);
+        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+
+        // verify data block contents
+        FileInputStream stream = new FileInputStream(filePath);
+        byte[] buffer = new byte[textBytes.length];
+        stream.read(buffer);
+        stream.close();
+        assertTrue("Data block contains wrong data", Arrays.equals(buffer, textBytes));
     }
 }

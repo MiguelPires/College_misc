@@ -8,7 +8,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.KeyFactory;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
@@ -16,7 +15,6 @@ import java.security.Signature;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.Base64;
 
 import sec.blockfs.blockutility.BlockUtility;
 
@@ -67,9 +65,9 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
     try {
 
       // write public key block
-      byte[] dataDigest = BlockUtility.clearAndCompute(data);
+      byte[] dataDigest = BlockUtility.digest(data);
       byte[] keyDigest = writePublicKeyBlock(publicKeyBytes, dataDigest);
-      
+
       // write data block
       fileSystem.FS_write(0, data.length, data);
 
@@ -83,7 +81,7 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
   public byte[] put_h(byte[] data) throws ServerErrorException {
     try {
       fileSystem.FS_write(0, data.length, data);
-      return BlockUtility.clearAndCompute(data);
+      return BlockUtility.digest(data);
     } catch (Exception e) {
       throw new ServerErrorException(e.getMessage());
     }
@@ -96,10 +94,10 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
    */
 
   private byte[] writePublicKeyBlock(byte[] publicKey, byte[] dataDigest) throws NoSuchAlgorithmException, IOException {
-    byte[] keyDigest = BlockUtility.clearAndCompute(publicKey);
+    byte[] keyDigest = BlockUtility.digest(publicKey);
     String fileName = BlockUtility.getKeyString(keyDigest);
     String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
-    
+
     System.out.println("Writing public key block: " + filePath);
     FileOutputStream stream = new FileOutputStream(filePath);
     stream.write(dataDigest, 0, dataDigest.length);

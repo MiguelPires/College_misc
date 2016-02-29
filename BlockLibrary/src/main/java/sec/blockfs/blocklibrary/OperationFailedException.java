@@ -7,7 +7,7 @@ public class OperationFailedException extends
     public OperationFailedException(String message) {
         super(message);
     }
-    
+
     public OperationFailedException() {
         super();
     }

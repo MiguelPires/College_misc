@@ -4,11 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.FileSystemException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.util.Base64;
-import sec.blockfs.blockutility.*;
+
+import sec.blockfs.blockutility.BlockUtility;
 
 public class FileSystemImpl implements FileSystem {
 
@@ -24,13 +21,12 @@ public class FileSystemImpl implements FileSystem {
 
   public void FS_write(int position, int size, byte[] contents) throws IOException {
     try {
-      byte[] dataDigest = BlockUtility.clearAndCompute(contents);
+      byte[] dataDigest = BlockUtility.digest(contents);
       String fileName = BlockUtility.getKeyString(dataDigest);
       String filePath = BASE_PATH + File.separatorChar + fileName;
-      
+
       System.out.println("Writing data block: " + filePath);
       FileOutputStream stream = new FileOutputStream(filePath);
-      
       stream.write(contents, position, size);
       stream.close();
     } catch (IOException e) {

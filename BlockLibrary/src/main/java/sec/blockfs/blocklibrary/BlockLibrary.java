@@ -1,22 +1,17 @@
 package sec.blockfs.blocklibrary;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.Arrays;
 
 import sec.blockfs.blockserver.BlockServer;
 import sec.blockfs.blockutility.BlockUtility;;
@@ -49,7 +44,7 @@ public class BlockLibrary {
         KeyPair pair = keyGen.generateKeyPair();
         privateKey = pair.getPrivate();
         publicKey = pair.getPublic();
-        
+
         // initialize signing algorithm
         signAlgorithm = Signature.getInstance("SHA512withRSA", "SunRsaSign");
     }
@@ -66,7 +61,7 @@ public class BlockLibrary {
             blockServer.put_k(contents, signature, publicKey.getEncoded());
 
         } catch (Exception e) {
-            System.out.println("Library - Couldn't write to server: "+e.getMessage());
+            System.out.println("Library - Couldn't write to server: " + e.getMessage());
             //e.printStackTrace();
             throw new OperationFailedException(e.getMessage());
         }

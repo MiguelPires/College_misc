@@ -1,11 +1,11 @@
 package sec.blockfs.blockserver;
 
 public class DataIntegrityFailureException extends Exception {
-  public DataIntegrityFailureException () {
+  public DataIntegrityFailureException() {
     super();
   }
-  
-  public DataIntegrityFailureException (String message) {
+
+  public DataIntegrityFailureException(String message) {
     super(message);
   }
 }

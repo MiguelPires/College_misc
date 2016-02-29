@@ -22,13 +22,12 @@ public class BlockLibrary {
     PublicKey publicKey;
     private Signature signAlgorithm;
 
-    public BlockLibrary(String serviceName, String servicePort, String serviceUrl)
-            throws MalformedURLException,
+    public String FS_init(String serviceName, String servicePort, String serviceUrl)
+            throws NoSuchAlgorithmException,
+            NoSuchProviderException,
+            MalformedURLException,
             RemoteException,
-            NotBoundException,
-            NoSuchAlgorithmException,
-            NoSuchProviderException {
-
+            NotBoundException {
         System.out.println(
                 "Connecting to server: " + serviceUrl + ":" + servicePort + "/" + serviceName);
         blockServer =
@@ -47,11 +46,16 @@ public class BlockLibrary {
 
         // initialize signing algorithm
         signAlgorithm = Signature.getInstance("SHA512withRSA", "SunRsaSign");
+        byte[] keyDigest = BlockUtility.digest(publicKey.getEncoded());
+        return BlockUtility.getKeyString(keyDigest);
+
     }
 
-    public void write(byte[] contents) throws OperationFailedException {
-
+    public void FS_write(int position, int size, byte[] contents) throws OperationFailedException {
         try {
+            if (position < 0 || size < 0 || contents == null)
+                throw new OperationFailedException("Invalid arguments");
+
             // initialize signing algorithm            
             signAlgorithm.initSign(privateKey);
             signAlgorithm.update(contents, 0, contents.length);
@@ -67,11 +71,7 @@ public class BlockLibrary {
         }
     }
 
-    public void writeInBlocks(byte[] contents) {
-        throw new UnsupportedOperationException();
-    }
-
-    public byte[] read() {
+    public int FS_read(int id, int position, int size, byte[] buffer) {
         throw new UnsupportedOperationException();
     }
 

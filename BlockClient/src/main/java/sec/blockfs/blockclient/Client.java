@@ -13,7 +13,8 @@ public class Client {
 
         BlockLibrary library = null;
         try {
-            library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+            library = new BlockLibrary();
+            library.FS_init(serviceName, servicePort, serviceUrl);
         } catch (Exception e) {
             System.out.println("Error - couldn't instantiate library");
             e.printStackTrace();
@@ -23,7 +24,7 @@ public class Client {
         try {
             String text = "Some random string";
             byte[] textBytes = text.getBytes();
-            library.write(textBytes);
+            library.FS_write(0, textBytes.length, textBytes);
         } catch (OperationFailedException e) {
             e.printStackTrace();
         }

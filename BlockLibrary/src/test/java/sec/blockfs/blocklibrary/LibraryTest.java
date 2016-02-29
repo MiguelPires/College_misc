@@ -52,38 +52,58 @@ public class LibraryTest {
 
     @Test
     public void successCreateLib() throws Exception {
-        new BlockLibrary(serviceName, servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary();
+        library.FS_init(serviceName, servicePort, serviceUrl);
     }
 
     @Test(expected = java.rmi.ConnectException.class)
     public void wrongPort() throws Exception {
-        new BlockLibrary(serviceName, servicePort + 1, serviceUrl);
+        BlockLibrary library = new BlockLibrary();
+        library.FS_init(serviceName, servicePort + 1, serviceUrl);
     }
 
     @Test(expected = java.rmi.NotBoundException.class)
     public void wrongName() throws Exception {
-        new BlockLibrary(serviceName + "abc", servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary();
+        library.FS_init(serviceName + "abc", servicePort, serviceUrl);
     }
 
     @Test
     public void successPerformWrite() throws Exception {
         String text = "Some random write";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.write(textBytes);
+        BlockLibrary library = new BlockLibrary();
+        library.FS_init(serviceName, servicePort, serviceUrl);
+        library.FS_write(0, textBytes.length, textBytes);
     }
 
     @Test
     public void successEmptyWrite() throws Exception {
         byte[] textBytes = "".getBytes();
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.write(textBytes);
+        BlockLibrary library = new BlockLibrary();
+        library.FS_init(serviceName, servicePort, serviceUrl);
+        library.FS_write(0, textBytes.length, textBytes);
     }
 
     @Test(expected = OperationFailedException.class)
     public void failNullWrite() throws Exception {
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.write(null);
+        BlockLibrary library = new BlockLibrary();
+        library.FS_init(serviceName, servicePort, serviceUrl);
+        library.FS_write(0, 0, null);
+    }
+
+    @Test(expected = OperationFailedException.class)
+    public void failNegativeSizeArgument() throws Exception {
+        BlockLibrary library = new BlockLibrary();
+        library.FS_init(serviceName, servicePort, serviceUrl);
+        library.FS_write(0, -1, "".getBytes());
+    }
+
+    @Test(expected = OperationFailedException.class)
+    public void failNegativeOffsetArgument() throws Exception {
+        BlockLibrary library = new BlockLibrary();
+        library.FS_init(serviceName, servicePort, serviceUrl);
+        library.FS_write(-1, 0, "".getBytes());
     }
 
     @Test
@@ -91,8 +111,9 @@ public class LibraryTest {
         // write a message 
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.write(textBytes);
+        BlockLibrary library = new BlockLibrary();
+        library.FS_init(serviceName, servicePort, serviceUrl);
+        library.FS_write(0, textBytes.length, textBytes);
 
         // compute hash of public key
         byte[] keyDigest = BlockUtility.digest(library.publicKey.getEncoded());
@@ -109,8 +130,9 @@ public class LibraryTest {
         // write a message 
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.write(textBytes);
+        BlockLibrary library = new BlockLibrary();
+        library.FS_init(serviceName, servicePort, serviceUrl);
+        library.FS_write(0, textBytes.length, textBytes);
 
         // compute hash of data
         byte[] dataDigest = BlockUtility.digest(textBytes);
@@ -127,8 +149,9 @@ public class LibraryTest {
         // write a message 
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.write(textBytes);
+        BlockLibrary library = new BlockLibrary();
+        library.FS_init(serviceName, servicePort, serviceUrl);
+        library.FS_write(0, textBytes.length, textBytes);
 
         // compute hash of public key
         byte[] keyDigest = BlockUtility.digest(library.publicKey.getEncoded());
@@ -151,8 +174,9 @@ public class LibraryTest {
         // write a message 
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.write(textBytes);
+        BlockLibrary library = new BlockLibrary();
+        library.FS_init(serviceName, servicePort, serviceUrl);
+        library.FS_write(0, textBytes.length, textBytes);
 
         // hash of data - expected contents
         byte[] dataDigest = BlockUtility.digest(textBytes);

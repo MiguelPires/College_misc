@@ -1,16 +1,14 @@
 package sec.blockfs.blockserver;
 
 import java.io.IOException;
+import java.nio.file.FileSystemException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
 public interface FileSystem {
-    // initializes the file system
-    int FS_init() throws NoSuchAlgorithmException, NoSuchProviderException;
+    // writes contents
+    void write(byte[] contents) throws IOException;
 
-    // writes the 'contents' of length 'size' from the 'pos' position
-    void FS_write(int position, int size, byte[] contents) throws IOException;
-
-    // reads the data block identified by 'id'; returns the number of bytes read
-    int FS_read(int id, int position, int size, byte[] buffer);
+    // reads the data block identified by 'block'
+    byte[] read(String block) throws DataIntegrityFailureException, FileSystemException;
 }

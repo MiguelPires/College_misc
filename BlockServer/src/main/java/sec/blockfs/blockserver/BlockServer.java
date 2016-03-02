@@ -5,7 +5,7 @@ import java.rmi.RemoteException;
 
 public interface BlockServer extends Remote {
     // returns a stored data block
-    byte[] get(int id) throws RemoteException;
+    byte[] get(byte[] publicKeyBytes) throws RemoteException, WrongArgumentsException, ServerErrorException, DataIntegrityFailureException;
 
     // stores a signed, public key block
     byte[] put_k(byte[] data, byte[] signature, byte[] pub)

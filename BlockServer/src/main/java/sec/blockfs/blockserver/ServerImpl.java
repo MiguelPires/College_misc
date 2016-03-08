@@ -95,15 +95,21 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
         }
     }
 
-    @Override
-    public byte[] put_h(byte[] data) throws ServerErrorException {
-        try {
-            fileSystem.write(data);
-            return BlockUtility.digest(data);
-        } catch (Exception e) {
-            throw new ServerErrorException(e.getMessage());
-        }
-    }
+	@Override
+	public byte[] put_h(byte[] data) throws ServerErrorException {
+		try {
+			//TODO Get Client ID
+			int clientID = 0;
+			fileSystem.writeBlock(clientID, data);
+			
+			//previous method: fileSystem.write(data);
+			
+			//Need to check if returns multiple hashes (when writing various blocks)
+			return BlockUtility.digest(data);
+		} catch (Exception e) {
+			throw new ServerErrorException(e.getMessage());
+		}
+	}
 
     /*
      * (non Java-doc)

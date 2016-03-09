@@ -20,6 +20,7 @@ import org.junit.Test;
 import sec.blockfs.blockserver.FileSystemImpl;
 import sec.blockfs.blockserver.ServerImpl;
 import sec.blockfs.blockutility.BlockUtility;
+import sec.blockfs.blockutility.OperationFailedException;
 
 public class LibraryTest {
     private static String servicePort = System.getProperty("service.port");
@@ -38,13 +39,17 @@ public class LibraryTest {
     }
 
     @After
-    public void tearDown()
-            throws AccessException, RemoteException, NotBoundException, MalformedURLException {
+    public void tearDown() throws AccessException, RemoteException, NotBoundException, MalformedURLException {
         if (registry != null) {
             try {
                 Naming.unbind(serviceName);
+            } catch (Exception e) {
+                return;
+            }
+            try {
+
                 registry.unbind(serviceName);
-            } catch (NotBoundException e) {
+            } catch (Exception e) {
                 return;
             }
         }
@@ -108,7 +113,7 @@ public class LibraryTest {
 
     @Test
     public void publicKeyBlockCheck() throws Exception {
-        // write a message 
+        // write a message
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
         BlockLibrary library = new BlockLibrary();
@@ -127,7 +132,7 @@ public class LibraryTest {
 
     @Test
     public void dataBlockCheck() throws Exception {
-        // write a message 
+        // write a message
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
         BlockLibrary library = new BlockLibrary();
@@ -146,32 +151,36 @@ public class LibraryTest {
 
     @Test
     public void publicKeyBlockContentsCheck() throws Exception {
-        // write a message 
+        // write a message
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
         BlockLibrary library = new BlockLibrary();
         library.FS_init(serviceName, servicePort, serviceUrl);
         library.FS_write(0, textBytes.length, textBytes);
 
+        byte[] buffer = new byte[textBytes.length];
+        int bytesRead = library.FS_read(library.publicKey.getEncoded(), 0, textBytes.length, buffer);
+        assertTrue("Read returned wrong data: "+Arrays.toString(buffer)+"; Expected: "+Arrays.toString(textBytes), Arrays.equals(buffer, textBytes));
+
         // compute hash of public key
         byte[] keyDigest = BlockUtility.digest(library.publicKey.getEncoded());
         String fileName = BlockUtility.getKeyString(keyDigest);
-
-        // hash of data block - expected contents 
-        byte[] dataDigest = BlockUtility.digest(textBytes);
-
-        // verify public key block contents
         String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
         FileInputStream stream = new FileInputStream(filePath);
-        byte[] buffer = new byte[dataDigest.length];
-        stream.read(buffer, 0, dataDigest.length);
+        byte[] publicBlock = new byte[BlockUtility.SIGNATURE_SIZE+BlockUtility.DIGEST_SIZE];
+        stream.read(publicBlock);
         stream.close();
-        assertTrue("Public key block contains wrong data", Arrays.equals(buffer, dataDigest));
+        
+        // extract data
+        byte[] publicKeyData = new byte[BlockUtility.DIGEST_SIZE];
+        System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, publicKeyData, 0, publicKeyData.length);
+        
+        assertTrue("Public key block contains wrong data", Arrays.equals(publicKeyData, BlockUtility.digest(textBytes)));
     }
 
     @Test
     public void dataBlockContentsCheck() throws Exception {
-        // write a message 
+        // write a message
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
         BlockLibrary library = new BlockLibrary();

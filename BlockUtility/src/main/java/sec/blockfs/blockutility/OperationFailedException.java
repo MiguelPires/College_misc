@@ -1,4 +1,4 @@
-package sec.blockfs.blocklibrary;
+package sec.blockfs.blockutility;
 
 @SuppressWarnings("serial")
 public class OperationFailedException extends

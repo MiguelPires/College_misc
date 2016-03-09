@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import sec.blockfs.blocklibrary.BlockLibrary;
+import sec.blockfs.blocklibrary.InitializationFailureException;
 import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.OperationFailedException;
 
@@ -18,13 +19,18 @@ public class Client {
         try {
             library = new BlockLibrary();
             library.FS_init(serviceName, servicePort, serviceUrl);
-        } catch (OperationFailedException e) {
+        } catch (InitializationFailureException e) {
             System.out.println("Error - " + e.getMessage());
             return;
         }
 
         try {
-            String text = generateString(BlockUtility.BLOCK_SIZE*2) + "Some random string";
+            String text = "Start_" + generateString(BlockUtility.BLOCK_SIZE) + "_End";
+            System.out.println("Writing: ");
+            System.out.println(text);
+            System.out.println("################");
+            System.out.println("Reading: ");
+            System.out.println(text);
             byte[] textBytes = text.getBytes();
             library.FS_write(0, textBytes.length, textBytes);
             byte[] readBytes = new byte[textBytes.length];
@@ -46,7 +52,7 @@ public class Client {
     }
 
     public static String generateString(int length) {
-        String chars = new String("1234567890abcdefghijklmnopqrstuvxyz.-,/*-+@#£$%&()=?");
+        String chars = new String("1234567890abcdefghijklmnopqrstuvxyz");// .-,/*-+@#£$%&()=?");
         Random rand = new Random();
 
         char[] text = new char[length];

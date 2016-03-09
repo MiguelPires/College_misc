@@ -61,13 +61,13 @@ public class LibraryTest {
         library.FS_init(serviceName, servicePort, serviceUrl);
     }
 
-    @Test(expected = java.rmi.ConnectException.class)
+    @Test(expected = InitializationFailureException.class)
     public void wrongPort() throws Exception {
         BlockLibrary library = new BlockLibrary();
         library.FS_init(serviceName, servicePort + 1, serviceUrl);
     }
 
-    @Test(expected = java.rmi.NotBoundException.class)
+    @Test(expected = InitializationFailureException.class)
     public void wrongName() throws Exception {
         BlockLibrary library = new BlockLibrary();
         library.FS_init(serviceName + "abc", servicePort, serviceUrl);
@@ -139,10 +139,13 @@ public class LibraryTest {
         library.FS_init(serviceName, servicePort, serviceUrl);
         library.FS_write(0, textBytes.length, textBytes);
 
+        byte[] data = new byte[BlockUtility.BLOCK_SIZE];
+        System.arraycopy(textBytes, 0, data, 0, textBytes.length);
+        
         // compute hash of data
-        byte[] dataDigest = BlockUtility.digest(textBytes);
+        byte[] dataDigest = BlockUtility.digest(data);
         String fileName = BlockUtility.getKeyString(dataDigest);
-
+        
         // check for data block
         String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
         File file = new File(filePath);
@@ -160,7 +163,8 @@ public class LibraryTest {
 
         byte[] buffer = new byte[textBytes.length];
         int bytesRead = library.FS_read(library.publicKey.getEncoded(), 0, textBytes.length, buffer);
-        assertTrue("Read returned wrong data: "+Arrays.toString(buffer)+"; Expected: "+Arrays.toString(textBytes), Arrays.equals(buffer, textBytes));
+        assertTrue("Read returned wrong data: "+Arrays.toString(buffer)+
+                    "; Expected: "+Arrays.toString(textBytes), Arrays.equals(buffer, textBytes));
 
         // compute hash of public key
         byte[] keyDigest = BlockUtility.digest(library.publicKey.getEncoded());
@@ -174,8 +178,9 @@ public class LibraryTest {
         // extract data
         byte[] publicKeyData = new byte[BlockUtility.DIGEST_SIZE];
         System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, publicKeyData, 0, publicKeyData.length);
-        
-        assertTrue("Public key block contains wrong data", Arrays.equals(publicKeyData, BlockUtility.digest(textBytes)));
+        byte[] dataBlock = new byte[BlockUtility.BLOCK_SIZE];
+        System.arraycopy(textBytes, 0, dataBlock, 0, textBytes.length);
+        assertTrue("Public key block contains wrong data", Arrays.equals(publicKeyData, BlockUtility.digest(dataBlock)));
     }
 
     @Test
@@ -188,10 +193,11 @@ public class LibraryTest {
         library.FS_write(0, textBytes.length, textBytes);
 
         // hash of data - expected contents
-        byte[] dataDigest = BlockUtility.digest(textBytes);
-        String fileName = BlockUtility.getKeyString(dataDigest);
+        byte[] data = new byte[BlockUtility.BLOCK_SIZE];
+        System.arraycopy(textBytes, 0, data, 0, textBytes.length);
+        String fileName = BlockUtility.getKeyString(BlockUtility.digest(data));
         String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
-
+        
         // verify data block contents
         FileInputStream stream = new FileInputStream(filePath);
         byte[] buffer = new byte[textBytes.length];

@@ -9,6 +9,7 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import sec.blockfs.blockutility.BlockUtility;
 
@@ -26,15 +27,11 @@ public class FileSystemImpl implements FileSystem {
     @Override
     public String writeData(byte[] contents) throws FileSystemException {
         try {
-            int dataSize = contents.length-BlockUtility.SIGNATURE_SIZE;
-            byte[] data = new byte[dataSize];
-            System.arraycopy(contents, BlockUtility.SIGNATURE_SIZE, data, 0, dataSize);
-            
-            byte[] dataDigest = BlockUtility.digest(data);
+            byte[] dataDigest = BlockUtility.digest(contents);
             String fileName = BlockUtility.getKeyString(dataDigest);
             String filePath = BASE_PATH + File.separatorChar + fileName;
             System.out.println("Writing data block: " + filePath);
-            
+
             FileOutputStream stream = new FileOutputStream(filePath);
             stream.write(contents);
             stream.close();
@@ -73,19 +70,21 @@ public class FileSystemImpl implements FileSystem {
     @Override
     public byte[] read(String blockName) throws DataIntegrityFailureException, FileSystemException {
         byte[] dataBlock;
+        System.out.println("Reading block: " + blockName);
 
-            String filePath = BASE_PATH + File.separatorChar + blockName;
-            try {
-                FileInputStream stream = new FileInputStream(filePath);
+        String filePath = BASE_PATH + File.separatorChar + blockName;
+        try {
+            FileInputStream stream = new FileInputStream(filePath);
 
             Path path = Paths.get(filePath);
             dataBlock = Files.readAllBytes(path);
             stream.close();
-            } catch (FileNotFoundException e) {
-                return null;
-            } catch(IOException e){
-                throw new FileSystemException("File system error when finding file: "+blockName);
-            }
+        } catch (FileNotFoundException e) {
+            return null;
+        } catch (IOException e) {
+            throw new FileSystemException("File system error when finding file: " + blockName);
+        }
+
         return dataBlock;
     }
 }

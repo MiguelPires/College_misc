@@ -18,7 +18,7 @@ public class BlockLibrary {
     public PublicKey publicKey;
     private Signature signAlgorithm;
 
-    public String FS_init(String serviceName, String servicePort, String serviceUrl) throws OperationFailedException {
+    public String FS_init(String serviceName, String servicePort, String serviceUrl) throws InitializationFailureException {
 
         try {
             System.out.println("Connecting to server: " + serviceUrl + ":" + servicePort + "/" + serviceName);
@@ -40,16 +40,14 @@ public class BlockLibrary {
             byte[] keyDigest = BlockUtility.digest(publicKey.getEncoded());
             return BlockUtility.getKeyString(keyDigest);
         } catch (Exception e) {
-            throw new OperationFailedException("Couldn't connect to server");
+            throw new InitializationFailureException("Couldn't connect to server");
         }
-
     }
 
     public void FS_write(int position, int size, byte[] contents) throws OperationFailedException {
         try {
             if (position < 0 || size < 0 || contents == null)
                 throw new OperationFailedException("Invalid arguments");
-            // TODO: add padding
 
             int startBlock = position / BlockUtility.BLOCK_SIZE;
             int endBlock = (position + size) / BlockUtility.BLOCK_SIZE;
@@ -65,13 +63,12 @@ public class BlockLibrary {
                 writtenBytes += bytesToWrite;
                 ++num;
             }
-
-            // rewrite public key block
-            byte[] publicBlock = blockServer.get(BlockUtility.getKeyString(publicKey.getEncoded()));
-
+            byte[] publicKeyHash = BlockUtility.digest(publicKey.getEncoded());
+            byte[] publicBlock = blockServer.get(BlockUtility.getKeyString(publicKeyHash));
             byte[] rewrittenBlock = null;
 
             if (publicBlock != null) {
+                // rewrite
                 int dataSize = publicBlock.length - BlockUtility.SIGNATURE_SIZE;
                 byte[] dataPublicBlock = new byte[dataSize];
                 System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, dataPublicBlock, 0, dataSize);
@@ -90,9 +87,8 @@ public class BlockLibrary {
                                 BlockUtility.DIGEST_SIZE);
                 }
             } else {
+                // write new public key block
                 rewrittenBlock = new byte[toWriteHashes.length * BlockUtility.DIGEST_SIZE];
-
-                // there is no written public key block
                 for (int i = 0; i < toWriteHashes.length; ++i)
                     System.arraycopy(toWriteHashes[i], 0, rewrittenBlock, i * BlockUtility.DIGEST_SIZE, BlockUtility.DIGEST_SIZE);
             }
@@ -102,18 +98,12 @@ public class BlockLibrary {
             signAlgorithm.update(rewrittenBlock, 0, rewrittenBlock.length);
             byte[] keyBlockSignature = signAlgorithm.sign();
 
+            // write public key block
             blockServer.put_k(rewrittenBlock, keyBlockSignature, publicKey.getEncoded());
 
+            // write data blocks
             for (int i = 0; i < toWriteBlocks.length; ++i) {
-                // sign data block
-                signAlgorithm.initSign(privateKey);
-                signAlgorithm.update(rewrittenBlock);
-                byte[] dataBlockSignature = signAlgorithm.sign();
-
-                byte[] dataBlock = new byte[dataBlockSignature.length + toWriteBlocks[i].length];
-                System.arraycopy(dataBlockSignature, 0, dataBlock, 0, dataBlockSignature.length);
-                System.arraycopy(toWriteBlocks[i], 0, dataBlock, dataBlockSignature.length, toWriteBlocks[i].length);
-                blockServer.put_h(dataBlock);
+                blockServer.put_h(toWriteBlocks[i]);
             }
         } catch (Exception e) {
             System.out.println("Library - Couldn't write to server: " + e.getMessage());
@@ -164,12 +154,12 @@ public class BlockLibrary {
                     return -1;
 
                 int dataLength = size - readLength > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE: size - readLength ;
-                    
+
                 /*System.out.println("DATA " + Arrays.toString(data));
                 System.out.println("Block size: "+data.length+"; Read size: "+dataLength+"; Sig size: "+BlockUtility.SIGNATURE_SIZE);
                 System.out.println("Buffer size: "+buffer.length+"; Read length: "+readLength);*/
                
-                System.arraycopy(data, BlockUtility.SIGNATURE_SIZE, buffer, readLength, dataLength);
+                System.arraycopy(data, 0, buffer, readLength, dataLength);
                 readLength += dataLength;
                 num++;
             }

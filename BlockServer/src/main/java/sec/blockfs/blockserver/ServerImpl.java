@@ -31,10 +31,6 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
         }
     }
 
-    /*
-     * (non-Javadoc) Interface methods
-     */
-
     @Override
     public byte[] get(String id) throws WrongArgumentsException, ServerErrorException {
         // TODO: add checks

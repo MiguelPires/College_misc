@@ -7,6 +7,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
+import java.util.Arrays;
+
 import sec.blockfs.blockserver.BlockServer;
 import sec.blockfs.blockserver.DataIntegrityFailureException;
 import sec.blockfs.blockutility.BlockUtility;
@@ -14,7 +16,8 @@ import sec.blockfs.blockutility.OperationFailedException;;
 
 public class BlockLibrary {
     private static BlockServer blockServer;
-    private PrivateKey privateKey;
+    // these attributes are only public because of the tests
+    public PrivateKey privateKey;
     public PublicKey publicKey;
     private Signature signAlgorithm;
 
@@ -57,12 +60,14 @@ public class BlockLibrary {
 
             int writtenBytes = 0, num = 0;
             for (int i = startBlock; i <= endBlock; ++i) {
-                int bytesToWrite = contents.length-writtenBytes > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE : contents.length-writtenBytes;
+                int bytesToWrite = contents.length - writtenBytes > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE
+                        : contents.length - writtenBytes;
                 System.arraycopy(contents, writtenBytes, toWriteBlocks[num], 0, bytesToWrite);
                 System.arraycopy(BlockUtility.digest(toWriteBlocks[num]), 0, toWriteHashes[num], 0, BlockUtility.DIGEST_SIZE);
                 writtenBytes += bytesToWrite;
                 ++num;
             }
+
             byte[] publicKeyHash = BlockUtility.digest(publicKey.getEncoded());
             byte[] publicBlock = blockServer.get(BlockUtility.getKeyString(publicKeyHash));
             byte[] rewrittenBlock = null;
@@ -112,7 +117,7 @@ public class BlockLibrary {
         }
     }
 
-    public int FS_read(byte[] publicKey, int position, int size, byte[] buffer) throws OperationFailedException {
+    public int FS_read(byte[] publicKey, int position, int size, byte[] buffer) throws OperationFailedException, DataIntegrityFailureException {
         if (position < 0 || size < 0 || buffer == null)
             throw new OperationFailedException("Invalid arguments");
 
@@ -131,7 +136,7 @@ public class BlockLibrary {
 
             // verify public key block integrity
             if (!BlockUtility.verifyDataIntegrity(publicKeyData, publicKeySignature, publicKey))
-                throw new DataIntegrityFailureException("Data integrity check failed");
+                throw new DataIntegrityFailureException("Data integrity check failed on public key block");
 
             int startBlock = position / BlockUtility.BLOCK_SIZE;
             int endBlock = (position + size) / BlockUtility.BLOCK_SIZE;
@@ -148,23 +153,32 @@ public class BlockLibrary {
             num = 0;
             int readLength = 0;
             for (int i = startBlock; i <= endBlock; ++i) {
-                byte[] data = blockServer.get(BlockUtility.getKeyString(blockHashes[num]));
+                String dataBlockName = BlockUtility.getKeyString(blockHashes[num]);
+                byte[] data = blockServer.get(dataBlockName);
 
                 if (data == null)
                     return -1;
+                
+                if (!Arrays.equals(blockHashes[num], BlockUtility.digest(data))) {
+                    throw new DataIntegrityFailureException("Data integrity check failed on public key block");
+                }
 
-                int dataLength = size - readLength > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE: size - readLength ;
+                int dataLength = size - readLength > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE : size - readLength;
 
-                /*System.out.println("DATA " + Arrays.toString(data));
-                System.out.println("Block size: "+data.length+"; Read size: "+dataLength+"; Sig size: "+BlockUtility.SIGNATURE_SIZE);
-                System.out.println("Buffer size: "+buffer.length+"; Read length: "+readLength);*/
-               
+                /*
+                 * System.out.println("DATA " + Arrays.toString(data)); System.out.println("Block size: "+data.length+
+                 * "; Read size: "+dataLength+"; Sig size: "+BlockUtility.SIGNATURE_SIZE); System.out.println("Buffer size: "
+                 * +buffer.length+"; Read length: "+readLength);
+                 */
+
                 System.arraycopy(data, 0, buffer, readLength, dataLength);
                 readLength += dataLength;
                 num++;
             }
 
             return buffer.length;
+        } catch (DataIntegrityFailureException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             throw new OperationFailedException(e.getMessage());

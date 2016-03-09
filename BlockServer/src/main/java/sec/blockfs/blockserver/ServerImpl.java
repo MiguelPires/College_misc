@@ -66,6 +66,7 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
         try {
             return fileSystem.writeData(data);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ServerErrorException(e.getMessage());
         }
     }

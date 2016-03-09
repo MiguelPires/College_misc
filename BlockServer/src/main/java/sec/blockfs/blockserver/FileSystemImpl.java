@@ -31,7 +31,7 @@ public class FileSystemImpl implements FileSystem {
             String fileName = BlockUtility.getKeyString(dataDigest);
             String filePath = BASE_PATH + File.separatorChar + fileName;
             System.out.println("Writing data block: " + filePath);
-
+            
             FileOutputStream stream = new FileOutputStream(filePath);
             stream.write(contents);
             stream.close();
@@ -75,7 +75,6 @@ public class FileSystemImpl implements FileSystem {
         String filePath = BASE_PATH + File.separatorChar + blockName;
         try {
             FileInputStream stream = new FileInputStream(filePath);
-
             Path path = Paths.get(filePath);
             dataBlock = Files.readAllBytes(path);
             stream.close();

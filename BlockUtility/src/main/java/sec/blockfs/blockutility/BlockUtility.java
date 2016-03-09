@@ -8,6 +8,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Random;
 
 public class BlockUtility {
     // cross-module variables
@@ -74,5 +75,16 @@ public class BlockUtility {
         X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(publicKeyBytes);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA", "SunRsaSign");
         return keyFactory.generatePublic(pubKeySpec);
+    }
+    
+    public static String generateString(int length) {
+        String chars = new String("1234567890abcdefghijklmnopqrstuvxyz");// .-,/*-+@#£$%&()=?");
+        Random rand = new Random();
+
+        char[] text = new char[length];
+        for (int i = 0; i < length; i++) {
+            text[i] = chars.charAt(rand.nextInt(chars.length()));
+        }
+        return new String(text);
     }
 }

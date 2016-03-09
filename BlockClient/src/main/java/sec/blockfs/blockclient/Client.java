@@ -2,10 +2,10 @@ package sec.blockfs.blockclient;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Random;
 
 import sec.blockfs.blocklibrary.BlockLibrary;
 import sec.blockfs.blocklibrary.InitializationFailureException;
+import sec.blockfs.blockserver.DataIntegrityFailureException;
 import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.OperationFailedException;
 
@@ -25,18 +25,21 @@ public class Client {
         }
 
         try {
-            String text = "Start_" + generateString(BlockUtility.BLOCK_SIZE) + "_End";
+            String text = "Start_" + BlockUtility.generateString(BlockUtility.BLOCK_SIZE) + "_End";
             System.out.println("Writing: ");
             System.out.println(text);
             System.out.println("################");
-            System.out.println("Reading: ");
-            System.out.println(text);
+
             byte[] textBytes = text.getBytes();
             library.FS_write(0, textBytes.length, textBytes);
             byte[] readBytes = new byte[textBytes.length];
             int bytesRead = library.FS_read(library.publicKey.getEncoded(), 0, textBytes.length, readBytes);
 
-            if (bytesRead == textBytes.length && Arrays.equals(textBytes, readBytes))
+            System.out.println("Reading: ");
+            String readString = new String(readBytes);
+            System.out.println(readString);
+
+            if (bytesRead == textBytes.length && Arrays.equals(textBytes, readBytes) && text.equals(readString))
                 System.out.println("Read bytes are equals to written - success");
             else {
                 System.out.println("Read bytes are different to written - failure");
@@ -44,21 +47,11 @@ public class Client {
                 System.out.println("Local: " + Arrays.toString(textBytes));
                 System.out.println("Remote: " + Arrays.toString(readBytes));
             }
-        } catch (OperationFailedException e) {
+        } catch (OperationFailedException | DataIntegrityFailureException e) {
             e.printStackTrace();
         }
 
         System.in.read();
     }
 
-    public static String generateString(int length) {
-        String chars = new String("1234567890abcdefghijklmnopqrstuvxyz");// .-,/*-+@#£$%&()=?");
-        Random rand = new Random();
-
-        char[] text = new char[length];
-        for (int i = 0; i < length; i++) {
-            text[i] = chars.charAt(rand.nextInt(chars.length()));
-        }
-        return new String(text);
-    }
 }

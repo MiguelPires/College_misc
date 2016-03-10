@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">UbiBike</string>
+    <string name="btn_Submit_txt">Submit</string>
+    <string name="usernameTbtext">Username</string>
+    <string name="passwordTbtext">Password</string>
+    <string name="confirmPasswordTb">Confirm Password</string>
+    <string name="btn_Login">Login</string>
+    <string name="btn_Register">Register</string>
+    <string name="registerTxt"><u>Not a member? Register!</u></string>
+</resources>

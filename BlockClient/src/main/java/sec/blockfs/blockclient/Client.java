@@ -17,15 +17,15 @@ public class Client {
 
         BlockLibrary library = null;
         try {
-            library = new BlockLibrary();
-            library.FS_init(serviceName, servicePort, serviceUrl);
+            library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+            library.FS_init();
         } catch (InitializationFailureException e) {
             System.out.println("Error - " + e.getMessage());
             return;
         }
 
         try {
-            String text = "Start_" + BlockUtility.generateString(BlockUtility.BLOCK_SIZE) + "_End";
+            String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE-1);
             System.out.println("Writing: ");
             System.out.println(text);
             System.out.println("################");

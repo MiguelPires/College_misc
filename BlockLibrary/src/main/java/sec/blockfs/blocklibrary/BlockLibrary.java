@@ -1,6 +1,9 @@
 package sec.blockfs.blocklibrary;
 
+import java.net.MalformedURLException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
@@ -21,13 +24,20 @@ public class BlockLibrary {
     public PublicKey publicKey;
     private Signature signAlgorithm;
 
-    public String FS_init(String serviceName, String servicePort, String serviceUrl) throws InitializationFailureException {
-
+    public BlockLibrary(String serviceName, String servicePort, String serviceUrl) throws InitializationFailureException {
         try {
             System.out.println("Connecting to server: " + serviceUrl + ":" + servicePort + "/" + serviceName);
             blockServer = (BlockServer) Naming.lookup(serviceUrl + ":" + servicePort + "/" + serviceName);
             System.out.println("Connected to block server");
+        } catch (NotBoundException | RemoteException | MalformedURLException e) {
+            throw new InitializationFailureException("Couldn't connect to server");
 
+        }
+    }
+
+    public String FS_init() throws InitializationFailureException {
+
+        try {
             // instantiate key generator
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA", "SunRsaSign");
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
@@ -52,8 +62,8 @@ public class BlockLibrary {
             if (position < 0 || size < 0 || contents == null)
                 throw new OperationFailedException("Invalid arguments");
 
-            int startBlock = position / BlockUtility.BLOCK_SIZE;
-            int endBlock = (position + size) / BlockUtility.BLOCK_SIZE;
+            int startBlock = position / (BlockUtility.BLOCK_SIZE + 1);
+            int endBlock = (position + size) / (BlockUtility.BLOCK_SIZE + 1);
 
             byte[][] toWriteBlocks = new byte[endBlock - startBlock + 1][BlockUtility.BLOCK_SIZE];
             byte[][] toWriteHashes = new byte[endBlock - startBlock + 1][BlockUtility.DIGEST_SIZE];
@@ -73,6 +83,18 @@ public class BlockLibrary {
             byte[] rewrittenBlock = null;
 
             if (publicBlock != null) {
+
+                byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE];
+                System.arraycopy(publicBlock, 0, storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
+
+                int hashesLength = publicBlock.length - BlockUtility.SIGNATURE_SIZE;
+                byte[] dataHashes = new byte[hashesLength];
+                System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, dataHashes, 0, hashesLength);
+
+                // verify public key block integrity
+                if (!BlockUtility.verifyDataIntegrity(dataHashes, storedSignature, publicKey))
+                    throw new DataIntegrityFailureException("Data integrity check failed on public key block");
+
                 // rewrite
                 int dataSize = publicBlock.length - BlockUtility.SIGNATURE_SIZE;
                 byte[] dataPublicBlock = new byte[dataSize];
@@ -117,7 +139,8 @@ public class BlockLibrary {
         }
     }
 
-    public int FS_read(byte[] publicKey, int position, int size, byte[] buffer) throws OperationFailedException, DataIntegrityFailureException {
+    public int FS_read(byte[] publicKey, int position, int size, byte[] buffer)
+            throws OperationFailedException, DataIntegrityFailureException {
         if (position < 0 || size < 0 || buffer == null)
             throw new OperationFailedException("Invalid arguments");
 
@@ -131,22 +154,22 @@ public class BlockLibrary {
             System.arraycopy(publicKeyBlock, 0, publicKeySignature, 0, BlockUtility.SIGNATURE_SIZE);
 
             // extract data
-            byte[] publicKeyData = new byte[publicKeyBlock.length - BlockUtility.SIGNATURE_SIZE];
-            System.arraycopy(publicKeyBlock, BlockUtility.SIGNATURE_SIZE, publicKeyData, 0, publicKeyData.length);
+            byte[] dataHashes = new byte[publicKeyBlock.length - BlockUtility.SIGNATURE_SIZE];
+            System.arraycopy(publicKeyBlock, BlockUtility.SIGNATURE_SIZE, dataHashes, 0, dataHashes.length);
 
             // verify public key block integrity
-            if (!BlockUtility.verifyDataIntegrity(publicKeyData, publicKeySignature, publicKey))
+            if (!BlockUtility.verifyDataIntegrity(dataHashes, publicKeySignature, publicKey))
                 throw new DataIntegrityFailureException("Data integrity check failed on public key block");
 
-            int startBlock = position / BlockUtility.BLOCK_SIZE;
-            int endBlock = (position + size) / BlockUtility.BLOCK_SIZE;
+            int startBlock = position / (BlockUtility.BLOCK_SIZE+1);
+            int endBlock = (position + size) / (BlockUtility.BLOCK_SIZE+1);
 
             // TODO: add boundary checks and etc
             byte[][] blockHashes = new byte[endBlock - startBlock + 1][BlockUtility.DIGEST_SIZE];
 
             int num = 0;
             for (int i = startBlock; i <= endBlock; ++i) {
-                System.arraycopy(publicKeyData, i * BlockUtility.DIGEST_SIZE, blockHashes[num], 0, BlockUtility.DIGEST_SIZE);
+                System.arraycopy(dataHashes, i * BlockUtility.DIGEST_SIZE, blockHashes[num], 0, BlockUtility.DIGEST_SIZE);
                 num++;
             }
 
@@ -157,8 +180,8 @@ public class BlockLibrary {
                 byte[] data = blockServer.get(dataBlockName);
 
                 if (data == null)
-                    return -1;
-                
+                    throw new OperationFailedException("Data block not found: "+dataBlockName);
+
                 if (!Arrays.equals(blockHashes[num], BlockUtility.digest(data))) {
                     throw new DataIntegrityFailureException("Data integrity check failed on public key block");
                 }

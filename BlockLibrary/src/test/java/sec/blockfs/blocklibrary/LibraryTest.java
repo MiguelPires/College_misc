@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.net.MalformedURLException;
 import java.rmi.AccessException;
 import java.rmi.Naming;
@@ -59,57 +60,57 @@ public class LibraryTest {
 
     @Test
     public void successCreateLib() throws Exception {
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName, servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
     }
 
     @Test(expected = InitializationFailureException.class)
     public void wrongPort() throws Exception {
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName, servicePort + 1, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort + 1, serviceUrl);
+        library.FS_init();
     }
 
     @Test(expected = InitializationFailureException.class)
     public void wrongName() throws Exception {
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName + "abc", servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort + 1, serviceUrl);
+        library.FS_init();
     }
 
     @Test
     public void successPerformWrite() throws Exception {
         String text = "Some random write";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName, servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
     }
 
     @Test
     public void successEmptyWrite() throws Exception {
         byte[] textBytes = "".getBytes();
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName, servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
     }
 
     @Test(expected = OperationFailedException.class)
     public void failNullWrite() throws Exception {
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName, servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
         library.FS_write(0, 0, null);
     }
 
     @Test(expected = OperationFailedException.class)
     public void failNegativeSizeArgument() throws Exception {
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName, servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
         library.FS_write(0, -1, "".getBytes());
     }
 
     @Test(expected = OperationFailedException.class)
     public void failNegativeOffsetArgument() throws Exception {
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName, servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
         library.FS_write(-1, 0, "".getBytes());
     }
 
@@ -118,8 +119,8 @@ public class LibraryTest {
         // write a message
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName, servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
 
         // compute hash of public key
@@ -137,8 +138,8 @@ public class LibraryTest {
         // write a message
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName, servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
 
         byte[] data = new byte[BlockUtility.BLOCK_SIZE];
@@ -159,8 +160,8 @@ public class LibraryTest {
         // write a message
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName, servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
 
         byte[] buffer = new byte[textBytes.length];
@@ -192,8 +193,8 @@ public class LibraryTest {
         // write a message
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName, servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
 
         // hash of data - expected contents
@@ -214,10 +215,10 @@ public class LibraryTest {
     public void twoBlocksDataCheck() throws Exception {
         String text = "Start_" + BlockUtility.generateString(BlockUtility.BLOCK_SIZE) + "_End";
         byte[] textBytes = text.getBytes();
-        System.out.println("Expected: " + Arrays.toString(textBytes));
+        //System.out.println("Expected: " + Arrays.toString(textBytes));
 
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName, servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
 
         byte[] readBytes = new byte[textBytes.length];
@@ -253,25 +254,25 @@ public class LibraryTest {
 
         assertTrue("Second block contains wrong data", Arrays.equals(buffer, secondBlock));
     }
-    
+
     @Test
     public void twoBlocksPublicCheck() throws Exception {
         String text = "Start_" + BlockUtility.generateString(BlockUtility.BLOCK_SIZE) + "_End";
         byte[] textBytes = text.getBytes();
-   //     System.out.println("Expected: " + Arrays.toString(textBytes));
+        // System.out.println("Expected: " + Arrays.toString(textBytes));
 
-        BlockLibrary library = new BlockLibrary();
-        library.FS_init(serviceName, servicePort, serviceUrl);
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
 
         // get public key block
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(library.publicKey.getEncoded()));
-        String filePath = FileSystemImpl.BASE_PATH+File.separatorChar+fileName;
+        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
         FileInputStream stream = new FileInputStream(filePath);
-        byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE+BlockUtility.DIGEST_SIZE*2];
+        byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE * 2];
         stream.read(publicKeyBlock, 0, publicKeyBlock.length);
         stream.close();
-        
+
         // compute data block hashes
         byte[] firstBlock = new byte[BlockUtility.BLOCK_SIZE];
         System.arraycopy(textBytes, 0, firstBlock, 0, BlockUtility.BLOCK_SIZE);
@@ -281,36 +282,158 @@ public class LibraryTest {
         byte[] firstBlockHash = BlockUtility.digest(firstBlock);
         byte[] secondBlockHash = BlockUtility.digest(secondBlock);
 
-        byte[] blockHashes = new byte[BlockUtility.DIGEST_SIZE*2];
+        byte[] blockHashes = new byte[BlockUtility.DIGEST_SIZE * 2];
         System.arraycopy(firstBlockHash, 0, blockHashes, 0, BlockUtility.DIGEST_SIZE);
         System.arraycopy(secondBlockHash, 0, blockHashes, BlockUtility.DIGEST_SIZE, BlockUtility.DIGEST_SIZE);
-        
+
         // create signature
         Signature signAlgorithm = Signature.getInstance("SHA512withRSA", "SunRsaSign");
         signAlgorithm.initSign(library.privateKey);
         signAlgorithm.update(blockHashes, 0, blockHashes.length);
         byte[] keyBlockSignature = signAlgorithm.sign();
-        
-        byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE]; 
+
+        byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE];
         System.arraycopy(publicKeyBlock, 0, storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
         assertTrue("The public block's signature is wrong", Arrays.equals(keyBlockSignature, storedSignature));
-        
+
         byte[] storedFirstHash = new byte[BlockUtility.DIGEST_SIZE];
         System.arraycopy(publicKeyBlock, BlockUtility.SIGNATURE_SIZE, storedFirstHash, 0, BlockUtility.DIGEST_SIZE);
         assertTrue("The first block's hash is wrong", Arrays.equals(storedFirstHash, firstBlockHash));
-        
+
         byte[] storedSecondHash = new byte[BlockUtility.DIGEST_SIZE];
-        System.arraycopy(publicKeyBlock, BlockUtility.SIGNATURE_SIZE+BlockUtility.DIGEST_SIZE, storedSecondHash, 0, BlockUtility.DIGEST_SIZE);
+        System.arraycopy(publicKeyBlock, BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE, storedSecondHash, 0,
+                BlockUtility.DIGEST_SIZE);
         assertTrue("The second block's hash is wrong", Arrays.equals(storedSecondHash, secondBlockHash));
     }
-    
-    @Test(expected=DataIntegrityFailureException.class)
-    public void publicKeyBlockAttack() {
-        // TODO: try to alter a hash of the pkb 
+
+    @Test(expected = DataIntegrityFailureException.class)
+    public void addDataBlockAttack() throws Exception {
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
+
+        String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE);
+        byte[] textBytes = text.getBytes();
+
+        library.FS_write(0, textBytes.length, textBytes);
+
+        // get public key block
+        String fileName = BlockUtility.getKeyString(BlockUtility.digest(library.publicKey.getEncoded()));
+        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        FileInputStream stream = new FileInputStream(filePath);
+        byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
+        stream.read(publicKeyBlock, 0, publicKeyBlock.length);
+        stream.close();
+
+        byte[] alteredTextBytes = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
+        byte[] alteredHash = BlockUtility.digest(alteredTextBytes);
+
+        String newBlockName = BlockUtility.getKeyString(alteredHash);
+        String newBlockPath = FileSystemImpl.BASE_PATH + File.separatorChar + newBlockName;
+
+        FileOutputStream outStream = new FileOutputStream(newBlockPath);
+        outStream.write(alteredTextBytes);
+        outStream.close();
+
+        // rewrite public key block to include new data block
+        byte[] rewrittenPublicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE * 2];
+        System.arraycopy(publicKeyBlock, 0, rewrittenPublicKeyBlock, 0, BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE);
+        System.arraycopy(alteredHash, 0, rewrittenPublicKeyBlock, BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE,
+                BlockUtility.DIGEST_SIZE);
+        outStream = new FileOutputStream(filePath);
+        outStream.write(rewrittenPublicKeyBlock);
+        outStream.close();
+
+        byte[] readBuffer = new byte[BlockUtility.BLOCK_SIZE];
+        library.FS_read(library.publicKey.getEncoded(), 0, BlockUtility.BLOCK_SIZE, readBuffer);
+
     }
-    
-    @Test
-    public void dataBlockAttack() {
-        // TODO: try to alter the contents of the data block
+
+    @Test(expected = DataIntegrityFailureException.class)
+    public void changeDataBlockAttack() throws Exception {
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
+
+        String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE);
+        byte[] textBytes = text.getBytes();
+
+        library.FS_write(0, textBytes.length, textBytes);
+
+        // get data block
+        String fileName = BlockUtility.getKeyString(BlockUtility.digest(textBytes));
+        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        FileInputStream stream = new FileInputStream(filePath);
+        byte[] dataBlock = new byte[BlockUtility.BLOCK_SIZE];
+        stream.read(dataBlock, 0, dataBlock.length);
+        stream.close();
+
+        byte[] alteration = "altered".getBytes();
+        System.arraycopy(alteration, 0, dataBlock, 0, alteration.length);
+
+        FileOutputStream outStream = new FileOutputStream(filePath);
+        outStream.write(dataBlock);
+        outStream.close();
+
+        byte[] readBuffer = new byte[BlockUtility.BLOCK_SIZE];
+        library.FS_read(library.publicKey.getEncoded(), 0, BlockUtility.BLOCK_SIZE, readBuffer);
+    }
+
+    @Test(expected=DataIntegrityFailureException.class)
+    public void changePublicBlockAttack() throws Exception {
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
+
+        String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE);
+        byte[] textBytes = text.getBytes();
+        library.FS_write(0, textBytes.length, textBytes);
+
+        // get public key block
+        String fileName = BlockUtility.getKeyString(BlockUtility.digest(library.publicKey.getEncoded()));
+        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        FileInputStream stream = new FileInputStream(filePath);
+        byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
+        stream.read(publicKeyBlock, 0, publicKeyBlock.length);
+        stream.close();
+
+        byte[] alteredTextBytes = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
+        byte[] alteredHash = BlockUtility.digest(alteredTextBytes);
+
+        // write new block
+        String newBlockName = BlockUtility.getKeyString(alteredHash);
+        String newBlockPath = FileSystemImpl.BASE_PATH + File.separatorChar + newBlockName;
+        FileOutputStream outStream = new FileOutputStream(newBlockPath);
+        outStream.write(alteredTextBytes);
+        outStream.close();
+
+        // rewrite public key block to ignore the previous block and point to a new one
+        byte[] rewrittenPublicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
+        System.arraycopy(publicKeyBlock, 0, rewrittenPublicKeyBlock, 0, BlockUtility.SIGNATURE_SIZE);
+        System.arraycopy(alteredHash, 0, rewrittenPublicKeyBlock, BlockUtility.SIGNATURE_SIZE, BlockUtility.DIGEST_SIZE);
+        outStream = new FileOutputStream(filePath);
+        outStream.write(rewrittenPublicKeyBlock);
+        outStream.close();
+
+        byte[] readBuffer = new byte[BlockUtility.BLOCK_SIZE];
+        library.FS_read(library.publicKey.getEncoded(), 0, BlockUtility.BLOCK_SIZE, readBuffer);
+    }
+
+    @Test(expected=OperationFailedException.class)
+    public void deleteDataBlockAttack() throws Exception {
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
+
+        String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE);
+        byte[] textBytes = text.getBytes();
+        library.FS_write(0, textBytes.length, textBytes);
+
+        // delete data block
+        String fileName = BlockUtility.getKeyString(BlockUtility.digest(textBytes));
+        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        System.out.println("Deleting file "+fileName);
+        File dataBlock = new File(filePath);
+        
+        assertTrue("The test couldn't delete the file - invalid", dataBlock.delete());
+             
+        byte[] readBuffer = new byte[BlockUtility.BLOCK_SIZE];
+        library.FS_read(library.publicKey.getEncoded(), 0, BlockUtility.BLOCK_SIZE, readBuffer);
     }
 }

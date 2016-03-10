@@ -14,7 +14,7 @@ public class BlockUtility {
     // cross-module variables
     public static final int KEY_SIZE = 2048;
     public static final String DIGEST_ALGORITHM = "SHA-512";
-    public static final int BLOCK_SIZE = 4000;
+    public static final int BLOCK_SIZE = 4096;
     public static final int SIGNATURE_SIZE = 256;
     public static final int DIGEST_SIZE = 64;
 

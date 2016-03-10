@@ -1,5 +1,6 @@
 package sec.blockfs.blocklibrary;
 
+import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -79,10 +80,10 @@ public class BlockLibrary {
             }
 
             byte[] publicKeyHash = BlockUtility.digest(publicKey.getEncoded());
-            byte[] publicBlock = blockServer.get(BlockUtility.getKeyString(publicKeyHash));
             byte[] rewrittenBlock = null;
 
-            if (publicBlock != null) {
+            try {
+                byte[] publicBlock = blockServer.get(BlockUtility.getKeyString(publicKeyHash));
 
                 byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE];
                 System.arraycopy(publicBlock, 0, storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
@@ -113,7 +114,7 @@ public class BlockLibrary {
                         System.arraycopy(dataPublicBlock, 0, rewrittenBlock, i * BlockUtility.DIGEST_SIZE,
                                 BlockUtility.DIGEST_SIZE);
                 }
-            } else {
+            } catch (FileNotFoundException e) {
                 // write new public key block
                 rewrittenBlock = new byte[toWriteHashes.length * BlockUtility.DIGEST_SIZE];
                 for (int i = 0; i < toWriteHashes.length; ++i)
@@ -132,6 +133,8 @@ public class BlockLibrary {
             for (int i = 0; i < toWriteBlocks.length; ++i) {
                 blockServer.put_h(toWriteBlocks[i]);
             }
+        } catch (OperationFailedException e) {
+            throw e;
         } catch (Exception e) {
             System.out.println("Library - Couldn't write to server: " + e.getMessage());
             e.printStackTrace();
@@ -144,10 +147,17 @@ public class BlockLibrary {
         if (position < 0 || size < 0 || buffer == null)
             throw new OperationFailedException("Invalid arguments");
 
-        // TODO: use position and size to determine which block should be read
         try {
             byte[] publicKeyHash = BlockUtility.digest(publicKey);
-            byte[] publicKeyBlock = blockServer.get(BlockUtility.getKeyString(publicKeyHash));
+            String blockName = BlockUtility.getKeyString(publicKeyHash);
+
+            byte[] publicKeyBlock;
+
+            try {
+                publicKeyBlock = blockServer.get(blockName);
+            } catch (FileNotFoundException e) {
+                throw new OperationFailedException("Data block not found: " + blockName);
+            }
 
             // extract signature
             byte[] publicKeySignature = new byte[BlockUtility.SIGNATURE_SIZE];
@@ -161,10 +171,9 @@ public class BlockLibrary {
             if (!BlockUtility.verifyDataIntegrity(dataHashes, publicKeySignature, publicKey))
                 throw new DataIntegrityFailureException("Data integrity check failed on public key block");
 
-            int startBlock = position / (BlockUtility.BLOCK_SIZE+1);
-            int endBlock = (position + size) / (BlockUtility.BLOCK_SIZE+1);
+            int startBlock = position / (BlockUtility.BLOCK_SIZE + 1);
+            int endBlock = (position + size) / (BlockUtility.BLOCK_SIZE + 1);
 
-            // TODO: add boundary checks and etc
             byte[][] blockHashes = new byte[endBlock - startBlock + 1][BlockUtility.DIGEST_SIZE];
 
             int num = 0;
@@ -177,13 +186,16 @@ public class BlockLibrary {
             int readLength = 0;
             for (int i = startBlock; i <= endBlock; ++i) {
                 String dataBlockName = BlockUtility.getKeyString(blockHashes[num]);
-                byte[] data = blockServer.get(dataBlockName);
 
-                if (data == null)
-                    throw new OperationFailedException("Data block not found: "+dataBlockName);
+                byte[] data;
+                try {
+                    data = blockServer.get(dataBlockName);
+                } catch (FileNotFoundException e) {
+                    throw new OperationFailedException("Data block not found: " + dataBlockName);
+                }
 
                 if (!Arrays.equals(blockHashes[num], BlockUtility.digest(data))) {
-                    throw new DataIntegrityFailureException("Data integrity check failed on public key block");
+                    throw new DataIntegrityFailureException("Data integrity check failed on data block");
                 }
 
                 int dataLength = size - readLength > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE : size - readLength;
@@ -201,6 +213,8 @@ public class BlockLibrary {
 
             return buffer.length;
         } catch (DataIntegrityFailureException e) {
+            throw e;
+        } catch (OperationFailedException e) {
             throw e;
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,5 +1,6 @@
 package sec.blockfs.blockserver;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.FileSystemException;
 
@@ -9,5 +10,5 @@ public interface FileSystem {
     // 
     String writePublicKey(byte[] contents, byte[] signature, byte[] publicKey) throws IOException;
     // reads the data block identified by 'block'
-    byte[] read(String block) throws DataIntegrityFailureException, FileSystemException;
+    byte[] read(String block) throws DataIntegrityFailureException, FileSystemException, FileNotFoundException;
 }

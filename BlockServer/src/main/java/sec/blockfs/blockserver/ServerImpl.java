@@ -1,5 +1,7 @@
 package sec.blockfs.blockserver;
 
+import java.io.FileNotFoundException;
+import java.nio.file.FileSystemException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -32,12 +34,11 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
     }
 
     @Override
-    public byte[] get(String id) throws WrongArgumentsException, ServerErrorException {
-        // TODO: add checks
+    public byte[] get(String id) throws WrongArgumentsException, ServerErrorException, FileNotFoundException {
         try {
             return fileSystem.read(id);
-         } catch (Exception e) {
-             e.printStackTrace();
+        } catch (FileSystemException e) {
+            e.printStackTrace();
             throw new ServerErrorException(e.getMessage());
         }
     }
@@ -45,12 +46,16 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
     @Override
     public String put_k(byte[] data, byte[] signature, byte[] publicKeyBytes)
             throws ServerErrorException, DataIntegrityFailureException {
+        if (data == null || signature == null || publicKeyBytes == null) {
+            throw new ServerErrorException("Invalid (null) argument");
+        }
+
         try {
             // verify data integrity
             if (!BlockUtility.verifyDataIntegrity(data, signature, publicKeyBytes)) {
                 throw new DataIntegrityFailureException("Data integrity check failed");
             }
-            
+
             // write public key block
             return fileSystem.writePublicKey(data, signature, publicKeyBytes);
         } catch (DataIntegrityFailureException e) {

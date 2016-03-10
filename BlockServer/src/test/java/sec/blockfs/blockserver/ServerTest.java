@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -102,18 +103,118 @@ public class ServerTest {
     public void sucessGet() throws Exception {
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] dataDigest = BlockUtility.digest(data);
-        
+
         String fileName = BlockUtility.getKeyString(dataDigest);
         String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
         FileOutputStream outStream = new FileOutputStream(filePath);
         outStream.write(data);
         outStream.close();
-       
+
         BlockServer server = new ServerImpl();
         byte[] storedBlock = server.get(fileName);
         byte[] storedHash = BlockUtility.digest(storedBlock);
-        
+
         assertTrue("Retrieved data different from expected", Arrays.equals(data, storedBlock));
         assertTrue("Retrieved data different from expected", fileName.equals(BlockUtility.getKeyString(storedHash)));
+    }
+
+    @Test(expected = FileNotFoundException.class)
+    public void wrongBlockGet() throws Exception {
+        String fileName = BlockUtility.generateString(10);
+        BlockServer server = new ServerImpl();
+        server.get(fileName);
+    }
+
+    @Test(expected = ServerErrorException.class)
+    public void invalidDataPut_k() throws Exception {
+        BlockServer server = new ServerImpl();
+        byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
+        byte[] dataHash = BlockUtility.digest(data);
+
+        signAlgorithm.initSign(privateKey);
+        signAlgorithm.update(dataHash);
+        byte[] signature = signAlgorithm.sign();
+
+        server.put_k(null, signature, publicKey.getEncoded());
+    }
+
+    @Test(expected = DataIntegrityFailureException.class)
+    public void wrongDataPut_k() throws Exception {
+        BlockServer server = new ServerImpl();
+        byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
+        byte[] dataHash = BlockUtility.digest(data);
+
+        signAlgorithm.initSign(privateKey);
+        signAlgorithm.update(dataHash);
+        byte[] signature = signAlgorithm.sign();
+
+        server.put_k(data, signature, publicKey.getEncoded());
+    }
+
+    @Test(expected = ServerErrorException.class)
+    public void invalidSignaturePut_k() throws Exception {
+        BlockServer server = new ServerImpl();
+        byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
+        byte[] dataHash = BlockUtility.digest(data);
+
+        signAlgorithm.initSign(privateKey);
+        signAlgorithm.update(dataHash);
+        byte[] signature = signAlgorithm.sign();
+
+        server.put_k(dataHash, null, publicKey.getEncoded());
+    }
+
+    @Test(expected = DataIntegrityFailureException.class)
+    public void wrongSignaturePut_k() throws Exception {
+        BlockServer server = new ServerImpl();
+        byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
+        byte[] dataHash = BlockUtility.digest(data);
+
+        signAlgorithm.initSign(privateKey);
+        signAlgorithm.update(data);
+        byte[] signature = signAlgorithm.sign();
+
+        server.put_k(dataHash, signature, publicKey.getEncoded());
+    }
+
+    @Test(expected = ServerErrorException.class)
+    public void invalidPublicKeyPut_k() throws Exception {
+        BlockServer server = new ServerImpl();
+        byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
+        byte[] dataHash = BlockUtility.digest(data);
+
+        signAlgorithm.initSign(privateKey);
+        signAlgorithm.update(data);
+        byte[] signature = signAlgorithm.sign();
+
+        server.put_k(dataHash, signature, null);
+    }
+
+    @Test(expected = DataIntegrityFailureException.class)
+    public void wrongPublicKeyPut_k() throws Exception {
+        BlockServer server = new ServerImpl();
+        byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
+        byte[] dataHash = BlockUtility.digest(data);
+
+        signAlgorithm.initSign(privateKey);
+        signAlgorithm.update(data);
+        byte[] signature = signAlgorithm.sign();
+
+        // instantiate key generator
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA", "SunRsaSign");
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
+        keyGen.initialize(BlockUtility.KEY_SIZE, random);
+
+        // generate keys
+        KeyPair pair = keyGen.generateKeyPair();
+        PublicKey publicKey = pair.getPublic();
+
+        server.put_k(dataHash, signature, publicKey.getEncoded());
+    }
+
+    @Test(expected = ServerErrorException.class)
+    public void invalidPut_h() throws Exception {
+        BlockServer server = new ServerImpl();
+        server.put_h(null);
     }
 }

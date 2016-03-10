@@ -9,7 +9,7 @@ import sec.blockfs.blockserver.DataIntegrityFailureException;
 import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.OperationFailedException;
 
-public class Client {
+public class SimpleClient {
     public static void main(String[] args) throws IOException {
         String servicePort = args[0];
         String serviceName = args[1];
@@ -23,7 +23,7 @@ public class Client {
             System.out.println("Error - " + e.getMessage());
             return;
         }
-
+        
         try {
             String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE-1);
             System.out.println("Writing: ");

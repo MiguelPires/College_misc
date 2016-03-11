@@ -9,6 +9,7 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import sec.blockfs.blockutility.BlockUtility;
 
@@ -34,7 +35,6 @@ public class FileSystemImpl implements FileSystem {
             FileOutputStream stream = new FileOutputStream(filePath);
             stream.write(contents);
             stream.close();
-
             return fileName;
         } catch (IOException e) {
             System.out.println("Filesystem error - write operation failed" + e.getMessage());

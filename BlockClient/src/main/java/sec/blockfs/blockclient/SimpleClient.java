@@ -6,11 +6,12 @@ import java.util.Arrays;
 import sec.blockfs.blocklibrary.BlockLibrary;
 import sec.blockfs.blocklibrary.InitializationFailureException;
 import sec.blockfs.blockserver.DataIntegrityFailureException;
+import sec.blockfs.blockserver.WrongArgumentsException;
 import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.OperationFailedException;
 
 public class SimpleClient {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, WrongArgumentsException {
         String servicePort = args[0];
         String serviceName = args[1];
         String serviceUrl = args[2];

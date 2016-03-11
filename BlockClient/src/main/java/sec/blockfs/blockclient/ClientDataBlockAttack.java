@@ -9,12 +9,13 @@ import sec.blockfs.blocklibrary.BlockLibrary;
 import sec.blockfs.blocklibrary.InitializationFailureException;
 import sec.blockfs.blockserver.DataIntegrityFailureException;
 import sec.blockfs.blockserver.FileSystemImpl;
+import sec.blockfs.blockserver.WrongArgumentsException;
 import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.OperationFailedException;
 
 public class ClientDataBlockAttack {
 
-    public static void main(String[] args) throws IOException, OperationFailedException {
+    public static void main(String[] args) throws IOException, OperationFailedException, WrongArgumentsException {
         String servicePort = args[0];
         String serviceName = args[1];
         String serviceUrl = args[2];

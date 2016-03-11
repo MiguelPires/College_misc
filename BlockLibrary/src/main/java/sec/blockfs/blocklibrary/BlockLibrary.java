@@ -15,6 +15,7 @@ import java.util.Arrays;
 
 import sec.blockfs.blockserver.BlockServer;
 import sec.blockfs.blockserver.DataIntegrityFailureException;
+import sec.blockfs.blockserver.WrongArgumentsException;
 import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.OperationFailedException;;
 
@@ -58,10 +59,10 @@ public class BlockLibrary {
         }
     }
 
-    public void FS_write(int position, int size, byte[] contents) throws OperationFailedException {
+    public void FS_write(int position, int size, byte[] contents) throws OperationFailedException, WrongArgumentsException {
         try {
-            if (position < 0 || size < 0 || contents == null)
-                throw new OperationFailedException("Invalid arguments");
+            if (position < 0 || size < 0 || contents == null || size > contents.length)
+                throw new WrongArgumentsException("Invalid arguments");
 
             int startBlock = position / (BlockUtility.BLOCK_SIZE + 1);
             int endBlock = (position + size) / (BlockUtility.BLOCK_SIZE + 1);
@@ -71,8 +72,8 @@ public class BlockLibrary {
 
             int writtenBytes = 0, num = 0;
             for (int i = startBlock; i <= endBlock; ++i) {
-                int bytesToWrite = contents.length - writtenBytes > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE
-                        : contents.length - writtenBytes;
+                int bytesToWrite = size - writtenBytes > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE
+                        : size - writtenBytes;
                 System.arraycopy(contents, writtenBytes, toWriteBlocks[num], 0, bytesToWrite);
                 System.arraycopy(BlockUtility.digest(toWriteBlocks[num]), 0, toWriteHashes[num], 0, BlockUtility.DIGEST_SIZE);
                 writtenBytes += bytesToWrite;
@@ -133,7 +134,7 @@ public class BlockLibrary {
             for (int i = 0; i < toWriteBlocks.length; ++i) {
                 blockServer.put_h(toWriteBlocks[i]);
             }
-        } catch (OperationFailedException e) {
+        } catch (WrongArgumentsException e) {
             throw e;
         } catch (Exception e) {
             System.out.println("Library - Couldn't write to server: " + e.getMessage());

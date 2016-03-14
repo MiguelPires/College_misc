@@ -48,5 +48,5 @@
         android:layout_below="@+id/LoginBtn"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="44dp"
-        android:onClick="register" />
+        android:onClick="loadRegister" />
 </RelativeLayout>

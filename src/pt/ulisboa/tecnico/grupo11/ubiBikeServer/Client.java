@@ -11,42 +11,69 @@ import java.nio.charset.StandardCharsets;
 
 public class Client {
     private static String serverIP = "localhost";
-    
+
     public static void main(String[] args) throws IOException {
+        // PUT user
+        {
+            URL url = new URL("http://" + serverIP + ":8000/users/anotheruser");
+            String urlParameters = "123456879";
+            byte[] data = urlParameters.getBytes(StandardCharsets.UTF_8);
+
+            HttpURLConnection createUserConn = (HttpURLConnection) url.openConnection();
+            createUserConn.setDoOutput(true);
+            createUserConn.setRequestMethod("PUT");
+
+            DataOutputStream wr = new DataOutputStream(createUserConn.getOutputStream());
+            wr.write(data);
+
+            System.out.println("Server responded to PUT with: " + createUserConn.getResponseCode());
+        }
         
-        
-        URL newUserUrl = new URL("http://"+serverIP+":8000/users/anotheruser");
-        String urlParameters = "123456879";
-        byte[] data = urlParameters.getBytes(StandardCharsets.UTF_8);
+        // List all user
+        {
+            URL url = new URL("http://" + serverIP + ":8000/users");
+            HttpURLConnection readUsersConn = (HttpURLConnection) url.openConnection();
+            readUsersConn.setRequestMethod("GET");
+            int responseCode = readUsersConn.getResponseCode();
+            System.out.println("Server responded to GET with: " + responseCode);
 
-        HttpURLConnection createUserConn = (HttpURLConnection) newUserUrl.openConnection();
-        createUserConn.setDoOutput(true);
-        createUserConn.setRequestMethod("PUT");
-        
-        DataOutputStream wr = new DataOutputStream(createUserConn.getOutputStream());
-        wr.write(data);
+            if (responseCode == 200) {
+                InputStream is = readUsersConn.getInputStream();
+                BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+                String line;
 
-        System.out.println("Server responded to PUT with: " + createUserConn.getResponseCode());
-
-        URL usersUrl = new URL("http://"+serverIP+":8000/users");
-        HttpURLConnection readUsersConn = (HttpURLConnection) usersUrl.openConnection();
-        readUsersConn.setRequestMethod("GET");
-        int responseCode = readUsersConn.getResponseCode();
-        System.out.println("Server responded to GET with: " + responseCode);
-
-        if (responseCode == 200) {
-            InputStream is = readUsersConn.getInputStream();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-            String line;
-
-            System.out.println("Listing users: ");
-            while ((line = rd.readLine()) != null) {
-                System.out.println(line);
+                System.out.println("Listing users: ");
+                while ((line = rd.readLine()) != null) {
+                    System.out.println(line);
+                }
+                rd.close();
+            } else {
+                System.out.println("No users were found");
             }
-            rd.close();
-        } else {
-            System.out.println("No users were found");
         }
 
+        // GET user hash
+        {
+            URL url = new URL("http://" + serverIP + ":8000/users/anotheruser/hash");
+            HttpURLConnection readHashConn = (HttpURLConnection) url.openConnection();
+            readHashConn.setRequestMethod("GET");
+            int responseCode = readHashConn.getResponseCode();
+            System.out.println("Server responded to GET hash with: " + responseCode);
+
+            if (responseCode == 200) {
+                InputStream is = readHashConn.getInputStream();
+                BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+                String line;
+
+                while ((line = rd.readLine()) != null) {
+                    System.out.println("Hash is " + line);
+                }
+                rd.close();
+            } else {
+                System.out.println("Hash not found");
+            }
+
+        }
+        
     }
 }

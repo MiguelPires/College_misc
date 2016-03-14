@@ -42,7 +42,34 @@ public class UsersHandler implements HttpHandler {
     private void parseGetRequest(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().toString();
 
-        if (path.contains("/users/")) {
+        if (path.endsWith("/users")) {
+            ArrayList<String> usernames = Collections.list(users.keys());
+            String response = String.join("\n", usernames);
+            exchange.sendResponseHeaders(200, response.length());
+            
+            OutputStream outStream = exchange.getResponseBody();
+            outStream.write(response.getBytes());
+            outStream.close();
+        } else if (path.endsWith("/hash") && path.contains("/users/")) {
+            // return user hash
+            String username = exchange.getRequestURI().toString().replace("/hash", "").replace("/users/", "");
+            System.out.println("Getting hash of "+username);
+            
+            if (!users.containsKey(username)) {
+                System.out.println("Unknown user: " + username);
+                exchange.sendResponseHeaders(404, 0);
+                return;
+            } 
+            
+            User user = users.get(username);
+            String hash = user.getPasswordHash();
+            exchange.sendResponseHeaders(200, hash.length());
+            
+            OutputStream outStream = exchange.getResponseBody();
+            outStream.write(hash.getBytes());
+            outStream.close();
+            
+        } else if (path.contains("/users/")) {
             // extract user
             String username = exchange.getRequestURI().toString().replace("/users/", "");
 
@@ -51,14 +78,6 @@ public class UsersHandler implements HttpHandler {
             } else {
                 exchange.sendResponseHeaders(404, 0);
             }
-        } else if (path.endsWith("/users")) {
-            ArrayList<String> usernames = Collections.list(users.keys());
-            String response = String.join("\n", usernames);
-            exchange.sendResponseHeaders(200, response.length());
-            
-            OutputStream outStream = exchange.getResponseBody();
-            outStream.write(response.getBytes());
-            outStream.close();
         } else {
             System.out.println("Unrecognized request: " + path);
             exchange.sendResponseHeaders(400, 0);

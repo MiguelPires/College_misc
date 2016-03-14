@@ -10,9 +10,12 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 public class Client {
+    private static String serverIP = "localhost";
+    
     public static void main(String[] args) throws IOException {
-
-        URL newUserUrl = new URL("http://localhost:8000/users/someuser");
+        
+        
+        URL newUserUrl = new URL("http://"+serverIP+":8000/users/anotheruser");
         String urlParameters = "123456879";
         byte[] data = urlParameters.getBytes(StandardCharsets.UTF_8);
 
@@ -25,7 +28,7 @@ public class Client {
 
         System.out.println("Server responded to PUT with: " + createUserConn.getResponseCode());
 
-        URL usersUrl = new URL("http://localhost:8000/users");
+        URL usersUrl = new URL("http://"+serverIP+":8000/users");
         HttpURLConnection readUsersConn = (HttpURLConnection) usersUrl.openConnection();
         readUsersConn.setRequestMethod("GET");
         int responseCode = readUsersConn.getResponseCode();

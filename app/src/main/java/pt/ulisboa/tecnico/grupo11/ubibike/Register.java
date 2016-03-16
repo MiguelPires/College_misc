@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +14,7 @@ import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -25,57 +27,59 @@ public class Register extends AppCompatActivity {
         Por icon com info quando se clica nele (Tamanho da password, se é alfanumerico, etc.)
     */
 
-    EditText usernameTb;
-    EditText passwordTb;
-    EditText confirmPasswordTb;
+    private EditText usernameTb;
+    private EditText passwordTb;
+    private EditText confirmPasswordTb;
 
-    Button registerBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        registerBtn = (Button)findViewById(R.id.regBtn);
-
-        usernameTb = (EditText)findViewById(R.id.regUsernameTb);
-        passwordTb = (EditText)findViewById(R.id.regPasswordTb);
-        confirmPasswordTb = (EditText)findViewById(R.id.regConfirmPassTb);
+        usernameTb = (EditText) findViewById(R.id.regUsernameTb);
+        passwordTb = (EditText) findViewById(R.id.regPasswordTb);
+        confirmPasswordTb = (EditText) findViewById(R.id.regConfirmPassTb);
     }
 
-    public void register (View view)
-    {
-        final Thread connectionThread  = new Thread(new Runnable() {
+    public void register(View view) {
+        final Thread connectionThread = new Thread(new Runnable() {
             public void run() {
-                if (!(confirmPasswordTb.getText().toString().equals(passwordTb.getText().toString())))
-                {
+                if (!(confirmPasswordTb.getText().toString().equals(passwordTb.getText().toString()))) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(Register.this, "Password does not match!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Register.this, "Passwords don't match!", Toast.LENGTH_SHORT).show();
                             passwordTb.setText("");
                             confirmPasswordTb.setText("");
                         }
                     });
                     return;
                 }
-                URL newUserUrl = null;
-                int responseCode = 0;
-                try {
-                    newUserUrl = new URL(Login.serverUrl+"/users/"+usernameTb.getText().toString());
-                    MessageDigest md = null;
-                    try {
-                        md = MessageDigest.getInstance("SHA-256");
-                    } catch (NoSuchAlgorithmException e) {
-                        e.printStackTrace();
-                    }
-                    md.update(passwordTb.getText().toString().getBytes());
-                    byte byteData[] = md.digest();
-                    Arrays.toString(byteData);
-                    // String hashBase64 = Base64.encodeToString(byteData, Base64.NO_WRAP | Base64.URL_SAFE);
-                    // byte[] data = hashBase64.getBytes();
 
-                    HttpURLConnection createUserConn = (HttpURLConnection) newUserUrl.openConnection();
+                try {
+                    URL url = new URL(Login.serverUrl + "/users/" + usernameTb.getText().toString());
+                    byte[] byteData;
+
+                    try {
+                        MessageDigest md = MessageDigest.getInstance("SHA-256");
+                        md.update(passwordTb.getText().toString().getBytes(Charset.forName("UTF-8")));
+                        byteData = md.digest();
+
+                    } catch (NoSuchAlgorithmException e) {
+                        Log.d("REGISTER_DIGEST_PWD", Log.getStackTraceString(e));
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(Register.this, "Internal error.", Toast.LENGTH_SHORT).show();
+                                passwordTb.setText("");
+                                confirmPasswordTb.setText("");
+                            }
+                        });
+                        return;
+                    }
+
+                    HttpURLConnection createUserConn = (HttpURLConnection) url.openConnection();
                     createUserConn.setDoOutput(true);
                     createUserConn.setRequestMethod("PUT");
 
@@ -83,29 +87,27 @@ public class Register extends AppCompatActivity {
                     wr.write(byteData);
                     wr.close();
 
-                    responseCode = createUserConn.getResponseCode();
-                    if ( responseCode == 400)
-                    {
+                    int responseCode = createUserConn.getResponseCode();
+                    if (responseCode == 400) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(Register.this, "Username already in use!", Toast.LENGTH_SHORT);
+                                Toast.makeText(Register.this, "Username already in use!", Toast.LENGTH_SHORT).show();
                                 usernameTb.setText("");
                                 passwordTb.setText("");
                             }
                         });
-                    }
-                    else
-                    {
+                    } else {
                         Intent intent = new Intent(Register.this, Home.class);
                         startActivity(intent);
                     }
 
-                } catch (java.io.IOException e) {
+                } catch (final java.io.IOException e) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(Register.this, "Network Error! Check your connection.", Toast.LENGTH_SHORT);
+                            Log.d("REGISTRATION", Log.getStackTraceString(e));
+                            Toast.makeText(Register.this, "Network Error! Check your connection.", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }

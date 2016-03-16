@@ -5,16 +5,17 @@ import java.util.List;
 
 public class User {
     private String username;
-    private String passwordHash;
+    private byte[] passwordHash;
     private int points;
     private List<Path> paths;
 
-    public User(String username, String passwordHash) throws InvalidArgumentsException {
+    public User(String username, byte[] passwordHash) throws InvalidArgumentsException {
 
-       /* if (username.length() < 5 || username == null)
-            throw new InvalidArgumentsException("Invalid username '" + username + "'");
-        else if (passwordHash.isEmpty() || passwordHash == null)
-            throw new InvalidArgumentsException("Invalid password hash");*/
+        /*
+         * if (username.length() < 5 || username == null) throw new InvalidArgumentsException("Invalid username '" + username +
+         * "'"); else if (passwordHash.isEmpty() || passwordHash == null) throw new InvalidArgumentsException(
+         * "Invalid password hash");
+         */
 
         this.username = username;
         this.passwordHash = passwordHash;
@@ -40,7 +41,7 @@ public class User {
         return points;
     }
 
-    public String getPasswordHash() {
+    public byte[] getPasswordHash() {
         return passwordHash;
     }
 }

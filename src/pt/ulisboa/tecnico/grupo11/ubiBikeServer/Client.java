@@ -10,7 +10,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 public class Client {
-    private static String serverIP = "localhost";
+    private static String serverIP = "194.210.222.181";
 
     public static void main(String[] args) throws IOException {
         // PUT user
@@ -25,7 +25,8 @@ public class Client {
 
             DataOutputStream wr = new DataOutputStream(createUserConn.getOutputStream());
             wr.write(data);
-
+            wr.close();
+            
             System.out.println("Server responded to PUT with: " + createUserConn.getResponseCode());
         }
         

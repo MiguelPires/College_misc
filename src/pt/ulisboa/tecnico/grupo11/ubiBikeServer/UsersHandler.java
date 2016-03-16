@@ -1,23 +1,18 @@
 package pt.ulisboa.tecnico.grupo11.ubiBikeServer;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.List;
 
-import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import javafx.scene.shape.Path;
-
 public class UsersHandler implements HttpHandler {
+    private static final int MAX_DIGEST_SIZE = 1024;
     private Hashtable<String, User> users;
 
     public UsersHandler() {
@@ -45,30 +40,30 @@ public class UsersHandler implements HttpHandler {
         if (path.endsWith("/users")) {
             ArrayList<String> usernames = Collections.list(users.keys());
             String response = String.join("\n", usernames);
-            exchange.sendResponseHeaders(200, response.length());
-            
+            exchange.sendResponseHeaders(200, response.getBytes(StandardCharsets.UTF_8).length);
+
             OutputStream outStream = exchange.getResponseBody();
-            outStream.write(response.getBytes());
+            outStream.write(response.getBytes(StandardCharsets.UTF_8));
             outStream.close();
         } else if (path.endsWith("/hash") && path.contains("/users/")) {
             // return user hash
             String username = exchange.getRequestURI().toString().replace("/hash", "").replace("/users/", "");
-            System.out.println("Getting hash of "+username);
-            
+            System.out.println("Getting hash of " + username);
+
             if (!users.containsKey(username)) {
                 System.out.println("Unknown user: " + username);
                 exchange.sendResponseHeaders(404, 0);
                 return;
-            } 
-            
+            }
+
             User user = users.get(username);
-            String hash = user.getPasswordHash();
-            exchange.sendResponseHeaders(200, hash.length());
-            
+            byte[] hash = user.getPasswordHash();
+            exchange.sendResponseHeaders(200, hash.length);
+
             OutputStream outStream = exchange.getResponseBody();
-            outStream.write(hash.getBytes());
+            outStream.write(hash);
             outStream.close();
-            
+
         } else if (path.contains("/users/")) {
             // extract user
             String username = exchange.getRequestURI().toString().replace("/users/", "");
@@ -96,12 +91,22 @@ public class UsersHandler implements HttpHandler {
                 exchange.sendResponseHeaders(400, 0);
             } else {
                 try {
-                    BufferedReader in = new BufferedReader(new InputStreamReader(exchange.getRequestBody()));
-                    String body = in.readLine();
-                    User newUser = new User(username, body);
+                    InputStream inputStream = exchange.getRequestBody();
+                    byte[] buffer = new byte[MAX_DIGEST_SIZE];
+                    int offset = 0;
+                    while (offset < MAX_DIGEST_SIZE) {
+                        int bytesRead = inputStream.read(buffer, offset, MAX_DIGEST_SIZE - offset);
+                        if (bytesRead == -1)
+                            break;
+                        offset += bytesRead;
+                    }
+                    byte[] data = new byte[offset];
+                    System.arraycopy(buffer, 0, data, 0, offset);
+
+                    User newUser = new User(username, data);
                     users.put(username, newUser);
                     exchange.sendResponseHeaders(200, 0);
-                    System.out.println("Creating user '" + username + "' with hash '" + body + "'");
+                    System.out.println("Creating user '" + username + "'");
                 } catch (InvalidArgumentsException e) {
                     System.out.println("Can't create user: " + e.getMessage());
                     exchange.sendResponseHeaders(400, 0);

@@ -168,4 +168,11 @@ public class Login extends AppCompatActivity {
         Intent intent = new Intent(this, Register.class);
         startActivity(intent);
     }
+
+
+    // NOTE: for testing purposes only!
+    public void override (View view) {
+        Intent intent = new Intent(Login.this, Maps.class);
+        startActivity(intent);
+    }
 }

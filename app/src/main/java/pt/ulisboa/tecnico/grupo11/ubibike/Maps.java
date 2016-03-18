@@ -13,6 +13,9 @@ import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderApi;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -21,12 +24,14 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class Maps extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class Maps extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     public static final int LOCATION_INTERVAL = 1000;
     private GoogleMap map;
     private GoogleApiClient googleApiClient;
     private Location lastLocation;
+    private FusedLocationProviderApi fusedLocationProviderApi;
+    private LocationRequest locationRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,12 +50,29 @@ public class Maps extends FragmentActivity implements OnMapReadyCallback, Google
                     .build();
         }
 
-        new Thread(new Runnable() {
+
+        locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(LOCATION_INTERVAL);
+        locationRequest.setFastestInterval(LOCATION_INTERVAL);
+        fusedLocationProviderApi = LocationServices.FusedLocationApi;
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
+        if (googleApiClient != null) {
+            googleApiClient.connect();
+        }
+
+        // in case we want to check location periodically
+      /*  new Thread(new Runnable() {
             public void run() {
                 setLastLocationOnMap();
                 SystemClock.sleep(LOCATION_INTERVAL);
             }
-        }).start();
+        }).start();*/
 
     }
 
@@ -83,6 +105,7 @@ public class Maps extends FragmentActivity implements OnMapReadyCallback, Google
             lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
             setLastLocationOnMap();
         }
+
     }
 
     public void onConnectionSuspended(int i) {
@@ -93,10 +116,15 @@ public class Maps extends FragmentActivity implements OnMapReadyCallback, Google
 
     }
 
+    @Override
+    public void onLocationChanged(Location location) {
+        setLastLocationOnMap();
+    }
     private void setLastLocationOnMap() {
         Log.d("SET_LOCATION", "Map: " + map + "; Location: " + lastLocation);
 
         if (map != null && lastLocation != null) {
+
             String latitudeStr = String.valueOf(lastLocation.getLatitude());
             double latitude = Double.parseDouble(latitudeStr);
 
@@ -105,7 +133,8 @@ public class Maps extends FragmentActivity implements OnMapReadyCallback, Google
 
             LatLng userPosition = new LatLng(latitude, longitude);
             map.addMarker(new MarkerOptions().position(userPosition).title("You are here"));
-            map.moveCamera(CameraUpdateFactory.newLatLng(userPosition));
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(userPosition, 18.0f));
+
         }
     }
 }

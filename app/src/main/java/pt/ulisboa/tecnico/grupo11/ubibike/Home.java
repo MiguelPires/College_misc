@@ -40,7 +40,7 @@ public class Home extends AppCompatActivity {
             Paint paint = new Paint();
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(Color.BLUE);
-            //paint.setAlpha(80);
+            paint.setAlpha(80);
             //canvas.drawPaint(paint);
             canvas.drawCircle(getWidth() / 2, getHeight() / 2, 250, paint);
         }

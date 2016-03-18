@@ -88,7 +88,12 @@ public class Contacts extends AppCompatActivity {
                             public void onClick(View view) {
                                 Editable value = edit.getText();
                                 try {
-                                    Integer.parseInt(value.toString());
+                                    int points = Integer.parseInt(value.toString());
+                                    if (points <= 0 /*|| points > user.points*/) {
+                                        Toast.makeText(Contacts.this, "You can't send that amount of points", Toast.LENGTH_SHORT).show();
+                                        return;
+                                    }
+
                                     // TODO: try to send points to other user
                                     dialog.dismiss();
                                 } catch (NumberFormatException e) {

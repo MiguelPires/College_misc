@@ -35,14 +35,8 @@ public class Login extends AppCompatActivity {
     public void login(View view) throws IOException, NoSuchAlgorithmException {
         new Thread(new Runnable() {
             public void run() {
-              /*  Intent intent = new Intent(Login.this, Contacts.class);
-                startActivity(intent);
-                return;*/
-                Intent intent2 = new Intent(Login.this, Tab.class);
-                startActivity(intent2);
-                return;
                 // verify if username exists
-                /*String username = usernameLogin.getText().toString();
+                String username = usernameLogin.getText().toString();
 
                 if (!checkIfUserExists(username))
                     return;
@@ -53,7 +47,7 @@ public class Login extends AppCompatActivity {
                 if (validatePassword(username, password)) {
                     Intent intent = new Intent(Login.this, Home.class);
                     startActivity(intent);
-                } */
+                }
             }
         }).start();
     }
@@ -175,7 +169,7 @@ public class Login extends AppCompatActivity {
 
     // NOTE: for testing purposes only!
     public void override (View view) {
-        Intent intent = new Intent(Login.this, Maps.class);
+        Intent intent = new Intent(Login.this, Tab.class);
         startActivity(intent);
     }
 }

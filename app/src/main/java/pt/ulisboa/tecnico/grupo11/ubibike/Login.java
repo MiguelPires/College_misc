@@ -38,8 +38,11 @@ public class Login extends AppCompatActivity {
               /*  Intent intent = new Intent(Login.this, Contacts.class);
                 startActivity(intent);
                 return;*/
+                Intent intent2 = new Intent(Login.this, Tab.class);
+                startActivity(intent2);
+                return;
                 // verify if username exists
-                String username = usernameLogin.getText().toString();
+                /*String username = usernameLogin.getText().toString();
 
                 if (!checkIfUserExists(username))
                     return;
@@ -50,7 +53,7 @@ public class Login extends AppCompatActivity {
                 if (validatePassword(username, password)) {
                     Intent intent = new Intent(Login.this, Home.class);
                     startActivity(intent);
-                }
+                } */
             }
         }).start();
     }

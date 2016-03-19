@@ -6,9 +6,10 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.security.KeyStore;
 import java.security.PublicKey;
-import java.security.Signature;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import pteidlib.pteid;
@@ -73,15 +74,12 @@ public class BlockLibrary {
             }
 
             // Open the PKCS11 session
-            System.out.println("            //Open the PKCS11 session");
             sessionToken = pkcs11.C_OpenSession(0, PKCS11Constants.CKF_SERIAL_SESSION, null, null);
 
             // Token login
-            System.out.println("            //Token login");
             pkcs11.C_Login(sessionToken, 1, null);
             // CK_SESSION_INFO info = pkcs11.C_GetSessionInfo(sessionToken);
 
-            System.out.println("            //Get available keys");
             CK_ATTRIBUTE[] attributes = new CK_ATTRIBUTE[1];
             attributes[0] = new CK_ATTRIBUTE();
             attributes[0].type = PKCS11Constants.CKA_CLASS;
@@ -89,16 +87,11 @@ public class BlockLibrary {
 
             pkcs11.C_FindObjectsInit(sessionToken, attributes);
             long[] keyHandles = pkcs11.C_FindObjects(sessionToken, 5);
-
-            // points to auth_key
-            System.out.println("            //points to auth_key. No. of keys:" + keyHandles.length);
-
-            privateKey = keyHandles[0]; // test with other keys to see
-                                        // what you get
+            privateKey = keyHandles[0]; 
+            
             pkcs11.C_FindObjectsFinal(sessionToken);
 
             // initialize the signature method
-            System.out.println("            //initialize the signature method");
             mechanism = new CK_MECHANISM();
             mechanism.mechanism = PKCS11Constants.CKM_SHA1_RSA_PKCS;
             mechanism.pParameter = null;
@@ -108,8 +101,12 @@ public class BlockLibrary {
             X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
             publicKey = authCert.getPublicKey();
 
-            // TODO: enviar tambem o certificado que tem a chave publica para validar este certificado
-            blockServer.storePubKey(authCert);
+            ArrayList<X509Certificate> rootCertificates = new ArrayList<X509Certificate>();
+            
+            rootCertificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
+            rootCertificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
+            rootCertificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+            blockServer.storePubKey(authCert, rootCertificates);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -149,7 +146,7 @@ public class BlockLibrary {
                 int hashesLength = publicBlock.length - BlockUtility.SIGNATURE_SIZE;
                 byte[] dataHashes = new byte[hashesLength];
                 System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, dataHashes, 0, hashesLength);
-                
+
                 // verify public key block integrity
                 if (!BlockUtility.verifyDataIntegrity(dataHashes, storedSignature, publicKey))
                     throw new DataIntegrityFailureException("Data integrity check failed on public key block");
@@ -255,12 +252,6 @@ public class BlockLibrary {
                 }
 
                 int dataLength = size - readLength > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE : size - readLength;
-
-                /*
-                 * System.out.println("DATA " + Arrays.toString(data)); System.out.println("Block size: "+data.length+
-                 * "; Read size: "+dataLength+"; Sig size: " +BlockUtility.SIGNATURE_SIZE); System.out.println( "Buffer size: "
-                 * +buffer.length+"; Read length: "+readLength);
-                 */
 
                 System.arraycopy(data, 0, buffer, readLength, dataLength);
                 readLength += dataLength;

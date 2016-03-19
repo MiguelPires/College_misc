@@ -67,7 +67,7 @@ public class BlockUtility {
             // initialize signing algorithm
             if (rsaSignature == null)
                 rsaSignature = Signature.getInstance("SHA1withRSA", "SunRsaSign");
-            
+
             rsaSignature.initVerify(publicKey);
             rsaSignature.update(data, 0, data.length);
 
@@ -85,29 +85,9 @@ public class BlockUtility {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA", "SunRsaSign");
         return keyFactory.generatePublic(pubKeySpec);
     }
-    
- // Returns the n-th certificate, starting from 0
-    public static byte[] getCertificateInBytes(int n) {
-        byte[] certificate_bytes = null;
-        try {
-            // TODO: delete the prints and etc
-            PTEID_Certif[] certs = pteid.GetCertificates();
-            System.out.println("Number of certs found: " + certs.length);
-            int i = 0;
-            for (PTEID_Certif cert : certs) {
-                System.out.println("-------------------------------\nCertificate #" + (i++));
-                System.out.println(cert.certifLabel);
-            }
 
-            certificate_bytes = certs[n].certif; // gets the byte[] with the
-                                                 // n-th certif
-
-            // pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD); // OBRIGATORIO Termina a
-            // eID Lib
-        } catch (PteidException e) {
-            e.printStackTrace();
-        }
-        return certificate_bytes;
+    public static byte[] getCertificateInBytes(int n) throws PteidException {
+        return pteid.GetCertificates()[n].certif;
     }
 
     public static X509Certificate getCertFromByteArray(byte[] certificateEncoded) throws CertificateException {
@@ -116,7 +96,7 @@ public class BlockUtility {
         X509Certificate cert = (X509Certificate) f.generateCertificate(in);
         return cert;
     }
-    
+
     public static String generateString(int length) {
         String chars = new String("1234567890abcdefghijklmnopqrstuvxyz");// .-,/*-+@#£$%&()=?");
         Random rand = new Random();

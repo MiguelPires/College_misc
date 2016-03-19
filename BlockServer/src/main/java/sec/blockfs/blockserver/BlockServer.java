@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.List;
 
 public interface BlockServer extends Remote {
@@ -18,7 +19,7 @@ public interface BlockServer extends Remote {
     String put_h(byte[] data) throws RemoteException, ServerErrorException;
 
     // stores a public key
-    void storePubKey(X509Certificate certificate) throws RemoteException, DataIntegrityFailureException;
+    void storePubKey(X509Certificate certificate, ArrayList<X509Certificate> supplierCertificates) throws RemoteException, DataIntegrityFailureException;
     
     // list every public key in the server
     List<X509Certificate> readPubkeys() throws RemoteException;

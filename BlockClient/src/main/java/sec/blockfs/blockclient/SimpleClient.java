@@ -24,9 +24,9 @@ public class SimpleClient {
             System.out.println("Error - " + e.getMessage());
             return;
         }
-        
+
         try {
-            String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE-1);
+            String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE - 1);
             System.out.println("Writing: ");
             System.out.println(text);
             System.out.println("################");
@@ -48,11 +48,13 @@ public class SimpleClient {
                 System.out.println("Local: " + Arrays.toString(textBytes));
                 System.out.println("Remote: " + Arrays.toString(readBytes));
             }
+
+            // pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
+
         } catch (OperationFailedException | DataIntegrityFailureException e) {
             e.printStackTrace();
         }
 
         System.in.read();
     }
-
 }

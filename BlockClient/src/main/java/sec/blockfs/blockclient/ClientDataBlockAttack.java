@@ -53,10 +53,10 @@ public class ClientDataBlockAttack {
         
         byte[] readBuffer = new byte[BlockUtility.BLOCK_SIZE];
         try {
-            library.FS_read(library.publicKey.getEncoded(), 0, BlockUtility.BLOCK_SIZE, readBuffer);    
+            library.FS_read(library.publicKey.getEncoded(), 0, BlockUtility.BLOCK_SIZE, readBuffer);
+
         } catch(DataIntegrityFailureException e) {
             System.out.println("Couldn't read data. "+e.getMessage());
-        }
-        
+        }         
     }
 }

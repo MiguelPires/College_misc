@@ -260,20 +260,14 @@ public class ServerTest {
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] dataHash = BlockUtility.digest(data);
 
-
         pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
         byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
 
-        // instantiate key generator
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA", "SunRsaSign");
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-        keyGen.initialize(BlockUtility.KEY_SIZE, random);
+        byte[] differentCertBytes = BlockUtility.getCertificateInBytes(1);
+        X509Certificate differentCert = BlockUtility.getCertFromByteArray(differentCertBytes);
+        PublicKey diffPublicKey = differentCert.getPublicKey();
 
-        // generate keys
-        KeyPair pair = keyGen.generateKeyPair();
-        PublicKey publicKey = pair.getPublic();
-
-        server.put_k(dataHash, signature, publicKey.getEncoded());
+        server.put_k(dataHash, signature, diffPublicKey.getEncoded());
     }
 
     @Test(expected = ServerErrorException.class)

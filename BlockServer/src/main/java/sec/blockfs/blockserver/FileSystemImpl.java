@@ -16,9 +16,10 @@ import sec.blockfs.blockutility.BlockUtility;
 public class FileSystemImpl implements FileSystem {
 
     public static final String BASE_PATH = "C:\\Temp";
-
+    private File file;
+    
     public FileSystemImpl() {
-        File file = new File(BASE_PATH);
+        file = new File(BASE_PATH);
         if (!file.exists()) {
             file.mkdir();
         }
@@ -27,6 +28,10 @@ public class FileSystemImpl implements FileSystem {
     @Override
     public String writeData(byte[] contents) throws FileSystemException {
         try {
+            if (!file.exists()) {
+                file.mkdir();
+            }
+            
             byte[] dataDigest = BlockUtility.digest(contents);
             String fileName = BlockUtility.getKeyString(dataDigest);
             String filePath = BASE_PATH + File.separatorChar + fileName;
@@ -45,6 +50,10 @@ public class FileSystemImpl implements FileSystem {
     @Override
     public String writePublicKey(byte[] dataHash, byte[] signature, byte[] publicKey) throws FileSystemException {
         try {
+            if (!file.exists()) {
+                file.mkdir();
+            }
+            
             String fileName = BlockUtility.getKeyString(BlockUtility.digest(publicKey));
             String filePath = BASE_PATH + File.separatorChar + fileName;
             System.out.println("Writing public key block: " + filePath);

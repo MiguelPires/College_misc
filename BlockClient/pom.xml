@@ -13,8 +13,25 @@
 
   	<dependencies>
   		<dependency>
+      		<groupId>pt.zetes.peopleid.pteid</groupId>
+      		<artifactId>pteidlibj</artifactId>
+      		<version>1.0.0-SNAPSHOT</version>
+      		<scope>runtime</scope>
+  <!--   <systemPath>C:\Users\Miguel\Documents\Eclipse\BlockFS\pteidlibj.jar</systemPath>-->
+    	</dependency>
+  		<dependency>
   			<groupId>sec6</groupId>
   			<artifactId>BlockLibrary</artifactId>
+  			<version>0.0.1-SNAPSHOT</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>sec6</groupId>
+  			<artifactId>BlockUtility</artifactId>
+  			<version>0.0.1-SNAPSHOT</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>sec6</groupId>
+  			<artifactId>BlockServer</artifactId>
   			<version>0.0.1-SNAPSHOT</version>
   		</dependency>
   	</dependencies>
@@ -32,6 +49,7 @@
 					</execution>
 				</executions>
 				<configuration>
+       			 	<!--<argLine>-Djava.library.path=C:\Program Files\Cartão de Cidadão\sdk\java\pteidlibj.jar</argLine>-->
 					<mainClass>sec.blockfs.blockclient.SimpleClient</mainClass>
 					<arguments>
 			            <argument>${service.port}</argument>

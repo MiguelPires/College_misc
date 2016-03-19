@@ -1,21 +1,30 @@
 package sec.blockfs.blockutility;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Random;
+
+import pteidlib.PTEID_Certif;
+import pteidlib.PteidException;
+import pteidlib.pteid;
 
 public class BlockUtility {
     // cross-module variables
     public static final int KEY_SIZE = 2048;
     public static final String DIGEST_ALGORITHM = "SHA-512";
     public static final int BLOCK_SIZE = 4096;
-    public static final int SIGNATURE_SIZE = 256;
+    public static final int SIGNATURE_SIZE = 128;
     public static final int DIGEST_SIZE = 64;
 
     private static MessageDigest digestAlgorithm = null;
@@ -57,8 +66,8 @@ public class BlockUtility {
         try {
             // initialize signing algorithm
             if (rsaSignature == null)
-                rsaSignature = Signature.getInstance("SHA512withRSA", "SunRsaSign");
-
+                rsaSignature = Signature.getInstance("SHA1withRSA", "SunRsaSign");
+            
             rsaSignature.initVerify(publicKey);
             rsaSignature.update(data, 0, data.length);
 
@@ -75,6 +84,37 @@ public class BlockUtility {
         X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(publicKeyBytes);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA", "SunRsaSign");
         return keyFactory.generatePublic(pubKeySpec);
+    }
+    
+ // Returns the n-th certificate, starting from 0
+    public static byte[] getCertificateInBytes(int n) {
+        byte[] certificate_bytes = null;
+        try {
+            // TODO: delete the prints and etc
+            PTEID_Certif[] certs = pteid.GetCertificates();
+            System.out.println("Number of certs found: " + certs.length);
+            int i = 0;
+            for (PTEID_Certif cert : certs) {
+                System.out.println("-------------------------------\nCertificate #" + (i++));
+                System.out.println(cert.certifLabel);
+            }
+
+            certificate_bytes = certs[n].certif; // gets the byte[] with the
+                                                 // n-th certif
+
+            // pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD); // OBRIGATORIO Termina a
+            // eID Lib
+        } catch (PteidException e) {
+            e.printStackTrace();
+        }
+        return certificate_bytes;
+    }
+
+    public static X509Certificate getCertFromByteArray(byte[] certificateEncoded) throws CertificateException {
+        CertificateFactory f = CertificateFactory.getInstance("X.509");
+        InputStream in = new ByteArrayInputStream(certificateEncoded);
+        X509Certificate cert = (X509Certificate) f.generateCertificate(in);
+        return cert;
     }
     
     public static String generateString(int length) {

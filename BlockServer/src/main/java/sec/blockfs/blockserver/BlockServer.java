@@ -3,6 +3,8 @@ package sec.blockfs.blockserver;
 import java.io.FileNotFoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.security.cert.X509Certificate;
+import java.util.List;
 
 public interface BlockServer extends Remote {
     // returns a stored data block
@@ -14,4 +16,10 @@ public interface BlockServer extends Remote {
 
     // stores a content hash block
     String put_h(byte[] data) throws RemoteException, ServerErrorException;
+
+    // stores a public key
+    void storePubKey(X509Certificate certificate) throws RemoteException, DataIntegrityFailureException;
+    
+    // list every public key in the server
+    List<X509Certificate> readPubkeys() throws RemoteException;
 }

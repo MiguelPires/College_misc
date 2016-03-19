@@ -6,12 +6,15 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.cert.X509Certificate;
+import java.util.List;
 
 import sec.blockfs.blockutility.BlockUtility;
 
 @SuppressWarnings("serial")
 public class ServerImpl extends UnicastRemoteObject implements BlockServer {
     private FileSystemImpl fileSystem;
+    private List<X509Certificate> certificates;
 
     public ServerImpl() throws RemoteException, ServerErrorException {
         super();
@@ -74,5 +77,23 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
             e.printStackTrace();
             throw new ServerErrorException(e.getMessage());
         }
+    }
+    
+    @Override
+    public void storePubKey(X509Certificate certificate) throws DataIntegrityFailureException {
+        try {
+            certificate.checkValidity();
+            // check the validity of the certificate using the government's public key
+            // certificate.verify(key);
+            // TODO: usar os outros certificados guardados no cartao para validar este 
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new DataIntegrityFailureException("The ceritificate isn't valid - "+e.getMessage());
+        }       
+    }
+
+    @Override
+    public List<X509Certificate> readPubkeys() {
+        return certificates;
     }
 }

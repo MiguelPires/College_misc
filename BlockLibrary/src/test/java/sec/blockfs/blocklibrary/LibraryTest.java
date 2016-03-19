@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.AccessException;
 import java.rmi.Naming;
@@ -12,38 +13,45 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.security.Signature;
 import java.util.Arrays;
 
-import org.junit.After;
+import org.apache.commons.io.FileUtils;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import pteidlib.pteid;
 import sec.blockfs.blockserver.DataIntegrityFailureException;
 import sec.blockfs.blockserver.FileSystemImpl;
 import sec.blockfs.blockserver.ServerImpl;
 import sec.blockfs.blockserver.WrongArgumentsException;
 import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.OperationFailedException;
+import sun.security.pkcs11.wrapper.PKCS11Constants;
 
+@SuppressWarnings("restriction")
 public class LibraryTest {
     private static String servicePort = System.getProperty("service.port");
     private static String serviceName = System.getProperty("service.name");
     private static String serviceUrl = System.getProperty("service.url");
-    private Registry registry;
+    private static Registry registry;
+    private static BlockLibrary library;
 
-    @Before
-    public void setUp() throws NumberFormatException, RemoteException {
+    @BeforeClass
+    public static void setUpClass() throws NumberFormatException, RemoteException {
         try {
             registry = LocateRegistry.createRegistry(new Integer(servicePort));
             registry.rebind(serviceName, new ServerImpl());
+            library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+            library.FS_init();
         } catch (Exception e) {
             return;
         }
     }
 
-    @After
-    public void tearDown() throws AccessException, RemoteException, NotBoundException, MalformedURLException {
+    @AfterClass
+    public static void tearDownClass() throws AccessException, RemoteException, NotBoundException, MalformedURLException {
         if (registry != null) {
             try {
                 Naming.unbind(serviceName);
@@ -57,76 +65,57 @@ public class LibraryTest {
                 return;
             }
         }
+
+        try {
+            pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
+        } catch (Exception e) {
+            ;
+        }
     }
 
-    @Test
-    public void successCreateLib() throws Exception {
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
-    }
-
-    @Test(expected = InitializationFailureException.class)
-    public void wrongPort() throws Exception {
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort + 1, serviceUrl);
-        library.FS_init();
-    }
-
-    @Test(expected = InitializationFailureException.class)
-    public void wrongName() throws Exception {
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort + 1, serviceUrl);
-        library.FS_init();
+    @Before
+    public void setUp() throws IOException {
+        File blockDir = new File(FileSystemImpl.BASE_PATH);
+        if (blockDir.exists())
+            FileUtils.cleanDirectory(blockDir);
     }
 
     @Test
     public void successPerformWrite() throws Exception {
         String text = "Some random write";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
     }
 
     @Test
     public void successEmptyWrite() throws Exception {
         byte[] textBytes = "".getBytes();
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
     }
 
     @Test(expected = WrongArgumentsException.class)
     public void failNullWrite() throws Exception {
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
         library.FS_write(0, 0, null);
     }
 
     @Test(expected = WrongArgumentsException.class)
     public void failNegativeSizeArgument() throws Exception {
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
         library.FS_write(0, -1, "".getBytes());
     }
 
     @Test(expected = WrongArgumentsException.class)
     public void failNegativeOffsetArgument() throws Exception {
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
         library.FS_write(-1, 0, "".getBytes());
     }
 
     @Test(expected = WrongArgumentsException.class)
     public void failSizeArgumentTooBig() throws Exception {
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
         byte[] data = "abcdefg".getBytes();
         library.FS_write(0, data.length + 1, data);
     }
 
     @Test
     public void partialWrite() throws Exception {
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
         byte[] data = "abcdef".getBytes();
         byte[] halfData = "abc".getBytes();
 
@@ -147,8 +136,6 @@ public class LibraryTest {
         // write a message
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
 
         // compute hash of public key
@@ -166,8 +153,6 @@ public class LibraryTest {
         // write a message
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
 
         byte[] data = new byte[BlockUtility.BLOCK_SIZE];
@@ -188,8 +173,6 @@ public class LibraryTest {
         // write a message
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
 
         byte[] buffer = new byte[textBytes.length];
@@ -221,8 +204,6 @@ public class LibraryTest {
         // write a message
         String text = "Some random content";
         byte[] textBytes = text.getBytes();
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
 
         // hash of data - expected contents
@@ -245,8 +226,6 @@ public class LibraryTest {
         byte[] textBytes = text.getBytes();
         // System.out.println("Expected: " + Arrays.toString(textBytes));
 
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
 
         byte[] readBytes = new byte[textBytes.length];
@@ -289,8 +268,6 @@ public class LibraryTest {
         byte[] textBytes = text.getBytes();
         // System.out.println("Expected: " + Arrays.toString(textBytes));
 
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
         library.FS_write(0, textBytes.length, textBytes);
 
         // get public key block
@@ -315,10 +292,16 @@ public class LibraryTest {
         System.arraycopy(secondBlockHash, 0, blockHashes, BlockUtility.DIGEST_SIZE, BlockUtility.DIGEST_SIZE);
 
         // create signature
-        Signature signAlgorithm = Signature.getInstance("SHA512withRSA", "SunRsaSign");
-        signAlgorithm.initSign(library.privateKey);
-        signAlgorithm.update(blockHashes, 0, blockHashes.length);
-        byte[] keyBlockSignature = signAlgorithm.sign();
+        long sessionToken = library.pkcs11.C_OpenSession(0, PKCS11Constants.CKF_SERIAL_SESSION, null, null);
+        library.pkcs11.C_SignInit(sessionToken, library.mechanism, library.privateKey);
+        byte[] keyBlockSignature = library.pkcs11.C_Sign(sessionToken, blockHashes);
+        library.pkcs11.C_CloseSession(library.privateKey);
+
+        /*
+         * Signature signAlgorithm = Signature.getInstance("SHA512withRSA", "SunRsaSign");
+         * signAlgorithm.initSign(library.privateKey); signAlgorithm.update(blockHashes, 0, blockHashes.length); byte[]
+         * keyBlockSignature = signAlgorithm.sign();
+         */
 
         byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE];
         System.arraycopy(publicKeyBlock, 0, storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
@@ -336,9 +319,6 @@ public class LibraryTest {
 
     @Test(expected = DataIntegrityFailureException.class)
     public void addDataBlockAttack() throws Exception {
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
-
         String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE);
         byte[] textBytes = text.getBytes();
 
@@ -378,9 +358,6 @@ public class LibraryTest {
 
     @Test(expected = DataIntegrityFailureException.class)
     public void changeDataBlockAttack() throws Exception {
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
-
         String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE);
         byte[] textBytes = text.getBytes();
 
@@ -407,9 +384,6 @@ public class LibraryTest {
 
     @Test(expected = DataIntegrityFailureException.class)
     public void changePublicBlockAttack() throws Exception {
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
-
         String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE);
         byte[] textBytes = text.getBytes();
         library.FS_write(0, textBytes.length, textBytes);
@@ -446,9 +420,6 @@ public class LibraryTest {
 
     @Test(expected = OperationFailedException.class)
     public void deleteDataBlockAttack() throws Exception {
-        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
-        library.FS_init();
-
         String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE);
         byte[] textBytes = text.getBytes();
         library.FS_write(0, textBytes.length, textBytes);

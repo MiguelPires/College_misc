@@ -6,42 +6,114 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.lang.reflect.Method;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import pteidlib.pteid;
 import sec.blockfs.blockutility.BlockUtility;
+import sun.security.pkcs11.wrapper.CK_ATTRIBUTE;
+import sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS;
+import sun.security.pkcs11.wrapper.CK_MECHANISM;
+import sun.security.pkcs11.wrapper.PKCS11;
+import sun.security.pkcs11.wrapper.PKCS11Constants;
 
+@SuppressWarnings("restriction")
 public class ServerTest {
     private static String servicePort = System.getProperty("service.port");
     private static String serviceName = System.getProperty("service.name");
     private static String serviceUrl = System.getProperty("service.url");
-    private PrivateKey privateKey;
-    private PublicKey publicKey;
-    private Signature signAlgorithm;
+    
+    private static Signature signAlgorithm;
+    private static PKCS11 pkcs11;
+    private static PublicKey publicKey;
+    private static long privateKey;
+    private static CK_MECHANISM mechanism; // access mechanism
+    private static  long sessionToken;
+    
+    @SuppressWarnings("unchecked")
+    @BeforeClass
+    public static void setUp() throws Exception {
+        System.loadLibrary("pteidlibj");
+        pteid.Init(""); // Initializes the eID Lib
+        pteid.SetSODChecking(false);
 
-    @Before
-    public void setUp() throws Exception {
-        // instantiate key generator
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA", "SunRsaSign");
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-        keyGen.initialize(BlockUtility.KEY_SIZE, random);
+        String osName = System.getProperty("os.name");
+        String javaVersion = System.getProperty("java.version");
+        String libName = "libpteidpkcs11.so";
 
-        // generate keys
-        KeyPair pair = keyGen.generateKeyPair();
-        privateKey = pair.getPrivate();
-        publicKey = pair.getPublic();
+        if (-1 != osName.indexOf("Windows"))
+            libName = "pteidpkcs11.dll";
+        else if (-1 != osName.indexOf("Mac"))
+            libName = "pteidpkcs11.dylib";
 
+        Class pkcs11Class = Class.forName("sun.security.pkcs11.wrapper.PKCS11");
+        if (javaVersion.startsWith("1.5.")) {
+            Method getInstanceMethode = pkcs11Class.getDeclaredMethod("getInstance",
+                    new Class[] { String.class, CK_C_INITIALIZE_ARGS.class, boolean.class });
+            pkcs11 = (PKCS11) getInstanceMethode.invoke(null, new Object[] { libName, null, false });
+        } else {
+            Method getInstanceMethode = pkcs11Class.getDeclaredMethod("getInstance",
+                    new Class[] { String.class, String.class, CK_C_INITIALIZE_ARGS.class, boolean.class });
+            pkcs11 = (PKCS11) getInstanceMethode.invoke(null, new Object[] { libName, "C_GetFunctionList", null, false });
+        }
+
+        // Open the PKCS11 session
+        System.out.println("            //Open the PKCS11 session");
+        sessionToken = pkcs11.C_OpenSession(0, PKCS11Constants.CKF_SERIAL_SESSION, null, null);
+        
+        // Token login
+        System.out.println("            //Token login");
+        pkcs11.C_Login(sessionToken, 1, null);
+        // CK_SESSION_INFO info = pkcs11.C_GetSessionInfo(sessionToken);
+
+        System.out.println("            //Get available keys");
+        CK_ATTRIBUTE[] attributes = new CK_ATTRIBUTE[1];
+        attributes[0] = new CK_ATTRIBUTE();
+        attributes[0].type = PKCS11Constants.CKA_CLASS;
+        attributes[0].pValue = new Long(PKCS11Constants.CKO_PRIVATE_KEY);
+
+        pkcs11.C_FindObjectsInit(sessionToken, attributes);
+        long[] keyHandles = pkcs11.C_FindObjects(sessionToken, 5);
+
+        // points to auth_key
+        System.out.println("            //points to auth_key. No. of keys:" + keyHandles.length);
+
+        privateKey = keyHandles[0]; // test with other keys to see
+                                    // what you get
+        pkcs11.C_FindObjectsFinal(sessionToken);
+
+        // initialize the signature method
+        System.out.println("            //initialize the signature method");
+        mechanism = new CK_MECHANISM();
+        mechanism.mechanism = PKCS11Constants.CKM_SHA1_RSA_PKCS;
+        mechanism.pParameter = null;
         signAlgorithm = Signature.getInstance("SHA512withRSA", "SunRsaSign");
+        
+        byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
+        X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
+        publicKey = authCert.getPublicKey();
+    }
+    
+    @AfterClass
+    public static void tearDown() {
+        try {
+            pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
+            pkcs11.C_CloseSession(sessionToken);
+        } catch (Exception e) {
+            ;
+        }
     }
 
     @Test
@@ -72,9 +144,8 @@ public class ServerTest {
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] dataHash = BlockUtility.digest(data);
 
-        signAlgorithm.initSign(privateKey);
-        signAlgorithm.update(dataHash);
-        byte[] signature = signAlgorithm.sign();
+        pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
+        byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
 
         server.put_k(dataHash, signature, publicKey.getEncoded());
 
@@ -131,9 +202,8 @@ public class ServerTest {
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] dataHash = BlockUtility.digest(data);
 
-        signAlgorithm.initSign(privateKey);
-        signAlgorithm.update(dataHash);
-        byte[] signature = signAlgorithm.sign();
+        pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
+        byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
 
         server.put_k(null, signature, publicKey.getEncoded());
     }
@@ -144,9 +214,9 @@ public class ServerTest {
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] dataHash = BlockUtility.digest(data);
 
-        signAlgorithm.initSign(privateKey);
-        signAlgorithm.update(dataHash);
-        byte[] signature = signAlgorithm.sign();
+
+        pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
+        byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
 
         server.put_k(data, signature, publicKey.getEncoded());
     }
@@ -157,10 +227,6 @@ public class ServerTest {
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] dataHash = BlockUtility.digest(data);
 
-        signAlgorithm.initSign(privateKey);
-        signAlgorithm.update(dataHash);
-        byte[] signature = signAlgorithm.sign();
-
         server.put_k(dataHash, null, publicKey.getEncoded());
     }
 
@@ -170,9 +236,8 @@ public class ServerTest {
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] dataHash = BlockUtility.digest(data);
 
-        signAlgorithm.initSign(privateKey);
-        signAlgorithm.update(data);
-        byte[] signature = signAlgorithm.sign();
+        pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
+        byte[] signature = pkcs11.C_Sign(sessionToken, data);
 
         server.put_k(dataHash, signature, publicKey.getEncoded());
     }
@@ -183,9 +248,8 @@ public class ServerTest {
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] dataHash = BlockUtility.digest(data);
 
-        signAlgorithm.initSign(privateKey);
-        signAlgorithm.update(data);
-        byte[] signature = signAlgorithm.sign();
+        pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
+        byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
 
         server.put_k(dataHash, signature, null);
     }
@@ -196,9 +260,9 @@ public class ServerTest {
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] dataHash = BlockUtility.digest(data);
 
-        signAlgorithm.initSign(privateKey);
-        signAlgorithm.update(data);
-        byte[] signature = signAlgorithm.sign();
+
+        pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
+        byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
 
         // instantiate key generator
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA", "SunRsaSign");

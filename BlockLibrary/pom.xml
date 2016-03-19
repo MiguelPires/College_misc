@@ -26,6 +26,18 @@
 		</plugins>
 	</build>
   <dependencies>
+         <dependency>
+      <groupId>pt.zetes.peopleid.pteid</groupId>
+      <artifactId>pteidlibj</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <scope>system</scope>
+      <systemPath>${basedir}/../pteidlibj.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>1.3.2</version>
+    </dependency>
   	<dependency>
   		<groupId>sec6</groupId>
   		<artifactId>BlockServer</artifactId>

@@ -49,8 +49,7 @@
 					</execution>
 				</executions>
 				<configuration>
-       			 	<!--<argLine>-Djava.library.path=C:\Program Files\Cartão de Cidadão\sdk\java\pteidlibj.jar</argLine>-->
-					<mainClass>sec.blockfs.blockclient.SimpleClient</mainClass>
+					<mainClass>sec.blockfs.blockclient.ClientPublicBlockAttack</mainClass>
 					<arguments>
 			            <argument>${service.port}</argument>
 			            <argument>${service.name}</argument>

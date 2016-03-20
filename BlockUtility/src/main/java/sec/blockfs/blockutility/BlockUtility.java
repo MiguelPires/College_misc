@@ -86,7 +86,13 @@ public class BlockUtility {
         return keyFactory.generatePublic(pubKeySpec);
     }
 
-    public static byte[] getCertificateInBytes(int n) throws PteidException {
+    public static byte[] getCertificateInBytes(int n) throws PteidException, CertificateException {
+        // TODO: remove this 
+        /*PTEID_Certif[] certifs = pteid.GetCertificates();
+        for (PTEID_Certif c: certifs) {
+           X509Certificate cert = getCertFromByteArray(c.certif);
+            System.out.println("Name: "+c.certifLabel+"\t Serial: "+cert.getSerialNumber().toString(16));
+        }*/
         return pteid.GetCertificates()[n].certif;
     }
 

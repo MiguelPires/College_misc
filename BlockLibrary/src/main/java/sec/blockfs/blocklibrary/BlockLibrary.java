@@ -6,11 +6,11 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.security.KeyStore;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import pteidlib.pteid;
 import sec.blockfs.blockserver.BlockServer;
@@ -26,14 +26,15 @@ import sun.security.pkcs11.wrapper.PKCS11Constants;;
 
 @SuppressWarnings("restriction")
 public class BlockLibrary {
-    private static BlockServer blockServer;
-    // the visibility of these attributes is package/public
-    // because of the tests/clients
+    // NOTE: the visibility of these attributes is package/public because of the tests.
+    // In production, they should all be private
+    
+    public static BlockServer blockServer;
     public PublicKey publicKey;
     long privateKey;
-    PKCS11 pkcs11; // used to access the PKCS11 API
+    public PKCS11 pkcs11; // used to access the PKCS11 API
     CK_MECHANISM mechanism; // access mechanism
-    protected long sessionToken;
+    long sessionToken;
 
     public BlockLibrary(String serviceName, String servicePort, String serviceUrl) throws InitializationFailureException {
         try {
@@ -50,7 +51,7 @@ public class BlockLibrary {
 
         try {
             System.loadLibrary("pteidlibj");
-            pteid.Init(""); // Initializes the eID Lib
+            pteid.Init(""); // Initializes the eID library
             pteid.SetSODChecking(false);
 
             String osName = System.getProperty("os.name");
@@ -87,8 +88,8 @@ public class BlockLibrary {
 
             pkcs11.C_FindObjectsInit(sessionToken, attributes);
             long[] keyHandles = pkcs11.C_FindObjects(sessionToken, 5);
-            privateKey = keyHandles[0]; 
-            
+            privateKey = keyHandles[0];
+
             pkcs11.C_FindObjectsFinal(sessionToken);
 
             // initialize the signature method
@@ -96,18 +97,19 @@ public class BlockLibrary {
             mechanism.mechanism = PKCS11Constants.CKM_SHA1_RSA_PKCS;
             mechanism.pParameter = null;
 
-            // store the public key in the server
+            // obtain the client certificate
             byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
             X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
             publicKey = authCert.getPublicKey();
 
+            // obtain the intermediate certificates
             ArrayList<X509Certificate> rootCertificates = new ArrayList<X509Certificate>();
-            
             rootCertificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
             rootCertificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
             rootCertificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+            
             blockServer.storePubKey(authCert, rootCertificates);
-
+            pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
         } catch (Exception e) {
             e.printStackTrace();
             throw new InitializationFailureException("Couldn't connect to server");
@@ -264,6 +266,20 @@ public class BlockLibrary {
         } catch (OperationFailedException e) {
             throw e;
         } catch (Exception e) {
+            e.printStackTrace();
+            throw new OperationFailedException(e.getMessage());
+        }
+    }
+
+    public List<X509Certificate> FS_list() throws OperationFailedException {
+        List<X509Certificate> certificates;
+        try {
+            certificates = blockServer.readPubkeys();
+            if (certificates.isEmpty())
+                return null;
+            else
+                return certificates;
+        } catch (RemoteException e) {
             e.printStackTrace();
             throw new OperationFailedException(e.getMessage());
         }

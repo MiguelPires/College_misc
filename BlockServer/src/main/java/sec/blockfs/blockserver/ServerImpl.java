@@ -28,6 +28,7 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
     public ServerImpl() throws RemoteException, ServerErrorException {
         super();
         fileSystem = new FileSystemImpl();
+        certificates = new ArrayList<X509Certificate>();
     }
 
     public static void main(String[] args) {
@@ -89,20 +90,35 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
     }
 
     @Override
-    public void storePubKey(X509Certificate certificate, ArrayList<X509Certificate> intermediateCertificates)
-            throws DataIntegrityFailureException {
+    public void storePubKey(X509Certificate userCertificate, ArrayList<X509Certificate> intermediateCertificates)
+            throws DataIntegrityFailureException, ServerErrorException {
+        if (userCertificate == null || intermediateCertificates == null || intermediateCertificates.isEmpty()) {
+            throw new ServerErrorException("Invalid certificates");
+        }
         try {
+            // obtain root cert
             X509Certificate lastCert = intermediateCertificates.get(intermediateCertificates.size() - 1);
             X500Principal rootEntity = lastCert.getIssuerX500Principal();
             X509Certificate previousCert = findRootCertificate(rootEntity);
-            previousCert.checkValidity();
 
+            if (previousCert == null)
+                throw new DataIntegrityFailureException("The can't validate certificate. Root CA's certificate unknown");
+
+            // check intermediate certs
+            previousCert.checkValidity();
             for (int i = intermediateCertificates.size() - 1; i >= 0; --i) {
                 X509Certificate cert = intermediateCertificates.get(i);
                 cert.checkValidity();
                 cert.verify(previousCert.getPublicKey());
                 previousCert = cert;
             }
+
+            // check user cert
+            userCertificate.checkValidity();
+            userCertificate.verify(previousCert.getPublicKey());
+
+            if (!certificates.contains(userCertificate))
+                certificates.add(userCertificate);
         } catch (Exception e) {
             e.printStackTrace();
             throw new DataIntegrityFailureException("The certificate isn't valid - " + e.getMessage());

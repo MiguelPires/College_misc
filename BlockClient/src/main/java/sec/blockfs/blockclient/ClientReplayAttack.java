@@ -1,17 +1,9 @@
 package sec.blockfs.blockclient;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 import sec.blockfs.blocklibrary.BlockLibrary;
 import sec.blockfs.blocklibrary.InitializationFailureException;
-import sec.blockfs.blockserver.DataIntegrityFailureException;
-import sec.blockfs.blockserver.FileSystemImpl;
-import sec.blockfs.blockserver.WrongArgumentsException;
 import sec.blockfs.blockutility.BlockUtility;
-import sec.blockfs.blockutility.OperationFailedException;
+import sec.blockfs.blockutility.DataIntegrityFailureException;
 
 public class ClientReplayAttack {
     public static void main(String[] args) throws Exception {

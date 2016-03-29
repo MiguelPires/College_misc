@@ -7,6 +7,8 @@ import java.security.cert.CertPath;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+import sec.blockfs.blockutility.DataIntegrityFailureException;
+
 public interface BlockServer extends Remote {
     // returns a stored data block
     byte[] get(String id) throws RemoteException, WrongArgumentsException, ServerErrorException, FileNotFoundException;

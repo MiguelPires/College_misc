@@ -1,37 +1,24 @@
 package sec.blockfs.blockserver;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.nio.file.FileSystemException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertPath;
-import java.security.cert.CertPathValidator;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.PKIXCertPathValidatorResult;
-import java.security.cert.PKIXParameters;
-import java.security.cert.TrustAnchor;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import javax.security.auth.x500.X500Principal;
-
 import sec.blockfs.blockutility.BlockUtility;
-import sec.blockfs.blockutility.OperationFailedException;
+import sec.blockfs.blockutility.DataIntegrityFailureException;
 
 @SuppressWarnings("serial")
 public class ServerImpl extends UnicastRemoteObject implements BlockServer {
+    // NOTE: the visibility of these attributes is package/public because of the tests.
+    // In production, they should all be private
     private FileSystemImpl fileSystem;
-    private List<CertPath> certificates;
+    public List<CertPath> certificates;
     private long previousNonce = 0;
 
     public ServerImpl() throws RemoteException, ServerErrorException {
@@ -55,7 +42,6 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
         }
     }
 
-    @Override
     public byte[] get(String id) throws WrongArgumentsException, ServerErrorException, FileNotFoundException {
         if (id == null) {
             throw new ServerErrorException("Invalid (null) argument");
@@ -68,7 +54,6 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
         }
     }
 
-    @Override
     public String put_k(byte[] data, byte[] signature, byte[] publicKeyBytes, long nonce)
             throws ServerErrorException, DataIntegrityFailureException {
         if (data == null || signature == null || publicKeyBytes == null) {
@@ -95,7 +80,6 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
         }
     }
 
-    @Override
     public String put_h(byte[] data) throws ServerErrorException {
         if (data == null) {
             throw new ServerErrorException("Invalid (null) argument");
@@ -109,23 +93,15 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
         }
     }
 
-    @Override
     public void storePubKey(CertPath certPath) throws DataIntegrityFailureException, ServerErrorException {
         if (certPath == null || certPath.getCertificates().isEmpty()) {
             throw new ServerErrorException("Invalid certificates");
         }
 
-        try {
-            BlockUtility.validateCertPath(certPath);
-            if (!certificates.contains(certPath)) {
-                certificates.add(certPath);
-            }
-
-        } catch (Exception e) {
-            // e.printStackTrace();
-            throw new DataIntegrityFailureException("The certificate isn't valid - " + e.getMessage());
+        BlockUtility.validateCertPath(certPath);
+        if (!certificates.contains(certPath)) {
+            certificates.add(certPath);
         }
-
         /*
          * try {
          * 
@@ -146,9 +122,7 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
          */
     }
 
-    @Override
     public List<CertPath> readPubkeys() {
         return certificates;
     }
-
 }

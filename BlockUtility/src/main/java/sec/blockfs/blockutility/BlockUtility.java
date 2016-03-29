@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.MessageDigest;
@@ -14,7 +13,6 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
-import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.PKIXParameters;
@@ -28,7 +26,6 @@ import java.util.Random;
 
 import javax.security.auth.x500.X500Principal;
 
-import pteidlib.PTEID_Certif;
 import pteidlib.PteidException;
 import pteidlib.pteid;
 
@@ -152,20 +149,25 @@ public class BlockUtility {
         }
     }
 
-    public static void validateCertPath(CertPath certPath) throws NoSuchAlgorithmException, OperationFailedException,
-            CertPathValidatorException, InvalidAlgorithmParameterException {
-        // obtain root cert
-        List<X509Certificate> certs = (List<X509Certificate>) certPath.getCertificates();
-        X509Certificate lastCert = (X509Certificate) certs.get(certs.size() - 1);
-        X500Principal rootEntity = lastCert.getIssuerX500Principal();
-        X509Certificate rootCert = BlockUtility.findRootCertificate(rootEntity);
+    public static void validateCertPath(CertPath certPath) throws DataIntegrityFailureException {
+        try {
+            // obtain root cert
+            List<X509Certificate> certs = (List<X509Certificate>) certPath.getCertificates();
+            X509Certificate lastCert = (X509Certificate) certs.get(certs.size() - 1);
+            X500Principal rootEntity = lastCert.getIssuerX500Principal();
+            X509Certificate rootCert = BlockUtility.findRootCertificate(rootEntity);
 
-        // validate certificate chain
-        TrustAnchor anchor = new TrustAnchor(rootCert, null);
-        PKIXParameters params = new PKIXParameters(Collections.singleton(anchor));
-        params.setRevocationEnabled(false);
+            // validate certificate chain
+            TrustAnchor anchor = new TrustAnchor(rootCert, null);
+            PKIXParameters params = new PKIXParameters(Collections.singleton(anchor));
+            params.setRevocationEnabled(false);
 
-        CertPathValidator validator = CertPathValidator.getInstance("PKIX");
-        validator.validate(certPath, params);
+            CertPathValidator validator = CertPathValidator.getInstance("PKIX");
+            validator.validate(certPath, params);
+        } catch (Exception e) {
+            // e.printStackTrace();
+            throw new DataIntegrityFailureException("The certificate isn't valid - " + e.getMessage());
+        }
+
     }
 }

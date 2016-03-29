@@ -16,9 +16,9 @@ import java.util.List;
 
 import pteidlib.pteid;
 import sec.blockfs.blockserver.BlockServer;
-import sec.blockfs.blockserver.DataIntegrityFailureException;
 import sec.blockfs.blockserver.WrongArgumentsException;
 import sec.blockfs.blockutility.BlockUtility;
+import sec.blockfs.blockutility.DataIntegrityFailureException;
 import sec.blockfs.blockutility.OperationFailedException;
 import sun.security.pkcs11.wrapper.CK_ATTRIBUTE;
 import sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS;
@@ -36,9 +36,9 @@ public class BlockLibrary {
     public PKCS11 pkcs11; // used to access the PKCS11 API
     public CK_MECHANISM mechanism; // access mechanism
     public long sessionToken;
-    
+
     private long previousNonce = 0;
-    
+
     public BlockLibrary(String serviceName, String servicePort, String serviceUrl) throws InitializationFailureException {
         try {
             System.out.println("Connecting to server: " + serviceUrl + ":" + servicePort + "/" + serviceName);
@@ -107,16 +107,16 @@ public class BlockLibrary {
             X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
             publicKey = authCert.getPublicKey();
             certificates.add(authCert);
-            
+
             // add the intermediate certificates
             certificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
             certificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
             certificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
-            
+
             CertificateFactory fact = CertificateFactory.getInstance("X.509");
             CertPath path = fact.generateCertPath(certificates);
             blockServer.storePubKey(path);
-            
+
             pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
         } catch (Exception e) {
             e.printStackTrace();
@@ -280,17 +280,27 @@ public class BlockLibrary {
     }
 
     public List<X509Certificate> FS_list() throws OperationFailedException {
-        List<X509Certificate> certificates;
+        List<X509Certificate> validCerts = new ArrayList<X509Certificate>();
+
         try {
-            certificates = blockServer.readPubkeys();
-            if (certificates.isEmpty())
+            List<CertPath> certChains = blockServer.readPubkeys();
+            if (certChains.isEmpty())
                 return null;
-            else
-                return certificates;
+
+            // validate listed certificates
+            for (CertPath path : certChains) {
+                try {
+                    BlockUtility.validateCertPath(path);
+                    validCerts.add((X509Certificate) path.getCertificates().get(0));
+                } catch (DataIntegrityFailureException e) {
+                    System.out.println("Invalid cert. " + e.getMessage());
+                }
+            }
+
+            return validCerts;
         } catch (RemoteException e) {
             e.printStackTrace();
             throw new OperationFailedException(e.getMessage());
         }
     }
-
 }

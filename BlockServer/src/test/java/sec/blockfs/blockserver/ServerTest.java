@@ -27,6 +27,7 @@ import org.junit.Test;
 import pteidlib.PteidException;
 import pteidlib.pteid;
 import sec.blockfs.blockutility.BlockUtility;
+import sec.blockfs.blockutility.DataIntegrityFailureException;
 import sun.security.pkcs11.wrapper.CK_ATTRIBUTE;
 import sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS;
 import sun.security.pkcs11.wrapper.CK_MECHANISM;
@@ -343,6 +344,7 @@ public class ServerTest {
 
         // build the cert chain
         ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
+        certs.add(authCert);
         certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
         certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(5)));
         certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
@@ -378,10 +380,6 @@ public class ServerTest {
     @Test(expected = ServerErrorException.class)
     public void storeCertificateInvalidCertPath()
             throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
-        // obtain the client certificate
-        byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
-        X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
-
         BlockServer server = new ServerImpl();
         server.storePubKey(null);
     }
@@ -435,8 +433,6 @@ public class ServerTest {
         List<CertPath> storedCerts = server.readPubkeys();
         assertTrue("There are no stored certificates", storedCerts != null);
         assertTrue("Expected one cert path. " + storedCerts.size() + " certs read instead", storedCerts.size() == 1);
-        byte[] otherCertBytes = BlockUtility.getCertificateInBytes(1);
-        X509Certificate otherCert = BlockUtility.getCertFromByteArray(otherCertBytes);
 
         for (CertPath p : storedCerts) {
             List<X509Certificate> readCerts = (List<X509Certificate>) p.getCertificates();

@@ -13,8 +13,11 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.cert.CertPath;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,11 +29,11 @@ import org.junit.Test;
 
 import pteidlib.PteidException;
 import pteidlib.pteid;
-import sec.blockfs.blockserver.DataIntegrityFailureException;
 import sec.blockfs.blockserver.FileSystemImpl;
 import sec.blockfs.blockserver.ServerImpl;
 import sec.blockfs.blockserver.WrongArgumentsException;
 import sec.blockfs.blockutility.BlockUtility;
+import sec.blockfs.blockutility.DataIntegrityFailureException;
 import sec.blockfs.blockutility.OperationFailedException;
 import sun.security.pkcs11.wrapper.PKCS11Constants;
 
@@ -119,9 +122,9 @@ public class LibraryTest {
     }
 
     /*
-     *      Data Integrity Checks
+     * Data Integrity Checks
      */
-    
+
     @Test
     public void partialWrite() throws Exception {
         byte[] data = "abcdef".getBytes();
@@ -443,22 +446,45 @@ public class LibraryTest {
         byte[] readBuffer = new byte[BlockUtility.BLOCK_SIZE];
         library.FS_read(library.publicKey.getEncoded(), 0, BlockUtility.BLOCK_SIZE, readBuffer);
     }
-    
+
     /*
-     *      SmartCard Authentication Tests
+     * SmartCard Authentication Tests
      */
-    
+
     @Test
     public void successReadPublicKey() throws OperationFailedException, PteidException, CertificateException {
         List<X509Certificate> readCertificates = library.FS_list();
-        
+
         assertTrue("There are no stored certificates", readCertificates != null);
-        assertTrue("Expected one certificate. "+readCertificates.size()+" certs read instead", readCertificates.size() == 1);
-        
+        assertTrue("Expected one certificate. " + readCertificates.size() + " certs read instead", readCertificates.size() == 1);
+
         byte[] byteCert = pteid.GetCertificates()[0].certif;
         X509Certificate clientCert = BlockUtility.getCertFromByteArray(byteCert);
         X509Certificate storedCert = readCertificates.get(0);
-        
-        assertTrue("The stored cert isn't equal to the client cert", storedCert.equals(clientCert));       
+
+        assertTrue("The stored cert isn't equal to the client cert", storedCert.equals(clientCert));
     }
+
+   /* @Test(expected = DataIntegrityFailureException.class)
+    public void keyListingChangeAttack() throws OperationFailedException, PteidException, CertificateException {
+        // obtain the client certificate
+        byte[] authCertBytes = BlockUtility.getCertificateInBytes(1);
+        X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
+
+        // build cert chain
+        ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
+        certs.add(authCert);
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+
+        CertificateFactory fact = CertificateFactory.getInstance("X.509");
+        CertPath path = fact.generateCertPath(certs);
+
+        // add corrupt chain
+        ServerImpl server = (ServerImpl) library.blockServer;
+        server.certificates.add(path);
+
+        library.FS_list();
+    }*/
 }

@@ -5,8 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
+
 import sec.blockfs.blocklibrary.BlockLibrary;
 import sec.blockfs.blocklibrary.InitializationFailureException;
+import sec.blockfs.blockserver.BlockServer;
 import sec.blockfs.blockserver.DataIntegrityFailureException;
 import sec.blockfs.blockserver.FileSystemImpl;
 import sec.blockfs.blockserver.WrongArgumentsException;
@@ -66,5 +69,9 @@ public class ClientPublicBlockAttack {
         } catch (DataIntegrityFailureException e) {
             System.out.println("Couldn't read data. " + e.getMessage());
         }
+
+        File blockDir = new File(FileSystemImpl.BASE_PATH + File.separatorChar);
+        if (blockDir.exists())
+            FileUtils.deleteDirectory(blockDir);
     }
 }

@@ -12,7 +12,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.cert.CertPath;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +45,7 @@ public class ServerTest {
     private static long privateKey;
     private static CK_MECHANISM mechanism; // access mechanism
     private static long sessionToken;
+    private long nonce = 0;
 
     @SuppressWarnings("unchecked")
     @BeforeClass
@@ -140,7 +143,7 @@ public class ServerTest {
         pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
         byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
 
-        server.put_k(dataHash, signature, publicKey.getEncoded());
+        server.put_k(dataHash, signature, publicKey.getEncoded(), ++nonce);
 
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(publicKey.getEncoded()));
         String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
@@ -198,7 +201,7 @@ public class ServerTest {
         pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
         byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
 
-        server.put_k(null, signature, publicKey.getEncoded());
+        server.put_k(null, signature, publicKey.getEncoded(), ++nonce);
     }
 
     @Test(expected = DataIntegrityFailureException.class)
@@ -210,7 +213,7 @@ public class ServerTest {
         pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
         byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
 
-        server.put_k(data, signature, publicKey.getEncoded());
+        server.put_k(data, signature, publicKey.getEncoded(), ++nonce);
     }
 
     @Test(expected = ServerErrorException.class)
@@ -219,7 +222,7 @@ public class ServerTest {
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] dataHash = BlockUtility.digest(data);
 
-        server.put_k(dataHash, null, publicKey.getEncoded());
+        server.put_k(dataHash, null, publicKey.getEncoded(), ++nonce);
     }
 
     @Test(expected = DataIntegrityFailureException.class)
@@ -231,7 +234,7 @@ public class ServerTest {
         pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
         byte[] signature = pkcs11.C_Sign(sessionToken, data);
 
-        server.put_k(dataHash, signature, publicKey.getEncoded());
+        server.put_k(dataHash, signature, publicKey.getEncoded(), ++nonce);
     }
 
     @Test(expected = ServerErrorException.class)
@@ -243,7 +246,7 @@ public class ServerTest {
         pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
         byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
 
-        server.put_k(dataHash, signature, null);
+        server.put_k(dataHash, signature, null, ++nonce);
     }
 
     @Test(expected = DataIntegrityFailureException.class)
@@ -259,7 +262,7 @@ public class ServerTest {
         X509Certificate differentCert = BlockUtility.getCertFromByteArray(differentCertBytes);
         PublicKey diffPublicKey = differentCert.getPublicKey();
 
-        server.put_k(dataHash, signature, diffPublicKey.getEncoded());
+        server.put_k(dataHash, signature, diffPublicKey.getEncoded(), ++nonce);
     }
 
     @Test(expected = ServerErrorException.class)
@@ -279,14 +282,18 @@ public class ServerTest {
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
 
-        // obtain the intermediate certificates
-        ArrayList<X509Certificate> intermediateCerts = new ArrayList<X509Certificate>();
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+        // build the cert chain
+        ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
+        certs.add(authCert);
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+
+        CertificateFactory fact = CertificateFactory.getInstance("X.509");
+        CertPath path = fact.generateCertPath(certs);
 
         BlockServer server = new ServerImpl();
-        server.storePubKey(authCert, intermediateCerts);
+        server.storePubKey(path);
     }
 
     @Test(expected = DataIntegrityFailureException.class)
@@ -296,28 +303,36 @@ public class ServerTest {
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(1);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
 
-        // obtain the intermediate certificates
-        ArrayList<X509Certificate> intermediateCerts = new ArrayList<X509Certificate>();
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+        // build the cert chain
+        ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
+        certs.add(authCert);
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+
+        CertificateFactory fact = CertificateFactory.getInstance("X.509");
+        CertPath path = fact.generateCertPath(certs);
 
         BlockServer server = new ServerImpl();
-        server.storePubKey(authCert, intermediateCerts);
+        server.storePubKey(path);
     }
 
-    @Test(expected = ServerErrorException.class)
-    public void storeCertificateInvalidUserCert()
+    // 
+  /*  @Test(expected = ServerErrorException.class)
+    public void storeCertificateNoUserCert()
             throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
-        // obtain the intermediate certificates
-        ArrayList<X509Certificate> intermediateCerts = new ArrayList<X509Certificate>();
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+        // build the cert chain
+        ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(5)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+
+        CertificateFactory fact = CertificateFactory.getInstance("X.509");
+        CertPath path = fact.generateCertPath(certs);
 
         BlockServer server = new ServerImpl();
-        server.storePubKey(null, intermediateCerts);
-    }
+        server.storePubKey(path);
+    }*/
 
     @Test(expected = DataIntegrityFailureException.class)
     public void storeCertificateWrongIntermediateCert()
@@ -326,14 +341,17 @@ public class ServerTest {
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
 
-        // obtain the intermediate certificates
-        ArrayList<X509Certificate> intermediateCerts = new ArrayList<X509Certificate>();
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(5)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+        // build the cert chain
+        ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(5)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+
+        CertificateFactory fact = CertificateFactory.getInstance("X.509");
+        CertPath path = fact.generateCertPath(certs);
 
         BlockServer server = new ServerImpl();
-        server.storePubKey(authCert, intermediateCerts);
+        server.storePubKey(path);
     }
 
     @Test(expected = DataIntegrityFailureException.class)
@@ -343,95 +361,119 @@ public class ServerTest {
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
 
-        // obtain the intermediate certificates
-        ArrayList<X509Certificate> intermediateCerts = new ArrayList<X509Certificate>();
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
+        // build the cert chain
+        ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
+        certs.add(authCert);
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
         // intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+
+        CertificateFactory fact = CertificateFactory.getInstance("X.509");
+        CertPath path = fact.generateCertPath(certs);
 
         BlockServer server = new ServerImpl();
-        server.storePubKey(authCert, intermediateCerts);
+        server.storePubKey(path);
     }
 
     @Test(expected = ServerErrorException.class)
-    public void storeCertificateInvalidIntermediateCert()
+    public void storeCertificateInvalidCertPath()
             throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
         // obtain the client certificate
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
 
         BlockServer server = new ServerImpl();
-        server.storePubKey(authCert, null);
+        server.storePubKey(null);
     }
-    
+
     @Test
     public void successListCerts()
             throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
         // obtain the client certificate
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
-        
-        // obtain the intermediate certificates
-        ArrayList<X509Certificate> intermediateCerts = new ArrayList<X509Certificate>();
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+
+        // build cert chain
+        ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
+        certs.add(authCert);
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+
+        CertificateFactory fact = CertificateFactory.getInstance("X.509");
+        CertPath path = fact.generateCertPath(certs);
 
         BlockServer server = new ServerImpl();
-        server.storePubKey(authCert, intermediateCerts);
-        
-        List<X509Certificate> storedCerts = server.readPubkeys();
+        server.storePubKey(path);
+
+        List<CertPath> storedCerts = server.readPubkeys();
         assertTrue("There are no stored certificates", storedCerts != null);
-        assertTrue("Expected one certificate. "+storedCerts.size()+" certs read instead", storedCerts.size() == 1);
-        assertTrue("Certificate different from expected", storedCerts.get(0).equals(authCert));        
+        assertTrue("Expected one certificate. " + storedCerts.size() + " certs read instead", storedCerts.size() == 1);
+        assertTrue("Certificate different from expected", storedCerts.get(0).getCertificates().get(0).equals(authCert));
     }
-    
+
     @Test
-    public void wrongCertListCerts()
+    public void listCheckCerts()
             throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
         // obtain the client certificate
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
-        
-        // obtain the intermediate certificates
-        ArrayList<X509Certificate> intermediateCerts = new ArrayList<X509Certificate>();
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+
+        // build the cert chain
+        ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
+        certs.add(authCert);
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+
+        CertificateFactory fact = CertificateFactory.getInstance("X.509");
+        CertPath path = fact.generateCertPath(certs);
 
         BlockServer server = new ServerImpl();
-        server.storePubKey(authCert, intermediateCerts);
-        
-        List<X509Certificate> storedCerts = server.readPubkeys();
+        server.storePubKey(path);
+
+        List<CertPath> storedCerts = server.readPubkeys();
         assertTrue("There are no stored certificates", storedCerts != null);
-        assertTrue("Expected one certificate. "+storedCerts.size()+" certs read instead", storedCerts.size() == 1);
+        assertTrue("Expected one cert path. " + storedCerts.size() + " certs read instead", storedCerts.size() == 1);
         byte[] otherCertBytes = BlockUtility.getCertificateInBytes(1);
         X509Certificate otherCert = BlockUtility.getCertFromByteArray(otherCertBytes);
-        
-        assertTrue("Certificate is different from expected", !storedCerts.get(0).equals(otherCert));        
+
+        for (CertPath p : storedCerts) {
+            List<X509Certificate> readCerts = (List<X509Certificate>) p.getCertificates();
+            assertTrue("Wrong number of certs in cert path.", readCerts.size() == certs.size());
+
+            for (int i = 0; i < certs.size(); ++i) {
+                X509Certificate readCert = readCerts.get(i);
+                assertTrue("Certificate is different from expected", readCert.equals(certs.get(i)));
+            }
+        }
     }
-    
+
     @Test
     public void storeSameCert()
             throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
         // obtain the client certificate
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
-        
-        // obtain the intermediate certificates
-        ArrayList<X509Certificate> intermediateCerts = new ArrayList<X509Certificate>();
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
-        intermediateCerts.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+
+        // build the cert chain
+        ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
+        certs.add(authCert);
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
+        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+
+        CertificateFactory fact = CertificateFactory.getInstance("X.509");
+        CertPath path = fact.generateCertPath(certs);
 
         BlockServer server = new ServerImpl();
-        server.storePubKey(authCert, intermediateCerts);
+        server.storePubKey(path);
         // duplicate store operation
-        server.storePubKey(authCert, intermediateCerts);
+        server.storePubKey(path);
 
-        List<X509Certificate> storedCerts = server.readPubkeys();
+        List<CertPath> storedCerts = server.readPubkeys();
         assertTrue("There are no stored certificates", storedCerts != null);
-        assertTrue("Expected one certificate. "+storedCerts.size()+" certs read instead", storedCerts.size() == 1);
-        assertTrue("Certificate is different from expected", storedCerts.get(0).equals(authCert));        
+        assertTrue("Expected one certificate. " + storedCerts.size() + " certs read instead", storedCerts.size() == 1);
+        assertTrue("Certificate is different from expected", storedCerts.get(0).getCertificates().get(0).equals(authCert));
     }
 }

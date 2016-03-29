@@ -1,19 +1,32 @@
 package sec.blockfs.blockutility;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
+import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
+
+import javax.security.auth.x500.X500Principal;
 
 import pteidlib.PTEID_Certif;
 import pteidlib.PteidException;
@@ -87,12 +100,12 @@ public class BlockUtility {
     }
 
     public static byte[] getCertificateInBytes(int n) throws PteidException, CertificateException {
-        // TODO: remove this 
-        /*PTEID_Certif[] certifs = pteid.GetCertificates();
-        for (PTEID_Certif c: certifs) {
-           X509Certificate cert = getCertFromByteArray(c.certif);
-            System.out.println("Name: "+c.certifLabel+"\t Serial: "+cert.getSerialNumber().toString(16));
-        }*/
+        // TODO: remove this
+        /*
+         * PTEID_Certif[] certifs = pteid.GetCertificates(); for (PTEID_Certif c: certifs) { X509Certificate cert =
+         * getCertFromByteArray(c.certif); System.out.println("Name: "+c.certifLabel+"\t Serial: "
+         * +cert.getSerialNumber().toString(16)); }
+         */
         return pteid.GetCertificates()[n].certif;
     }
 
@@ -112,5 +125,47 @@ public class BlockUtility {
             text[i] = chars.charAt(rand.nextInt(chars.length()));
         }
         return new String(text);
+    }
+
+    public static X509Certificate findRootCertificate(X500Principal root) throws OperationFailedException {
+        try {
+            String filename = System.getProperty("java.home") + "/lib/security/cacerts".replace('/', File.separatorChar);
+            FileInputStream is = new FileInputStream(filename);
+            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            String password = "changeit";
+            keystore.load(is, password.toCharArray());
+
+            // retrieve the most-trusted CAs from the keystore
+            PKIXParameters params = new PKIXParameters(keystore);
+
+            // Get the set of trust anchors, which contain the most-trusted CA certificates
+            for (TrustAnchor ta : params.getTrustAnchors()) {
+                X509Certificate storedCert = ta.getTrustedCert();
+                if (storedCert.getIssuerX500Principal().equals(root)) {
+                    return ta.getTrustedCert();
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new OperationFailedException(e.getMessage());
+        }
+    }
+
+    public static void validateCertPath(CertPath certPath) throws NoSuchAlgorithmException, OperationFailedException,
+            CertPathValidatorException, InvalidAlgorithmParameterException {
+        // obtain root cert
+        List<X509Certificate> certs = (List<X509Certificate>) certPath.getCertificates();
+        X509Certificate lastCert = (X509Certificate) certs.get(certs.size() - 1);
+        X500Principal rootEntity = lastCert.getIssuerX500Principal();
+        X509Certificate rootCert = BlockUtility.findRootCertificate(rootEntity);
+
+        // validate certificate chain
+        TrustAnchor anchor = new TrustAnchor(rootCert, null);
+        PKIXParameters params = new PKIXParameters(Collections.singleton(anchor));
+        params.setRevocationEnabled(false);
+
+        CertPathValidator validator = CertPathValidator.getInstance("PKIX");
+        validator.validate(certPath, params);
     }
 }

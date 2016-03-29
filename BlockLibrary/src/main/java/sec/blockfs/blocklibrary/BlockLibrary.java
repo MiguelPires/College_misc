@@ -7,6 +7,8 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.security.PublicKey;
+import java.security.cert.CertPath;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,14 +30,15 @@ import sun.security.pkcs11.wrapper.PKCS11Constants;;
 public class BlockLibrary {
     // NOTE: the visibility of these attributes is package/public because of the tests.
     // In production, they should all be private
-    
-    public static BlockServer blockServer;
+    public BlockServer blockServer;
     public PublicKey publicKey;
-    long privateKey;
+    public long privateKey;
     public PKCS11 pkcs11; // used to access the PKCS11 API
-    CK_MECHANISM mechanism; // access mechanism
-    long sessionToken;
-
+    public CK_MECHANISM mechanism; // access mechanism
+    public long sessionToken;
+    
+    private long previousNonce = 0;
+    
     public BlockLibrary(String serviceName, String servicePort, String serviceUrl) throws InitializationFailureException {
         try {
             System.out.println("Connecting to server: " + serviceUrl + ":" + servicePort + "/" + serviceName);
@@ -97,18 +100,23 @@ public class BlockLibrary {
             mechanism.mechanism = PKCS11Constants.CKM_SHA1_RSA_PKCS;
             mechanism.pParameter = null;
 
-            // obtain the client certificate
+            ArrayList<X509Certificate> certificates = new ArrayList<X509Certificate>();
+
+            // add the client certificate
             byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
             X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
             publicKey = authCert.getPublicKey();
-
-            // obtain the intermediate certificates
-            ArrayList<X509Certificate> rootCertificates = new ArrayList<X509Certificate>();
-            rootCertificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
-            rootCertificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
-            rootCertificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+            certificates.add(authCert);
             
-            blockServer.storePubKey(authCert, rootCertificates);
+            // add the intermediate certificates
+            certificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
+            certificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(4)));
+            certificates.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+            
+            CertificateFactory fact = CertificateFactory.getInstance("X.509");
+            CertPath path = fact.generateCertPath(certificates);
+            blockServer.storePubKey(path);
+            
             pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
         } catch (Exception e) {
             e.printStackTrace();
@@ -182,7 +190,7 @@ public class BlockLibrary {
             byte[] keyBlockSignature = pkcs11.C_Sign(sessionToken, rewrittenBlock);
 
             // write public key block
-            blockServer.put_k(rewrittenBlock, keyBlockSignature, publicKey.getEncoded());
+            blockServer.put_k(rewrittenBlock, keyBlockSignature, publicKey.getEncoded(), ++previousNonce);
 
             // write data blocks
             for (int i = 0; i < toWriteBlocks.length; ++i) {

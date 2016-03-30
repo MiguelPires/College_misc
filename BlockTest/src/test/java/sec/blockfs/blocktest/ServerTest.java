@@ -11,7 +11,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.security.PublicKey;
-import java.security.Signature;
 import java.security.cert.CertPath;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -20,28 +19,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import pteidlib.PteidException;
 import pteidlib.pteid;
-import sec.blockfs.blocklibrary.BlockLibraryImpl;
 import sec.blockfs.blockserver.ServerImpl;
 import sec.blockfs.blockutility.BlockServer;
 import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.DataIntegrityFailureException;
 import sec.blockfs.blockutility.ServerErrorException;
-
-import sun.security.pkcs11.wrapper.*;
+import sun.security.pkcs11.wrapper.CK_ATTRIBUTE;
+import sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS;
+import sun.security.pkcs11.wrapper.CK_MECHANISM;
+import sun.security.pkcs11.wrapper.PKCS11;
+import sun.security.pkcs11.wrapper.PKCS11Constants;
 
 @SuppressWarnings("restriction")
 public class ServerTest {
     private static String servicePort = System.getProperty("service.port");
     private static String serviceName = System.getProperty("service.name");
-    private static String serviceUrl = System.getProperty("service.url");
 
-    private static Signature signAlgorithm;
     private static PKCS11 pkcs11;
     private static PublicKey publicKey;
     private static long privateKey;
@@ -82,7 +80,6 @@ public class ServerTest {
 
         // Token login
         pkcs11.C_Login(sessionToken, 1, null);
-        // CK_SESSION_INFO info = pkcs11.C_GetSessionInfo(sessionToken);
 
         CK_ATTRIBUTE[] attributes = new CK_ATTRIBUTE[1];
         attributes[0] = new CK_ATTRIBUTE();
@@ -99,8 +96,6 @@ public class ServerTest {
         mechanism.mechanism = PKCS11Constants.CKM_SHA1_RSA_PKCS;
         mechanism.pParameter = null;
 
-        signAlgorithm = Signature.getInstance("SHA512withRSA", "SunRsaSign");
-
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
         publicKey = authCert.getPublicKey();
@@ -108,14 +103,20 @@ public class ServerTest {
 
     }
 
-    @AfterClass
+    /*   @AfterClass
     public static void tearDown() {
+        try {
+            pkcs11.C_Logout(sessionToken);
+        } catch (PKCS11Exception e) {
+            e.printStackTrace();
+        }
+        
         try {
             pkcs11.C_CloseSession(sessionToken);
         } catch (PKCS11Exception e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     @Test
     public void successCreateService() throws Exception {

@@ -12,11 +12,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import pteidlib.pteid;
 import sec.blockfs.blocklibrary.BlockLibraryImpl;
 import sec.blockfs.blocklibrary.InitializationFailureException;
 import sec.blockfs.blockserver.ServerImpl;
-import sun.security.pkcs11.wrapper.PKCS11Exception;
 
 public class RMITest {
     private static String servicePort = System.getProperty("service.port");
@@ -49,11 +47,11 @@ public class RMITest {
             } catch (Exception e) {
             }
 
-            try {
+            /*  try {
                 library.pkcs11.C_CloseSession(library.sessionToken);
             } catch (PKCS11Exception e) {
                 e.printStackTrace();
-            }
+            }*/
         }
     }
 

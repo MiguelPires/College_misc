@@ -33,7 +33,6 @@ import sec.blockfs.blockutility.DataIntegrityFailureException;
 import sec.blockfs.blockutility.OperationFailedException;
 import sec.blockfs.blockutility.WrongArgumentsException;
 import sun.security.pkcs11.wrapper.PKCS11Constants;
-import sun.security.pkcs11.wrapper.PKCS11Exception;
 
 @SuppressWarnings("restriction")
 public class LibraryTest {
@@ -68,12 +67,6 @@ public class LibraryTest {
                 registry.unbind(serviceName);
             } catch (Exception e) {
             }
-        }
-        
-        try {
-            library.pkcs11.C_Logout(library.sessionToken);
-        } catch (PKCS11Exception e) {
-            e.printStackTrace();
         }
     }
 

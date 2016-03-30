@@ -58,6 +58,7 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
             System.out.println("Connected to block server");
 
             libraryUrl = serviceUrl;
+
         } catch (NotBoundException | MalformedURLException | RemoteException e) {
             throw new InitializationFailureException("Couldn't connect to server");
         }
@@ -130,6 +131,13 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
             CertPath path = fact.generateCertPath(certificates);
             blockServer.storePubKey(path);
 
+            // the server needs to provide a challenge
+            Registry registry = null;
+            libraryPort = 8001 + (int) (Math.random() * 10000);
+            libraryName = BlockUtility.generateString(6);
+            registry = LocateRegistry.createRegistry(libraryPort);
+            registry.rebind(libraryName, this);
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new InitializationFailureException("Couldn't connect to server. " + e.getMessage());
@@ -143,9 +151,6 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
     }
 
     public void FS_write(int position, int size, byte[] contents) throws OperationFailedException, WrongArgumentsException {
-        Registry registry = null;
-        libraryPort = 8001 + (int) (Math.random() * 1000);
-        libraryName = BlockUtility.generateString(6);
 
         try {
             if (position < 0 || size < 0 || contents == null || size > contents.length)
@@ -214,10 +219,6 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
             pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
             byte[] keyBlockSignature = pkcs11.C_Sign(sessionToken, rewrittenBlock);
 
-            // the server needs to provide a challenge
-            registry = LocateRegistry.createRegistry(libraryPort);
-            registry.rebind(libraryName, this);
-
             // write public key block
             blockServer.put_k(rewrittenBlock, keyBlockSignature, publicKey.getEncoded(), libraryUrl, libraryName, libraryPort);
 
@@ -238,12 +239,6 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
             System.out.println("Library - Couldn't write to server: " + e.getMessage());
             e.printStackTrace();
             throw new OperationFailedException(e.getMessage());
-        } finally {
-            try {
-                // tear down server
-                registry.unbind(libraryName);
-            } catch (Exception e) {
-            }
         }
     }
 

@@ -7,14 +7,12 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import sec.blockfs.blocklibrary.BlockLibrary;
+import sec.blockfs.blocklibrary.BlockLibraryImpl;
 import sec.blockfs.blocklibrary.InitializationFailureException;
-import sec.blockfs.blockserver.BlockServer;
-import sec.blockfs.blockserver.FileSystemImpl;
-import sec.blockfs.blockserver.WrongArgumentsException;
 import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.DataIntegrityFailureException;
 import sec.blockfs.blockutility.OperationFailedException;
+import sec.blockfs.blockutility.WrongArgumentsException;
 
 public class ClientPublicBlockAttack {
 
@@ -23,9 +21,9 @@ public class ClientPublicBlockAttack {
         String serviceName = args[1];
         String serviceUrl = args[2];
 
-        BlockLibrary library = null;
+        BlockLibraryImpl library = null;
         try {
-            library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+            library = new BlockLibraryImpl(serviceName, servicePort, serviceUrl);
             library.FS_init();
         } catch (InitializationFailureException e) {
             System.out.println("Error - " + e.getMessage());
@@ -38,7 +36,7 @@ public class ClientPublicBlockAttack {
 
         // get public key block
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(library.publicKey.getEncoded()));
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = BlockUtility.BASE_PATH + File.separatorChar + fileName;
         FileInputStream stream = new FileInputStream(filePath);
         byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
         stream.read(publicKeyBlock, 0, publicKeyBlock.length);
@@ -49,7 +47,7 @@ public class ClientPublicBlockAttack {
 
         // write new block
         String newBlockName = BlockUtility.getKeyString(alteredHash);
-        String newBlockPath = FileSystemImpl.BASE_PATH + File.separatorChar + newBlockName;
+        String newBlockPath = BlockUtility.BASE_PATH + File.separatorChar + newBlockName;
         FileOutputStream outStream = new FileOutputStream(newBlockPath);
         outStream.write(alteredTextBytes);
         outStream.close();
@@ -70,7 +68,7 @@ public class ClientPublicBlockAttack {
             System.out.println("Couldn't read data. " + e.getMessage());
         }
 
-        File blockDir = new File(FileSystemImpl.BASE_PATH + File.separatorChar);
+        File blockDir = new File(BlockUtility.BASE_PATH + File.separatorChar);
         if (blockDir.exists())
             FileUtils.deleteDirectory(blockDir);
     }

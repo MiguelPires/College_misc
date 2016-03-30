@@ -6,6 +6,9 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.security.PublicKey;
 import java.security.cert.CertPath;
 import java.security.cert.CertificateFactory;
@@ -14,12 +17,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import pteidlib.PteidException;
 import pteidlib.pteid;
-import sec.blockfs.blockserver.BlockServer;
-import sec.blockfs.blockserver.WrongArgumentsException;
+import sec.blockfs.blockutility.BlockLibrary;
+import sec.blockfs.blockutility.BlockServer;
 import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.DataIntegrityFailureException;
 import sec.blockfs.blockutility.OperationFailedException;
+import sec.blockfs.blockutility.WrongArgumentsException;
 import sun.security.pkcs11.wrapper.CK_ATTRIBUTE;
 import sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS;
 import sun.security.pkcs11.wrapper.CK_MECHANISM;
@@ -27,7 +32,7 @@ import sun.security.pkcs11.wrapper.PKCS11;
 import sun.security.pkcs11.wrapper.PKCS11Constants;;
 
 @SuppressWarnings("restriction")
-public class BlockLibrary {
+public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrary {
     // NOTE: the visibility of these attributes is package/public because of the tests.
     // In production, they should all be private
     public BlockServer blockServer;
@@ -37,16 +42,20 @@ public class BlockLibrary {
     public CK_MECHANISM mechanism; // access mechanism
     public long sessionToken;
 
-    private long previousNonce = 0;
+    private int libraryPort;
+    private String libraryName;
+    private String libraryUrl;
 
-    public BlockLibrary(String serviceName, String servicePort, String serviceUrl) throws InitializationFailureException {
+    public BlockLibraryImpl(String serviceName, String servicePort, String serviceUrl)
+            throws InitializationFailureException, RemoteException {
         try {
             System.out.println("Connecting to server: " + serviceUrl + ":" + servicePort + "/" + serviceName);
             blockServer = (BlockServer) Naming.lookup(serviceUrl + ":" + servicePort + "/" + serviceName);
             System.out.println("Connected to block server");
-        } catch (NotBoundException | RemoteException | MalformedURLException e) {
-            throw new InitializationFailureException("Couldn't connect to server");
 
+            libraryUrl = serviceUrl;
+        } catch (NotBoundException | MalformedURLException | RemoteException e) {
+            throw new InitializationFailureException("Couldn't connect to server");
         }
     }
 
@@ -117,14 +126,23 @@ public class BlockLibrary {
             CertPath path = fact.generateCertPath(certificates);
             blockServer.storePubKey(path);
 
-            pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new InitializationFailureException("Couldn't connect to server");
+            throw new InitializationFailureException("Couldn't connect to server. " + e.getMessage());
+        } finally {
+            try {
+                pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
+            } catch (PteidException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public void FS_write(int position, int size, byte[] contents) throws OperationFailedException, WrongArgumentsException {
+        Registry registry = null;
+        libraryPort = 8001 + (int) (Math.random() * 1000);
+        libraryName = BlockUtility.generateString(6);
+
         try {
             if (position < 0 || size < 0 || contents == null || size > contents.length)
                 throw new WrongArgumentsException("Invalid arguments");
@@ -189,16 +207,31 @@ public class BlockLibrary {
             pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
             byte[] keyBlockSignature = pkcs11.C_Sign(sessionToken, rewrittenBlock);
 
+            // the server needs to provide a challenge
+            registry = LocateRegistry.createRegistry(libraryPort);
+            registry.rebind(libraryName, this);
+
             // write public key block
-            blockServer.put_k(rewrittenBlock, keyBlockSignature, publicKey.getEncoded(), ++previousNonce);
+            blockServer.put_k(rewrittenBlock, keyBlockSignature, publicKey.getEncoded(), libraryUrl, libraryName, libraryPort);
+
+            // tear down server
+            registry.unbind(libraryName);
 
             // write data blocks
             for (int i = 0; i < toWriteBlocks.length; ++i) {
                 blockServer.put_h(toWriteBlocks[i]);
             }
         } catch (WrongArgumentsException e) {
+            try {
+                registry.unbind(libraryName);
+            } catch (Exception e1) {
+            }
             throw e;
         } catch (Exception e) {
+            try {
+                registry.unbind(libraryName);
+            } catch (Exception e1) {
+            }
             System.out.println("Library - Couldn't write to server: " + e.getMessage());
             e.printStackTrace();
             throw new OperationFailedException(e.getMessage());
@@ -301,6 +334,18 @@ public class BlockLibrary {
         } catch (RemoteException e) {
             e.printStackTrace();
             throw new OperationFailedException(e.getMessage());
+        }
+    }
+
+    @Override
+    public byte[] challenge(Long nonce) throws RemoteException {
+        try {
+            byte[] hashNonce = BlockUtility.digest(new byte[] { nonce.byteValue() });
+            pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
+            return pkcs11.C_Sign(sessionToken, hashNonce);
+        } catch (Exception e) {
+            System.out.println("Failed signing nonce. " + e.getMessage());
+            return null;
         }
     }
 }

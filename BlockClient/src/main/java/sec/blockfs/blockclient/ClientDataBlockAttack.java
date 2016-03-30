@@ -5,13 +5,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import sec.blockfs.blocklibrary.BlockLibrary;
+import sec.blockfs.blocklibrary.BlockLibraryImpl;
 import sec.blockfs.blocklibrary.InitializationFailureException;
 import sec.blockfs.blockserver.FileSystemImpl;
-import sec.blockfs.blockserver.WrongArgumentsException;
 import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.DataIntegrityFailureException;
 import sec.blockfs.blockutility.OperationFailedException;
+import sec.blockfs.blockutility.WrongArgumentsException;
 
 public class ClientDataBlockAttack {
 
@@ -20,9 +20,9 @@ public class ClientDataBlockAttack {
         String serviceName = args[1];
         String serviceUrl = args[2];
 
-        BlockLibrary library = null;
+        BlockLibraryImpl library = null;
         try {
-            library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+            library = new BlockLibraryImpl(serviceName, servicePort, serviceUrl);
             library.FS_init();
         } catch (InitializationFailureException e) {
             System.out.println("Error - " + e.getMessage());
@@ -36,7 +36,7 @@ public class ClientDataBlockAttack {
 
         // get data block
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(textBytes));
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = BlockUtility.BASE_PATH + File.separatorChar + fileName;
         
         FileInputStream stream = new FileInputStream(filePath);
         byte[] dataBlock = new byte[BlockUtility.BLOCK_SIZE];

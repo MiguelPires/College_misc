@@ -36,6 +36,7 @@ public class BlockUtility {
     public static final int BLOCK_SIZE = 4096;
     public static final int SIGNATURE_SIZE = 128;
     public static final int DIGEST_SIZE = 64;
+    public static final String BASE_PATH = "C:\\Temp";
 
     private static MessageDigest digestAlgorithm = null;
     private static Signature rsaSignature = null;
@@ -97,12 +98,6 @@ public class BlockUtility {
     }
 
     public static byte[] getCertificateInBytes(int n) throws PteidException, CertificateException {
-        // TODO: remove this
-        /*
-         * PTEID_Certif[] certifs = pteid.GetCertificates(); for (PTEID_Certif c: certifs) { X509Certificate cert =
-         * getCertFromByteArray(c.certif); System.out.println("Name: "+c.certifLabel+"\t Serial: "
-         * +cert.getSerialNumber().toString(16)); }
-         */
         return pteid.GetCertificates()[n].certif;
     }
 

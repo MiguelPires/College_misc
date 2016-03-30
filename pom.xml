@@ -10,6 +10,7 @@
   	<module>BlockLibrary</module>
   	<module>BlockClient</module>
   	<module>BlockUtility</module>
+  	<module>BlockTest</module>
   </modules>
 
   <properties>

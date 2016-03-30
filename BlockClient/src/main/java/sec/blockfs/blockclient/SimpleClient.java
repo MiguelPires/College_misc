@@ -3,12 +3,12 @@ package sec.blockfs.blockclient;
 import java.io.IOException;
 import java.util.Arrays;
 
-import sec.blockfs.blocklibrary.BlockLibrary;
+import sec.blockfs.blocklibrary.BlockLibraryImpl;
 import sec.blockfs.blocklibrary.InitializationFailureException;
-import sec.blockfs.blockserver.WrongArgumentsException;
 import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.DataIntegrityFailureException;
 import sec.blockfs.blockutility.OperationFailedException;
+import sec.blockfs.blockutility.WrongArgumentsException;
 
 public class SimpleClient {
     public static void main(String[] args) throws IOException, WrongArgumentsException {
@@ -16,9 +16,9 @@ public class SimpleClient {
         String serviceName = args[1];
         String serviceUrl = args[2];
 
-        BlockLibrary library = null;
+        BlockLibraryImpl library = null;
         try {
-            library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+            library = new BlockLibraryImpl(serviceName, servicePort, serviceUrl);
             library.FS_init();
         } catch (InitializationFailureException e) {
             System.out.println("Error - " + e.getMessage());
@@ -48,9 +48,6 @@ public class SimpleClient {
                 System.out.println("Local: " + Arrays.toString(textBytes));
                 System.out.println("Remote: " + Arrays.toString(readBytes));
             }
-
-            // pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
-
         } catch (OperationFailedException | DataIntegrityFailureException e) {
             e.printStackTrace();
         }

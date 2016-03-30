@@ -40,11 +40,6 @@
     </dependency>
   	<dependency>
   		<groupId>sec6</groupId>
-  		<artifactId>BlockServer</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>sec6</groupId>
   		<artifactId>BlockUtility</artifactId>
   		<version>0.0.1-SNAPSHOT</version>
   	</dependency>

@@ -9,32 +9,29 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 
 import sec.blockfs.blockutility.BlockUtility;
 
 public class FileSystemImpl implements FileSystem {
 
-    public static final String BASE_PATH = "C:\\Temp";
     private File file;
-    
+
     public FileSystemImpl() {
-        file = new File(BASE_PATH);
+        file = new File(BlockUtility.BASE_PATH);
         if (!file.exists()) {
             file.mkdir();
         }
     }
 
-    @Override
     public String writeData(byte[] contents) throws FileSystemException {
         try {
             if (!file.exists()) {
                 file.mkdir();
             }
-            
+
             byte[] dataDigest = BlockUtility.digest(contents);
             String fileName = BlockUtility.getKeyString(dataDigest);
-            String filePath = BASE_PATH + File.separatorChar + fileName;
+            String filePath = BlockUtility.BASE_PATH + File.separatorChar + fileName;
             System.out.println("Writing data block: " + filePath);
 
             FileOutputStream stream = new FileOutputStream(filePath);
@@ -47,15 +44,14 @@ public class FileSystemImpl implements FileSystem {
         }
     }
 
-    @Override
     public String writePublicKey(byte[] dataHash, byte[] signature, byte[] publicKey) throws FileSystemException {
         try {
             if (!file.exists()) {
                 file.mkdir();
             }
-            
+
             String fileName = BlockUtility.getKeyString(BlockUtility.digest(publicKey));
-            String filePath = BASE_PATH + File.separatorChar + fileName;
+            String filePath = BlockUtility.BASE_PATH + File.separatorChar + fileName;
             System.out.println("Writing public key block: " + filePath);
 
             // concatenate data
@@ -75,15 +71,14 @@ public class FileSystemImpl implements FileSystem {
         }
     }
 
-    @Override
     public byte[] read(String blockName) throws FileSystemException, FileNotFoundException {
         byte[] dataBlock;
         System.out.println("Reading block: " + blockName);
 
-        String filePath = BASE_PATH + File.separatorChar + blockName;
+        String filePath = BlockUtility.BASE_PATH + File.separatorChar + blockName;
 
         FileInputStream stream = new FileInputStream(filePath);
-        
+
         try {
             Path path = Paths.get(filePath);
             dataBlock = Files.readAllBytes(path);

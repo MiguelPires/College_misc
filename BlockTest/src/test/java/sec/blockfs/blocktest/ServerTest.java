@@ -1,4 +1,4 @@
-package sec.blockfs.blockserver;
+package sec.blockfs.blocktest;
 
 import static org.junit.Assert.assertTrue;
 
@@ -26,13 +26,14 @@ import org.junit.Test;
 
 import pteidlib.PteidException;
 import pteidlib.pteid;
+import sec.blockfs.blocklibrary.BlockLibraryImpl;
+import sec.blockfs.blockserver.ServerImpl;
+import sec.blockfs.blockutility.BlockServer;
 import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.DataIntegrityFailureException;
-import sun.security.pkcs11.wrapper.CK_ATTRIBUTE;
-import sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS;
-import sun.security.pkcs11.wrapper.CK_MECHANISM;
-import sun.security.pkcs11.wrapper.PKCS11;
-import sun.security.pkcs11.wrapper.PKCS11Constants;
+import sec.blockfs.blockutility.ServerErrorException;
+
+import sun.security.pkcs11.wrapper.*;
 
 @SuppressWarnings("restriction")
 public class ServerTest {
@@ -46,7 +47,6 @@ public class ServerTest {
     private static long privateKey;
     private static CK_MECHANISM mechanism; // access mechanism
     private static long sessionToken;
-    private long nonce = 0;
 
     @SuppressWarnings("unchecked")
     @BeforeClass
@@ -68,11 +68,13 @@ public class ServerTest {
         if (javaVersion.startsWith("1.5.")) {
             Method getInstanceMethode = pkcs11Class.getDeclaredMethod("getInstance",
                     new Class[] { String.class, CK_C_INITIALIZE_ARGS.class, boolean.class });
-            pkcs11 = (PKCS11) getInstanceMethode.invoke(null, new Object[] { libName, null, false });
+            pkcs11 =
+                (PKCS11) getInstanceMethode.invoke(null, new Object[] { libName, null, false });
         } else {
-            Method getInstanceMethode = pkcs11Class.getDeclaredMethod("getInstance",
-                    new Class[] { String.class, String.class, CK_C_INITIALIZE_ARGS.class, boolean.class });
-            pkcs11 = (PKCS11) getInstanceMethode.invoke(null, new Object[] { libName, "C_GetFunctionList", null, false });
+            Method getInstanceMethode = pkcs11Class.getDeclaredMethod("getInstance", new Class[] {
+                    String.class, String.class, CK_C_INITIALIZE_ARGS.class, boolean.class });
+            pkcs11 = (PKCS11) getInstanceMethode.invoke(null,
+                    new Object[] { libName, "C_GetFunctionList", null, false });
         }
 
         // Open the PKCS11 session
@@ -96,20 +98,22 @@ public class ServerTest {
         mechanism = new CK_MECHANISM();
         mechanism.mechanism = PKCS11Constants.CKM_SHA1_RSA_PKCS;
         mechanism.pParameter = null;
+
         signAlgorithm = Signature.getInstance("SHA512withRSA", "SunRsaSign");
 
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
         publicKey = authCert.getPublicKey();
+        pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
+
     }
 
     @AfterClass
     public static void tearDown() {
         try {
-            pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
             pkcs11.C_CloseSession(sessionToken);
-        } catch (Exception e) {
-            ;
+        } catch (PKCS11Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -120,13 +124,13 @@ public class ServerTest {
     }
 
     @Test
-    public void sucessPut_h() throws Exception {
+    public void successPut_h() throws Exception {
         BlockServer server = new ServerImpl();
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         server.put_h(data);
 
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(data));
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = BlockUtility.BASE_PATH + File.separatorChar + fileName;
         FileInputStream inputStream = new FileInputStream(filePath);
         byte[] buffer = new byte[data.length];
         inputStream.read(buffer);
@@ -136,7 +140,7 @@ public class ServerTest {
     }
 
     @Test
-    public void sucessPut_k() throws Exception {
+    public void successPut_k() throws Exception {
         BlockServer server = new ServerImpl();
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] dataHash = BlockUtility.digest(data);
@@ -144,10 +148,11 @@ public class ServerTest {
         pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
         byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
 
-        server.put_k(dataHash, signature, publicKey.getEncoded(), ++nonce);
+        // write public key block
+        server.put_k(dataHash, signature, publicKey.getEncoded(), null, "override", 0);
 
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(publicKey.getEncoded()));
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = BlockUtility.BASE_PATH + File.separatorChar + fileName;
         FileInputStream inputStream = new FileInputStream(filePath);
 
         byte[] buffer = new byte[BlockUtility.DIGEST_SIZE + BlockUtility.SIGNATURE_SIZE];
@@ -157,23 +162,26 @@ public class ServerTest {
         byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE];
         System.arraycopy(buffer, 0, storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
         byte[] storedData = new byte[BlockUtility.DIGEST_SIZE];
-        System.arraycopy(buffer, BlockUtility.SIGNATURE_SIZE, storedData, 0, BlockUtility.DIGEST_SIZE);
+        System.arraycopy(buffer, BlockUtility.SIGNATURE_SIZE, storedData, 0,
+                BlockUtility.DIGEST_SIZE);
 
         // verify public key block integrity
         boolean verified = BlockUtility.verifyDataIntegrity(storedData, storedSignature, publicKey);
 
-        assertTrue("The signature is different from expected", Arrays.equals(storedSignature, signature));
+        assertTrue("The signature is different from expected",
+                Arrays.equals(storedSignature, signature));
         assertTrue("The stored signature is incorrect", verified);
-        assertTrue("Stored public key block is different than expected", Arrays.equals(dataHash, storedData));
+        assertTrue("Stored public key block is different than expected",
+                Arrays.equals(dataHash, storedData));
     }
 
     @Test
-    public void sucessGet() throws Exception {
+    public void successGet() throws Exception {
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] dataDigest = BlockUtility.digest(data);
 
         String fileName = BlockUtility.getKeyString(dataDigest);
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = BlockUtility.BASE_PATH + File.separatorChar + fileName;
         FileOutputStream outStream = new FileOutputStream(filePath);
         outStream.write(data);
         outStream.close();
@@ -183,7 +191,8 @@ public class ServerTest {
         byte[] storedHash = BlockUtility.digest(storedBlock);
 
         assertTrue("Retrieved data different from expected", Arrays.equals(data, storedBlock));
-        assertTrue("Retrieved data different from expected", fileName.equals(BlockUtility.getKeyString(storedHash)));
+        assertTrue("Retrieved data different from expected",
+                fileName.equals(BlockUtility.getKeyString(storedHash)));
     }
 
     @Test(expected = FileNotFoundException.class)
@@ -201,8 +210,8 @@ public class ServerTest {
 
         pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
         byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
-
-        server.put_k(null, signature, publicKey.getEncoded(), ++nonce);
+        // write public key block
+        server.put_k(null, signature, publicKey.getEncoded(), null, "override", 0);
     }
 
     @Test(expected = DataIntegrityFailureException.class)
@@ -214,7 +223,8 @@ public class ServerTest {
         pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
         byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
 
-        server.put_k(data, signature, publicKey.getEncoded(), ++nonce);
+        // write public key block
+        server.put_k(data, signature, publicKey.getEncoded(), null, "override", 0);
     }
 
     @Test(expected = ServerErrorException.class)
@@ -223,7 +233,8 @@ public class ServerTest {
         byte[] data = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] dataHash = BlockUtility.digest(data);
 
-        server.put_k(dataHash, null, publicKey.getEncoded(), ++nonce);
+        // write public key block
+        server.put_k(dataHash, null, publicKey.getEncoded(), null, "override", 0);
     }
 
     @Test(expected = DataIntegrityFailureException.class)
@@ -235,7 +246,8 @@ public class ServerTest {
         pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
         byte[] signature = pkcs11.C_Sign(sessionToken, data);
 
-        server.put_k(dataHash, signature, publicKey.getEncoded(), ++nonce);
+        // write public key block
+        server.put_k(dataHash, signature, publicKey.getEncoded(), null, "override", 0);
     }
 
     @Test(expected = ServerErrorException.class)
@@ -247,7 +259,8 @@ public class ServerTest {
         pkcs11.C_SignInit(sessionToken, mechanism, privateKey);
         byte[] signature = pkcs11.C_Sign(sessionToken, dataHash);
 
-        server.put_k(dataHash, signature, null, ++nonce);
+        // write public key block
+        server.put_k(dataHash, signature, null, null, "override", 0);
     }
 
     @Test(expected = DataIntegrityFailureException.class)
@@ -263,7 +276,7 @@ public class ServerTest {
         X509Certificate differentCert = BlockUtility.getCertFromByteArray(differentCertBytes);
         PublicKey diffPublicKey = differentCert.getPublicKey();
 
-        server.put_k(dataHash, signature, diffPublicKey.getEncoded(), ++nonce);
+        server.put_k(dataHash, signature, diffPublicKey.getEncoded(), "", "override", 0);
     }
 
     @Test(expected = ServerErrorException.class)
@@ -277,8 +290,11 @@ public class ServerTest {
      */
 
     @Test
-    public void successStoreCertificate()
-            throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
+    public void successStoreCertificate() throws CertificateException,
+            PteidException,
+            RemoteException,
+            DataIntegrityFailureException,
+            ServerErrorException {
         // obtain the client certificate
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
@@ -298,8 +314,11 @@ public class ServerTest {
     }
 
     @Test(expected = DataIntegrityFailureException.class)
-    public void storeCertificateWrongUserCert()
-            throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
+    public void storeCertificateWrongUserCert() throws CertificateException,
+            PteidException,
+            RemoteException,
+            DataIntegrityFailureException,
+            ServerErrorException {
         // obtain the client certificate
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(1);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
@@ -318,26 +337,26 @@ public class ServerTest {
         server.storePubKey(path);
     }
 
-    // 
-  /*  @Test(expected = ServerErrorException.class)
-    public void storeCertificateNoUserCert()
-            throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
-        // build the cert chain
-        ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
-        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
-        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(5)));
-        certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
-
-        CertificateFactory fact = CertificateFactory.getInstance("X.509");
-        CertPath path = fact.generateCertPath(certs);
-
-        BlockServer server = new ServerImpl();
-        server.storePubKey(path);
-    }*/
+    //
+    /*
+     * @Test(expected = ServerErrorException.class) public void storeCertificateNoUserCert() throws CertificateException,
+     * PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException { // build the cert chain
+     * ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
+     * certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
+     * certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(5)));
+     * certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
+     * 
+     * CertificateFactory fact = CertificateFactory.getInstance("X.509"); CertPath path = fact.generateCertPath(certs);
+     * 
+     * BlockServer server = new ServerImpl(); server.storePubKey(path); }
+     */
 
     @Test(expected = DataIntegrityFailureException.class)
-    public void storeCertificateWrongIntermediateCert()
-            throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
+    public void storeCertificateWrongIntermediateCert() throws CertificateException,
+            PteidException,
+            RemoteException,
+            DataIntegrityFailureException,
+            ServerErrorException {
         // obtain the client certificate
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
@@ -357,8 +376,11 @@ public class ServerTest {
     }
 
     @Test(expected = DataIntegrityFailureException.class)
-    public void storeCertificateMissingIntermediateCert()
-            throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
+    public void storeCertificateMissingIntermediateCert() throws CertificateException,
+            PteidException,
+            RemoteException,
+            DataIntegrityFailureException,
+            ServerErrorException {
         // obtain the client certificate
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
@@ -378,15 +400,21 @@ public class ServerTest {
     }
 
     @Test(expected = ServerErrorException.class)
-    public void storeCertificateInvalidCertPath()
-            throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
+    public void storeCertificateInvalidCertPath() throws CertificateException,
+            PteidException,
+            RemoteException,
+            DataIntegrityFailureException,
+            ServerErrorException {
         BlockServer server = new ServerImpl();
         server.storePubKey(null);
     }
 
     @Test
-    public void successListCerts()
-            throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
+    public void successListCerts() throws CertificateException,
+            PteidException,
+            RemoteException,
+            DataIntegrityFailureException,
+            ServerErrorException {
         // obtain the client certificate
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
@@ -406,13 +434,18 @@ public class ServerTest {
 
         List<CertPath> storedCerts = server.readPubkeys();
         assertTrue("There are no stored certificates", storedCerts != null);
-        assertTrue("Expected one certificate. " + storedCerts.size() + " certs read instead", storedCerts.size() == 1);
-        assertTrue("Certificate different from expected", storedCerts.get(0).getCertificates().get(0).equals(authCert));
+        assertTrue("Expected one certificate. " + storedCerts.size() + " certs read instead",
+                storedCerts.size() == 1);
+        assertTrue("Certificate different from expected",
+                storedCerts.get(0).getCertificates().get(0).equals(authCert));
     }
 
     @Test
-    public void listCheckCerts()
-            throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
+    public void listCheckCerts() throws CertificateException,
+            PteidException,
+            RemoteException,
+            DataIntegrityFailureException,
+            ServerErrorException {
         // obtain the client certificate
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
@@ -432,7 +465,8 @@ public class ServerTest {
 
         List<CertPath> storedCerts = server.readPubkeys();
         assertTrue("There are no stored certificates", storedCerts != null);
-        assertTrue("Expected one cert path. " + storedCerts.size() + " certs read instead", storedCerts.size() == 1);
+        assertTrue("Expected one cert path. " + storedCerts.size() + " certs read instead",
+                storedCerts.size() == 1);
 
         for (CertPath p : storedCerts) {
             List<X509Certificate> readCerts = (List<X509Certificate>) p.getCertificates();
@@ -446,8 +480,11 @@ public class ServerTest {
     }
 
     @Test
-    public void storeSameCert()
-            throws CertificateException, PteidException, RemoteException, DataIntegrityFailureException, ServerErrorException {
+    public void storeSameCert() throws CertificateException,
+            PteidException,
+            RemoteException,
+            DataIntegrityFailureException,
+            ServerErrorException {
         // obtain the client certificate
         byte[] authCertBytes = BlockUtility.getCertificateInBytes(0);
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
@@ -469,7 +506,9 @@ public class ServerTest {
 
         List<CertPath> storedCerts = server.readPubkeys();
         assertTrue("There are no stored certificates", storedCerts != null);
-        assertTrue("Expected one certificate. " + storedCerts.size() + " certs read instead", storedCerts.size() == 1);
-        assertTrue("Certificate is different from expected", storedCerts.get(0).getCertificates().get(0).equals(authCert));
+        assertTrue("Expected one certificate. " + storedCerts.size() + " certs read instead",
+                storedCerts.size() == 1);
+        assertTrue("Certificate is different from expected",
+                storedCerts.get(0).getCertificates().get(0).equals(authCert));
     }
 }

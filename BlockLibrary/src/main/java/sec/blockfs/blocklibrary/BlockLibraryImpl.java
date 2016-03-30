@@ -41,6 +41,10 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
     public PKCS11 pkcs11; // used to access the PKCS11 API
     public CK_MECHANISM mechanism; // access mechanism
     public long sessionToken;
+    public boolean ENABLE_CACHE = true;
+
+    // public key block cache
+    private byte[] publicBlockCache = null;
 
     private int libraryPort;
     private String libraryName;
@@ -166,23 +170,26 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
             byte[] rewrittenBlock = null;
 
             try {
-                byte[] publicBlock = blockServer.get(BlockUtility.getKeyString(publicKeyHash));
+                // retrieve block, if cache is empty
+                if (!ENABLE_CACHE || publicBlockCache == null) {
+                    publicBlockCache = blockServer.get(BlockUtility.getKeyString(publicKeyHash));
+                }
 
                 byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE];
-                System.arraycopy(publicBlock, 0, storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
+                System.arraycopy(publicBlockCache, 0, storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
 
-                int hashesLength = publicBlock.length - BlockUtility.SIGNATURE_SIZE;
+                int hashesLength = publicBlockCache.length - BlockUtility.SIGNATURE_SIZE;
                 byte[] dataHashes = new byte[hashesLength];
-                System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, dataHashes, 0, hashesLength);
+                System.arraycopy(publicBlockCache, BlockUtility.SIGNATURE_SIZE, dataHashes, 0, hashesLength);
 
                 // verify public key block integrity
                 if (!BlockUtility.verifyDataIntegrity(dataHashes, storedSignature, publicKey))
                     throw new DataIntegrityFailureException("Data integrity check failed on public key block");
 
                 // rewrite
-                int dataSize = publicBlock.length - BlockUtility.SIGNATURE_SIZE;
+                int dataSize = publicBlockCache.length - BlockUtility.SIGNATURE_SIZE;
                 byte[] dataPublicBlock = new byte[dataSize];
-                System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, dataPublicBlock, 0, dataSize);
+                System.arraycopy(publicBlockCache, BlockUtility.SIGNATURE_SIZE, dataPublicBlock, 0, dataSize);
                 int publicBlockSize = dataPublicBlock.length / BlockUtility.DIGEST_SIZE;
                 int newPublicBlockSize = publicBlockSize > endBlock + 1 ? publicBlockSize : endBlock + 1;
 
@@ -214,27 +221,29 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
             // write public key block
             blockServer.put_k(rewrittenBlock, keyBlockSignature, publicKey.getEncoded(), libraryUrl, libraryName, libraryPort);
 
-            // tear down server
-            registry.unbind(libraryName);
+            if (ENABLE_CACHE) {
+                // update cache
+                publicBlockCache = new byte[keyBlockSignature.length + rewrittenBlock.length];
+                System.arraycopy(keyBlockSignature, 0, publicBlockCache, 0, keyBlockSignature.length);
+                System.arraycopy(rewrittenBlock, 0, publicBlockCache, keyBlockSignature.length, rewrittenBlock.length);
+            }
 
             // write data blocks
             for (int i = 0; i < toWriteBlocks.length; ++i) {
                 blockServer.put_h(toWriteBlocks[i]);
             }
         } catch (WrongArgumentsException e) {
-            try {
-                registry.unbind(libraryName);
-            } catch (Exception e1) {
-            }
             throw e;
         } catch (Exception e) {
-            try {
-                registry.unbind(libraryName);
-            } catch (Exception e1) {
-            }
             System.out.println("Library - Couldn't write to server: " + e.getMessage());
             e.printStackTrace();
             throw new OperationFailedException(e.getMessage());
+        } finally {
+            try {
+                // tear down server
+                registry.unbind(libraryName);
+            } catch (Exception e) {
+            }
         }
     }
 
@@ -247,21 +256,21 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
             byte[] publicKeyHash = BlockUtility.digest(publicKey);
             String blockName = BlockUtility.getKeyString(publicKeyHash);
 
-            byte[] publicKeyBlock;
-
             try {
-                publicKeyBlock = blockServer.get(blockName);
+                if (!ENABLE_CACHE || publicBlockCache == null) {
+                    publicBlockCache = blockServer.get(blockName);
+                }
             } catch (FileNotFoundException e) {
                 throw new OperationFailedException("Data block not found: " + blockName);
             }
 
             // extract signature
             byte[] publicKeySignature = new byte[BlockUtility.SIGNATURE_SIZE];
-            System.arraycopy(publicKeyBlock, 0, publicKeySignature, 0, BlockUtility.SIGNATURE_SIZE);
+            System.arraycopy(publicBlockCache, 0, publicKeySignature, 0, BlockUtility.SIGNATURE_SIZE);
 
             // extract data
-            byte[] dataHashes = new byte[publicKeyBlock.length - BlockUtility.SIGNATURE_SIZE];
-            System.arraycopy(publicKeyBlock, BlockUtility.SIGNATURE_SIZE, dataHashes, 0, dataHashes.length);
+            byte[] dataHashes = new byte[publicBlockCache.length - BlockUtility.SIGNATURE_SIZE];
+            System.arraycopy(publicBlockCache, BlockUtility.SIGNATURE_SIZE, dataHashes, 0, dataHashes.length);
 
             // verify public key block integrity
             if (!BlockUtility.verifyDataIntegrity(dataHashes, publicKeySignature, publicKey))

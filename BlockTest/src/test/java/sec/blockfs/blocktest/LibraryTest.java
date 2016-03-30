@@ -33,6 +33,7 @@ import sec.blockfs.blockutility.DataIntegrityFailureException;
 import sec.blockfs.blockutility.OperationFailedException;
 import sec.blockfs.blockutility.WrongArgumentsException;
 import sun.security.pkcs11.wrapper.PKCS11Constants;
+import sun.security.pkcs11.wrapper.PKCS11Exception;
 
 @SuppressWarnings("restriction")
 public class LibraryTest {
@@ -48,6 +49,7 @@ public class LibraryTest {
             registry = LocateRegistry.createRegistry(new Integer(servicePort));
             registry.rebind(serviceName, new ServerImpl());
             library = new BlockLibraryImpl(serviceName, servicePort, serviceUrl);
+            library.ENABLE_CACHE = false;
             library.FS_init();
         } catch (Exception e) {
             return;
@@ -66,6 +68,12 @@ public class LibraryTest {
                 registry.unbind(serviceName);
             } catch (Exception e) {
             }
+        }
+        
+        try {
+            library.pkcs11.C_Logout(library.sessionToken);
+        } catch (PKCS11Exception e) {
+            e.printStackTrace();
         }
     }
 

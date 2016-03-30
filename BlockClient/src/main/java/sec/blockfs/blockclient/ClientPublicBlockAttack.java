@@ -25,6 +25,7 @@ public class ClientPublicBlockAttack {
         try {
             library = new BlockLibraryImpl(serviceName, servicePort, serviceUrl);
             library.FS_init();
+            library.ENABLE_CACHE = false;
         } catch (InitializationFailureException e) {
             System.out.println("Error - " + e.getMessage());
             return;

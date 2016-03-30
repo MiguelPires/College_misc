@@ -24,9 +24,9 @@ public class SimpleClient {
             System.out.println("Error - " + e.getMessage());
             return;
         }
-
+        
         try {
-            String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE - 1);
+            String text = BlockUtility.generateString(10);
             System.out.println("Writing: ");
             System.out.println(text);
             System.out.println("################");

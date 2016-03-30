@@ -54,7 +54,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<mainClass>sec.blockfs.blockclient.ClientPublicBlockAttack</mainClass>
+					<mainClass>sec.blockfs.blockclient.SimpleClient</mainClass>
 					<arguments>
 			            <argument>${service.port}</argument>
 			            <argument>${service.name}</argument>

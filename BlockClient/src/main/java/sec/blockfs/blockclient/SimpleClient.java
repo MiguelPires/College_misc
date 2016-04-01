@@ -51,7 +51,5 @@ public class SimpleClient {
         } catch (OperationFailedException | DataIntegrityFailureException e) {
             e.printStackTrace();
         }
-
-        System.in.read();
     }
 }

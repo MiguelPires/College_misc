@@ -34,6 +34,7 @@ import sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS;
 import sun.security.pkcs11.wrapper.CK_MECHANISM;
 import sun.security.pkcs11.wrapper.PKCS11;
 import sun.security.pkcs11.wrapper.PKCS11Constants;
+import sun.security.pkcs11.wrapper.PKCS11Exception;
 
 @SuppressWarnings("restriction")
 public class ServerTest {
@@ -78,8 +79,11 @@ public class ServerTest {
         // Open the PKCS11 session
         sessionToken = pkcs11.C_OpenSession(0, PKCS11Constants.CKF_SERIAL_SESSION, null, null);
 
-        // Token login
-        pkcs11.C_Login(sessionToken, 1, null);
+        try {
+            // Token login
+            pkcs11.C_Login(sessionToken, 1, null);
+        } catch (PKCS11Exception e) {
+        }
 
         CK_ATTRIBUTE[] attributes = new CK_ATTRIBUTE[1];
         attributes[0] = new CK_ATTRIBUTE();
@@ -100,28 +104,12 @@ public class ServerTest {
         X509Certificate authCert = BlockUtility.getCertFromByteArray(authCertBytes);
         publicKey = authCert.getPublicKey();
         pteid.Exit(pteid.PTEID_EXIT_LEAVE_CARD);
-
     }
-
-    /*   @AfterClass
-    public static void tearDown() {
-        try {
-            pkcs11.C_Logout(sessionToken);
-        } catch (PKCS11Exception e) {
-            e.printStackTrace();
-        }
-        
-        try {
-            pkcs11.C_CloseSession(sessionToken);
-        } catch (PKCS11Exception e) {
-            e.printStackTrace();
-        }
-    }*/
 
     @Test
     public void successCreateService() throws Exception {
-        Registry registry = LocateRegistry.createRegistry(new Integer(servicePort));
-        registry.rebind(serviceName, new ServerImpl());
+        Registry registry = LocateRegistry.createRegistry(new Integer(servicePort)+11);
+        registry.rebind(serviceName+"abc", new ServerImpl());
     }
 
     @Test
@@ -366,6 +354,7 @@ public class ServerTest {
         ArrayList<X509Certificate> certs = new ArrayList<X509Certificate>();
         certs.add(authCert);
         certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(3)));
+        // wrong cert
         certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(5)));
         certs.add(BlockUtility.getCertFromByteArray(BlockUtility.getCertificateInBytes(7)));
 

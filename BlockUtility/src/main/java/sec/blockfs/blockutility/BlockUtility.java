@@ -21,11 +21,8 @@ import java.security.Signature;
 import java.security.cert.CRLException;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.PKIXCertPathChecker;
 import java.security.cert.PKIXParameters;
 import java.security.cert.TrustAnchor;
 import java.security.cert.X509CRL;
@@ -33,8 +30,6 @@ import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -141,7 +136,6 @@ public class BlockUtility {
 
     public static void validateCertPath(CertPath certPath) throws DataIntegrityFailureException {
         try {
-
             // obtain root cert
             List<X509Certificate> certs = (List<X509Certificate>) certPath.getCertificates();
             X509Certificate lastCert = (X509Certificate) certs.get(certs.size() - 1);
@@ -159,7 +153,7 @@ public class BlockUtility {
             // check if the smartcard certificates were revoked
             checkRevocationList(certs);
         } catch (Exception e) {
-            // e.printStackTrace();
+            //e.printStackTrace();
             throw new DataIntegrityFailureException("The certificate isn't valid - " + e.getMessage());
         }
     }
@@ -184,7 +178,7 @@ public class BlockUtility {
             }
             return null;
         } catch (Exception e) {
-            e.printStackTrace();
+            // e.printStackTrace();
             throw new OperationFailedException(e.getMessage());
         }
     }
@@ -209,7 +203,6 @@ public class BlockUtility {
         } catch (Exception e) {
             throw new DataIntegrityFailureException("Couldn't check revoked certificates list. " + e.getMessage());
         }
-
     }
 
     private static X509CRL getRevocationList() throws IOException, CRLException, CertificateException {

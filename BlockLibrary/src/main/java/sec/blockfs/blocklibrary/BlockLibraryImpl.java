@@ -28,6 +28,7 @@ import sec.blockfs.blockutility.WrongArgumentsException;
 import sun.security.pkcs11.wrapper.CK_ATTRIBUTE;
 import sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS;
 import sun.security.pkcs11.wrapper.CK_MECHANISM;
+import sun.security.pkcs11.wrapper.CK_SESSION_INFO;
 import sun.security.pkcs11.wrapper.PKCS11;
 import sun.security.pkcs11.wrapper.PKCS11Constants;;
 
@@ -96,7 +97,7 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
 
             // Token login
             pkcs11.C_Login(sessionToken, 1, null);
-            // CK_SESSION_INFO info = pkcs11.C_GetSessionInfo(sessionToken);
+            //CK_SESSION_INFO info = pkcs11.C_GetSessionInfo(sessionToken);
 
             CK_ATTRIBUTE[] attributes = new CK_ATTRIBUTE[1];
             attributes[0] = new CK_ATTRIBUTE();

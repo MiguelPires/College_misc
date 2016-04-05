@@ -47,6 +47,7 @@ public class Login extends AppCompatActivity {
                 if (validatePassword(username, password)) {
                     Intent intent = new Intent(Login.this, Home.class);
                     startActivity(intent);
+                    Home.username =  username;
                 }
             }
         }).start();
@@ -169,6 +170,7 @@ public class Login extends AppCompatActivity {
 
     // NOTE: for testing purposes only!
     public void override (View view) {
+        Home.username = "someUser";
         Intent intent = new Intent(Login.this, Tab.class);
         startActivity(intent);
     }

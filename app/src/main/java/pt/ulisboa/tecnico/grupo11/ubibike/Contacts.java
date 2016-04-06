@@ -14,6 +14,7 @@ import android.os.Messenger;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.InputType;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,7 +29,6 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -38,23 +38,19 @@ import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 public class Contacts extends AppCompatActivity implements SimWifiP2pManager.GroupInfoListener {
     private ArrayAdapter<String> listAdapter;
 
     private SimWifiP2pSocket mCliSocket = null;
-    private WifiDirectReceiver mReceiver;
     private SimWifiP2pManager mManager = null;
     private SimWifiP2pManager.Channel mChannel = null;
     private Messenger mService = null;
-    private boolean mBound = false;
-    private SimWifiP2pSocketServer mSrvSocket = null;
 
-    ProgressDialog progressDialog = null;
-
-    String currentUser = null;
-    String message = null;
+    //  data stored for message sending methods
+    private ProgressDialog progressDialog = null;
+    private String currentUser = null;
+    private String message = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,12 +58,12 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
         setContentView(R.layout.activity_contacts);
         progressDialog = new ProgressDialog(Contacts.this);
         progressDialog.setTitle("Sending");
-        progressDialog.setMessage("Please wait!");
+        progressDialog.setMessage("Please wait.");
 
         ListView listView = (ListView) findViewById(R.id.listView);
         ArrayList<String> contacts = new ArrayList<String>() {{
-            add("Item 1");
-            add("Item 2");
+            add("Maria");
+            add("Joao");
         }};
 
         listAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, contacts);
@@ -95,53 +91,6 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
             menu.add(0, 1, Menu.NONE, "Send SMS");
         }
     }
-
-
-    public class OutgoingCommTask extends AsyncTask<String, Void, String> {
-        @Override
-        protected String doInBackground(String... params) {
-            try {
-                mCliSocket = new SimWifiP2pSocket(params[0],
-                        Integer.parseInt(getString(R.string.port)));
-            } catch (UnknownHostException e) {
-                return "Unknown Host:" + e.getMessage();
-            } catch (IOException e) {
-                return "IO error:" + e.getMessage();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            new SendCommTask().executeOnExecutor(
-                    AsyncTask.THREAD_POOL_EXECUTOR,
-                    message);
-        }
-    }
-
-    public class SendCommTask extends AsyncTask<String, String, Void> {
-
-        @Override
-        protected Void doInBackground(String... msg) {
-            try {
-                mCliSocket.getOutputStream().write((msg[0] + "\n").getBytes());
-                BufferedReader sockIn = new BufferedReader(
-                        new InputStreamReader(mCliSocket.getInputStream()));
-                sockIn.readLine();
-                mCliSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            mCliSocket = null;
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            progressDialog.dismiss();
-        }
-    }
-
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
@@ -179,10 +128,9 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
                                         Toast.makeText(Contacts.this, "You can't send that amount of points", Toast.LENGTH_SHORT).show();
                                         return;
                                     }
-                                    mManager.requestGroupInfo(mChannel, Contacts.this);
-                                    message = "#P#"+Home.username+"#"+points;
+                                    message = "#P#" + Home.username + "#" + points;
                                     currentUser = listAdapter.getItem(info.position);
-
+                                    mManager.requestGroupInfo(mChannel, Contacts.this);
                                     dialog.dismiss();
                                     progressDialog.show();
                                 } catch (NumberFormatException e) {
@@ -206,7 +154,6 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
                 break;
 
             case 1:
-
                 // set the title
                 builder.setTitle("Send SMS");
                 dialog = builder.create();
@@ -221,10 +168,9 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
                             public void onClick(View view) {
                                 String smsText = edit.getText().toString();
                                 if (!smsText.isEmpty()) {
-                                    mManager.requestGroupInfo(mChannel, Contacts.this);
-                                    message = "#M#"+Home.username+"#"+smsText;
+                                    message = "#M#" + Home.username + "#" + smsText;
                                     currentUser = listAdapter.getItem(info.position);
-
+                                    mManager.requestGroupInfo(mChannel, Contacts.this);
                                     dialog.dismiss();
                                     progressDialog.show();
                                 } else {
@@ -249,16 +195,111 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
         return true;
     }
 
+    /*
+            Connect with the target device
+     */
+    public class MessageSender extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                Log.d("WiFi Direct", "Connecting to '" + currentUser + "'");
+                mCliSocket = new SimWifiP2pSocket(params[0],
+                        Integer.parseInt(getString(R.string.port)));
+                new SendCommTask().executeOnExecutor(
+                        AsyncTask.THREAD_POOL_EXECUTOR,
+                        message);
+            } catch (Exception e) {
+                Log.d("WiFi Direct", "Connection error - " + e.getMessage());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(Contacts.this, "Couldn't deliver message. Make sure " + currentUser + " is within range", Toast.LENGTH_SHORT).show();
+                        progressDialog.dismiss();
+                    }
+                });
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+        }
+    }
+
+    /*
+     *     Sends a message to the user through WiFi direct
+     */
+    public class SendCommTask extends AsyncTask<String, String, Void> {
+        @Override
+        protected Void doInBackground(String... msg) {
+            try {
+                Log.d("WiFi Direct", "Sending message to '" + currentUser + "'");
+                mCliSocket.getOutputStream().write((msg[0] + "\n").getBytes());
+                BufferedReader sockIn = new BufferedReader(
+                        new InputStreamReader(mCliSocket.getInputStream()));
+                sockIn.readLine();
+            } catch (Exception e) {
+                Log.d("WiFi Direct", "Connection error - " + e.getMessage());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(Contacts.this, "Couldn't deliver message. Make sure " + currentUser + " is within range", Toast.LENGTH_SHORT).show();
+                        progressDialog.dismiss();
+                    }
+                });
+            }
+
+            try {
+                mCliSocket.close();
+            } catch (IOException e) {
+            }
+            mCliSocket = null;
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            progressDialog.dismiss();
+        }
+    }
+
+    /*
+         When the group information is ready, find target user and send message
+     */
+    @Override
+    public void onGroupInfoAvailable(SimWifiP2pDeviceList devices,
+                                     SimWifiP2pInfo groupInfo) {
+        Set<String> devicesInNetwork = groupInfo.getDevicesInNetwork();
+
+        if (devicesInNetwork.isEmpty())
+            Log.d("WiFi Direct", "There are no users in the network");
+
+        for (String name : devicesInNetwork) {
+            Log.d("WiFi Direct", "User '" + currentUser + "'");
+            if (name.equals(currentUser)) {
+                SimWifiP2pDevice device = devices.getByName(currentUser);
+                Log.d("WiFi Direct", "Found user '" + currentUser + "' with ip " + device.getVirtIp());
+
+                new MessageSender().executeOnExecutor(
+                        AsyncTask.THREAD_POOL_EXECUTOR,
+                        device.getVirtIp());
+                return;
+            }
+        }
+
+        Log.d("WiFi Direct", "Couldn't find '" + currentUser + "' within group.");
+        Toast.makeText(Contacts.this, "Couldn't deliver message. Make sure " + currentUser + " is within range", Toast.LENGTH_SHORT).show();
+        progressDialog.dismiss();
+    }
+
     private ServiceConnection mConnection = new ServiceConnection() {
         // callbacks for service binding, passed to bindService()
 
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
-            Toast.makeText(Contacts.this, "awldnawufbuiwabfuiwabfwaubfwaubfuwabiufwab.", Toast.LENGTH_SHORT).show();
             mService = new Messenger(service);
             mManager = new SimWifiP2pManager(mService);
             mChannel = mManager.initialize(getApplication(), getMainLooper(), null);
-            mBound = true;
         }
 
         @Override
@@ -266,22 +307,6 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
             mService = null;
             mManager = null;
             mChannel = null;
-            mBound = false;
         }
     };
-
-    @Override
-    public void onGroupInfoAvailable(SimWifiP2pDeviceList devices,
-                                     SimWifiP2pInfo groupInfo) {
-        Set<String> devicesInNetwork = groupInfo.getDevicesInNetwork();
-        for(String name : devicesInNetwork)
-        {
-            if (name.equals(currentUser)) {
-                SimWifiP2pDevice device = devices.getByName(currentUser);
-                new OutgoingCommTask().executeOnExecutor(
-                        AsyncTask.THREAD_POOL_EXECUTOR,
-                        device.getVirtIp());
-            }
-        }
-    }
 }

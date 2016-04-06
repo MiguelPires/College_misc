@@ -21,11 +21,7 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 public class Tab extends TabActivity {
 
     private WifiDirectReceiver mReceiver;
-    private SimWifiP2pManager mManager = null;
-    private SimWifiP2pManager.Channel mChannel = null;
     private Messenger mService = null;
-    private boolean mBound = false;
-    private SimWifiP2pSocketServer mSrvSocket = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +31,7 @@ public class Tab extends TabActivity {
         TabHost mTabHost = getTabHost();
 
         mTabHost.addTab(mTabHost.newTabSpec("contacts").setIndicator("Contacts").setContent(new Intent(this, Contacts.class)));
-        mTabHost.addTab(mTabHost.newTabSpec("home").setIndicator("Home").setContent(new Intent(this  ,Home.class )));
+        mTabHost.addTab(mTabHost.newTabSpec("home").setIndicator("Home").setContent(new Intent(this, Home.class)));
         mTabHost.addTab(mTabHost.newTabSpec("maps").setIndicator("Maps").setContent(new Intent(this, Maps.class)));
         mTabHost.setCurrentTab(1);
         // initialize the WDSim API
@@ -53,23 +49,23 @@ public class Tab extends TabActivity {
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(mReceiver);
+    }
+
     private ServiceConnection mConnection = new ServiceConnection() {
         // callbacks for service binding, passed to bindService()
 
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             mService = new Messenger(service);
-            mManager = new SimWifiP2pManager(mService);
-            mChannel = mManager.initialize(getApplication(), getMainLooper(), null);
-            mBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mService = null;
-            mManager = null;
-            mChannel = null;
-            mBound = false;
         }
     };
 }

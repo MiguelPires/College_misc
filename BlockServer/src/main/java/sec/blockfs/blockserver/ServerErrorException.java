@@ -1,9 +1,7 @@
-package sec.blockfs.blockutility;
-
-import java.io.Serializable;
+package sec.blockfs.blockserver;
 
 @SuppressWarnings("serial")
-public class ServerErrorException extends Exception implements Serializable {
+public class ServerErrorException extends Exception {
     public ServerErrorException() {
         super();
     }

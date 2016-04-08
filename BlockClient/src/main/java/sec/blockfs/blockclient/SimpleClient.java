@@ -3,12 +3,12 @@ package sec.blockfs.blockclient;
 import java.io.IOException;
 import java.util.Arrays;
 
-import sec.blockfs.blocklibrary.BlockLibraryImpl;
+import sec.blockfs.blocklibrary.BlockLibrary;
 import sec.blockfs.blocklibrary.InitializationFailureException;
+import sec.blockfs.blockserver.DataIntegrityFailureException;
+import sec.blockfs.blockserver.WrongArgumentsException;
 import sec.blockfs.blockutility.BlockUtility;
-import sec.blockfs.blockutility.DataIntegrityFailureException;
 import sec.blockfs.blockutility.OperationFailedException;
-import sec.blockfs.blockutility.WrongArgumentsException;
 
 public class SimpleClient {
     public static void main(String[] args) throws IOException, WrongArgumentsException {
@@ -16,9 +16,9 @@ public class SimpleClient {
         String serviceName = args[1];
         String serviceUrl = args[2];
 
-        BlockLibraryImpl library = null;
+        BlockLibrary library = null;
         try {
-            library = new BlockLibraryImpl(serviceName, servicePort, serviceUrl);
+            library = new BlockLibrary(serviceName, servicePort, serviceUrl);
             library.FS_init();
         } catch (InitializationFailureException e) {
             System.out.println("Error - " + e.getMessage());
@@ -26,7 +26,7 @@ public class SimpleClient {
         }
         
         try {
-            String text = BlockUtility.generateString(10);
+            String text = BlockUtility.generateString(BlockUtility.BLOCK_SIZE-1);
             System.out.println("Writing: ");
             System.out.println(text);
             System.out.println("################");
@@ -51,5 +51,8 @@ public class SimpleClient {
         } catch (OperationFailedException | DataIntegrityFailureException e) {
             e.printStackTrace();
         }
+
+        System.in.read();
     }
+
 }

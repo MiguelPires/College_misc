@@ -4,8 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.FileSystemException;
 
-import sec.blockfs.blockutility.DataIntegrityFailureException;
-
 public interface FileSystem {
     // writes contents
     String writeData(byte[] contents) throws IOException;

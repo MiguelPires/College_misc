@@ -5,7 +5,7 @@
 .mtj.tmp/
 
 # Package Files #
-# *.jar
+*.jar
 *.war
 *.ear
 
@@ -76,5 +76,3 @@ buildNumber.properties
 .mvn/timing.properties
 
 .checkstyle
-
-*.crl

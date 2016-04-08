@@ -15,24 +15,21 @@ import sec.blockfs.blockutility.BlockUtility;
 
 public class FileSystemImpl implements FileSystem {
 
-    private File file;
+    public static final String BASE_PATH = "C:\\Temp";
 
     public FileSystemImpl() {
-        file = new File(BlockUtility.BASE_PATH);
+        File file = new File(BASE_PATH);
         if (!file.exists()) {
             file.mkdir();
         }
     }
 
+    @Override
     public String writeData(byte[] contents) throws FileSystemException {
         try {
-            if (!file.exists()) {
-                file.mkdir();
-            }
-
             byte[] dataDigest = BlockUtility.digest(contents);
             String fileName = BlockUtility.getKeyString(dataDigest);
-            String filePath = BlockUtility.BASE_PATH + File.separatorChar + fileName;
+            String filePath = BASE_PATH + File.separatorChar + fileName;
             System.out.println("Writing data block: " + filePath);
 
             FileOutputStream stream = new FileOutputStream(filePath);
@@ -45,14 +42,11 @@ public class FileSystemImpl implements FileSystem {
         }
     }
 
+    @Override
     public String writePublicKey(byte[] dataHash, byte[] signature, byte[] publicKey) throws FileSystemException {
         try {
-            if (!file.exists()) {
-                file.mkdir();
-            }
-
             String fileName = BlockUtility.getKeyString(BlockUtility.digest(publicKey));
-            String filePath = BlockUtility.BASE_PATH + File.separatorChar + fileName;
+            String filePath = BASE_PATH + File.separatorChar + fileName;
             System.out.println("Writing public key block: " + filePath);
 
             // concatenate data
@@ -72,14 +66,15 @@ public class FileSystemImpl implements FileSystem {
         }
     }
 
+    @Override
     public byte[] read(String blockName) throws FileSystemException, FileNotFoundException {
         byte[] dataBlock;
         System.out.println("Reading block: " + blockName);
 
-        String filePath = BlockUtility.BASE_PATH + File.separatorChar + blockName;
+        String filePath = BASE_PATH + File.separatorChar + blockName;
 
         FileInputStream stream = new FileInputStream(filePath);
-
+        
         try {
             Path path = Paths.get(filePath);
             dataBlock = Files.readAllBytes(path);

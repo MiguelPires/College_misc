@@ -1,4 +1,4 @@
-package sec.blockfs.blockutility;
+package sec.blockfs.blockserver;
 
 public class DataIntegrityFailureException extends Exception {
     public DataIntegrityFailureException() {

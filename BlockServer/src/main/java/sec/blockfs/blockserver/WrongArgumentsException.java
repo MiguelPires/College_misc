@@ -1,4 +1,4 @@
-package sec.blockfs.blockutility;
+package sec.blockfs.blockserver;
 
 @SuppressWarnings("serial")
 public class WrongArgumentsException extends Exception {

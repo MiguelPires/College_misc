@@ -11,7 +11,9 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import sec.blockfs.blockserver.BlockServer;
 import sec.blockfs.blockserver.DataIntegrityFailureException;
@@ -20,19 +22,31 @@ import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.OperationFailedException;;
 
 public class BlockLibrary {
-    private static BlockServer blockServer;
     // these attributes are only public because of the tests
     public PrivateKey privateKey;
     public PublicKey publicKey;
     private Signature signAlgorithm;
 
+    private List<BlockServer> blockServers = new ArrayList<BlockServer>();
+    
+    @SuppressWarnings("unused")
     public BlockLibrary(String serviceName, String servicePort, String serviceUrl) throws InitializationFailureException {
+        assert (BlockUtility.NUM_REPLICAS > 3
+                * BlockUtility.NUM_FAULTS) : "Error -  the number of replicas must be larger than 3*f (number of faults)";
+        
+        String serverName = "none";
+        String serverPort = "none";
         try {
-            System.out.println("Connecting to server: " + serviceUrl + ":" + servicePort + "/" + serviceName);
-            blockServer = (BlockServer) Naming.lookup(serviceUrl + ":" + servicePort + "/" + serviceName);
-            System.out.println("Connected to block server");
+            for (int i = 0; i < BlockUtility.NUM_REPLICAS; ++i) {
+                serverName = serviceName + i;
+                Integer port = new Integer(servicePort) + new Integer(i);
+                serverPort = port.toString();
+                blockServers.add((BlockServer) Naming.lookup(serviceUrl + ":" + serverPort + "/" + serverName));
+                System.out.println("Connected to server: " + serviceUrl + ":" + serverPort + "/" + serverName);
+            }
         } catch (NotBoundException | RemoteException | MalformedURLException e) {
-            throw new InitializationFailureException("Couldn't connect to server");
+            throw new InitializationFailureException(
+                    "Couldn't connect to server " + serviceUrl + ":" + serverPort + "/" + serverName);
 
         }
     }
@@ -72,8 +86,7 @@ public class BlockLibrary {
 
             int writtenBytes = 0, num = 0;
             for (int i = startBlock; i <= endBlock; ++i) {
-                int bytesToWrite = size - writtenBytes > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE
-                        : size - writtenBytes;
+                int bytesToWrite = size - writtenBytes > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE : size - writtenBytes;
                 System.arraycopy(contents, writtenBytes, toWriteBlocks[num], 0, bytesToWrite);
                 System.arraycopy(BlockUtility.digest(toWriteBlocks[num]), 0, toWriteHashes[num], 0, BlockUtility.DIGEST_SIZE);
                 writtenBytes += bytesToWrite;
@@ -84,7 +97,8 @@ public class BlockLibrary {
             byte[] rewrittenBlock = null;
 
             try {
-                byte[] publicBlock = blockServer.get(BlockUtility.getKeyString(publicKeyHash));
+                // TODO: actually implement byzantine protocol
+                byte[] publicBlock = blockServers.get(0).get(BlockUtility.getKeyString(publicKeyHash));
 
                 byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE];
                 System.arraycopy(publicBlock, 0, storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
@@ -127,12 +141,18 @@ public class BlockLibrary {
             signAlgorithm.update(rewrittenBlock, 0, rewrittenBlock.length);
             byte[] keyBlockSignature = signAlgorithm.sign();
 
-            // write public key block
-            blockServer.put_k(rewrittenBlock, keyBlockSignature, publicKey.getEncoded());
+            // TODO: actually implement byzantine protocol
+            for (int id = 0; id < BlockUtility.NUM_REPLICAS; ++id) {
+                // write public key block
+                blockServers.get(id).put_k(rewrittenBlock, keyBlockSignature, publicKey.getEncoded());
+            }
 
-            // write data blocks
-            for (int i = 0; i < toWriteBlocks.length; ++i) {
-                blockServer.put_h(toWriteBlocks[i]);
+            // TODO: actually implement byzantine protocol
+            for (int id = 0; id < BlockUtility.NUM_REPLICAS; ++id) {
+                // write data blocks
+                for (int i = 0; i < toWriteBlocks.length; ++i) {
+                    blockServers.get(id).put_h(toWriteBlocks[i]);
+                }
             }
         } catch (WrongArgumentsException e) {
             throw e;
@@ -155,7 +175,8 @@ public class BlockLibrary {
             byte[] publicKeyBlock;
 
             try {
-                publicKeyBlock = blockServer.get(blockName);
+                // TODO: actually implement byzantine protocol
+                publicKeyBlock = blockServers.get(0).get(blockName);
             } catch (FileNotFoundException e) {
                 throw new OperationFailedException("Data block not found: " + blockName);
             }
@@ -190,7 +211,8 @@ public class BlockLibrary {
 
                 byte[] data;
                 try {
-                    data = blockServer.get(dataBlockName);
+                    // TODO: actually implement byzantine protocol
+                    data = blockServers.get(0).get(dataBlockName);
                 } catch (FileNotFoundException e) {
                     throw new OperationFailedException("Data block not found: " + dataBlockName);
                 }

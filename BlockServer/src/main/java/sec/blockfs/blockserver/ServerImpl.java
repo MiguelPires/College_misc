@@ -22,9 +22,10 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
         try {
             String servicePort = args[0];
             String serviceName = args[1];
+            String serverId = args[2];
 
-            Registry registry = LocateRegistry.createRegistry(new Integer(servicePort));
-            registry.rebind(serviceName, new ServerImpl());
+            Registry registry = LocateRegistry.createRegistry(new Integer(servicePort) + new Integer(serverId));
+            registry.rebind(serviceName + serverId, new ServerImpl());
             System.out.println("Server initiated");
             System.in.read();
         } catch (Exception e) {

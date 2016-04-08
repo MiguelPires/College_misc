@@ -11,6 +11,9 @@
   	<version>0.0.1-SNAPSHOT</version>
   	<packaging>jar</packaging>
 
+	<properties>
+	  	<serverID>-1</serverID>
+	</properties>
 	<build>
 		<plugins>
 			<plugin>
@@ -29,6 +32,7 @@
 					<arguments>
 			            <argument>${service.port}</argument>
 			            <argument>${service.name}</argument>
+			           	<argument>${serverID}</argument>
 			        </arguments>
 				</configuration>
 			</plugin>

@@ -34,9 +34,10 @@ public class LibraryTest {
 
     @Before
     public void setUp() throws NumberFormatException, RemoteException {
+        BlockUtility.NUM_REPLICAS = 1;
         try {
             registry = LocateRegistry.createRegistry(new Integer(servicePort));
-            registry.rebind(serviceName, new ServerImpl());
+            registry.rebind(serviceName+"0", new ServerImpl());
         } catch (Exception e) {
             return;
         }

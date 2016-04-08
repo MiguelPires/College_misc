@@ -49,6 +49,7 @@
               <value>${service.url}</value>
             </property>
           </systemProperties>
+          <argLine>-disableassertions</argLine>
         </configuration>
       </plugin>
       <plugin>

@@ -17,7 +17,10 @@ public class BlockUtility {
     public static final int BLOCK_SIZE = 4096;
     public static final int SIGNATURE_SIZE = 256;
     public static final int DIGEST_SIZE = 64;
-
+    // this isn't final because of the tests
+    public static int NUM_REPLICAS = 4;
+    public static final int NUM_FAULTS = 1;
+    
     private static MessageDigest digestAlgorithm = null;
     private static Signature rsaSignature = null;
 

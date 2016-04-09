@@ -37,6 +37,7 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
     @Override
     public byte[] get(String id) throws WrongArgumentsException, ServerErrorException, FileNotFoundException {
         try {
+            
             return fileSystem.read(id);
         } catch (FileSystemException e) {
             e.printStackTrace();

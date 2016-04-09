@@ -37,7 +37,7 @@ public class LibraryTest {
         BlockUtility.NUM_REPLICAS = 1;
         try {
             registry = LocateRegistry.createRegistry(new Integer(servicePort));
-            registry.rebind(serviceName+"0", new ServerImpl());
+            registry.rebind(serviceName + "0", new ServerImpl());
         } catch (Exception e) {
             return;
         }
@@ -205,13 +205,16 @@ public class LibraryTest {
         String fileName = BlockUtility.getKeyString(keyDigest);
         String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
         FileInputStream stream = new FileInputStream(filePath);
-        byte[] publicBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
+        byte[] publicBlock = new byte[BlockUtility.SIGNATURE_SIZE + 1 + BlockUtility.DIGEST_SIZE];
         stream.read(publicBlock);
         stream.close();
 
         // extract data
         byte[] publicKeyData = new byte[BlockUtility.DIGEST_SIZE];
-        System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, publicKeyData, 0, publicKeyData.length);
+        int timestamp = (int) publicBlock[BlockUtility.SIGNATURE_SIZE];
+        assertTrue("The timestamp is wrong. Should be one, it's " + timestamp + " instead.", timestamp == 1);
+        
+        System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE + 1, publicKeyData, 0, publicKeyData.length);
         byte[] dataBlock = new byte[BlockUtility.BLOCK_SIZE];
         System.arraycopy(textBytes, 0, dataBlock, 0, textBytes.length);
         assertTrue("Public key block contains wrong data", Arrays.equals(publicKeyData, BlockUtility.digest(dataBlock)));
@@ -298,7 +301,7 @@ public class LibraryTest {
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(library.publicKey.getEncoded()));
         String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
         FileInputStream stream = new FileInputStream(filePath);
-        byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE * 2];
+        byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + 1 + BlockUtility.DIGEST_SIZE * 2];
         stream.read(publicKeyBlock, 0, publicKeyBlock.length);
         stream.close();
 
@@ -311,9 +314,10 @@ public class LibraryTest {
         byte[] firstBlockHash = BlockUtility.digest(firstBlock);
         byte[] secondBlockHash = BlockUtility.digest(secondBlock);
 
-        byte[] blockHashes = new byte[BlockUtility.DIGEST_SIZE * 2];
-        System.arraycopy(firstBlockHash, 0, blockHashes, 0, BlockUtility.DIGEST_SIZE);
-        System.arraycopy(secondBlockHash, 0, blockHashes, BlockUtility.DIGEST_SIZE, BlockUtility.DIGEST_SIZE);
+        byte[] blockHashes = new byte[BlockUtility.DIGEST_SIZE * 2 + 1];
+        blockHashes[0] = (byte) 1;
+        System.arraycopy(firstBlockHash, 0, blockHashes, 1, BlockUtility.DIGEST_SIZE);
+        System.arraycopy(secondBlockHash, 0, blockHashes, 1 + BlockUtility.DIGEST_SIZE, BlockUtility.DIGEST_SIZE);
 
         // create signature
         Signature signAlgorithm = Signature.getInstance("SHA512withRSA", "SunRsaSign");
@@ -326,11 +330,11 @@ public class LibraryTest {
         assertTrue("The public block's signature is wrong", Arrays.equals(keyBlockSignature, storedSignature));
 
         byte[] storedFirstHash = new byte[BlockUtility.DIGEST_SIZE];
-        System.arraycopy(publicKeyBlock, BlockUtility.SIGNATURE_SIZE, storedFirstHash, 0, BlockUtility.DIGEST_SIZE);
+        System.arraycopy(publicKeyBlock, 1 + BlockUtility.SIGNATURE_SIZE, storedFirstHash, 0, BlockUtility.DIGEST_SIZE);
         assertTrue("The first block's hash is wrong", Arrays.equals(storedFirstHash, firstBlockHash));
 
         byte[] storedSecondHash = new byte[BlockUtility.DIGEST_SIZE];
-        System.arraycopy(publicKeyBlock, BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE, storedSecondHash, 0,
+        System.arraycopy(publicKeyBlock, 1 + BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE, storedSecondHash, 0,
                 BlockUtility.DIGEST_SIZE);
         assertTrue("The second block's hash is wrong", Arrays.equals(storedSecondHash, secondBlockHash));
     }
@@ -445,7 +449,7 @@ public class LibraryTest {
         library.FS_read(library.publicKey.getEncoded(), 0, BlockUtility.BLOCK_SIZE, readBuffer);
     }
 
-    @Test(expected = OperationFailedException.class)
+    @Test(expected = DataIntegrityFailureException.class)
     public void deleteDataBlockAttack() throws Exception {
         BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
         library.FS_init();

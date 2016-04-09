@@ -25,7 +25,7 @@ public class FileSystemImpl implements FileSystem {
     }
 
     @Override
-    public String writeData(byte[] contents) throws FileSystemException {
+    public synchronized String writeData(byte[] contents) throws FileSystemException {
         try {
             byte[] dataDigest = BlockUtility.digest(contents);
             String fileName = BlockUtility.getKeyString(dataDigest);
@@ -43,7 +43,7 @@ public class FileSystemImpl implements FileSystem {
     }
 
     @Override
-    public String writePublicKey(byte[] dataHash, byte[] signature, byte[] publicKey) throws FileSystemException {
+    public synchronized String writePublicKey(byte[] dataHash, byte[] signature, byte[] publicKey) throws FileSystemException {
         try {
             String fileName = BlockUtility.getKeyString(BlockUtility.digest(publicKey));
             String filePath = BASE_PATH + File.separatorChar + fileName;
@@ -67,7 +67,7 @@ public class FileSystemImpl implements FileSystem {
     }
 
     @Override
-    public byte[] read(String blockName) throws FileSystemException, FileNotFoundException {
+    public synchronized byte[] read(String blockName) throws FileSystemException, FileNotFoundException {
         byte[] dataBlock;
         System.out.println("Reading block: " + blockName);
 

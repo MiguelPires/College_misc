@@ -14,6 +14,7 @@ import java.security.Signature;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import sec.blockfs.blockserver.BlockServer;
 import sec.blockfs.blockserver.DataIntegrityFailureException;
@@ -26,14 +27,14 @@ public class BlockLibrary {
     public PrivateKey privateKey;
     public PublicKey publicKey;
     private Signature signAlgorithm;
-
+    private int writeTimestamp = 0;
     private List<BlockServer> blockServers = new ArrayList<BlockServer>();
-    
+
     @SuppressWarnings("unused")
     public BlockLibrary(String serviceName, String servicePort, String serviceUrl) throws InitializationFailureException {
         assert (BlockUtility.NUM_REPLICAS > 3
                 * BlockUtility.NUM_FAULTS) : "Error -  the number of replicas must be larger than 3*f (number of faults)";
-        
+
         String serverName = "none";
         String serverPort = "none";
         try {
@@ -52,8 +53,8 @@ public class BlockLibrary {
     }
 
     public String FS_init() throws InitializationFailureException {
-
         try {
+            writeTimestamp = new Integer(0);
             // instantiate key generator
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA", "SunRsaSign");
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
@@ -98,42 +99,95 @@ public class BlockLibrary {
 
             try {
                 // TODO: actually implement byzantine protocol
-                byte[] publicBlock = blockServers.get(0).get(BlockUtility.getKeyString(publicKeyHash));
+                int numReadBlocks = 0;
+                byte[] chosenPublicBlock = null;
+                Integer chosenTimestamp = 0;
 
-                byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE];
-                System.arraycopy(publicBlock, 0, storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
+                for (BlockServer replica : blockServers) {
+                    // we already achieved a quorum
+                    if (numReadBlocks > (BlockUtility.NUM_REPLICAS + BlockUtility.NUM_FAULTS) / 2.0) {
+                        break;
+                    }
 
-                int hashesLength = publicBlock.length - BlockUtility.SIGNATURE_SIZE;
-                byte[] dataHashes = new byte[hashesLength];
-                System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, dataHashes, 0, hashesLength);
+                    byte[] publicBlock;
+                    try {
+                        ++numReadBlocks;
+                        publicBlock = replica.get(BlockUtility.getKeyString(publicKeyHash));
+                    } catch (Exception e) {
+                        continue;
+                    }
+
+                    // obtain signature
+                    byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE];
+                    System.arraycopy(publicBlock, 0, storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
+
+                    // obtain data
+                    int dataLength = publicBlock.length - BlockUtility.SIGNATURE_SIZE;
+                    byte[] data = new byte[dataLength];
+                    System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, data, 0, dataLength);
+
+                    // verify public key block integrity
+                    if (!BlockUtility.verifyDataIntegrity(data, storedSignature, publicKey))
+                        continue;
+
+                    int timestamp = (byte) data[0];
+
+                    if (timestamp > chosenTimestamp) {
+                        chosenPublicBlock = publicBlock;
+                        chosenTimestamp = timestamp;
+                    }
+                }
+
+                // there is no public block or the ones returned aren't enough to ensure byzantine fault tolerance
+                if (chosenPublicBlock == null)
+                    throw new FileNotFoundException();
+
+                /*
+                 * byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE]; System.arraycopy(chosenPublicBlock, 0,
+                 * storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
+                 */
+
+                /*
+                 * int hashesLength = chosenPublicBlock.length - BlockUtility.SIGNATURE_SIZE; byte[] dataHashes = new
+                 * byte[hashesLength]; System.arraycopy(chosenPublicBlock, BlockUtility.SIGNATURE_SIZE, dataHashes, 0,
+                 * hashesLength);
+                 */
 
                 // verify public key block integrity
-                if (!BlockUtility.verifyDataIntegrity(dataHashes, storedSignature, publicKey))
-                    throw new DataIntegrityFailureException("Data integrity check failed on public key block");
+                /*
+                 * if (!BlockUtility.verifyDataIntegrity(dataHashes, storedSignature, publicKey)) throw new
+                 * DataIntegrityFailureException("Data integrity check failed on public key block");
+                 */
 
                 // rewrite
-                int dataSize = publicBlock.length - BlockUtility.SIGNATURE_SIZE;
+                int dataSize = chosenPublicBlock.length - BlockUtility.SIGNATURE_SIZE - 1;
                 byte[] dataPublicBlock = new byte[dataSize];
-                System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, dataPublicBlock, 0, dataSize);
+                System.arraycopy(chosenPublicBlock, BlockUtility.SIGNATURE_SIZE + 1, dataPublicBlock, 0, dataSize);
                 int publicBlockSize = dataPublicBlock.length / BlockUtility.DIGEST_SIZE;
                 int newPublicBlockSize = publicBlockSize > endBlock + 1 ? publicBlockSize : endBlock + 1;
 
-                rewrittenBlock = new byte[newPublicBlockSize * BlockUtility.DIGEST_SIZE];
+                rewrittenBlock = new byte[1 + newPublicBlockSize * BlockUtility.DIGEST_SIZE];
+                ++writeTimestamp;
+                rewrittenBlock[0] = (byte) writeTimestamp;
 
                 num = 0;
                 for (int i = 0; i < newPublicBlockSize; ++i) {
                     if (i >= startBlock && i >= endBlock)
-                        System.arraycopy(toWriteHashes[num], 0, rewrittenBlock, i * BlockUtility.DIGEST_SIZE,
+                        System.arraycopy(toWriteHashes[num], 0, rewrittenBlock, 1 + i * BlockUtility.DIGEST_SIZE,
                                 BlockUtility.DIGEST_SIZE);
                     else
-                        System.arraycopy(dataPublicBlock, 0, rewrittenBlock, i * BlockUtility.DIGEST_SIZE,
+                        System.arraycopy(dataPublicBlock, 0, rewrittenBlock, 1 + i * BlockUtility.DIGEST_SIZE,
                                 BlockUtility.DIGEST_SIZE);
                 }
             } catch (FileNotFoundException e) {
                 // write new public key block
-                rewrittenBlock = new byte[toWriteHashes.length * BlockUtility.DIGEST_SIZE];
+                rewrittenBlock = new byte[1 + toWriteHashes.length * BlockUtility.DIGEST_SIZE];
+                ++writeTimestamp;
+                rewrittenBlock[0] = (byte) writeTimestamp;
+
                 for (int i = 0; i < toWriteHashes.length; ++i)
-                    System.arraycopy(toWriteHashes[i], 0, rewrittenBlock, i * BlockUtility.DIGEST_SIZE, BlockUtility.DIGEST_SIZE);
+                    System.arraycopy(toWriteHashes[i], 0, rewrittenBlock, 1 + i * BlockUtility.DIGEST_SIZE,
+                            BlockUtility.DIGEST_SIZE);
             }
 
             // sign public key block
@@ -141,16 +195,32 @@ public class BlockLibrary {
             signAlgorithm.update(rewrittenBlock, 0, rewrittenBlock.length);
             byte[] keyBlockSignature = signAlgorithm.sign();
 
-            // TODO: actually implement byzantine protocol
-            for (int id = 0; id < BlockUtility.NUM_REPLICAS; ++id) {
-                // write public key block
-                blockServers.get(id).put_k(rewrittenBlock, keyBlockSignature, publicKey.getEncoded());
+            int acks = 0;
+
+            for (BlockServer replica : blockServers) {
+                if (acks > (BlockUtility.NUM_REPLICAS + BlockUtility.NUM_FAULTS) / 2.0) {
+                    break;
+                }
+
+                try {
+                    ++acks;
+                    replica.put_k(rewrittenBlock, keyBlockSignature, publicKey.getEncoded());
+                } catch (Exception e) {
+                    continue;
+                }
             }
 
-            // TODO: actually implement byzantine protocol
+            acks = 0;
+
             for (int id = 0; id < BlockUtility.NUM_REPLICAS; ++id) {
-                // write data blocks
+                // since the blocks are immutable and self-verifying, we only need to ensure a simple quorum
+                if (acks > (BlockUtility.NUM_REPLICAS) / 2.0) {
+                    break;
+                }
+
+                ++acks;
                 for (int i = 0; i < toWriteBlocks.length; ++i) {
+                    // write data blocks
                     blockServers.get(id).put_h(toWriteBlocks[i]);
                 }
             }
@@ -170,28 +240,52 @@ public class BlockLibrary {
 
         try {
             byte[] publicKeyHash = BlockUtility.digest(publicKey);
-            String blockName = BlockUtility.getKeyString(publicKeyHash);
 
-            byte[] publicKeyBlock;
+            int numReadBlocks = 0;
+            byte[] readDataHashes = null;
+            Integer chosenTimestamp = 0;
 
-            try {
-                // TODO: actually implement byzantine protocol
-                publicKeyBlock = blockServers.get(0).get(blockName);
-            } catch (FileNotFoundException e) {
-                throw new OperationFailedException("Data block not found: " + blockName);
+            for (BlockServer replica : blockServers) {
+                // we already achieved a quorum
+                if (numReadBlocks > (BlockUtility.NUM_REPLICAS + BlockUtility.NUM_FAULTS) / 2.0) {
+                    break;
+                }
+
+                byte[] publicBlock;
+                try {
+                    ++numReadBlocks;
+                    publicBlock = replica.get(BlockUtility.getKeyString(publicKeyHash));
+                } catch (Exception e) {
+                    continue;
+                }
+
+                // obtain signature
+                byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE];
+                System.arraycopy(publicBlock, 0, storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
+
+                // obtain data
+                int dataLength = publicBlock.length - BlockUtility.SIGNATURE_SIZE;
+                byte[] data = new byte[dataLength];
+                System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, data, 0, dataLength);
+
+                // verify public key block integrity
+                if (!BlockUtility.verifyDataIntegrity(data, storedSignature, publicKey))
+                    continue;
+
+                int timestamp = data[0];
+
+                byte[] dataHashes = new byte[data.length - 1];
+                System.arraycopy(data, 1, dataHashes, 0, data.length - 1);
+
+                if (timestamp > chosenTimestamp) {
+                    readDataHashes = dataHashes;
+                    chosenTimestamp = timestamp;
+                }
             }
 
-            // extract signature
-            byte[] publicKeySignature = new byte[BlockUtility.SIGNATURE_SIZE];
-            System.arraycopy(publicKeyBlock, 0, publicKeySignature, 0, BlockUtility.SIGNATURE_SIZE);
-
-            // extract data
-            byte[] dataHashes = new byte[publicKeyBlock.length - BlockUtility.SIGNATURE_SIZE];
-            System.arraycopy(publicKeyBlock, BlockUtility.SIGNATURE_SIZE, dataHashes, 0, dataHashes.length);
-
-            // verify public key block integrity
-            if (!BlockUtility.verifyDataIntegrity(dataHashes, publicKeySignature, publicKey))
-                throw new DataIntegrityFailureException("Data integrity check failed on public key block");
+            // there is no public block or the ones returned aren't enough to ensure byzantine fault tolerance
+            if (readDataHashes == null)
+                throw new DataIntegrityFailureException("Public key block invalid or non-existent");
 
             int startBlock = position / (BlockUtility.BLOCK_SIZE + 1);
             int endBlock = (position + size) / (BlockUtility.BLOCK_SIZE + 1);
@@ -200,7 +294,7 @@ public class BlockLibrary {
 
             int num = 0;
             for (int i = startBlock; i <= endBlock; ++i) {
-                System.arraycopy(dataHashes, i * BlockUtility.DIGEST_SIZE, blockHashes[num], 0, BlockUtility.DIGEST_SIZE);
+                System.arraycopy(readDataHashes, i * BlockUtility.DIGEST_SIZE, blockHashes[num], 0, BlockUtility.DIGEST_SIZE);
                 num++;
             }
 
@@ -209,27 +303,37 @@ public class BlockLibrary {
             for (int i = startBlock; i <= endBlock; ++i) {
                 String dataBlockName = BlockUtility.getKeyString(blockHashes[num]);
 
-                byte[] data;
-                try {
-                    // TODO: actually implement byzantine protocol
-                    data = blockServers.get(0).get(dataBlockName);
-                } catch (FileNotFoundException e) {
-                    throw new OperationFailedException("Data block not found: " + dataBlockName);
+                int acks = 0;
+                byte[] readData = null;
+                for (int id = 0; id < BlockUtility.NUM_REPLICAS; ++id) {
+                    // since the blocks are immutable and self-verifying, we only need to ensure a simple quorum
+                    if (acks > (BlockUtility.NUM_REPLICAS) / 2.0) {
+                        break;
+                    }
+
+                    ++acks;
+                    byte[] data;
+
+                    try {
+                        data = blockServers.get(id).get(dataBlockName);
+                    } catch (Exception e) {
+                        continue;
+                    }
+
+                    if (!Arrays.equals(blockHashes[num], BlockUtility.digest(data))) {
+                        continue;
+                    } else {
+                        readData = data;
+                    }
                 }
 
-                if (!Arrays.equals(blockHashes[num], BlockUtility.digest(data))) {
+                if (readData == null) {
                     throw new DataIntegrityFailureException("Data integrity check failed on data block");
                 }
 
                 int dataLength = size - readLength > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE : size - readLength;
 
-                /*
-                 * System.out.println("DATA " + Arrays.toString(data)); System.out.println("Block size: "+data.length+
-                 * "; Read size: "+dataLength+"; Sig size: "+BlockUtility.SIGNATURE_SIZE); System.out.println("Buffer size: "
-                 * +buffer.length+"; Read length: "+readLength);
-                 */
-
-                System.arraycopy(data, 0, buffer, readLength, dataLength);
+                System.arraycopy(readData, 0, buffer, readLength, dataLength);
                 readLength += dataLength;
                 num++;
             }
@@ -237,11 +341,29 @@ public class BlockLibrary {
             return buffer.length;
         } catch (DataIntegrityFailureException e) {
             throw e;
-        } catch (OperationFailedException e) {
-            throw e;
-        } catch (Exception e) {
+        } /*
+           * catch (OperationFailedException e) { throw e; }
+           */catch (Exception e) {
             e.printStackTrace();
             throw new OperationFailedException(e.getMessage());
         }
+    }
+
+    private List<BlockServer> obtainQuorum() {
+        List<BlockServer> replicas = new ArrayList<BlockServer>();
+        final int quorumSize = (int) Math.ceil((BlockUtility.NUM_REPLICAS + BlockUtility.NUM_FAULTS) / 2.0);
+        int quorumReplicas = 0;
+
+        Random random = new Random();
+
+        while (quorumReplicas <= quorumSize) {
+            int randomId = random.nextInt(BlockUtility.NUM_REPLICAS);
+            BlockServer replica = blockServers.get(randomId);
+            if (!replicas.contains(replica)) {
+                replicas.add(replica);
+                ++quorumReplicas;
+            }
+        }
+        return replicas;
     }
 }

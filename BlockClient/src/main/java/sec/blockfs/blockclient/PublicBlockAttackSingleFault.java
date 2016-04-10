@@ -3,19 +3,17 @@ package sec.blockfs.blockclient;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
+import java.util.Arrays;
 
 import sec.blockfs.blocklibrary.BlockLibrary;
 import sec.blockfs.blocklibrary.InitializationFailureException;
 import sec.blockfs.blockserver.DataIntegrityFailureException;
 import sec.blockfs.blockserver.FileSystemImpl;
-import sec.blockfs.blockserver.WrongArgumentsException;
 import sec.blockfs.blockutility.BlockUtility;
-import sec.blockfs.blockutility.OperationFailedException;
 
-public class ClientPublicBlockAttack {
+public class PublicBlockAttackSingleFault {
 
-    public static void main(String[] args) throws IOException, OperationFailedException, WrongArgumentsException {
+    public static void main(String[] args) throws Exception {
         String servicePort = args[0];
         String serviceName = args[1];
         String serviceUrl = args[2];
@@ -35,7 +33,7 @@ public class ClientPublicBlockAttack {
 
         // get public key block
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(library.publicKey.getEncoded()));
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-0" + File.separatorChar + fileName;
         FileInputStream stream = new FileInputStream(filePath);
         byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
         stream.read(publicKeyBlock, 0, publicKeyBlock.length);
@@ -46,7 +44,7 @@ public class ClientPublicBlockAttack {
 
         // write new block
         String newBlockName = BlockUtility.getKeyString(alteredHash);
-        String newBlockPath = FileSystemImpl.BASE_PATH + File.separatorChar + newBlockName;
+        String newBlockPath = FileSystemImpl.BASE_PATH + "-0" + File.separatorChar + newBlockName;
         FileOutputStream outStream = new FileOutputStream(newBlockPath);
         outStream.write(alteredTextBytes);
         outStream.close();
@@ -60,12 +58,14 @@ public class ClientPublicBlockAttack {
         outStream.close();
 
         byte[] readBuffer = new byte[BlockUtility.BLOCK_SIZE];
-      
+
         try {
-            library.FS_read(library.publicKey.getEncoded(), 0, BlockUtility.BLOCK_SIZE, readBuffer);    
-        } catch(DataIntegrityFailureException e) {
-            System.out.println("Couldn't read data. "+e.getMessage());
+            library.FS_read(library.publicKey.getEncoded(), 0, BlockUtility.BLOCK_SIZE, readBuffer);
+            assert Arrays.equals(textBytes, readBuffer) : "Read data was different from expected.";
+            System.out.println("Successfuly read data.");
+        } catch (DataIntegrityFailureException e) {
+            System.out.println("Couldn't read data. " + e.getMessage());
         }
-        
+
     }
 }

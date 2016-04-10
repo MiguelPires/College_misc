@@ -9,16 +9,18 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.security.NoSuchAlgorithmException;
 
 import sec.blockfs.blockutility.BlockUtility;
 
 public class FileSystemImpl implements FileSystem {
 
     public static final String BASE_PATH = "C:\\Temp";
+    public String serverId;
 
-    public FileSystemImpl() {
-        File file = new File(BASE_PATH);
+    public FileSystemImpl(String serverId) {
+        this.serverId = serverId;
+        File file = new File(BASE_PATH + "-" + serverId);
         if (!file.exists()) {
             file.mkdir();
         }
@@ -29,14 +31,14 @@ public class FileSystemImpl implements FileSystem {
         try {
             byte[] dataDigest = BlockUtility.digest(contents);
             String fileName = BlockUtility.getKeyString(dataDigest);
-            String filePath = BASE_PATH + File.separatorChar + fileName;
+            String filePath = BASE_PATH + "-" + serverId + File.separatorChar + fileName;
             System.out.println("Writing data block: " + filePath);
 
             FileOutputStream stream = new FileOutputStream(filePath);
             stream.write(contents);
             stream.close();
             return fileName;
-        } catch (IOException e) {
+        } catch (IOException | NoSuchAlgorithmException e) {
             System.out.println("Filesystem error - write operation failed" + e.getMessage());
             throw new FileSystemException("Write operation failed");
         }
@@ -46,7 +48,7 @@ public class FileSystemImpl implements FileSystem {
     public synchronized String writePublicKey(byte[] dataHash, byte[] signature, byte[] publicKey) throws FileSystemException {
         try {
             String fileName = BlockUtility.getKeyString(BlockUtility.digest(publicKey));
-            String filePath = BASE_PATH + File.separatorChar + fileName;
+            String filePath = BASE_PATH + "-" + serverId + File.separatorChar + fileName;
             System.out.println("Writing public key block: " + filePath);
 
             // concatenate data
@@ -60,7 +62,7 @@ public class FileSystemImpl implements FileSystem {
             stream.close();
 
             return fileName;
-        } catch (IOException e) {
+        } catch (IOException | NoSuchAlgorithmException e) {
             System.out.println("Filesystem error - write operation failed" + e.getMessage());
             throw new FileSystemException("Write operation failed");
         }
@@ -69,12 +71,11 @@ public class FileSystemImpl implements FileSystem {
     @Override
     public synchronized byte[] read(String blockName) throws FileSystemException, FileNotFoundException {
         byte[] dataBlock;
-        System.out.println("Reading block: " + blockName);
 
-        String filePath = BASE_PATH + File.separatorChar + blockName;
-
+        String filePath = BASE_PATH + "-" + serverId + File.separatorChar + blockName;
+        System.out.println("Reading block: " + filePath);
         FileInputStream stream = new FileInputStream(filePath);
-        
+
         try {
             Path path = Paths.get(filePath);
             dataBlock = Files.readAllBytes(path);

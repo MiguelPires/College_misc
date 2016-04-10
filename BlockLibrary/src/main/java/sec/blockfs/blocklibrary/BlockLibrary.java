@@ -13,11 +13,11 @@ import java.security.SecureRandom;
 import java.security.Signature;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import sec.blockfs.blockserver.BlockServer;
 import sec.blockfs.blockserver.DataIntegrityFailureException;
@@ -34,7 +34,6 @@ public class BlockLibrary {
     private int writeTimestamp = 0;
     private List<BlockServer> blockServers = new ArrayList<BlockServer>();
 
-    @SuppressWarnings("unused")
     public BlockLibrary(String serviceName, String servicePort, String serviceUrl) throws InitializationFailureException {
         assert (BlockUtility.NUM_REPLICAS > 3
                 * BlockUtility.NUM_FAULTS) : "Error -  the number of replicas must be larger than 3*f (number of faults)";
@@ -52,7 +51,6 @@ public class BlockLibrary {
         } catch (NotBoundException | RemoteException | MalformedURLException e) {
             throw new InitializationFailureException(
                     "Couldn't connect to server " + serviceUrl + ":" + serverPort + "/" + serverName);
-
         }
     }
 
@@ -78,7 +76,8 @@ public class BlockLibrary {
         }
     }
 
-    public void FS_write(int position, int size, byte[] contents) throws OperationFailedException, WrongArgumentsException {
+    public void FS_write(int position, int size, byte[] contents)
+            throws OperationFailedException, WrongArgumentsException, DataIntegrityFailureException {
         try {
             if (position < 0 || size < 0 || contents == null || size > contents.length)
                 throw new WrongArgumentsException("Invalid arguments");
@@ -102,6 +101,7 @@ public class BlockLibrary {
             byte[] rewrittenBlock = null;
             final Semaphore readSemaphore = new Semaphore(
                     -((int) Math.ceil((BlockUtility.NUM_REPLICAS + BlockUtility.NUM_FAULTS) / 2.0) - 1));
+            final AtomicInteger faultyServers = new AtomicInteger(0);
 
             try {
                 final ConcurrentHashMap<Integer, byte[]> readBlocks = new ConcurrentHashMap<>();
@@ -121,13 +121,17 @@ public class BlockLibrary {
                                 System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, data, 0, dataLength);
 
                                 // verify public key block integrity
-                                if (!BlockUtility.verifyDataIntegrity(data, storedSignature, publicKey))
-                                    readSemaphore.release();
+                                if (!BlockUtility.verifyDataIntegrity(data, storedSignature, publicKey)) {
+                                    faultyServers.incrementAndGet();
+                                    return;
+                                }
 
                                 int timestamp = (byte) data[0];
                                 readBlocks.put(timestamp, publicBlock);
-                            } catch (RemoteException | FileNotFoundException | WrongArgumentsException | ServerErrorException e) {
+                            } catch (FileNotFoundException e) {
                                 ;
+                            } catch (RemoteException | WrongArgumentsException | ServerErrorException e) {
+                                faultyServers.incrementAndGet();
                             } finally {
                                 readSemaphore.release();
                             }
@@ -137,6 +141,15 @@ public class BlockLibrary {
 
                 // wait for the (N+f)/2 fastest responses
                 readSemaphore.acquire();
+
+                if (faultyServers.get() == 1)
+                    System.out.println("Invalid public key block from one server");
+                else if (faultyServers.get() > 1) {
+                    System.out.println("Invalid public key block from " + faultyServers.get() + " servers");
+                }
+
+                if (faultyServers.get() > BlockUtility.NUM_FAULTS)
+                    throw new DataIntegrityFailureException("Couldn't obtain a valid quorum.");
 
                 byte[] chosenPublicBlock = null;
                 Integer chosenTimestamp = 0;
@@ -193,6 +206,7 @@ public class BlockLibrary {
 
             for (final BlockServer replica : blockServers) {
                 new Thread(new Runnable() {
+
                     public void run() {
                         try {
                             replica.put_k(rewrittenBlockCopy, keyBlockSignature, publicKey.getEncoded());
@@ -207,8 +221,7 @@ public class BlockLibrary {
             putkSemaphore.acquire();
 
             // since the blocks are immutable and self-verifying, we only need to ensure a simple quorum
-            final Semaphore puthSemaphore = new Semaphore(
-                    -((int) Math.ceil((BlockUtility.NUM_REPLICAS) / 2.0) - 1));
+            final Semaphore puthSemaphore = new Semaphore(-((int) Math.ceil((BlockUtility.NUM_REPLICAS) / 2.0) - 1));
 
             for (final BlockServer replica : blockServers) {
                 new Thread(new Runnable() {
@@ -230,6 +243,8 @@ public class BlockLibrary {
 
         } catch (WrongArgumentsException e) {
             throw e;
+        } catch (DataIntegrityFailureException e) {
+            throw e;
         } catch (Exception e) {
             System.out.println("Library - Couldn't write to server: " + e.getMessage());
             e.printStackTrace();
@@ -237,137 +252,147 @@ public class BlockLibrary {
         }
     }
 
-    public int FS_read(byte[] publicKey, int position, int size, byte[] buffer)
+    public int FS_read(final byte[] publicKey, int position, int size, byte[] buffer)
             throws OperationFailedException, DataIntegrityFailureException {
         if (position < 0 || size < 0 || buffer == null)
             throw new OperationFailedException("Invalid arguments");
 
         try {
-            byte[] publicKeyHash = BlockUtility.digest(publicKey);
+            final byte[] publicKeyHash = BlockUtility.digest(publicKey);
+            final Semaphore pubBlockSemaphore = new Semaphore(
+                    -((int) Math.ceil((BlockUtility.NUM_REPLICAS + BlockUtility.NUM_FAULTS) / 2.0) - 1));
+            final ConcurrentHashMap<Integer, byte[]> readBlocks = new ConcurrentHashMap<>();
+            final AtomicInteger faultyServers = new AtomicInteger(0);
 
-            int numReadBlocks = 0;
-            byte[] readDataHashes = null;
+            for (final BlockServer replica : blockServers) {
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            byte[] publicBlock = replica.get(BlockUtility.getKeyString(publicKeyHash));
+
+                            // obtain signature
+                            byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE];
+                            System.arraycopy(publicBlock, 0, storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
+
+                            // obtain data
+                            int dataLength = publicBlock.length - BlockUtility.SIGNATURE_SIZE;
+                            byte[] data = new byte[dataLength];
+                            System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, data, 0, dataLength);
+
+                            // verify public key block integrity
+                            if (!BlockUtility.verifyDataIntegrity(data, storedSignature, publicKey)) {
+                                faultyServers.incrementAndGet();
+                                return;
+                            }
+
+                            int timestamp = data[0];
+                            byte[] dataHashes = new byte[data.length - 1];
+                            System.arraycopy(data, 1, dataHashes, 0, data.length - 1);
+
+                            readBlocks.put(timestamp, dataHashes);
+                        } catch (FileNotFoundException e) {
+                            ;
+                        } catch (Exception e) {
+                            faultyServers.incrementAndGet();
+                        } finally {
+                            pubBlockSemaphore.release();
+                        }
+                    }
+                }).start();
+            }
+
+            // wait for the (N+f)/2 fastest responses
+            pubBlockSemaphore.acquire();
+
+            if (faultyServers.get() == 1)
+                System.out.println("Invalid public key block from one server");
+            else if (faultyServers.get() > 1) {
+                System.out.println("Invalid public key block from " + faultyServers.get() + " servers");
+            }
+
+            if (faultyServers.get() > BlockUtility.NUM_FAULTS)
+                throw new DataIntegrityFailureException("Couldn't obtain a valid quorum.");
+
+            byte[] dataHashes = null;
             Integer chosenTimestamp = 0;
-
-            for (BlockServer replica : blockServers) {
-                // we already achieved a quorum
-                if (numReadBlocks > (BlockUtility.NUM_REPLICAS + BlockUtility.NUM_FAULTS) / 2.0) {
-                    break;
-                }
-
-                byte[] publicBlock;
-                try {
-                    ++numReadBlocks;
-                    publicBlock = replica.get(BlockUtility.getKeyString(publicKeyHash));
-                } catch (Exception e) {
-                    continue;
-                }
-
-                // obtain signature
-                byte[] storedSignature = new byte[BlockUtility.SIGNATURE_SIZE];
-                System.arraycopy(publicBlock, 0, storedSignature, 0, BlockUtility.SIGNATURE_SIZE);
-
-                // obtain data
-                int dataLength = publicBlock.length - BlockUtility.SIGNATURE_SIZE;
-                byte[] data = new byte[dataLength];
-                System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE, data, 0, dataLength);
-
-                // verify public key block integrity
-                if (!BlockUtility.verifyDataIntegrity(data, storedSignature, publicKey))
-                    continue;
-
-                int timestamp = data[0];
-
-                byte[] dataHashes = new byte[data.length - 1];
-                System.arraycopy(data, 1, dataHashes, 0, data.length - 1);
-
-                if (timestamp > chosenTimestamp) {
-                    readDataHashes = dataHashes;
-                    chosenTimestamp = timestamp;
+            for (Integer readTimestamp : readBlocks.keySet()) {
+                if (readTimestamp > chosenTimestamp) {
+                    chosenTimestamp = readTimestamp;
+                    dataHashes = readBlocks.get(readTimestamp);
                 }
             }
 
-            // there is no public block or the ones returned aren't enough to ensure byzantine fault tolerance
-            if (readDataHashes == null)
-                throw new DataIntegrityFailureException("Public key block invalid or non-existent");
+            // there is no public block
+            if (dataHashes == null) {
+                throw new FileNotFoundException("File not found");
+            }
 
             int startBlock = position / (BlockUtility.BLOCK_SIZE + 1);
             int endBlock = (position + size) / (BlockUtility.BLOCK_SIZE + 1);
 
-            byte[][] blockHashes = new byte[endBlock - startBlock + 1][BlockUtility.DIGEST_SIZE];
+            final byte[][] blockHashes = new byte[endBlock - startBlock + 1][BlockUtility.DIGEST_SIZE];
 
-            int num = 0;
+            int blockCount = 0;
             for (int i = startBlock; i <= endBlock; ++i) {
-                System.arraycopy(readDataHashes, i * BlockUtility.DIGEST_SIZE, blockHashes[num], 0, BlockUtility.DIGEST_SIZE);
-                num++;
+                System.arraycopy(dataHashes, i * BlockUtility.DIGEST_SIZE, blockHashes[blockCount], 0, BlockUtility.DIGEST_SIZE);
+                blockCount++;
             }
 
-            num = 0;
+            faultyServers.set(0);
+            final AtomicInteger num = new AtomicInteger(0);
             int readLength = 0;
             for (int i = startBlock; i <= endBlock; ++i) {
-                String dataBlockName = BlockUtility.getKeyString(blockHashes[num]);
+                final String dataBlockName = BlockUtility.getKeyString(blockHashes[num.get()]);
+                final Semaphore dataBlockSemaphore = new Semaphore(-((int) Math.ceil((BlockUtility.NUM_REPLICAS) / 2.0) - 1));
 
-                int acks = 0;
-                byte[] readData = null;
-                for (int id = 0; id < BlockUtility.NUM_REPLICAS; ++id) {
-                    // since the blocks are immutable and self-verifying, we only need to ensure a simple quorum
-                    if (acks > (BlockUtility.NUM_REPLICAS) / 2.0) {
-                        break;
-                    }
+                final ConcurrentLinkedQueue<byte[]> dataBlock = new ConcurrentLinkedQueue<>();
 
-                    ++acks;
-                    byte[] data;
+                for (final BlockServer replica : blockServers) {
+                    new Thread(new Runnable() {
 
-                    try {
-                        data = blockServers.get(id).get(dataBlockName);
-                    } catch (Exception e) {
-                        continue;
-                    }
+                        public void run() {
+                            try {
+                                byte[] data = replica.get(dataBlockName);
 
-                    if (!Arrays.equals(blockHashes[num], BlockUtility.digest(data))) {
-                        continue;
-                    } else {
-                        readData = data;
-                    }
+                                if (!Arrays.equals(blockHashes[num.get()], BlockUtility.digest(data))) {
+                                    faultyServers.incrementAndGet();
+                                    return;
+                                } else {
+                                    dataBlock.add(data);
+                                }
+                            } catch (Exception e) {
+                                faultyServers.incrementAndGet();
+                            } finally {
+                                dataBlockSemaphore.release();
+                            }
+                        }
+                    }).start();
                 }
 
-                if (readData == null) {
-                    throw new DataIntegrityFailureException("Data integrity check failed on data block");
+                dataBlockSemaphore.acquire();
+
+                if (faultyServers.get() == 1)
+                    System.out.println("Invalid data block from one server");
+                else if (faultyServers.get() > 1) {
+                    System.out.println("Invalid data block from " + faultyServers.get() + " servers");
                 }
+
+                // the number of correct processes must be a majority
+                if (BlockUtility.NUM_REPLICAS - faultyServers.get() <= BlockUtility.NUM_REPLICAS / 2.0)
+                    throw new DataIntegrityFailureException("Couldn't obtain a valid quorum.");
 
                 int dataLength = size - readLength > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE : size - readLength;
-
-                System.arraycopy(readData, 0, buffer, readLength, dataLength);
+                System.arraycopy(dataBlock.remove(), 0, buffer, readLength, dataLength);
                 readLength += dataLength;
-                num++;
+                num.getAndIncrement();
             }
 
             return buffer.length;
         } catch (DataIntegrityFailureException e) {
             throw e;
-        } /*
-           * catch (OperationFailedException e) { throw e; }
-           */catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new OperationFailedException(e.getMessage());
         }
-    }
-
-    private List<BlockServer> obtainQuorum() {
-        List<BlockServer> replicas = new ArrayList<BlockServer>();
-        final int quorumSize = (int) Math.ceil((BlockUtility.NUM_REPLICAS + BlockUtility.NUM_FAULTS) / 2.0);
-        int quorumReplicas = 0;
-
-        Random random = new Random();
-
-        while (quorumReplicas <= quorumSize) {
-            int randomId = random.nextInt(BlockUtility.NUM_REPLICAS);
-            BlockServer replica = blockServers.get(randomId);
-            if (!replicas.contains(replica)) {
-                replicas.add(replica);
-                ++quorumReplicas;
-            }
-        }
-        return replicas;
     }
 }

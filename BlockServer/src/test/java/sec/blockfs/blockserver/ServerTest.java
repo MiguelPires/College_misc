@@ -57,7 +57,7 @@ public class ServerTest {
         server.put_h(data);
 
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(data));
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + fileName;
         FileInputStream inputStream = new FileInputStream(filePath);
         byte[] buffer = new byte[data.length];
         inputStream.read(buffer);
@@ -79,7 +79,7 @@ public class ServerTest {
         server.put_k(dataHash, signature, publicKey.getEncoded());
 
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(publicKey.getEncoded()));
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + fileName;
         FileInputStream inputStream = new FileInputStream(filePath);
 
         byte[] buffer = new byte[BlockUtility.DIGEST_SIZE + BlockUtility.SIGNATURE_SIZE];
@@ -105,7 +105,7 @@ public class ServerTest {
         byte[] dataDigest = BlockUtility.digest(data);
 
         String fileName = BlockUtility.getKeyString(dataDigest);
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + fileName;
         FileOutputStream outStream = new FileOutputStream(filePath);
         outStream.write(data);
         outStream.close();

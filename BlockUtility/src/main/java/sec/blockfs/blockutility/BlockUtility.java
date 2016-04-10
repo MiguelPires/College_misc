@@ -19,10 +19,7 @@ public class BlockUtility {
     public static final int DIGEST_SIZE = 64;
     // this isn't final because of the tests
     public static int NUM_REPLICAS = 4;
-    public static final int NUM_FAULTS = 1;
-    
-    private static MessageDigest digestAlgorithm = null;
-    private static Signature rsaSignature = null;
+    public static int NUM_FAULTS = 1;
 
     // utility methods
     public static String getKeyString(byte[] contents) {
@@ -34,15 +31,8 @@ public class BlockUtility {
         return keyString;
     }
 
-    public static byte[] digest(byte[] data) {
-        try {
-            if (digestAlgorithm == null)
-                digestAlgorithm = MessageDigest.getInstance(DIGEST_ALGORITHM);
-            else
-                digestAlgorithm.reset();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
+    public static byte[] digest(byte[] data) throws NoSuchAlgorithmException {
+        MessageDigest digestAlgorithm = MessageDigest.getInstance(DIGEST_ALGORITHM);
         return digestAlgorithm.digest(data);
     }
 
@@ -58,9 +48,7 @@ public class BlockUtility {
 
     public static boolean verifyDataIntegrity(byte[] data, byte[] signature, PublicKey publicKey) {
         try {
-            // initialize signing algorithm
-            if (rsaSignature == null)
-                rsaSignature = Signature.getInstance("SHA512withRSA", "SunRsaSign");
+            Signature rsaSignature = Signature.getInstance("SHA512withRSA", "SunRsaSign");
 
             rsaSignature.initVerify(publicKey);
             rsaSignature.update(data, 0, data.length);
@@ -79,7 +67,7 @@ public class BlockUtility {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA", "SunRsaSign");
         return keyFactory.generatePublic(pubKeySpec);
     }
-    
+
     public static String generateString(int length) {
         String chars = new String("1234567890abcdefghijklmnopqrstuvxyz");// .-,/*-+@#£$%&()=?");
         Random rand = new Random();

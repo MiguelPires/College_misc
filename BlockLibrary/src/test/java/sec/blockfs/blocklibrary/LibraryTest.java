@@ -35,6 +35,8 @@ public class LibraryTest {
     @Before
     public void setUp() throws NumberFormatException, RemoteException {
         BlockUtility.NUM_REPLICAS = 1;
+        BlockUtility.NUM_FAULTS = 0;
+        
         try {
             registry = LocateRegistry.createRegistry(new Integer(servicePort));
             registry.rebind(serviceName + "0", new ServerImpl());
@@ -143,6 +145,15 @@ public class LibraryTest {
         assertTrue("Wrong data", Arrays.equals(expectedData, buffer));
     }
 
+    @Test(expected = OperationFailedException.class)
+    public void readOnly() throws Exception {
+        BlockLibrary library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+        library.FS_init();
+
+        byte[] buffer = new byte[BlockUtility.BLOCK_SIZE];
+        library.FS_read(library.publicKey.getEncoded(), 0, BlockUtility.BLOCK_SIZE, buffer);
+    }
+
     @Test
     public void publicKeyBlockCheck() throws Exception {
         // write a message
@@ -157,7 +168,7 @@ public class LibraryTest {
         String fileName = BlockUtility.getKeyString(keyDigest);
 
         // check for public key block
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + fileName;
         File file = new File(filePath);
         assertTrue("Public key block '" + filePath + "' doesn't exist", file.exists());
     }
@@ -179,7 +190,7 @@ public class LibraryTest {
         String fileName = BlockUtility.getKeyString(dataDigest);
 
         // check for data block
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + fileName;
         File file = new File(filePath);
         assertTrue("Data block '" + filePath + "' doesn't exist", file.exists());
     }
@@ -203,7 +214,7 @@ public class LibraryTest {
         // compute hash of public key
         byte[] keyDigest = BlockUtility.digest(library.publicKey.getEncoded());
         String fileName = BlockUtility.getKeyString(keyDigest);
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + fileName;
         FileInputStream stream = new FileInputStream(filePath);
         byte[] publicBlock = new byte[BlockUtility.SIGNATURE_SIZE + 1 + BlockUtility.DIGEST_SIZE];
         stream.read(publicBlock);
@@ -213,7 +224,7 @@ public class LibraryTest {
         byte[] publicKeyData = new byte[BlockUtility.DIGEST_SIZE];
         int timestamp = (int) publicBlock[BlockUtility.SIGNATURE_SIZE];
         assertTrue("The timestamp is wrong. Should be one, it's " + timestamp + " instead.", timestamp == 1);
-        
+
         System.arraycopy(publicBlock, BlockUtility.SIGNATURE_SIZE + 1, publicKeyData, 0, publicKeyData.length);
         byte[] dataBlock = new byte[BlockUtility.BLOCK_SIZE];
         System.arraycopy(textBytes, 0, dataBlock, 0, textBytes.length);
@@ -233,7 +244,7 @@ public class LibraryTest {
         byte[] data = new byte[BlockUtility.BLOCK_SIZE];
         System.arraycopy(textBytes, 0, data, 0, textBytes.length);
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(data));
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + fileName;
 
         // verify data block contents
         FileInputStream stream = new FileInputStream(filePath);
@@ -269,7 +280,7 @@ public class LibraryTest {
         String secondBlockName = BlockUtility.getKeyString(BlockUtility.digest(secondBlock));
 
         // verify the first block's data
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + firstBlockName;
+        String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + firstBlockName;
         FileInputStream stream = new FileInputStream(filePath);
         byte[] buffer = new byte[BlockUtility.BLOCK_SIZE];
         stream.read(buffer, 0, BlockUtility.BLOCK_SIZE);
@@ -278,7 +289,7 @@ public class LibraryTest {
         assertTrue("First block contains wrong data", Arrays.equals(buffer, firstBlock));
 
         // verify the second block's data
-        filePath = FileSystemImpl.BASE_PATH + File.separatorChar + secondBlockName;
+        filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + secondBlockName;
         stream = new FileInputStream(filePath);
         buffer = new byte[BlockUtility.BLOCK_SIZE];
         stream.read(buffer, 0, textBytes.length - BlockUtility.BLOCK_SIZE);
@@ -299,7 +310,7 @@ public class LibraryTest {
 
         // get public key block
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(library.publicKey.getEncoded()));
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + fileName;
         FileInputStream stream = new FileInputStream(filePath);
         byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + 1 + BlockUtility.DIGEST_SIZE * 2];
         stream.read(publicKeyBlock, 0, publicKeyBlock.length);
@@ -351,7 +362,7 @@ public class LibraryTest {
 
         // get public key block
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(library.publicKey.getEncoded()));
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + fileName;
         FileInputStream stream = new FileInputStream(filePath);
         byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
         stream.read(publicKeyBlock, 0, publicKeyBlock.length);
@@ -361,7 +372,7 @@ public class LibraryTest {
         byte[] alteredHash = BlockUtility.digest(alteredTextBytes);
 
         String newBlockName = BlockUtility.getKeyString(alteredHash);
-        String newBlockPath = FileSystemImpl.BASE_PATH + File.separatorChar + newBlockName;
+        String newBlockPath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + newBlockName;
 
         FileOutputStream outStream = new FileOutputStream(newBlockPath);
         outStream.write(alteredTextBytes);
@@ -393,7 +404,7 @@ public class LibraryTest {
 
         // get data block
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(textBytes));
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + fileName;
         FileInputStream stream = new FileInputStream(filePath);
         byte[] dataBlock = new byte[BlockUtility.BLOCK_SIZE];
         stream.read(dataBlock, 0, dataBlock.length);
@@ -421,9 +432,9 @@ public class LibraryTest {
 
         // get public key block
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(library.publicKey.getEncoded()));
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + fileName;
         FileInputStream stream = new FileInputStream(filePath);
-        byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
+        byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + 1+BlockUtility.DIGEST_SIZE];
         stream.read(publicKeyBlock, 0, publicKeyBlock.length);
         stream.close();
 
@@ -432,14 +443,15 @@ public class LibraryTest {
 
         // write new block
         String newBlockName = BlockUtility.getKeyString(alteredHash);
-        String newBlockPath = FileSystemImpl.BASE_PATH + File.separatorChar + newBlockName;
+        String newBlockPath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + newBlockName;
         FileOutputStream outStream = new FileOutputStream(newBlockPath);
         outStream.write(alteredTextBytes);
         outStream.close();
 
         // rewrite public key block to ignore the previous block and point to a new one
-        byte[] rewrittenPublicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
+        byte[] rewrittenPublicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + 1 + BlockUtility.DIGEST_SIZE];
         System.arraycopy(publicKeyBlock, 0, rewrittenPublicKeyBlock, 0, BlockUtility.SIGNATURE_SIZE);
+        rewrittenPublicKeyBlock[BlockUtility.SIGNATURE_SIZE] = publicKeyBlock[BlockUtility.SIGNATURE_SIZE];
         System.arraycopy(alteredHash, 0, rewrittenPublicKeyBlock, BlockUtility.SIGNATURE_SIZE, BlockUtility.DIGEST_SIZE);
         outStream = new FileOutputStream(filePath);
         outStream.write(rewrittenPublicKeyBlock);
@@ -460,7 +472,7 @@ public class LibraryTest {
 
         // delete data block
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(textBytes));
-        String filePath = FileSystemImpl.BASE_PATH + File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + fileName;
         System.out.println("Deleting file " + fileName);
         File dataBlock = new File(filePath);
 

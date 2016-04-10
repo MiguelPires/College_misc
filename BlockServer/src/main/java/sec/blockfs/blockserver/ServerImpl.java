@@ -13,9 +13,14 @@ import sec.blockfs.blockutility.BlockUtility;
 public class ServerImpl extends UnicastRemoteObject implements BlockServer {
     private FileSystemImpl fileSystem;
 
+    public ServerImpl(String serverId) throws RemoteException, ServerErrorException {
+        super();
+        fileSystem = new FileSystemImpl(serverId);
+    }
+
     public ServerImpl() throws RemoteException, ServerErrorException {
         super();
-        fileSystem = new FileSystemImpl();
+        fileSystem = new FileSystemImpl("0");
     }
 
     public static void main(String[] args) {
@@ -25,7 +30,7 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
             String serverId = args[2];
 
             Registry registry = LocateRegistry.createRegistry(new Integer(servicePort) + new Integer(serverId));
-            registry.rebind(serviceName + serverId, new ServerImpl());
+            registry.rebind(serviceName + serverId, new ServerImpl(serverId));
             System.out.println("Server initiated");
             System.in.read();
         } catch (Exception e) {
@@ -37,7 +42,6 @@ public class ServerImpl extends UnicastRemoteObject implements BlockServer {
     @Override
     public byte[] get(String id) throws WrongArgumentsException, ServerErrorException, FileNotFoundException {
         try {
-            
             return fileSystem.read(id);
         } catch (FileSystemException e) {
             e.printStackTrace();

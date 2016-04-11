@@ -10,6 +10,8 @@ public class Server {
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
         
         server.createContext("/users", new UsersHandler());
+        server.createContext("/stations", new StationsHandler());
+
         server.setExecutor(null); // creates a default executor
         server.start();
         System.out.println("Server running");

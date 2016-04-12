@@ -16,10 +16,11 @@ public class PublicBlockAttackThreeFaults {
         String servicePort = args[0];
         String serviceName = args[1];
         String serviceUrl = args[2];
+        String numFaults = args[3];
 
         BlockLibrary library = null;
         try {
-            library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+            library = new BlockLibrary(serviceName, servicePort, serviceUrl, numFaults);
             library.FS_init();
         } catch (InitializationFailureException e) {
             System.out.println("Error - " + e.getMessage());
@@ -71,7 +72,7 @@ public class PublicBlockAttackThreeFaults {
         outStream = new FileOutputStream(FileSystemImpl.BASE_PATH + "-1" + File.separatorChar + fileName);
         outStream.write(rewrittenPublicKeyBlock);
         outStream.close();
-        
+
         outStream = new FileOutputStream(FileSystemImpl.BASE_PATH + "-2" + File.separatorChar + fileName);
         outStream.write(rewrittenPublicKeyBlock);
         outStream.close();

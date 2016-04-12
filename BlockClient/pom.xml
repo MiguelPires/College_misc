@@ -11,6 +11,9 @@
   	<version>0.0.1-SNAPSHOT</version>
   	<packaging>jar</packaging>
 
+	<properties>
+	  	<byzFaults>1</byzFaults>
+	</properties>
   	<dependencies>
   		<dependency>
   			<groupId>sec6</groupId>
@@ -37,6 +40,7 @@
 			            <argument>${service.port}</argument>
 			            <argument>${service.name}</argument>
 			            <argument>${service.url}</argument>
+			            <argument>${byzFaults}</argument>
 			        </arguments>
 				</configuration>
 			</plugin>

@@ -16,10 +16,11 @@ public class PublicBlockAttackTwoFaults {
         String servicePort = args[0];
         String serviceName = args[1];
         String serviceUrl = args[2];
+        String numFaults = args[3];
 
         BlockLibrary library = null;
         try {
-            library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+            library = new BlockLibrary(serviceName, servicePort, serviceUrl, numFaults);
             library.FS_init();
         } catch (InitializationFailureException e) {
             System.out.println("Error - " + e.getMessage());
@@ -37,7 +38,7 @@ public class PublicBlockAttackTwoFaults {
         byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
         stream.read(publicKeyBlock, 0, publicKeyBlock.length);
         stream.close();
-        
+
         byte[] alteredTextBytes = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
         byte[] alteredHash = BlockUtility.digest(alteredTextBytes);
 
@@ -53,7 +54,7 @@ public class PublicBlockAttackTwoFaults {
         outStream = new FileOutputStream(secondBlockPath);
         outStream.write(alteredTextBytes);
         outStream.close();
-        
+
         // rewrite public key blocks to ignore the previous blocks and point to the new ones
         byte[] rewrittenPublicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
         System.arraycopy(publicKeyBlock, 0, rewrittenPublicKeyBlock, 0, BlockUtility.SIGNATURE_SIZE);
@@ -61,7 +62,7 @@ public class PublicBlockAttackTwoFaults {
         outStream = new FileOutputStream(filePath);
         outStream.write(rewrittenPublicKeyBlock);
         outStream.close();
-        
+
         outStream = new FileOutputStream(FileSystemImpl.BASE_PATH + "-1" + File.separatorChar + fileName);
         outStream.write(rewrittenPublicKeyBlock);
         outStream.close();

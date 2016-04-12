@@ -17,10 +17,11 @@ public class DataBlockAttackTwoFaults {
         String servicePort = args[0];
         String serviceName = args[1];
         String serviceUrl = args[2];
+        String numFaults = args[3];
 
         BlockLibrary library = null;
         try {
-            library = new BlockLibrary(serviceName, servicePort, serviceUrl);
+            library = new BlockLibrary(serviceName, servicePort, serviceUrl, numFaults);
             library.FS_init();
         } catch (InitializationFailureException e) {
             System.out.println("Error - " + e.getMessage());
@@ -34,7 +35,7 @@ public class DataBlockAttackTwoFaults {
 
         // get data block
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(textBytes));
-        String filePath = FileSystemImpl.BASE_PATH + "-0"+ File.separatorChar + fileName;
+        String filePath = FileSystemImpl.BASE_PATH + "-0" + File.separatorChar + fileName;
 
         FileInputStream stream = new FileInputStream(filePath);
         byte[] dataBlock = new byte[BlockUtility.BLOCK_SIZE];
@@ -50,7 +51,7 @@ public class DataBlockAttackTwoFaults {
         outStream.close();
 
         // change data block on second server
-        outStream = new FileOutputStream(FileSystemImpl.BASE_PATH + "-1"+ File.separatorChar + fileName);
+        outStream = new FileOutputStream(FileSystemImpl.BASE_PATH + "-1" + File.separatorChar + fileName);
         outStream.write(dataBlock);
         outStream.close();
 

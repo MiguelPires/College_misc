@@ -29,24 +29,29 @@ import sec.blockfs.blockutility.BlockUtility;
 import sec.blockfs.blockutility.OperationFailedException;;
 
 public class BlockLibrary {
+
     // these attributes are only public because of the tests
     public PrivateKey privateKey;
     public PublicKey publicKey;
     public boolean ENABLE_CACHE = true;
+    public static int NUM_REPLICAS = 4;
+    public static int NUM_FAULTS = 1;
 
     private Signature signAlgorithm;
     private int writeTimestamp = 0;
     private List<BlockServer> blockServers = new ArrayList<BlockServer>();
-    private byte[] publicBlockCache = null;
+    private byte[] hashesCache = null;
 
-    public BlockLibrary(String serviceName, String servicePort, String serviceUrl) throws InitializationFailureException {
-        assert (BlockUtility.NUM_REPLICAS > 3
-                * BlockUtility.NUM_FAULTS) : "Error -  the number of replicas must be larger than 3*f (number of faults)";
-
+    public BlockLibrary(String serviceName, String servicePort, String serviceUrl, String numFaults)
+            throws InitializationFailureException {
         String serverName = "none";
         String serverPort = "none";
+
         try {
-            for (int i = 0; i < BlockUtility.NUM_REPLICAS; ++i) {
+            NUM_FAULTS = Integer.parseInt(numFaults);
+            NUM_REPLICAS = 3 * NUM_FAULTS + 1;
+
+            for (int i = 0; i < NUM_REPLICAS; ++i) {
                 serverName = serviceName + i;
                 Integer port = new Integer(servicePort) + new Integer(i);
                 serverPort = port.toString();
@@ -105,8 +110,20 @@ public class BlockLibrary {
             byte[] rewrittenBlock = null;
             try {
 
-                final String publicKeyString = BlockUtility.getKeyString(BlockUtility.digest(publicKey.getEncoded()));
-                byte[] blockHashes = readPublicKeyBlockHashes(publicKeyString);
+                final String publicKeyString;
+                final byte[] blockHashes;
+
+                // retrieve block, if cache is empty
+                if (!ENABLE_CACHE || hashesCache == null) {
+                    publicKeyString = BlockUtility.getKeyString(BlockUtility.digest(publicKey.getEncoded()));
+                    blockHashes = readPublicKeyBlockHashes(publicKeyString);
+                    if (ENABLE_CACHE) {
+                        hashesCache = new byte[blockHashes.length];
+                        System.arraycopy(blockHashes, 0, hashesCache, 0, blockHashes.length);
+                    }
+                } else {
+                    blockHashes = hashesCache;
+                }
 
                 // rewrite
                 int publicBlockSize = blockHashes.length / BlockUtility.DIGEST_SIZE;
@@ -156,8 +173,20 @@ public class BlockLibrary {
             throw new OperationFailedException("Invalid arguments");
 
         try {
-            final String publicKeyHash = BlockUtility.getKeyString(BlockUtility.digest(publicKey));
-            byte[] dataHashes = readPublicKeyBlockHashes(publicKeyHash);
+            final String publicKeyString;
+            final byte[] dataHashes;
+
+            // retrieve block, if cache is empty
+            if (!ENABLE_CACHE || hashesCache == null) {
+                publicKeyString = BlockUtility.getKeyString(BlockUtility.digest(publicKey));
+                dataHashes = readPublicKeyBlockHashes(publicKeyString);
+                if (ENABLE_CACHE) {
+                    hashesCache = new byte[dataHashes.length];
+                    System.arraycopy(dataHashes, 0, hashesCache, 0, dataHashes.length);
+                }
+            } else {
+                dataHashes = hashesCache;
+            }
 
             int startBlock = position / (BlockUtility.BLOCK_SIZE + 1);
             int endBlock = (position + size) / (BlockUtility.BLOCK_SIZE + 1);
@@ -182,8 +211,7 @@ public class BlockLibrary {
 
     private byte[] readPublicKeyBlockHashes(final String keyBlockName)
             throws FileNotFoundException, InterruptedException, DataIntegrityFailureException {
-        final Semaphore readSemaphore = new Semaphore(
-                -((int) Math.ceil((BlockUtility.NUM_REPLICAS + BlockUtility.NUM_FAULTS) / 2.0) - 1));
+        final Semaphore readSemaphore = new Semaphore(-((int) Math.ceil((NUM_REPLICAS + NUM_FAULTS) / 2.0) - 1));
         final AtomicInteger faultyServers = new AtomicInteger(0);
         final ConcurrentHashMap<Integer, byte[]> readBlocks = new ConcurrentHashMap<>();
 
@@ -212,7 +240,6 @@ public class BlockLibrary {
                         System.arraycopy(data, 1, hashes, 0, hashes.length);
                         readBlocks.put(timestamp, hashes);
                     } catch (FileNotFoundException e) {
-                        ;
                     } catch (RemoteException | WrongArgumentsException | ServerErrorException e) {
                         faultyServers.incrementAndGet();
                     } finally {
@@ -231,7 +258,7 @@ public class BlockLibrary {
             System.out.println("Invalid public key block from " + faultyServers.get() + " servers");
         }
 
-        if (faultyServers.get() > BlockUtility.NUM_FAULTS)
+        if (faultyServers.get() > NUM_FAULTS)
             throw new DataIntegrityFailureException("Couldn't obtain a valid quorum.");
 
         byte[] chosenBlockHashes = null;
@@ -258,7 +285,7 @@ public class BlockLibrary {
 
         for (int i = firstBlockIndex; i <= lastBlockIndex; ++i) {
             final String dataBlockName = BlockUtility.getKeyString(blockHashes[num.get()]);
-            final Semaphore dataBlockSemaphore = new Semaphore(-((int) Math.ceil((BlockUtility.NUM_REPLICAS) / 2.0) - 1));
+            final Semaphore dataBlockSemaphore = new Semaphore(-((int) Math.ceil((NUM_REPLICAS) / 2.0) - 1));
             final ConcurrentLinkedQueue<byte[]> dataBlock = new ConcurrentLinkedQueue<>();
 
             for (final BlockServer replica : blockServers) {
@@ -291,7 +318,7 @@ public class BlockLibrary {
                 System.out.println("Invalid data block from " + faultyServers.get() + " servers");
 
             // the number of correct processes must be a majority
-            if (BlockUtility.NUM_REPLICAS - faultyServers.get() <= BlockUtility.NUM_REPLICAS / 2.0)
+            if (NUM_REPLICAS - faultyServers.get() <= NUM_REPLICAS / 2.0)
                 throw new DataIntegrityFailureException("Couldn't obtain a valid quorum.");
 
             int dataLength = size - readLength > BlockUtility.BLOCK_SIZE ? BlockUtility.BLOCK_SIZE : size - readLength;
@@ -308,8 +335,7 @@ public class BlockLibrary {
         signAlgorithm.update(toWriteBlock, 0, toWriteBlock.length);
         final byte[] keyBlockSignature = signAlgorithm.sign();
 
-        final Semaphore putkSemaphore = new Semaphore(
-                -((int) Math.ceil((BlockUtility.NUM_REPLICAS + BlockUtility.NUM_FAULTS) / 2.0) - 1));
+        final Semaphore putkSemaphore = new Semaphore(-((int) Math.ceil((NUM_REPLICAS + NUM_FAULTS) / 2.0) - 1));
         final byte[] rewrittenBlockCopy = toWriteBlock;
 
         for (final BlockServer replica : blockServers) {
@@ -319,19 +345,20 @@ public class BlockLibrary {
                     try {
                         replica.put_k(rewrittenBlockCopy, keyBlockSignature, publicKey.getEncoded());
                     } catch (Exception e) {
-                        ;
                     } finally {
                         putkSemaphore.release();
                     }
                 }
             }).start();
         }
+        hashesCache = new byte[toWriteBlock.length];
+        System.arraycopy(toWriteBlock, 0, hashesCache, 0, toWriteBlock.length);
         putkSemaphore.acquire();
     }
 
     private void writeContentBlocks(final byte[][] toWriteBlocks) throws InterruptedException {
         // since the blocks are immutable and self-verifying, we only need to ensure a simple quorum
-        final Semaphore puthSemaphore = new Semaphore(-((int) Math.ceil((BlockUtility.NUM_REPLICAS) / 2.0) - 1));
+        final Semaphore puthSemaphore = new Semaphore(-((int) Math.ceil((NUM_REPLICAS) / 2.0) - 1));
 
         for (final BlockServer replica : blockServers) {
             new Thread(new Runnable() {
@@ -343,7 +370,6 @@ public class BlockLibrary {
                             replica.put_h(toWriteBlocks[i]);
                         }
                     } catch (Exception e) {
-                        ;
                     } finally {
                         puthSemaphore.release();
                     }

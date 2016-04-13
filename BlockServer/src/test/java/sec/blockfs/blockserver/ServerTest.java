@@ -19,7 +19,10 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 
+import sec.blockfs.blockutility.BlockServer;
 import sec.blockfs.blockutility.BlockUtility;
+import sec.blockfs.blockutility.DataIntegrityFailureException;
+import sec.blockfs.blockutility.ServerErrorException;
 
 public class ServerTest {
     private static String servicePort = System.getProperty("service.port");
@@ -76,7 +79,7 @@ public class ServerTest {
         signAlgorithm.update(dataHash);
         byte[] signature = signAlgorithm.sign();
 
-        server.put_k(dataHash, signature, publicKey.getEncoded());
+        server.put_k(dataHash, signature, publicKey.getEncoded(), null, "override", 0);
 
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(publicKey.getEncoded()));
         String filePath = FileSystemImpl.BASE_PATH + "-" + 0 + File.separatorChar + fileName;
@@ -135,7 +138,7 @@ public class ServerTest {
         signAlgorithm.update(dataHash);
         byte[] signature = signAlgorithm.sign();
 
-        server.put_k(null, signature, publicKey.getEncoded());
+        server.put_k(null, signature, publicKey.getEncoded(), null, "override", 0);
     }
 
     @Test(expected = DataIntegrityFailureException.class)
@@ -148,7 +151,7 @@ public class ServerTest {
         signAlgorithm.update(dataHash);
         byte[] signature = signAlgorithm.sign();
 
-        server.put_k(data, signature, publicKey.getEncoded());
+        server.put_k(data, signature, publicKey.getEncoded(), null, "override", 0);
     }
 
     @Test(expected = ServerErrorException.class)
@@ -161,7 +164,7 @@ public class ServerTest {
         signAlgorithm.update(dataHash);
         byte[] signature = signAlgorithm.sign();
 
-        server.put_k(dataHash, null, publicKey.getEncoded());
+        server.put_k(dataHash, null, publicKey.getEncoded(), null, "override", 0);
     }
 
     @Test(expected = DataIntegrityFailureException.class)
@@ -174,7 +177,7 @@ public class ServerTest {
         signAlgorithm.update(data);
         byte[] signature = signAlgorithm.sign();
 
-        server.put_k(dataHash, signature, publicKey.getEncoded());
+        server.put_k(dataHash, signature, publicKey.getEncoded(), null, "override", 0);
     }
 
     @Test(expected = ServerErrorException.class)
@@ -187,7 +190,7 @@ public class ServerTest {
         signAlgorithm.update(data);
         byte[] signature = signAlgorithm.sign();
 
-        server.put_k(dataHash, signature, null);
+        server.put_k(dataHash, signature, null, null, "override", 0);
     }
 
     @Test(expected = DataIntegrityFailureException.class)
@@ -209,7 +212,7 @@ public class ServerTest {
         KeyPair pair = keyGen.generateKeyPair();
         PublicKey publicKey = pair.getPublic();
 
-        server.put_k(dataHash, signature, publicKey.getEncoded());
+        server.put_k(dataHash, signature, publicKey.getEncoded(), null, "override", 0);
     }
 
     @Test(expected = ServerErrorException.class)

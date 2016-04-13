@@ -5,11 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Arrays;
 
-import sec.blockfs.blocklibrary.BlockLibrary;
+import sec.blockfs.blocklibrary.BlockLibraryImpl;
 import sec.blockfs.blocklibrary.InitializationFailureException;
-import sec.blockfs.blockserver.DataIntegrityFailureException;
 import sec.blockfs.blockserver.FileSystemImpl;
 import sec.blockfs.blockutility.BlockUtility;
+import sec.blockfs.blockutility.DataIntegrityFailureException;
 
 public class DataBlockAttackTwoFaults {
 
@@ -19,9 +19,9 @@ public class DataBlockAttackTwoFaults {
         String serviceUrl = args[2];
         String numFaults = args[3];
 
-        BlockLibrary library = null;
+        BlockLibraryImpl library = null;
         try {
-            library = new BlockLibrary(serviceName, servicePort, serviceUrl, numFaults);
+            library = new BlockLibraryImpl(serviceName, servicePort, serviceUrl, numFaults);
             library.FS_init();
         } catch (InitializationFailureException e) {
             System.out.println("Error - " + e.getMessage());

@@ -5,6 +5,9 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -21,14 +24,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import sec.blockfs.blockserver.BlockServer;
-import sec.blockfs.blockserver.DataIntegrityFailureException;
-import sec.blockfs.blockserver.ServerErrorException;
-import sec.blockfs.blockserver.WrongArgumentsException;
+import sec.blockfs.blockutility.BlockLibrary;
+import sec.blockfs.blockutility.BlockServer;
 import sec.blockfs.blockutility.BlockUtility;
-import sec.blockfs.blockutility.OperationFailedException;;
+import sec.blockfs.blockutility.DataIntegrityFailureException;
+import sec.blockfs.blockutility.OperationFailedException;
+import sec.blockfs.blockutility.ServerErrorException;
+import sec.blockfs.blockutility.WrongArgumentsException;;
 
-public class BlockLibrary {
+public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrary {
 
     // these attributes are only public because of the tests
     public PrivateKey privateKey;
@@ -41,11 +45,15 @@ public class BlockLibrary {
     private int writeTimestamp = 0;
     private List<BlockServer> blockServers = new ArrayList<BlockServer>();
     private byte[] hashesCache = null;
+    private int libraryPort;
+    private String libraryName;
+    private String libraryUrl;
 
-    public BlockLibrary(String serviceName, String servicePort, String serviceUrl, String numFaults)
-            throws InitializationFailureException {
+    public BlockLibraryImpl(String serviceName, String servicePort, String serviceUrl, String numFaults) throws RemoteException, InitializationFailureException
+             {
         String serverName = "none";
         String serverPort = "none";
+        libraryUrl = serviceUrl;
 
         try {
             NUM_FAULTS = Integer.parseInt(numFaults);
@@ -79,6 +87,13 @@ public class BlockLibrary {
 
             // initialize signing algorithm
             signAlgorithm = Signature.getInstance("SHA512withRSA", "SunRsaSign");
+
+            // the server needs to provide a challenge
+            libraryPort = 9876 + (int) (Math.random() * 10000);
+            libraryName = BlockUtility.generateString(6);
+            Registry registry = LocateRegistry.createRegistry(libraryPort);
+            registry.rebind(libraryName, this);
+
             byte[] keyDigest = BlockUtility.digest(publicKey.getEncoded());
             return BlockUtility.getKeyString(keyDigest);
         } catch (Exception e) {
@@ -209,6 +224,18 @@ public class BlockLibrary {
         }
     }
 
+    public byte[] challenge(Long nonce) {
+        try {
+            byte[] hashNonce = BlockUtility.digest(new byte[] { nonce.byteValue() });
+            signAlgorithm.initSign(privateKey);
+            signAlgorithm.update(hashNonce, 0, hashNonce.length);
+            return signAlgorithm.sign();
+        } catch (Exception e) {
+            System.out.println("Failed signing nonce. " + e.getMessage());
+            return null;
+        }
+    }
+
     private byte[] readPublicKeyBlockHashes(final String keyBlockName)
             throws FileNotFoundException, InterruptedException, DataIntegrityFailureException {
         final Semaphore readSemaphore = new Semaphore(-((int) Math.ceil((NUM_REPLICAS + NUM_FAULTS) / 2.0) - 1));
@@ -290,7 +317,6 @@ public class BlockLibrary {
 
             for (final BlockServer replica : blockServers) {
                 new Thread(new Runnable() {
-
                     public void run() {
                         try {
                             byte[] data = replica.get(dataBlockName);
@@ -340,10 +366,10 @@ public class BlockLibrary {
 
         for (final BlockServer replica : blockServers) {
             new Thread(new Runnable() {
-
                 public void run() {
                     try {
-                        replica.put_k(rewrittenBlockCopy, keyBlockSignature, publicKey.getEncoded());
+                        replica.put_k(rewrittenBlockCopy, keyBlockSignature, publicKey.getEncoded(), libraryUrl, libraryName,
+                                libraryPort);
                     } catch (Exception e) {
                     } finally {
                         putkSemaphore.release();
@@ -362,7 +388,6 @@ public class BlockLibrary {
 
         for (final BlockServer replica : blockServers) {
             new Thread(new Runnable() {
-
                 public void run() {
                     try {
                         // write data blocks

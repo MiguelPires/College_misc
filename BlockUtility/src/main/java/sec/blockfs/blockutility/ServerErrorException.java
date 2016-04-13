@@ -1,4 +1,4 @@
-package sec.blockfs.blockserver;
+package sec.blockfs.blockutility;
 
 @SuppressWarnings("serial")
 public class ServerErrorException extends Exception {

@@ -1,4 +1,4 @@
-package sec.blockfs.blockserver;
+package sec.blockfs.blockutility;
 
 import java.io.FileNotFoundException;
 import java.rmi.Remote;
@@ -9,7 +9,7 @@ public interface BlockServer extends Remote {
     byte[] get(String id) throws RemoteException, WrongArgumentsException, ServerErrorException, FileNotFoundException;
 
     // stores a signed, public key block
-    String put_k(byte[] data, byte[] signature, byte[] pub)
+    String put_k(byte[] data, byte[] signature, byte[] pub, String libraryUrl, String libraryName, int libraryPort)
             throws RemoteException, ServerErrorException, DataIntegrityFailureException;
 
     // stores a content hash block

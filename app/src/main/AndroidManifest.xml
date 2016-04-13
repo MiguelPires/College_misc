@@ -38,10 +38,12 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCGrE_Y0w4gtJ5tm0iKrSVRwb7dW-O76H4" />
 
-        <activity android:name=".Tab"></activity>
+        <activity android:name=".Tab" />
 
         <service android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService" />
 
+        <activity android:name=".Info" />
+        <activity android:name=".TrajectoryDetails"></activity>
     </application>
 
 </manifest>

@@ -33,7 +33,6 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 public class Home extends AppCompatActivity {
 
     TextView statusTxt;
-    public static String username;
 
     private WifiDirectReceiver mReceiver;
     private SimWifiP2pManager mManager = null;

@@ -98,7 +98,8 @@ public class Register extends AppCompatActivity {
                             }
                         });
                     } else {
-                        Intent intent = new Intent(Register.this, Home.class);
+                        Tab.username = usernameTb.getText().toString();
+                        Intent intent = new Intent(Register.this, Tab.class);
                         startActivity(intent);
                     }
 

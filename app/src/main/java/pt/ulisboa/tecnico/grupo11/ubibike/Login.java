@@ -18,7 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class Login extends AppCompatActivity {
-    static final String serverUrl = "http://52.49.141.249:8000";
+    static final String serverUrl = "http://52.48.24.102:8000";
 
     private EditText usernameLogin;
     private EditText passwordLogin;
@@ -45,9 +45,9 @@ public class Login extends AppCompatActivity {
                 String password = passwordLogin.getText().toString();
 
                 if (validatePassword(username, password)) {
-                    Intent intent = new Intent(Login.this, Home.class);
+                    Intent intent = new Intent(Login.this, Tab.class);
                     startActivity(intent);
-                    Home.username =  username;
+                    Tab.username =  username;
                 }
             }
         }).start();
@@ -170,7 +170,7 @@ public class Login extends AppCompatActivity {
 
     // NOTE: for testing purposes only!
     public void override (View view) {
-        Home.username = "someUser";
+        Tab.username = "someUser";
         Intent intent = new Intent(Login.this, Tab.class);
         startActivity(intent);
     }

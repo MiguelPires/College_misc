@@ -128,7 +128,7 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
                                         Toast.makeText(Contacts.this, "You can't send that amount of points", Toast.LENGTH_SHORT).show();
                                         return;
                                     }
-                                    message = "#P#" + Home.username + "#" + points;
+                                    message = "#P#" + Tab.username + "#" + points;
                                     currentUser = listAdapter.getItem(info.position);
                                     mManager.requestGroupInfo(mChannel, Contacts.this);
                                     dialog.dismiss();
@@ -168,7 +168,7 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
                             public void onClick(View view) {
                                 String smsText = edit.getText().toString();
                                 if (!smsText.isEmpty()) {
-                                    message = "#M#" + Home.username + "#" + smsText;
+                                    message = "#M#" + Tab.username + "#" + smsText;
                                     currentUser = listAdapter.getItem(info.position);
                                     mManager.requestGroupInfo(mChannel, Contacts.this);
                                     dialog.dismiss();

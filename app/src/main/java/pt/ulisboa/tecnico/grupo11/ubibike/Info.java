@@ -14,20 +14,19 @@ import java.util.List;
 
 public class Info extends AppCompatActivity {
 
-    ListView listView;
-    TextView pointsTextView;
-    List<String> trajectoriesTextList = new ArrayList<>();
+    private List<String> trajectoriesTextList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
 
-        listView = (ListView) findViewById(R.id.trajectorieslv);
-        pointsTextView = (TextView) findViewById(R.id.numberOfPointstv);
+        ListView listView = (ListView) findViewById(R.id.trajectorieslv);
+        TextView pointsTextView = (TextView) findViewById(R.id.numberOfPointstv);
         pointsTextView.setText(Tab.numberOfPoints);
         trajectoriesTextList.clear();
-        for(int x = 0; x < Tab.listOfTrajectories.size(); x++)
+
+        for(int x = 0; x < Tab.trajectories.size(); x++)
         {
             trajectoriesTextList.add("Trajectory " + (x+1));
         }

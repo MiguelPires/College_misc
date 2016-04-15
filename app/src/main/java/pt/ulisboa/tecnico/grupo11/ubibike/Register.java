@@ -1,36 +1,25 @@
 package pt.ulisboa.tecnico.grupo11.ubibike;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Base64;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 public class Register extends AppCompatActivity {
-
-    /*
-        Username confimar com o servidor se ja existe
-        Por icon com info quando se clica nele (Tamanho da password, se é alfanumerico, etc.)
-    */
 
     private EditText usernameTb;
     private EditText passwordTb;
     private EditText confirmPasswordTb;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -35,8 +35,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/trajectorieslv"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/numberOfPointstv"
+        android:layout_below="@+id/textView" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Trajectories"
+        android:id="@+id/textView"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_above="@+id/numberOfPointstv"/>
+        android:textStyle="bold" />
 </RelativeLayout>

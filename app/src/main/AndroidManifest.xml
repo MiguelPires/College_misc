@@ -18,19 +18,26 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
         tools:replace="android:theme">
-        <activity android:name=".Login">
+        <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.Login">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Register" />
-        <activity android:name=".Home" />
-        <activity android:name=".Contacts" />
+        <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.Register" />
+        <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.Home" />
+        <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.Contacts" />
         <activity
-            android:name=".Maps"
+            android:name="pt.ulisboa.tecnico.grupo11.ubibike.Maps"
             android:label="@string/title_activity_maps" />
+        <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.Tab" />
+
+        <service android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService" />
+
+        <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.Info" />
+        <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.TrajectoryDetails" />
+        <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.Stations" />
 
         <uses-library android:name="com.google.android.maps" />
 
@@ -38,12 +45,5 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCGrE_Y0w4gtJ5tm0iKrSVRwb7dW-O76H4" />
 
-        <activity android:name=".Tab" />
-
-        <service android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService" />
-
-        <activity android:name=".Info" />
-        <activity android:name=".TrajectoryDetails"></activity>
     </application>
-
 </manifest>

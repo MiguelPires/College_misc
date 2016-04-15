@@ -1,15 +1,22 @@
 package pt.ulisboa.tecnico.grupo11.ubibike;
 
+import android.Manifest;
+import android.accounts.NetworkErrorException;
 import android.app.TabActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Messenger;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.TabHost;
 import android.widget.Toast;
@@ -19,35 +26,49 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.InputMismatchException;
 import java.util.List;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
-public class Tab extends TabActivity {
+import static java.util.Arrays.asList;
+
+public class Tab extends TabActivity implements LocationListener {
+    public static final int ACCEPTED = 1;
+
+    // state information
+    public static List<List<String>> trajectories = new ArrayList<>();
+    public static String numberOfPoints;
+    public static String username;
+    public static Hashtable<String, Integer> stations = new Hashtable<>();
 
     private WifiDirectReceiver mReceiver;
     private Messenger mService = null;
-    public static List<List<String>> listOfTrajectories = new ArrayList<>();
-    public static String numberOfPoints;
-    public static String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_tab);
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    ACCEPTED);
+        }
 
         TabHost mTabHost = getTabHost();
 
         mTabHost.addTab(mTabHost.newTabSpec("contacts").setIndicator("Contacts").setContent(new Intent(this, Contacts.class)));
         mTabHost.addTab(mTabHost.newTabSpec("home").setIndicator("Home").setContent(new Intent(this, Home.class)));
         mTabHost.addTab(mTabHost.newTabSpec("info").setIndicator("Info").setContent(new Intent(this, Info.class)));
+        mTabHost.addTab(mTabHost.newTabSpec("stations").setIndicator("Stations").setContent(new Intent(this, Stations.class)));
         mTabHost.setCurrentTab(1);
         // initialize the WDSim API
+
         SimWifiP2pSocketManager.Init(getApplicationContext());
         new Thread(new Runnable() {
             public void run() {
@@ -65,6 +86,42 @@ public class Tab extends TabActivity {
         registerReceiver(mReceiver, filter);
         Intent intent = new Intent(this, SimWifiP2pService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case ACCEPTED: {
+                if (ActivityCompat.checkSelfPermission(this, permissions[0]) == PackageManager.PERMISSION_GRANTED &&
+                        ActivityCompat.checkSelfPermission(this, permissions[1]) == PackageManager.PERMISSION_GRANTED) {
+                    LocationManager lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    lManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 1, this);
+                }
+                return;
+            }
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        Toast.makeText(this, "LOCATION CHANGED",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
     }
 
     @Override
@@ -87,12 +144,12 @@ public class Tab extends TabActivity {
         }
     };
 
-    private void fetchInfo (String username) {
-        final String url = Login.serverUrl + "/users/" + username + "/";
+    private void fetchInfo(String username) {
+        final String baseUrl = Login.serverUrl + "/users/" + username + "/";
 
         try {
-            URL usersUrl = new URL(url + "points");
-            HttpURLConnection httpConnection = (HttpURLConnection) usersUrl.openConnection();
+            URL url = new URL(baseUrl + "points");
+            HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
             httpConnection.setInstanceFollowRedirects(false);
             httpConnection.setRequestMethod("GET");
             int responseCode = httpConnection.getResponseCode();
@@ -104,9 +161,7 @@ public class Tab extends TabActivity {
                 inputStream.close();
                 int points = (int) buffer[0];
                 numberOfPoints = new String(String.valueOf(points));
-            }
-
-            else {
+            } else {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -115,8 +170,8 @@ public class Tab extends TabActivity {
                 });
             }
 
-            usersUrl = new URL(url + "paths");
-            httpConnection = (HttpURLConnection) usersUrl.openConnection();
+            url = new URL(baseUrl + "paths");
+            httpConnection = (HttpURLConnection) url.openConnection();
             httpConnection.setInstanceFollowRedirects(false);
             httpConnection.setRequestMethod("GET");
             responseCode = httpConnection.getResponseCode();
@@ -131,12 +186,44 @@ public class Tab extends TabActivity {
                 for (String path : paths) {
                     String[] coordinates = path.split(";");
                     List<String> coordsList = new ArrayList<String>();
-                    coordsList.addAll(Arrays.asList(coordinates));
-                    listOfTrajectories.add(coordsList);
+                    coordsList.addAll(asList(coordinates));
+                    trajectories.add(coordsList);
                 }
+            } else {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(Tab.this, "Server internal error.", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
 
-            else {
+            url = new URL(Login.serverUrl + "/stations");
+            httpConnection = (HttpURLConnection) url.openConnection();
+            httpConnection.setInstanceFollowRedirects(false);
+            httpConnection.setRequestMethod("GET");
+            responseCode = httpConnection.getResponseCode();
+
+            try {
+                if (responseCode == 200) {
+                    InputStream inputStream = httpConnection.getInputStream();
+                    byte[] buffer = new byte[httpConnection.getContentLength()];
+                    inputStream.read(buffer);
+                    inputStream.close();
+                    String concatenatedStations = new String(buffer, "UTF-8");
+                    String[] stationsInfo = concatenatedStations.split(";");
+                    for (String stationInfo : stationsInfo) {
+                        String[] infoParts = stationInfo.split(":");
+
+                        if (infoParts.length != 2)
+                            throw new InputMismatchException();
+
+                        stations.put(infoParts[0], Integer.parseInt(infoParts[1]));
+                    }
+                } else {
+                    throw new NetworkErrorException();
+                }
+            } catch (Exception e) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

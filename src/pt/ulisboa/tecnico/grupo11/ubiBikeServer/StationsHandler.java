@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.grupo11.ubiBikeServer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.util.Hashtable;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -49,12 +50,13 @@ public class StationsHandler implements HttpHandler {
 
                 OutputStream outStream = exchange.getResponseBody();
                 outStream.write(byteValue);
-                outStream.close();
             }
 
         } catch (IOException e) {
             exchange.sendResponseHeaders(400, 0);
+        } finally {
             exchange.close();
+
         }
     }
 
@@ -75,14 +77,21 @@ public class StationsHandler implements HttpHandler {
 
                 String stationData = new String(data, "UTF-8");
                 String[] updateParts = stationData.split(":");
-                stations.put(updateParts[0].trim(), Integer.parseInt(updateParts[1].trim()));
+
+                int numBikes = stations.get(updateParts[0].trim());
+                if (updateParts[1].equals("-") && numBikes > 0)
+                    stations.put(updateParts[0].trim(), --numBikes);
+                else if (updateParts[1].equals("+"))
+                    stations.put(updateParts[0].trim(), ++numBikes);
+                else
+                    throw new MalformedURLException();
 
                 exchange.sendResponseHeaders(200, 0);
-                exchange.close();
             }
 
         } catch (IOException e) {
             exchange.sendResponseHeaders(400, 0);
+        } finally {
             exchange.close();
         }
     }

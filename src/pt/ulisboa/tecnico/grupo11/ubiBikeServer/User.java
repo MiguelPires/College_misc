@@ -16,7 +16,7 @@ public class User {
          */
 
         this.passwordHash = passwordHash;
-        this.points = 0;
+        this.points = 51;
         this.paths = new ArrayList<String>();
         // default path, for testing
         paths.add("38.74924838,-9.20676827;38.76019789,-9.18283225");

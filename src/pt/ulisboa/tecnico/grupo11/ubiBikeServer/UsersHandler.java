@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -14,12 +17,13 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 public class UsersHandler implements HttpHandler {
-    private static final int MAX_DIGEST_SIZE = 1024;
     private Hashtable<String, User> users;
 
-    public UsersHandler() throws UnsupportedEncodingException, InvalidArgumentsException {
+    public UsersHandler() throws UnsupportedEncodingException, InvalidArgumentsException, NoSuchAlgorithmException {
         users = new Hashtable<String, User>();
-        User user = new User("randomtext".getBytes("UTF-8"));
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update("random".getBytes(Charset.forName("UTF-8")));
+        User user = new User(md.digest());
         users.put("miguel", user);
     }
 
@@ -136,10 +140,10 @@ public class UsersHandler implements HttpHandler {
 
                 if (users.containsKey(username)) {
                     InputStream inputStream = exchange.getRequestBody();
-                    byte[] buffer = new byte[MAX_DIGEST_SIZE];
+                    byte[] buffer = new byte[Server.MAX_PUT_SIZE];
                     int offset = 0;
-                    while (offset < MAX_DIGEST_SIZE) {
-                        int bytesRead = inputStream.read(buffer, offset, MAX_DIGEST_SIZE - offset);
+                    while (offset < Server.MAX_PUT_SIZE) {
+                        int bytesRead = inputStream.read(buffer, offset, Server.MAX_PUT_SIZE - offset);
                         if (bytesRead == -1)
                             break;
                         offset += bytesRead;
@@ -177,10 +181,10 @@ public class UsersHandler implements HttpHandler {
                 } else {
                     try {
                         InputStream inputStream = exchange.getRequestBody();
-                        byte[] buffer = new byte[MAX_DIGEST_SIZE];
+                        byte[] buffer = new byte[Server.MAX_PUT_SIZE];
                         int offset = 0;
-                        while (offset < MAX_DIGEST_SIZE) {
-                            int bytesRead = inputStream.read(buffer, offset, MAX_DIGEST_SIZE - offset);
+                        while (offset < Server.MAX_PUT_SIZE) {
+                            int bytesRead = inputStream.read(buffer, offset, Server.MAX_PUT_SIZE - offset);
                             if (bytesRead == -1)
                                 break;
                             offset += bytesRead;

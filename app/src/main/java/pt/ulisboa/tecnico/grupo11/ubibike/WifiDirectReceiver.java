@@ -23,16 +23,12 @@ public class WifiDirectReceiver extends BroadcastReceiver {
 
     public WifiDirectReceiver(Tab activity) {
         super();
+        Log.d("WiFi Direct", "Receiver created");
         this.mActivity = activity;
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (receiver == null) {
-            receiver = new MessageReceiver(context);
-            receiver.executeOnExecutor(
-                    AsyncTask.THREAD_POOL_EXECUTOR);
-        }
 
         String action = intent.getAction();
         if (SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
@@ -93,7 +89,7 @@ public class WifiDirectReceiver extends BroadcastReceiver {
             try {
                 mSrvSocket = new SimWifiP2pSocketServer(Integer.parseInt(context.getString(R.string.port)));
             } catch (IOException e) {
-                Log.d("WiFi Direct", "Error - "+e.getMessage());
+                Log.d("WiFi Direct", "Error - " + e.getMessage());
                 e.printStackTrace();
             }
 
@@ -127,21 +123,20 @@ public class WifiDirectReceiver extends BroadcastReceiver {
 
             String messageType = values[0].substring(0, 2);
             String message = values[0].substring(2);
-            String sender =message.substring(message.indexOf("#")+1, message.lastIndexOf("#"));
-            message = message.substring(message.lastIndexOf("#")+1);
+            String sender = message.substring(message.indexOf("#") + 1, message.lastIndexOf("#"));
+            message = message.substring(message.lastIndexOf("#") + 1);
 
             switch (messageType) {
                 case "#M":
-                    Toast.makeText(mActivity, "Received message '" + message+"' from "+sender,
+                    Toast.makeText(mActivity, "Received message '" + message + "' from " + sender,
                             Toast.LENGTH_LONG).show();
                     break;
 
                 case "#P":
-                    Toast.makeText(mActivity, "Received "+message+" points from "+sender,
+                    Toast.makeText(mActivity, "Received " + message + " points from " + sender,
                             Toast.LENGTH_LONG).show();
                     break;
             }
-
         }
     }
 }

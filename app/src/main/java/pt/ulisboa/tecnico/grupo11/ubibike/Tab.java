@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.grupo11.ubibike;
 
-import android.Manifest;
 import android.accounts.NetworkErrorException;
 import android.app.TabActivity;
 import android.content.ComponentName;
@@ -8,15 +7,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.location.LocationListener;
+
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.TabHost;
 import android.widget.Toast;
@@ -26,6 +25,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.InputMismatchException;
 import java.util.List;
@@ -34,12 +34,9 @@ import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 
-import static java.util.Arrays.asList;
-
 public class Tab extends TabActivity implements LocationListener {
     public static final int ACCEPTED = 1;
 
-    // state information
     public static List<List<String>> trajectories = new ArrayList<>();
     public static String numberOfPoints;
     public static String username;
@@ -52,13 +49,6 @@ public class Tab extends TabActivity implements LocationListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_tab);
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_CONTACTS)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_CONTACTS},
-                    ACCEPTED);
-        }
 
         TabHost mTabHost = getTabHost();
 
@@ -68,7 +58,6 @@ public class Tab extends TabActivity implements LocationListener {
         mTabHost.addTab(mTabHost.newTabSpec("stations").setIndicator("Stations").setContent(new Intent(this, Stations.class)));
         mTabHost.setCurrentTab(1);
         // initialize the WDSim API
-
         SimWifiP2pSocketManager.Init(getApplicationContext());
         new Thread(new Runnable() {
             public void run() {
@@ -82,15 +71,36 @@ public class Tab extends TabActivity implements LocationListener {
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
-
-        if (mReceiver == null) {
-            mReceiver = new WifiDirectReceiver(this);
-            registerReceiver(mReceiver, filter);
-        }
-
+        mReceiver = new WifiDirectReceiver(this);
+        registerReceiver(mReceiver, filter);
         Intent intent = new Intent(this, SimWifiP2pService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        try {
+            unregisterReceiver(mReceiver);
+        } catch (IllegalArgumentException e) {
+            ;
+        }
+    }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        // callbacks for service binding, passed to bindService()
+
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mService = new Messenger(service);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mService = null;
+        }
+    };
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -124,30 +134,6 @@ public class Tab extends TabActivity implements LocationListener {
     @Override
     public void onProviderDisabled(String provider) {
     }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        try {
-            unregisterReceiver(mReceiver);
-        } catch (IllegalArgumentException e) {
-            Log.e("UNREGISTER", "exception", e);
-        }
-    }
-
-    private ServiceConnection mConnection = new ServiceConnection() {
-        // callbacks for service binding, passed to bindService()
-
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            mService = new Messenger(service);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mService = null;
-        }
-    };
 
     private void fetchInfo(String username) {
         final String baseUrl = Login.serverUrl + "/users/" + username + "/";
@@ -191,7 +177,7 @@ public class Tab extends TabActivity implements LocationListener {
                 for (String path : paths) {
                     String[] coordinates = path.split(";");
                     List<String> coordsList = new ArrayList<String>();
-                    coordsList.addAll(asList(coordinates));
+                    coordsList.addAll(Arrays.asList(coordinates));
                     trajectories.add(coordsList);
                 }
             } else {

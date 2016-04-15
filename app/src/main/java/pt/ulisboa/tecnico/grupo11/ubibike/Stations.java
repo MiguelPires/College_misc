@@ -80,7 +80,7 @@ public class Stations extends AppCompatActivity {
                                             createUserConn.setDoOutput(true);
                                             createUserConn.setRequestMethod("PUT");
 
-                                            byte[] updatedData =  (coord + ":" + newBikeAmount).getBytes("UTF-8");
+                                            byte[] updatedData =  (coord + ":-").getBytes("UTF-8");
                                             DataOutputStream wr = new DataOutputStream(createUserConn.getOutputStream());
                                             wr.write(updatedData);
                                             wr.close();
@@ -94,9 +94,6 @@ public class Stations extends AppCompatActivity {
                                             Log.e("UPDATE_STATIONS", "IOException", e);
                                         }
                                     }
-
-
-
                                 }
                             }).start();
 

@@ -82,8 +82,12 @@ public class Tab extends TabActivity implements LocationListener {
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
-        mReceiver = new WifiDirectReceiver(this);
-        registerReceiver(mReceiver, filter);
+
+        if (mReceiver == null) {
+            mReceiver = new WifiDirectReceiver(this);
+            registerReceiver(mReceiver, filter);
+        }
+
         Intent intent = new Intent(this, SimWifiP2pService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
@@ -111,23 +115,24 @@ public class Tab extends TabActivity implements LocationListener {
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-
     }
 
     @Override
     public void onProviderEnabled(String provider) {
-
     }
 
     @Override
     public void onProviderDisabled(String provider) {
-
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        unregisterReceiver(mReceiver);
+        try {
+            unregisterReceiver(mReceiver);
+        } catch (IllegalArgumentException e) {
+            Log.e("UNREGISTER", "exception", e);
+        }
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {

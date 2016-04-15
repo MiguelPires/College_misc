@@ -170,7 +170,7 @@ public class Login extends AppCompatActivity {
 
     // NOTE: for testing purposes only!
     public void override (View view) {
-        Tab.username = "someUser";
+        Tab.username = "miguel";
         Intent intent = new Intent(Login.this, Tab.class);
         startActivity(intent);
     }

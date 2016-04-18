@@ -17,11 +17,13 @@ public class PublicBlockAttackSingleFault {
         String servicePort = args[0];
         String serviceName = args[1];
         String serviceUrl = args[2];
-        String numFaults = args[2];
+        String numFaults = args[3];
 
         BlockLibraryImpl library = null;
         try {
             library = new BlockLibraryImpl(serviceName, servicePort, serviceUrl, numFaults);
+            // the cache needs to be disabled, otherwise the error is masked since the public key block isn't read twice
+            library.ENABLE_CACHE = false;
             library.FS_init();
         } catch (InitializationFailureException e) {
             System.out.println("Error - " + e.getMessage());
@@ -67,6 +69,5 @@ public class PublicBlockAttackSingleFault {
         } catch (DataIntegrityFailureException e) {
             System.out.println("Couldn't read data. " + e.getMessage());
         }
-
     }
 }

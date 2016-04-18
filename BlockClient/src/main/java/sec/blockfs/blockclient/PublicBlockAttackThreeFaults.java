@@ -2,6 +2,7 @@ package sec.blockfs.blockclient;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.Arrays;
 
@@ -21,6 +22,8 @@ public class PublicBlockAttackThreeFaults {
         BlockLibraryImpl library = null;
         try {
             library = new BlockLibraryImpl(serviceName, servicePort, serviceUrl, numFaults);
+            // the cache needs to be disabled, otherwise the error is masked since the public key block isn't read twice
+            library.ENABLE_CACHE = false;
             library.FS_init();
         } catch (InitializationFailureException e) {
             System.out.println("Error - " + e.getMessage());
@@ -34,7 +37,18 @@ public class PublicBlockAttackThreeFaults {
         // get public key blocks
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(library.publicKey.getEncoded()));
         String filePath = FileSystemImpl.BASE_PATH + "-0" + File.separatorChar + fileName;
-        FileInputStream stream = new FileInputStream(filePath);
+        FileInputStream stream;
+
+        // this might fail because the server thread didn't write yet
+        // it's not an error, the tests need to change the file to simulate an attack
+        // waiting a second will probably give enough time to the thread to complete
+        try {
+            stream = new FileInputStream(filePath);
+        } catch (FileNotFoundException e) {
+            Thread.sleep(1000);
+            stream = new FileInputStream(filePath);
+        }
+        
         byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
         stream.read(publicKeyBlock, 0, publicKeyBlock.length);
         stream.close();

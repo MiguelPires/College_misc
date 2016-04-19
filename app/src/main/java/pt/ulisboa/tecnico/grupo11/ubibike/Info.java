@@ -1,45 +1,59 @@
 package pt.ulisboa.tecnico.grupo11.ubibike;
 
-import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.support.v7.app.AppCompatActivity;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Info extends AppCompatActivity {
-
-    private List<String> trajectoriesTextList = new ArrayList<>();
+public class Info extends AppCompatActivity implements OnMapReadyCallback {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
 
-        ListView listView = (ListView) findViewById(R.id.trajectorieslv);
-        TextView pointsTextView = (TextView) findViewById(R.id.numberOfPointstv);
-        pointsTextView.setText(Tab.numberOfPoints);
-        trajectoriesTextList.clear();
+        SupportMapFragment mapFrag = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.trajectoryMap);
+        mapFrag.getMapAsync(this);
+    }
 
-        for(int x = 0; x < Tab.trajectories.size(); x++)
-        {
-            trajectoriesTextList.add("Trajectory " + (x+1));
-        }
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, trajectoriesTextList );
-        listView.setAdapter(arrayAdapter);
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        boolean setCamera = false;
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent newActivity = new Intent(Info.this, TrajectoryDetails.class);
-                newActivity.putExtra("selectedIndex",position);
-                startActivity(newActivity);
+        for (List<String> trajectory : Tab.trajectories) {
+            int pointNumber = 1;
+            List<LatLng> points = new ArrayList<LatLng>();
+
+            for (String coordinates : trajectory) {
+                String[] coordSplited = coordinates.split(",");
+                LatLng position = new LatLng(Double.parseDouble(coordSplited[0]), Double.parseDouble(coordSplited[1]));
+                googleMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .title("Point number " + pointNumber++));
+
+                points.add(position);
+                if (!setCamera) {
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 10.0f));
+                    setCamera = true;
+                }
             }
-        });
+            PolylineOptions lineOptions = new PolylineOptions();
+            lineOptions.addAll(points);
+
+            lineOptions.width(6);
+            lineOptions.color(Color.RED);
+            googleMap.addPolyline(lineOptions);
+        }
     }
 }

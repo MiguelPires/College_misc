@@ -1,12 +1,8 @@
 package pt.ulisboa.tecnico.grupo11.ubibike;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.support.v7.app.AppCompatActivity;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -36,7 +32,6 @@ public class TrajectoryDetails extends AppCompatActivity implements OnMapReadyCa
                     .findFragmentById(R.id.trajectoryMap);
             mapFrag.getMapAsync(this);
         }
-
     }
 
     @Override

@@ -132,18 +132,19 @@ public class Stations extends AppCompatActivity implements OnMapReadyCallback {
     @Override
     public void onMapReady(final GoogleMap map) {
         int id = 1;
+        boolean setCamera = false;
+
         for (String stationCoord : Tab.stations.keySet()) {
             String[] stationCoordSplited = stationCoord.split(",");
+            LatLng position = new LatLng(Double.parseDouble(stationCoordSplited[0]), Double.parseDouble(stationCoordSplited[1]));
+
             map.addMarker(new MarkerOptions()
-                    .position(new LatLng(Double.parseDouble(stationCoordSplited[0]), Double.parseDouble(stationCoordSplited[1])))
-                    .title("Station " + id ));
-            id++;
-        }
-        if (Tab.stations.size() >  0) {
-            for (String stationCoord : Tab.stations.keySet()) {
-                String[] stationCoordSplited = stationCoord.split(",");
-                LatLng defaultLocation = new LatLng(Double.parseDouble(stationCoordSplited[0]), Double.parseDouble(stationCoordSplited[1]));
-                map.moveCamera(CameraUpdateFactory.newLatLng(defaultLocation));
+                    .position(position)
+                    .title("Station " + id++ ));
+
+            if (!setCamera) {
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 10.0f));
+                setCamera = true;
             }
         }
     }

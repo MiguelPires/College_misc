@@ -11,6 +11,13 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -20,12 +27,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Stations extends AppCompatActivity {
+public class Stations extends AppCompatActivity implements OnMapReadyCallback {
     private SimpleAdapter adapter;
     // the data used in the list
     List<Map<String, String>> data = new ArrayList<Map<String, String>>();
     // the list of coordinates
     private List<String> stationsList = new ArrayList<>();
+    MapFragment mapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +42,8 @@ public class Stations extends AppCompatActivity {
 
         ListView listView = (ListView) findViewById(R.id.listViewStations);
         stationsList.clear();
+        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.stationsMap);
+        mapFragment.getMapAsync(this);
 
         int id = 1;
         for (String stationCoord : Tab.stations.keySet()) {
@@ -117,5 +127,24 @@ public class Stations extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    @Override
+    public void onMapReady(final GoogleMap map) {
+        int id = 1;
+        for (String stationCoord : Tab.stations.keySet()) {
+            String[] stationCoordSplited = stationCoord.split(",");
+            map.addMarker(new MarkerOptions()
+                    .position(new LatLng(Double.parseDouble(stationCoordSplited[0]), Double.parseDouble(stationCoordSplited[1])))
+                    .title("Station " + id ));
+            id++;
+        }
+        if (Tab.stations.size() >  0) {
+            for (String stationCoord : Tab.stations.keySet()) {
+                String[] stationCoordSplited = stationCoord.split(",");
+                LatLng defaultLocation = new LatLng(Double.parseDouble(stationCoordSplited[0]), Double.parseDouble(stationCoordSplited[1]));
+                map.moveCamera(CameraUpdateFactory.newLatLng(defaultLocation));
+            }
+        }
     }
 }

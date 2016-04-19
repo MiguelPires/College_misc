@@ -18,7 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class Login extends AppCompatActivity {
-    static final String serverUrl = "http://52.19.77.148:8000";
+    static final String serverUrl = "http://192.168.1.7:8000";
 
     private EditText usernameLogin;
     private EditText passwordLogin;

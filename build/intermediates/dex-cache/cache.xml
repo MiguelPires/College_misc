@@ -180,7 +180,7 @@
         jar="C:\Users\Miguel\Documents\Work\Android\UbiBike\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
         jumboMode="true"
         revision="23.0.2"
-        sha1="56187f178dbc60aa935e14e6aab704607a103475">
+        sha1="d85f464dfa38de62bd8589de43ecaf8721582272">
         <dex dex="C:\Users\Miguel\Documents\Work\Android\UbiBike\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run_e584e65d91a9ae2e7556a505bdf40d39c174bf37\classes.dex" />
     </item>
     <item
@@ -236,7 +236,7 @@
         jar="C:\Users\Miguel\Documents\Work\Android\UbiBike\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
         jumboMode="true"
         revision="23.0.2"
-        sha1="2acc0fb14832ad4444026e27c0819ec7372afa69">
+        sha1="f2b0b68fd7167e8c4da0ff70eefca78aad47c8b5">
         <dex dex="C:\Users\Miguel\Documents\Work\Android\UbiBike\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run-bootstrap_91deaed8ce3572f49a933f0aaf457ee9a7f31f26\classes.dex" />
     </item>
     <item

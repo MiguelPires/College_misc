@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.grupo11.ubibike;
 
+import android.Manifest;
 import android.accounts.NetworkErrorException;
 import android.app.TabActivity;
 import android.content.ComponentName;
@@ -75,6 +76,10 @@ public class Tab extends TabActivity implements LocationListener {
         registerReceiver(mReceiver, filter);
         Intent intent = new Intent(this, SimWifiP2pService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                ACCEPTED);
     }
 
     @Override
@@ -107,10 +112,11 @@ public class Tab extends TabActivity implements LocationListener {
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
             case ACCEPTED: {
-                if (ActivityCompat.checkSelfPermission(this, permissions[0]) == PackageManager.PERMISSION_GRANTED &&
-                        ActivityCompat.checkSelfPermission(this, permissions[1]) == PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(this, permissions[0]) == PackageManager.PERMISSION_GRANTED/* &&
+                        ActivityCompat.checkSelfPermission(this, permissions[1]) == PackageManager.PERMISSION_GRANTED*/) {
+                    Log.d("LOCATION", "Requesting location");
                     LocationManager lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                    lManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 1, this);
+                    lManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 1, this);
                 }
                 return;
             }
@@ -129,6 +135,7 @@ public class Tab extends TabActivity implements LocationListener {
 
     @Override
     public void onProviderEnabled(String provider) {
+        Toast.makeText(getBaseContext(), "GPS turned on", Toast.LENGTH_SHORT).show();
     }
 
     @Override

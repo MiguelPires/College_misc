@@ -37,9 +37,6 @@
         <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.Register" />
         <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.Home" />
         <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.Contacts" />
-        <activity
-            android:name="pt.ulisboa.tecnico.grupo11.ubibike.Maps"
-            android:label="@string/title_activity_maps" />
         <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.Tab" />
 
         <service android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService" />

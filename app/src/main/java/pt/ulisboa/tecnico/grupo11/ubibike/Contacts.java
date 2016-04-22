@@ -234,7 +234,24 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
         protected Void doInBackground(String... msg) {
             try {
                 Log.d("WiFi Direct", "Sending message to '" + currentUser + "'");
-                mCliSocket.getOutputStream().write((msg[0] + "\n").getBytes());
+
+                // non-signed message
+                byte[] byteMessage = (msg[0] + "\n").getBytes();
+                byte[] sendData = new byte[1 + byteMessage.length];
+                sendData[0] = (byte) byteMessage.length;
+                System.arraycopy(byteMessage, 0, sendData, 1, byteMessage.length);
+
+                // sign message
+                Home.signAlgorithm.initSign(Home.privateKey);
+                Home.signAlgorithm.update(sendData, 0, sendData.length);
+                byte[] signature = Home.signAlgorithm.sign();
+
+                // build entire message
+                byte[] data = new byte[sendData.length + signature.length];
+                System.arraycopy(sendData, 0, data, 0, sendData.length);
+                System.arraycopy(signature, 0, data, sendData.length, signature.length);
+
+                mCliSocket.getOutputStream().write(data);
                 BufferedReader sockIn = new BufferedReader(
                         new InputStreamReader(mCliSocket.getInputStream()));
                 sockIn.readLine();

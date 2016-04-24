@@ -101,19 +101,23 @@ public class UsersHandler implements HttpHandler {
                 if (users.containsKey(username)) {
                     User user = users.get(username);
                     List<String> bikePaths = user.getPaths();
-                    OutputStream outStream = exchange.getResponseBody();
 
-                    String everyPath = String.join("#", bikePaths);
-                    exchange.sendResponseHeaders(200, everyPath.getBytes("UTF-8").length);
-                    outStream.write(everyPath.getBytes("UTF-8"));
-                    outStream.close();
+                    if (bikePaths != null && !bikePaths.isEmpty()) {
+                    	OutputStream outStream = exchange.getResponseBody();
+
+                    	String everyPath = String.join("#", bikePaths);
+                    	exchange.sendResponseHeaders(200, everyPath.getBytes("UTF-8").length);
+                    	outStream.write(everyPath.getBytes("UTF-8"));
+                    	outStream.close();
+                    } else {
+                    	exchange.sendResponseHeaders(404, 0);
+                    }
                 } else {
                     exchange.sendResponseHeaders(404, 0);
                 }
                 exchange.close();
             } else if (path.contains("/users/") && path.endsWith("/key")) {
                 String username = exchange.getRequestURI().toString().replace("/users/", "").replace("/key", "");
-                System.out.println("Username: " + username);
 
                 if (users.containsKey(username)) {
                     User user = users.get(username);

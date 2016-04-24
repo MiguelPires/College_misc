@@ -7,7 +7,8 @@ public class User {
     private byte[] passwordHash;
     private int points;
     private List<String> paths;
-
+    private byte[] publicKeyBytes;
+    
     public User(byte[] passwordHash) throws InvalidArgumentsException {
         /*
          * if (username.length() < 5 || username == null) throw new InvalidArgumentsException("Invalid username '" + username +
@@ -16,11 +17,9 @@ public class User {
          */
 
         this.passwordHash = passwordHash;
-        this.points = 51;
+        this.points = 0;
         this.paths = new ArrayList<String>();
-        // default path, for testing
-        paths.add("38.74924838,-9.20676827;38.76019789,-9.18283225");
-        paths.add("27.74924838,-8.20676827;27.76019789,-8.18283225");
+
     }
 
     public void addPoints(int newPoints) throws InvalidArgumentsException {
@@ -55,5 +54,13 @@ public class User {
 
     public List<String> getPaths() {
         return paths;
+    }
+    
+    public void setKey(byte[] publicKey) {
+        this.publicKeyBytes = publicKey;
+    }
+    
+    public byte[] getKey() {
+        return publicKeyBytes;
     }
 }

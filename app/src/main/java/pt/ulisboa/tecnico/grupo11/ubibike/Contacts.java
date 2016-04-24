@@ -25,12 +25,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -126,13 +126,18 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
                                 Editable value = edit.getText();
                                 try {
                                     int points = Integer.parseInt(value.toString());
-                                    if (points <= 0 /*|| points > Tab.userPoints*/) {
+                                    if (points <= 0 || points > Tab.userPoints) {
                                         Toast.makeText(Contacts.this, "You can't send that amount of points", Toast.LENGTH_SHORT).show();
                                         return;
                                     }
+
                                     message = "#P#" + Tab.username + "#" + points;
                                     currentUser = listAdapter.getItem(info.position);
                                     mManager.requestGroupInfo(mChannel, Contacts.this);
+
+                                    Tab.userPoints -= points;
+                                    Tab.updatePoints = true;
+
                                     dialog.dismiss();
                                     progressDialog.show();
                                 } catch (NumberFormatException e) {
@@ -244,7 +249,6 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
                     byte[] sendData = new byte[1 + byteMessage.length];
                     sendData[0] = (byte) byteMessage.length;
                     System.arraycopy(byteMessage, 0, sendData, 1, byteMessage.length);
-                    System.out.println("Message size is " + byteMessage.length);
 
                     // sign message
                     Home.signAlgorithm.initSign(Home.privateKey);
@@ -257,7 +261,6 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
                     System.arraycopy(signature, 0, data, sendData.length, signature.length);
 
                     data = (Base64.encodeToString(data, Base64.DEFAULT) + "\n").getBytes();
-                    System.out.println("Full message size is: " + data.length);
                 } else if (msg[0].startsWith("#M")){
                     data = ("1"+msg[0]+"\n").getBytes();
                 } else {

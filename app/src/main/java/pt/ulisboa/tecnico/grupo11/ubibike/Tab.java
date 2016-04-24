@@ -36,8 +36,10 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 public class Tab extends TabActivity implements LocationListener {
     public static final int ACCEPTED = 1;
 
+    // user data
     public static List<List<String>> trajectories = new ArrayList<>();
     public static int userPoints = 0;
+    public static boolean updatePoints = true;
     public static String username;
     public static Hashtable<String, Integer> stations = new Hashtable<>();
 
@@ -70,12 +72,18 @@ public class Tab extends TabActivity implements LocationListener {
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
-        mReceiver = new WifiDirectReceiver(this);
-        registerReceiver(mReceiver, filter);
         Intent intent = new Intent(this, SimWifiP2pService.class);
 
         try {
-            bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+            unbindService(mConnection);
+        } catch (IllegalArgumentException e) {
+            ;
+        }
+        mReceiver = new WifiDirectReceiver(this);
+        registerReceiver(mReceiver, filter);
+
+        try {
+            bindService(intent, mConnection, Context.MODE_MULTI_PROCESS);
         } catch (Exception e) {
             Log.d("WiFi Direct", e.getMessage(), e);
             Toast.makeText(this, "Initialization error",
@@ -104,6 +112,7 @@ public class Tab extends TabActivity implements LocationListener {
     public void onPause() {
         super.onPause();
         try {
+            unbindService(mConnection);
             unregisterReceiver(mReceiver);
         } catch (IllegalArgumentException e) {
             ;
@@ -114,6 +123,7 @@ public class Tab extends TabActivity implements LocationListener {
     public void onDestroy() {
         super.onDestroy();
         try {
+            unbindService(mConnection);
             unregisterReceiver(mReceiver);
         } catch (IllegalArgumentException e) {
             ;
@@ -214,6 +224,8 @@ public class Tab extends TabActivity implements LocationListener {
                     coordsList.addAll(Arrays.asList(coordinates));
                     trajectories.add(coordsList);
                 }
+            } else if (responseCode == 404) {
+                ;
             } else {
                 runOnUiThread(new Runnable() {
                     @Override
@@ -221,6 +233,12 @@ public class Tab extends TabActivity implements LocationListener {
                         Toast.makeText(Tab.this, "Server internal error.", Toast.LENGTH_SHORT).show();
                     }
                 });
+            }
+
+            for (List<String> trajectory : trajectories) {
+                for (String point : trajectory) {
+                    Log.d("TAB", point);
+                }
             }
 
             url = new URL(Login.serverUrl + "/stations");

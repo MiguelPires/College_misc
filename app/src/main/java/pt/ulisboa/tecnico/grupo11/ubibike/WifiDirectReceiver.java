@@ -37,6 +37,11 @@ public class WifiDirectReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (receiver == null) {
+            receiver = new MessageReceiver(context);
+            receiver.executeOnExecutor(
+                    AsyncTask.THREAD_POOL_EXECUTOR);
+        }
 
         String action = intent.getAction();
         if (SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
@@ -135,7 +140,7 @@ public class WifiDirectReceiver extends BroadcastReceiver {
             try {
                 String message = values[0];
                 if (message.startsWith("#M", 1)) {
-                    final String sender = message.substring(message.indexOf("#",3) + 1, message.lastIndexOf("#"));
+                    final String sender = message.substring(message.indexOf("#", 3) + 1, message.lastIndexOf("#"));
                     final String parseMessage = message.substring(message.lastIndexOf("#") + 1);
                     Toast.makeText(mActivity, "Received message '" + parseMessage + "' from " + sender,
                             Toast.LENGTH_LONG).show();
@@ -153,15 +158,29 @@ public class WifiDirectReceiver extends BroadcastReceiver {
                             String parsedMessage = parseSignedMessage(originalMessage, sender);
                             if (parsedMessage != null) {
                                 String message = parsedMessage.substring(2);
-                                final String parseMessage = message.substring(message.lastIndexOf("#") + 1);
+                                final String stringPoints = message.substring(message.lastIndexOf("#") + 1);
 
-                                mActivity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(mActivity, "Received " + parseMessage + " points from " + sender,
-                                                Toast.LENGTH_LONG).show();
-                                    }
-                                });
+                                int receivedPoints = Integer.parseInt(stringPoints);
+                                Tab.userPoints += receivedPoints;
+                                Tab.updatePoints = true;
+                                if (receivedPoints == 1) {
+                                    mActivity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(mActivity, "Received " + stringPoints + " point from " + sender,
+                                                    Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                } else {
+                                    mActivity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(mActivity, "Received " + stringPoints + " points from " + sender,
+                                                    Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                }
+
                             } else {
                                 mActivity.runOnUiThread(new Runnable() {
                                     @Override
@@ -212,9 +231,8 @@ public class WifiDirectReceiver extends BroadcastReceiver {
                     byte[] msg = new byte[messageLength];
                     System.arraycopy(messageAndSize, 1, msg, 0, messageLength);
                     return new String(msg, "UTF-8");
-                } else
-                {
-                    Log.d("Crypto", "Couldn't obtain "+sender+"'s public key");
+                } else {
+                    Log.d("Crypto", "Couldn't obtain " + sender + "'s public key");
                     return null;
                 }
             } catch (Exception e) {

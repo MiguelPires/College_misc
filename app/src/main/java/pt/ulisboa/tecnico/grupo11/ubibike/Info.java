@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.grupo11.ubibike;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,6 +25,17 @@ public class Info extends AppCompatActivity implements OnMapReadyCallback {
 
         SupportMapFragment mapFrag = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.trajectoryMap);
+        mapFrag.getMapAsync(this);
+    }
+
+    @Override
+    protected synchronized void onResume() {
+        super.onResume();
+        if (Tab.updatePoints) {
+            TextView userPoints = (TextView) findViewById(R.id.numberOfPointstv);
+            userPoints.setText(Integer.toString(Tab.userPoints));
+            Tab.updatePoints = false;
+        }
     }
 
     @Override

@@ -1,32 +1,38 @@
 package pt.ulisboa.tecnico.grupo11.ubibike;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Messenger;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.DataOutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Signature;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
-public class Home extends AppCompatActivity/* implements LocationListener */{
+
+public class Home extends AppCompatActivity {
 
     TextView statusTxt;
-    private final int ACCEPTED = 1;
+
+    // crypto data
     private final int KEY_SIZE = 2048;
-    public static final int SIGNATURE_SIZE = 256;
 
     static PublicKey publicKey;
     static PrivateKey privateKey;
@@ -51,9 +57,45 @@ public class Home extends AppCompatActivity/* implements LocationListener */{
         relativeLayout.addView(circleView);
         statusTxt.bringToFront();
 
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                PackageManager.PERMISSION_GRANTED);
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    // instantiate key generator
+                    KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+                    SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+                    keyGen.initialize(KEY_SIZE, random);
+
+                    // generate keys
+                    KeyPair pair = keyGen.generateKeyPair();
+                    privateKey = pair.getPrivate();
+                    publicKey = pair.getPublic();
+
+                    // initialize signing algorithm
+                    signAlgorithm = Signature.getInstance("SHA512withRSA");
+
+                    final String keyUrl = Login.serverUrl + "/users/" + Tab.username + "/key";
+                    URL url = new URL(keyUrl);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setDoOutput(true);
+                    conn.setRequestMethod("PUT");
+
+                    DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
+                    wr.write(publicKey.getEncoded());
+                    wr.close();
+                    conn.getInputStream();
+
+                } catch (Exception e) {
+                    Log.e("INIT", e.getMessage(), e);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(Home.this, "Initialization error",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+        }).start();
     }
 
     public class CircleView extends View {

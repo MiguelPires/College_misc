@@ -93,6 +93,7 @@ public class Register extends AppCompatActivity {
                     }
 
                 } catch (final java.io.IOException e) {
+                    Log.e("REGISTER", e.getMessage(), e);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

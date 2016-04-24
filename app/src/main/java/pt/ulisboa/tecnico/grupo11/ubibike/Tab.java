@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.grupo11.ubibike;
 
-import android.Manifest;
 import android.accounts.NetworkErrorException;
 import android.app.TabActivity;
 import android.content.ComponentName;
@@ -8,10 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.location.LocationListener;
-
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -39,7 +37,7 @@ public class Tab extends TabActivity implements LocationListener {
     public static final int ACCEPTED = 1;
 
     public static List<List<String>> trajectories = new ArrayList<>();
-    public static String numberOfPoints;
+    public static int userPoints = 0;
     public static String username;
     public static Hashtable<String, Integer> stations = new Hashtable<>();
 
@@ -75,11 +73,31 @@ public class Tab extends TabActivity implements LocationListener {
         mReceiver = new WifiDirectReceiver(this);
         registerReceiver(mReceiver, filter);
         Intent intent = new Intent(this, SimWifiP2pService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                ACCEPTED);
+        try {
+            bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        } catch (Exception e) {
+            Log.d("WiFi Direct", e.getMessage(), e);
+            Toast.makeText(this, "Initialization error",
+                    Toast.LENGTH_SHORT).show();
+        }
+
+        // NOTE: the location request must be commented out in order for the WiFi Direct to work
+        // NOTE: sleeping for a bit only delays the problem. After the request, the receiver doesn't work
+        // TODO: fix this
+        /*new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(2000);
+                    ActivityCompat.requestPermissions(Tab.this,
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                            ACCEPTED);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();*/
     }
 
     @Override
@@ -92,9 +110,18 @@ public class Tab extends TabActivity implements LocationListener {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        try {
+            unregisterReceiver(mReceiver);
+        } catch (IllegalArgumentException e) {
+            ;
+        }
+    }
+
     private ServiceConnection mConnection = new ServiceConnection() {
         // callbacks for service binding, passed to bindService()
-
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             mService = new Messenger(service);
@@ -158,7 +185,7 @@ public class Tab extends TabActivity implements LocationListener {
                 inputStream.read(buffer);
                 inputStream.close();
                 int points = (int) buffer[0];
-                numberOfPoints = new String(String.valueOf(points));
+                userPoints = points;
             } else {
                 runOnUiThread(new Runnable() {
                     @Override

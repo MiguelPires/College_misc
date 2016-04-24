@@ -24,7 +24,6 @@ public class Info extends AppCompatActivity implements OnMapReadyCallback {
 
         SupportMapFragment mapFrag = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.trajectoryMap);
-        mapFrag.getMapAsync(this);
     }
 
     @Override

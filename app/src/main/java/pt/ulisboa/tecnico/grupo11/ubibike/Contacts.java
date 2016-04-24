@@ -14,6 +14,7 @@ import android.os.Messenger;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.InputType;
+import android.util.Base64;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -29,6 +30,7 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -124,7 +126,7 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
                                 Editable value = edit.getText();
                                 try {
                                     int points = Integer.parseInt(value.toString());
-                                    if (points <= 0 /*|| points > user.points*/) {
+                                    if (points <= 0 /*|| points > Tab.userPoints*/) {
                                         Toast.makeText(Contacts.this, "You can't send that amount of points", Toast.LENGTH_SHORT).show();
                                         return;
                                     }
@@ -235,23 +237,37 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
             try {
                 Log.d("WiFi Direct", "Sending message to '" + currentUser + "'");
 
-                // non-signed message
-                byte[] byteMessage = (msg[0] + "\n").getBytes();
-                byte[] sendData = new byte[1 + byteMessage.length];
-                sendData[0] = (byte) byteMessage.length;
-                System.arraycopy(byteMessage, 0, sendData, 1, byteMessage.length);
+                byte[] data = null;
+                if (msg[0].startsWith("#P")) {
+                    // non-signed message
+                    byte[] byteMessage = msg[0].getBytes("UTF-8");
+                    byte[] sendData = new byte[1 + byteMessage.length];
+                    sendData[0] = (byte) byteMessage.length;
+                    System.arraycopy(byteMessage, 0, sendData, 1, byteMessage.length);
+                    System.out.println("Message size is " + byteMessage.length);
 
-                // sign message
-                Home.signAlgorithm.initSign(Home.privateKey);
-                Home.signAlgorithm.update(sendData, 0, sendData.length);
-                byte[] signature = Home.signAlgorithm.sign();
+                    // sign message
+                    Home.signAlgorithm.initSign(Home.privateKey);
+                    Home.signAlgorithm.update(sendData, 0, sendData.length);
+                    byte[] signature = Home.signAlgorithm.sign();
 
-                // build entire message
-                byte[] data = new byte[sendData.length + signature.length];
-                System.arraycopy(sendData, 0, data, 0, sendData.length);
-                System.arraycopy(signature, 0, data, sendData.length, signature.length);
+                    // build entire message
+                    data = new byte[sendData.length + signature.length];
+                    System.arraycopy(sendData, 0, data, 0, sendData.length);
+                    System.arraycopy(signature, 0, data, sendData.length, signature.length);
+
+                    data = (Base64.encodeToString(data, Base64.DEFAULT) + "\n").getBytes();
+                    System.out.println("Full message size is: " + data.length);
+                } else if (msg[0].startsWith("#M")){
+                    data = ("1"+msg[0]+"\n").getBytes();
+                } else {
+                    Log.d("SEND", "Unknown message: "+msg[0]);
+                    return null;
+                }
 
                 mCliSocket.getOutputStream().write(data);
+                mCliSocket.getOutputStream().flush();
+
                 BufferedReader sockIn = new BufferedReader(
                         new InputStreamReader(mCliSocket.getInputStream()));
                 sockIn.readLine();

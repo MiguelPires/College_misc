@@ -4,12 +4,20 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.X509EncodedKeySpec;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
@@ -41,6 +49,7 @@ public class WifiDirectReceiver extends BroadcastReceiver {
             if (state == SimWifiP2pBroadcast.WIFI_P2P_STATE_ENABLED) {
                 Toast.makeText(mActivity, "WiFi Direct enabled",
                         Toast.LENGTH_SHORT).show();
+                Log.d("WIFI-DIRECT", "WiFi Direct enabled");
             } else {
                 Toast.makeText(mActivity, "WiFi Direct disabled",
                         Toast.LENGTH_SHORT).show();
@@ -97,6 +106,8 @@ public class WifiDirectReceiver extends BroadcastReceiver {
                 try {
                     SimWifiP2pSocket sock = mSrvSocket.accept();
                     try {
+                        Log.d("RECEIVER", "Receiving message");
+
                         BufferedReader sockIn = new BufferedReader(
                                 new InputStreamReader(sock.getInputStream()));
                         String st = sockIn.readLine();
@@ -121,23 +132,116 @@ public class WifiDirectReceiver extends BroadcastReceiver {
             if (values.length < 1)
                 return;
 
-            String messageType = values[0].substring(0, 2);
-            String message = values[0].substring(2);
-            String sender = message.substring(message.indexOf("#") + 1, message.lastIndexOf("#"));
-            message = message.substring(message.lastIndexOf("#") + 1);
-
-            switch (messageType) {
-                case "#M":
-                    Toast.makeText(mActivity, "Received message '" + message + "' from " + sender,
+            try {
+                String message = values[0];
+                if (message.startsWith("#M", 1)) {
+                    final String sender = message.substring(message.indexOf("#",3) + 1, message.lastIndexOf("#"));
+                    final String parseMessage = message.substring(message.lastIndexOf("#") + 1);
+                    Toast.makeText(mActivity, "Received message '" + parseMessage + "' from " + sender,
                             Toast.LENGTH_LONG).show();
-                    break;
+                    return;
+                }
 
-                case "#P":
-                    Toast.makeText(mActivity, "Received " + message + " points from " + sender,
-                            Toast.LENGTH_LONG).show();
-                    break;
+                byte[] decodedMessage = Base64.decode(message, Base64.DEFAULT);
+                final String originalMessage = new String(decodedMessage, "UTF-8");
+
+                if (originalMessage.startsWith("#P", 1)) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final String sender = originalMessage.substring(originalMessage.indexOf("#", 3) + 1, originalMessage.lastIndexOf("#"));
+                            String parsedMessage = parseSignedMessage(originalMessage, sender);
+                            if (parsedMessage != null) {
+                                String message = parsedMessage.substring(2);
+                                final String parseMessage = message.substring(message.lastIndexOf("#") + 1);
+
+                                mActivity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(mActivity, "Received " + parseMessage + " points from " + sender,
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            } else {
+                                mActivity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(mActivity, "Message authentication failed",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        }
+                    }).start();
+                } else {
+                    Log.d("RECEIVER", "Unknown message: " + message);
+                }
+            } catch (Exception e) {
+                Log.e("RECEIVER", e.getMessage(), e);
+            }
+        }
+
+        private String parseSignedMessage(String signedMessage, String sender) {
+            try {
+                byte[] data = signedMessage.getBytes("UTF-8");
+                int messageLength = (int) data[0];
+
+                byte[] messageAndSize = new byte[1 + messageLength];
+                System.arraycopy(data, 0, messageAndSize, 0, 1 + messageLength);
+
+                byte[] signature = new byte[data.length - (1 + messageLength)];
+                System.arraycopy(data, (1 + messageLength), signature, 0, signature.length);
+
+                final String keyUrl = Login.serverUrl + "/users/" + sender + "/key";
+                URL usersUrl = new URL(keyUrl);
+                HttpURLConnection httpConnection = (HttpURLConnection) usersUrl.openConnection();
+                httpConnection.setInstanceFollowRedirects(false);
+                httpConnection.setRequestMethod("GET");
+                int responseCode = httpConnection.getResponseCode();
+
+                if (responseCode == 200) {
+                    InputStream inputStream = httpConnection.getInputStream();
+                    byte[] publicKey = new byte[httpConnection.getContentLength()];
+                    inputStream.read(publicKey);
+                    inputStream.close();
+
+                    if (!verifyDataIntegrity(messageAndSize, signature, publicKey)) {
+                        Log.d("CRYPTO", "Signature verification failed");
+                    }
+
+                    byte[] msg = new byte[messageLength];
+                    System.arraycopy(messageAndSize, 1, msg, 0, messageLength);
+                    return new String(msg, "UTF-8");
+                } else
+                {
+                    Log.d("Crypto", "Couldn't obtain "+sender+"'s public key");
+                    return null;
+                }
+            } catch (Exception e) {
+                Log.e("CRYPTO", e.getMessage(), e);
+            }
+            return null;
+        }
+
+        private boolean verifyDataIntegrity(byte[] data, byte[] signature, byte[] publicKeyBytes) {
+            try {
+                // recover key
+                X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                PublicKey publicKey = keyFactory.generatePublic(pubKeySpec);
+
+                Signature rsaSignature = Signature.getInstance("SHA512withRSA");
+
+                // verify data integrity
+                rsaSignature.initVerify(publicKey);
+                rsaSignature.update(data, 0, data.length);
+                return rsaSignature.verify(signature);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
             }
         }
     }
 }
+
 

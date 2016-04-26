@@ -29,7 +29,7 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 public class Home extends AppCompatActivity {
 
-    TextView statusTxt;
+    public static TextView statusTxt;
 
     // crypto data
     private final int KEY_SIZE = 2048;
@@ -37,14 +37,6 @@ public class Home extends AppCompatActivity {
     static PublicKey publicKey;
     static PrivateKey privateKey;
     static Signature signAlgorithm;
-
-    // wifi direct connection data
-    private WifiDirectReceiver mReceiver;
-    private SimWifiP2pManager mManager = null;
-    private SimWifiP2pManager.Channel mChannel = null;
-    private Messenger mService = null;
-    private boolean mBound = false;
-    private SimWifiP2pSocketServer mSrvSocket = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +91,9 @@ public class Home extends AppCompatActivity {
     }
 
     public class CircleView extends View {
+
+        Paint paint;
+
         public CircleView(Context context) {
             super(context);
         }
@@ -106,12 +101,23 @@ public class Home extends AppCompatActivity {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
-            Paint paint = new Paint();
+            paint = new Paint();
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(Color.BLUE);
             paint.setAlpha(80);
             //canvas.drawPaint(paint);
             canvas.drawCircle(getWidth() / 2, getHeight() / 2, 250, paint);
         }
+
+        public void setCircleColorGreen()
+        {
+            paint.setColor(Color.GREEN);
+        }
+
+        public void setCircleColorBlue()
+        {
+            paint.setColor(Color.BLUE);
+        }
+
     }
 }

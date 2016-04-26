@@ -30,8 +30,10 @@ import java.util.InputMismatchException;
 import java.util.List;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
+import pt.inesc.termite.wifidirect.SimWifiP2pManager;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 public class Tab extends TabActivity implements LocationListener {
     public static final int ACCEPTED = 1;
@@ -43,8 +45,13 @@ public class Tab extends TabActivity implements LocationListener {
     public static String username;
     public static Hashtable<String, Integer> stations = new Hashtable<>();
 
-    private WifiDirectReceiver mReceiver;
-    private Messenger mService = null;
+    // wifi direct connection data
+    public static WifiDirectReceiver mReceiver;
+    public static SimWifiP2pManager mManager = null;
+    public static SimWifiP2pManager.Channel mChannel = null;
+    public static Messenger mService = null;
+    public static boolean mBound = false;
+    public static SimWifiP2pSocketServer mSrvSocket = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,11 +142,15 @@ public class Tab extends TabActivity implements LocationListener {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             mService = new Messenger(service);
+            mManager = new SimWifiP2pManager(mService);
+            mChannel = mManager.initialize(getApplication(), getMainLooper(), null);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mService = null;
+            mManager = null;
+            mChannel = null;
         }
     };
 

@@ -20,14 +20,18 @@ import java.security.Signature;
 import java.security.spec.X509EncodedKeySpec;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
+import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
+import pt.inesc.termite.wifidirect.SimWifiP2pManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
-public class WifiDirectReceiver extends BroadcastReceiver {
+public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pManager.GroupInfoListener {
 
     private Tab mActivity;
     private MessageReceiver receiver;
+    public static boolean onStationFlag = false;
+    public static boolean onBikeFlag = false;
 
     public WifiDirectReceiver(Tab activity) {
         super();
@@ -76,6 +80,7 @@ public class WifiDirectReceiver extends BroadcastReceiver {
             ginfo.print();
             Toast.makeText(mActivity, "Network membership changed",
                     Toast.LENGTH_SHORT).show();
+            mActivity.mManager.requestGroupInfo(mActivity.mChannel, WifiDirectReceiver.this);
 
         } else if (SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION.equals(action)) {
 
@@ -84,6 +89,30 @@ public class WifiDirectReceiver extends BroadcastReceiver {
             ginfo.print();
             Toast.makeText(mActivity, "Group ownership changed",
                     Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
+        boolean existsBikeOnNetwork = false;
+        for ( String deviceName : simWifiP2pInfo.getDevicesInNetwork() ) {
+            if (deviceName.startsWith("Bike"))
+            {
+                if(onBikeFlag == false)
+                {
+                    // TODO: Mudar o circulo de cor e o texto para onBike e começar a contar Km
+                    onBikeFlag = true;
+                    Home.statusTxt.setText("Riding");
+                }
+                return;
+            }
+        }
+
+        if (onBikeFlag == true)
+        {
+            // TODO: Mudar o circulo para idle e fazer save do percurso
+            onBikeFlag = false;
+            Home.statusTxt.setText("Idle");
         }
     }
 

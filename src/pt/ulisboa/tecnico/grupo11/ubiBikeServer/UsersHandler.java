@@ -57,7 +57,6 @@ public class UsersHandler implements HttpHandler {
 
                 OutputStream outStream = exchange.getResponseBody();
                 outStream.write(response.getBytes(StandardCharsets.UTF_8));
-                outStream.close();
             } else if (path.endsWith("/hash") && path.contains("/users/")) { // get the password hash
                 // return user hash
                 String username = exchange.getRequestURI().toString().replace("/hash", "").replace("/users/", "");
@@ -66,7 +65,6 @@ public class UsersHandler implements HttpHandler {
                 if (!users.containsKey(username)) {
                     System.out.println("Unknown user: " + username);
                     exchange.sendResponseHeaders(404, 0);
-                    exchange.close();
                     return;
                 }
 
@@ -76,23 +74,20 @@ public class UsersHandler implements HttpHandler {
 
                 OutputStream outStream = exchange.getResponseBody();
                 outStream.write(hash);
-                outStream.close();
-
             } else if (path.contains("/users/") && path.endsWith("/points")) {
                 String username = exchange.getRequestURI().toString().replace("/users/", "").replace("/points", "");
 
                 if (users.containsKey(username)) {
                     User user = users.get(username);
                     int points = user.getPoints();
-                    byte byteValue = (byte) points;
-                    exchange.sendResponseHeaders(200, 1);
-
+                    String stringPoints = (new Integer(points)).toString();
+                    byte[] byteValue = stringPoints.getBytes("UTF-8");
+                    
+                    exchange.sendResponseHeaders(200, byteValue.length);
                     OutputStream outStream = exchange.getResponseBody();
                     outStream.write(byteValue);
-                    outStream.close();
                 } else {
                     exchange.sendResponseHeaders(404, 0);
-                    exchange.close();
                 }
             } else if (path.contains("/users/") && path.endsWith("/paths")) {
                 String username = exchange.getRequestURI().toString().replace("/users/", "").replace("/paths", "");
@@ -108,14 +103,12 @@ public class UsersHandler implements HttpHandler {
                     	String everyPath = String.join("#", bikePaths);
                     	exchange.sendResponseHeaders(200, everyPath.getBytes("UTF-8").length);
                     	outStream.write(everyPath.getBytes("UTF-8"));
-                    	outStream.close();
                     } else {
                     	exchange.sendResponseHeaders(404, 0);
                     }
                 } else {
                     exchange.sendResponseHeaders(404, 0);
                 }
-                exchange.close();
             } else if (path.contains("/users/") && path.endsWith("/key")) {
                 String username = exchange.getRequestURI().toString().replace("/users/", "").replace("/key", "");
 
@@ -129,8 +122,6 @@ public class UsersHandler implements HttpHandler {
                 } else {
                     exchange.sendResponseHeaders(404, 0);
                 }
-
-                exchange.close();
             } else if (path.contains("/users/")) { // check if a user exists
                 // extract user
                 String username = exchange.getRequestURI().toString().replace("/users/", "");
@@ -144,10 +135,10 @@ public class UsersHandler implements HttpHandler {
                 System.out.println("Unrecognized request: " + path);
                 exchange.sendResponseHeaders(400, 0);
             }
-            exchange.close();
         } catch (Exception e) {
             System.out.println("Unrecognized request: " + path);
             exchange.sendResponseHeaders(400, 0);
+        } finally {
             exchange.close();
         }
     }
@@ -156,7 +147,6 @@ public class UsersHandler implements HttpHandler {
         String path = exchange.getRequestURI().toString();
 
         try {
-
             if (path.contains("/users/") && path.contains("/path")) {
                 String username = exchange.getRequestURI().toString().replace("/users/", "").replace("/path", "");
 
@@ -178,20 +168,18 @@ public class UsersHandler implements HttpHandler {
                     exchange.sendResponseHeaders(200, 0);
                 } else {
                     exchange.sendResponseHeaders(404, 0);
-                    exchange.close();
                 }
             } else if (path.contains("/users/") && path.contains("/points/")) {
                 String intermediatePath = exchange.getRequestURI().toString().replace("/users/", "");
                 String username = intermediatePath.substring(0, intermediatePath.indexOf("/"));
-                String points = intermediatePath.substring(0, intermediatePath.lastIndexOf("/"));
-
+                String points = intermediatePath.substring(intermediatePath.lastIndexOf("/")+1, intermediatePath.length());
+                
                 if (users.containsKey(username)) {
                     User user = users.get(username);
                     user.setPoints(Integer.parseInt(points));
                     exchange.sendResponseHeaders(200, 0);
                 } else {
                     exchange.sendResponseHeaders(404, 0);
-                    exchange.close();
                 }
             } else if (path.contains("/users/") && path.contains("/key")) {
                 String intermediatePath = exchange.getRequestURI().toString().replace("/users/", "");
@@ -216,7 +204,6 @@ public class UsersHandler implements HttpHandler {
                 } else {
                     exchange.sendResponseHeaders(404, 0);
                 }
-                exchange.close();
             } else if (path.contains("/users/")) {
                 // extract user
                 String username = exchange.getRequestURI().toString().replace("/users/", "");
@@ -251,11 +238,10 @@ public class UsersHandler implements HttpHandler {
                 System.out.println("Unrecognized request: " + path);
                 exchange.sendResponseHeaders(400, 0);
             }
-        } catch (
-
-        Exception e) {
+        } catch (Exception e) {
             System.out.println("Unrecognized request: " + path);
             exchange.sendResponseHeaders(400, 0);
+        } finally {
             exchange.close();
         }
     }

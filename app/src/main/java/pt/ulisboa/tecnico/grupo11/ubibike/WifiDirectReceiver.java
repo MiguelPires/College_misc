@@ -3,12 +3,14 @@ package pt.ulisboa.tecnico.grupo11.ubibike;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,6 +20,8 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.List;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
@@ -30,8 +34,8 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
 
     private Tab mActivity;
     private MessageReceiver receiver;
-    public static boolean onStationFlag = false;
-    public static boolean onBikeFlag = false;
+    public static boolean onStation = false;
+    public static boolean onBike = false;
 
     public WifiDirectReceiver(Tab activity) {
         super();
@@ -94,25 +98,73 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
 
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
-        boolean existsBikeOnNetwork = false;
-        for ( String deviceName : simWifiP2pInfo.getDevicesInNetwork() ) {
-            if (deviceName.startsWith("Bike"))
-            {
-                if(onBikeFlag == false)
-                {
-                    // TODO: Mudar o circulo de cor e o texto para onBike e começar a contar Km
-                    onBikeFlag = true;
-                    Home.statusTxt.setText("Riding");
+        try {
+            for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
+                if (deviceName.startsWith("Bike")) {
+                    if (!onBike) {
+                        Tab.currentPath = new ArrayList<Location>();
+                        onBike = true;
+                        Home.statusTxt.setText("Riding");
+                    }
+                    return;
                 }
-                return;
             }
-        }
 
-        if (onBikeFlag == true)
-        {
-            // TODO: Mudar o circulo para idle e fazer save do percurso
-            onBikeFlag = false;
-            Home.statusTxt.setText("Idle");
+            if (onBike) {
+                onBike = false;
+                Home.statusTxt.setText("Idle");
+
+                List<String> coordsList = new ArrayList<String>();
+                String joinedString = "";
+                for (Location loc : Tab.currentPath) {
+                    String coordinate = loc.getLatitude() + "," + loc.getLongitude();
+                    joinedString += coordinate + ";";
+                    coordsList.add(coordinate);
+                }
+
+                Tab.trajectories.add(coordsList);
+                final String sendPath = joinedString.substring(0, joinedString.length() - 1);
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        while (true) {
+                            try {
+                                System.out.println("Uploading points to server");
+                                String pointsUrl = Login.serverUrl + "/users/" + Tab.username + "/points/"+Tab.userPoints;
+                                URL url = new URL(pointsUrl);
+                                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                                conn.setDoOutput(true);
+                                conn.setRequestMethod("PUT");
+                                conn.getInputStream();
+
+                                System.out.println("Uploading new path to server");
+                                String pathUrl = Login.serverUrl + "/users/" + Tab.username + "/path";
+                                url = new URL(pathUrl);
+                                conn = (HttpURLConnection) url.openConnection();
+                                conn.setDoOutput(true);
+                                conn.setRequestMethod("PUT");
+
+                                DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
+                                wr.write(sendPath.getBytes());
+                                wr.close();
+                                conn.getInputStream();
+                                System.out.print("Finished uploading: " + sendPath);
+                                return;
+                            } catch (Exception e) {
+                                Log.e("Upload path", e.getMessage(), e);
+                                try {
+                                    Thread.sleep(5000);
+                                } catch (Exception e1) {
+                                    Log.e("Upload path", e1.getMessage(), e1);
+                                }
+                            }
+                        }
+                    }
+                }).start();
+            }
+        } catch (Exception e) {
+            Log.e("Upload path", e.getMessage(), e);
         }
     }
 
@@ -130,7 +182,8 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
             Log.d("WiFi Direct", "MessageReceiver started (" + this.hashCode() + ").");
 
             try {
-                mSrvSocket = new SimWifiP2pSocketServer(Integer.parseInt(context.getString(R.string.port)));
+                if (mSrvSocket == null)
+                    mSrvSocket = new SimWifiP2pSocketServer(Integer.parseInt(context.getString(R.string.port)));
             } catch (IOException e) {
                 Log.d("WiFi Direct", "Error - " + e.getMessage());
                 e.printStackTrace();

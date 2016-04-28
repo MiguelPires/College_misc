@@ -45,6 +45,7 @@ public class Tab extends TabActivity implements LocationListener {
     public static boolean updatePoints = true;
     public static String username;
     public static Hashtable<String, Integer> stations = new Hashtable<>();
+    public static List<Location> currentPath;
 
     // wifi direct connection data
     public static WifiDirectReceiver mReceiver;
@@ -147,8 +148,37 @@ public class Tab extends TabActivity implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        Toast.makeText(this, "LOCATION CHANGED",
-                Toast.LENGTH_SHORT).show();
+        if (WifiDirectReceiver.onBike) {
+
+            if (!currentPath.isEmpty()) {
+                Location lastLocation = currentPath.get(currentPath.size() - 1);
+                userPoints += calculateDistance(lastLocation.getLongitude(), lastLocation.getLatitude(), location.getLongitude(), location.getLatitude());
+                Tab.updatePoints = true;
+            }
+            currentPath.add(location);
+        }
+
+        if (WifiDirectReceiver.onStation) {
+
+        }
+    }
+
+    //  Returns the distance between the two coordinates in meters
+    private double calculateDistance(double longitude1, double latitude1, double longitude2, double latitude2) {
+
+        //convert decimal degrees to radians
+        longitude1 = Math.toRadians(longitude1);
+        latitude1 = Math.toRadians(latitude1);
+        longitude2 = Math.toRadians(longitude2);
+        latitude2 = Math.toRadians(latitude2);
+
+        // haversine formula
+        double dlon = longitude2 - longitude1;
+        double dlat = latitude2 - latitude1;
+        double a = Math.pow(Math.sin(dlat / 2), 2) + Math.cos(latitude1) * Math.cos(latitude2) * Math.pow(Math.sin(dlon / 2), 2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        double r = 6371000; //Radius of earth in meters
+        return (c * r);
     }
 
     @Override
@@ -179,8 +209,9 @@ public class Tab extends TabActivity implements LocationListener {
                 byte[] buffer = new byte[httpConnection.getContentLength()];
                 inputStream.read(buffer);
                 inputStream.close();
-                int points = (int) buffer[0];
-                userPoints = points;
+
+                String stringPoints = new String(buffer, "UTF-8");
+                userPoints = Integer.parseInt(stringPoints);
             } else {
                 runOnUiThread(new Runnable() {
                     @Override

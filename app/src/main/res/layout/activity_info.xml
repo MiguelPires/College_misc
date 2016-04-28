@@ -15,11 +15,11 @@
         android:textColor="@color/colorPrimary"
         android:textSize="40dp"
         android:text="Points:"
-        android:gravity="center"
+        android:gravity="left"
         android:id="@+id/pointsTexttv"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/textView"
-        android:layout_toEndOf="@+id/textView" />
+        android:layout_marginStart="50dp"
+        android:layout_marginLeft="50dp"
+        android:layout_alignParentBottom="true"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -28,8 +28,8 @@
         android:textColor="@android:color/black"
         android:textSize="40dp"
         android:id="@+id/numberOfPointstv"
-        android:layout_marginStart="10dp"
-        android:layout_marginLeft="10dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginLeft="40dp"
         android:gravity="center"
         android:layout_alignParentBottom="true"
         android:layout_toRightOf="@+id/pointsTexttv" />

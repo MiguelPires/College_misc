@@ -88,7 +88,6 @@ public class Home extends AppCompatActivity {
     }
 
     public class CircleView extends View {
-
         Paint paint;
 
         public CircleView(Context context) {

@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.grupo11.ubibike;
 
+import android.Manifest;
 import android.accounts.NetworkErrorException;
 import android.app.TabActivity;
 import android.content.ComponentName;
@@ -57,7 +58,6 @@ public class Tab extends TabActivity implements LocationListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_tab);
-
         TabHost mTabHost = getTabHost();
 
         mTabHost.addTab(mTabHost.newTabSpec("contacts").setIndicator("Contacts").setContent(new Intent(this, Contacts.class)));
@@ -65,13 +65,17 @@ public class Tab extends TabActivity implements LocationListener {
         mTabHost.addTab(mTabHost.newTabSpec("info").setIndicator("Info").setContent(new Intent(this, Info.class)));
         mTabHost.addTab(mTabHost.newTabSpec("stations").setIndicator("Stations").setContent(new Intent(this, Stations.class)));
         mTabHost.setCurrentTab(1);
-        // initialize the WDSim API
-        SimWifiP2pSocketManager.Init(getApplicationContext());
+
         new Thread(new Runnable() {
             public void run() {
                 fetchInfo(username);
             }
         }).start();
+
+
+        // initialize the WDSim API
+        SimWifiP2pSocketManager.Init(getApplicationContext());
+
 
         // register broadcast receiver
         IntentFilter filter = new IntentFilter();
@@ -97,22 +101,9 @@ public class Tab extends TabActivity implements LocationListener {
                     Toast.LENGTH_SHORT).show();
         }
 
-        // NOTE: the location request must be commented out in order for the WiFi Direct to work
-        // NOTE: sleeping for a bit only delays the problem. After the request, the receiver doesn't work
-        // TODO: fix this
-        /*new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(2000);
-                    ActivityCompat.requestPermissions(Tab.this,
-                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                            ACCEPTED);
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();*/
+        // Setup Location manager and receiver
+        LocationManager lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        lManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 1, this);
     }
 
     @Override
@@ -153,23 +144,6 @@ public class Tab extends TabActivity implements LocationListener {
             mChannel = null;
         }
     };
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case ACCEPTED: {
-                if (ActivityCompat.checkSelfPermission(this, permissions[0]) == PackageManager.PERMISSION_GRANTED/* &&
-                        ActivityCompat.checkSelfPermission(this, permissions[1]) == PackageManager.PERMISSION_GRANTED*/) {
-                    Log.d("LOCATION", "Requesting location");
-                    LocationManager lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                    lManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 1, this);
-                }
-                return;
-            }
-        }
-    }
 
     @Override
     public void onLocationChanged(Location location) {

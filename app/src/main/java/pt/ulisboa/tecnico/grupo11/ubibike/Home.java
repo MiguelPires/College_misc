@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
-import android.os.Messenger;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -23,9 +22,6 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
 
-import pt.inesc.termite.wifidirect.SimWifiP2pManager;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
-
 
 public class Home extends AppCompatActivity {
 
@@ -42,6 +38,7 @@ public class Home extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
         statusTxt = (TextView) findViewById(R.id.statusTxt);
         CircleView circleView = new CircleView(this);
         //circleView.setLayoutParams(new ViewGroup.LayoutParams(100, 100));

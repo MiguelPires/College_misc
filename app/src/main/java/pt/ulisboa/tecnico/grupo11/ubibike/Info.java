@@ -31,6 +31,11 @@ public class Info extends AppCompatActivity implements OnMapReadyCallback {
     @Override
     protected synchronized void onResume() {
         super.onResume();
+
+        SupportMapFragment mapFrag = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.trajectoryMap);
+        mapFrag.getMapAsync(this);
+
         if (Tab.updatePoints) {
             TextView userPoints = (TextView) findViewById(R.id.numberOfPointstv);
             userPoints.setText(Integer.toString(Tab.userPoints));

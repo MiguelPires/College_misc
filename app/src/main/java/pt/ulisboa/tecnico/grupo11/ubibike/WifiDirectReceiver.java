@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.grupo11.ubibike;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.util.Base64;
@@ -105,6 +106,8 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                         Tab.currentPath = new ArrayList<Location>();
                         onBike = true;
                         Home.statusTxt.setText("Riding");
+                        Home.circleColor = Color.GREEN;
+                        Home.circleView.setCircleColorGreen();
                     }
                     return;
                 }
@@ -113,55 +116,59 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
             if (onBike) {
                 onBike = false;
                 Home.statusTxt.setText("Idle");
+                Home.circleColor = Color.BLUE;
+                Home.circleView.setCircleColorBlue();
 
-                List<String> coordsList = new ArrayList<String>();
-                String joinedString = "";
-                for (Location loc : Tab.currentPath) {
-                    String coordinate = loc.getLatitude() + "," + loc.getLongitude();
-                    joinedString += coordinate + ";";
-                    coordsList.add(coordinate);
-                }
+                if (Tab.currentPath != null && !Tab.currentPath.isEmpty()) {
+                    List<String> coordsList = new ArrayList<String>();
+                    String joinedString = "";
+                    for (Location loc : Tab.currentPath) {
+                        String coordinate = loc.getLatitude() + "," + loc.getLongitude();
+                        joinedString += coordinate + ";";
+                        coordsList.add(coordinate);
+                    }
 
-                Tab.trajectories.add(coordsList);
-                final String sendPath = joinedString.substring(0, joinedString.length() - 1);
+                    Tab.trajectories.add(coordsList);
+                    final String sendPath = joinedString.substring(0, joinedString.length() - 1);
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        while (true) {
-                            try {
-                                System.out.println("Uploading points to server");
-                                String pointsUrl = Login.serverUrl + "/users/" + Tab.username + "/points/"+Tab.userPoints;
-                                URL url = new URL(pointsUrl);
-                                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                                conn.setDoOutput(true);
-                                conn.setRequestMethod("PUT");
-                                conn.getInputStream();
-
-                                System.out.println("Uploading new path to server");
-                                String pathUrl = Login.serverUrl + "/users/" + Tab.username + "/path";
-                                url = new URL(pathUrl);
-                                conn = (HttpURLConnection) url.openConnection();
-                                conn.setDoOutput(true);
-                                conn.setRequestMethod("PUT");
-
-                                DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
-                                wr.write(sendPath.getBytes());
-                                wr.close();
-                                conn.getInputStream();
-                                System.out.print("Finished uploading: " + sendPath);
-                                return;
-                            } catch (Exception e) {
-                                Log.e("Upload path", e.getMessage(), e);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            while (true) {
                                 try {
-                                    Thread.sleep(5000);
-                                } catch (Exception e1) {
-                                    Log.e("Upload path", e1.getMessage(), e1);
+                                    System.out.println("Uploading points to server");
+                                    String pointsUrl = Login.serverUrl + "/users/" + Tab.username + "/points/" + Tab.userPoints;
+                                    URL url = new URL(pointsUrl);
+                                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                                    conn.setDoOutput(true);
+                                    conn.setRequestMethod("PUT");
+                                    conn.getInputStream();
+
+                                    System.out.println("Uploading new path to server");
+                                    String pathUrl = Login.serverUrl + "/users/" + Tab.username + "/path";
+                                    url = new URL(pathUrl);
+                                    conn = (HttpURLConnection) url.openConnection();
+                                    conn.setDoOutput(true);
+                                    conn.setRequestMethod("PUT");
+
+                                    DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
+                                    wr.write(sendPath.getBytes());
+                                    wr.close();
+                                    conn.getInputStream();
+                                    System.out.print("Finished uploading: " + sendPath);
+                                    return;
+                                } catch (Exception e) {
+                                    Log.e("Upload path", e.getMessage(), e);
+                                    try {
+                                        Thread.sleep(5000);
+                                    } catch (Exception e1) {
+                                        Log.e("Upload path", e1.getMessage(), e1);
+                                    }
                                 }
                             }
                         }
-                    }
-                }).start();
+                    }).start();
+                }
             }
         } catch (Exception e) {
             Log.e("Upload path", e.getMessage(), e);

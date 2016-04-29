@@ -29,62 +29,73 @@ public class Home extends AppCompatActivity {
 
     // crypto data
     private final int KEY_SIZE = 2048;
-
     static PublicKey publicKey;
     static PrivateKey privateKey;
     static Signature signAlgorithm;
+
+    // UI elements
+    static int circleColor = Color.BLUE;
+    static CircleView circleView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        drawUI();
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                uploadCryptoInfo();
+            }
+        }).start();
+    }
+
+    private void uploadCryptoInfo() {
+        try {
+            // instantiate key generator
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+            keyGen.initialize(KEY_SIZE, random);
+
+            // generate keys
+            KeyPair pair = keyGen.generateKeyPair();
+            privateKey = pair.getPrivate();
+            publicKey = pair.getPublic();
+
+            // initialize signing algorithm
+            signAlgorithm = Signature.getInstance("SHA512withRSA");
+
+            final String keyUrl = Login.serverUrl + "/users/" + Tab.username + "/key";
+            URL url = new URL(keyUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setRequestMethod("PUT");
+
+            DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
+            wr.write(publicKey.getEncoded());
+            wr.close();
+            conn.getInputStream();
+
+        } catch (Exception e) {
+            Log.e("INIT", e.getMessage(), e);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(Home.this, "Initialization error",
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void drawUI() {
         statusTxt = (TextView) findViewById(R.id.statusTxt);
-        CircleView circleView = new CircleView(this);
+        circleView = new CircleView(this);
         //circleView.setLayoutParams(new ViewGroup.LayoutParams(100, 100));
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.homelayout);
         relativeLayout.addView(circleView);
         statusTxt.bringToFront();
-
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    // instantiate key generator
-                    KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-                    SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-                    keyGen.initialize(KEY_SIZE, random);
-
-                    // generate keys
-                    KeyPair pair = keyGen.generateKeyPair();
-                    privateKey = pair.getPrivate();
-                    publicKey = pair.getPublic();
-
-                    // initialize signing algorithm
-                    signAlgorithm = Signature.getInstance("SHA512withRSA");
-
-                    final String keyUrl = Login.serverUrl + "/users/" + Tab.username + "/key";
-                    URL url = new URL(keyUrl);
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setDoOutput(true);
-                    conn.setRequestMethod("PUT");
-
-                    DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
-                    wr.write(publicKey.getEncoded());
-                    wr.close();
-                    conn.getInputStream();
-
-                } catch (Exception e) {
-                    Log.e("INIT", e.getMessage(), e);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(Home.this, "Initialization error",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-            }
-        }).start();
     }
 
     public class CircleView extends View {
@@ -97,22 +108,30 @@ public class Home extends AppCompatActivity {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
+            drawCircle(canvas);
+        }
+
+        private void drawCircle(Canvas canvas) {
+            if (circleColor == Color.BLUE)
+                Log.d("PAINT", "Painted blue");
+            else if (circleColor == Color.GREEN)
+                Log.d("PAINT", "Painted green");
+
             paint = new Paint();
             paint.setStyle(Paint.Style.FILL);
-            paint.setColor(Color.BLUE);
+            paint.setColor(circleColor);
             paint.setAlpha(80);
-            //canvas.drawPaint(paint);
             canvas.drawCircle(getWidth() / 2, getHeight() / 2, 250, paint);
         }
 
-        public void setCircleColorGreen()
-        {
+        public void setCircleColorGreen() {
             paint.setColor(Color.GREEN);
+            requestLayout();
         }
 
-        public void setCircleColorBlue()
-        {
+        public void setCircleColorBlue() {
             paint.setColor(Color.BLUE);
+            requestLayout();
         }
 
     }

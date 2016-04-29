@@ -36,60 +36,45 @@ public class PublicBlockAttackThreeFaults {
 
         // get public key blocks
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(library.publicKey.getEncoded()));
-        String filePath = FileSystemImpl.BASE_PATH + "-0" + File.separatorChar + fileName;
-        FileInputStream stream;
-
-        // this might fail because the server thread didn't write yet
-        // it's not an error, the tests need to change the file to simulate an attack
-        // waiting a second will probably give enough time to the thread to complete
-        try {
-            stream = new FileInputStream(filePath);
-        } catch (FileNotFoundException e) {
-            Thread.sleep(1000);
-            stream = new FileInputStream(filePath);
-        }
         
-        byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
-        stream.read(publicKeyBlock, 0, publicKeyBlock.length);
-        stream.close();
+        // give some time to the server threads to write the blocks
+        // otherwise we might not find them
+        Thread.sleep(1000);
 
-        byte[] alteredTextBytes = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
-        byte[] alteredHash = BlockUtility.digest(alteredTextBytes);
+        int changesCounter = 0;
+        for (int i = 0; i < BlockLibraryImpl.NUM_REPLICAS_HASH && changesCounter < 3; ++i) {
+            String filePath = FileSystemImpl.BASE_PATH + "-" + i + File.separatorChar + fileName;
+            FileInputStream stream;
+            try {
+                stream = new FileInputStream(filePath);
+                changesCounter++;
+            } catch (FileNotFoundException e) {
+                // if didn't find the file it's possible that this replica wasn't part of the quorum
+                continue;
+            }
 
-        // write new block in first server
-        String newBlockName = BlockUtility.getKeyString(alteredHash);
-        String firstBlockPath = FileSystemImpl.BASE_PATH + "-0" + File.separatorChar + newBlockName;
-        FileOutputStream outStream = new FileOutputStream(firstBlockPath);
-        outStream.write(alteredTextBytes);
-        outStream.close();
+            byte[] publicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
+            stream.read(publicKeyBlock, 0, publicKeyBlock.length);
+            stream.close();
 
-        // write new block in second server
-        String secondBlockPath = FileSystemImpl.BASE_PATH + "-1" + File.separatorChar + newBlockName;
-        outStream = new FileOutputStream(secondBlockPath);
-        outStream.write(alteredTextBytes);
-        outStream.close();
+            byte[] alteredTextBytes = BlockUtility.generateString(BlockUtility.BLOCK_SIZE).getBytes();
+            byte[] alteredHash = BlockUtility.digest(alteredTextBytes);
 
-        // write new block in second server
-        String thirdBlockPath = FileSystemImpl.BASE_PATH + "-2" + File.separatorChar + newBlockName;
-        outStream = new FileOutputStream(thirdBlockPath);
-        outStream.write(alteredTextBytes);
-        outStream.close();
-
-        // rewrite public key blocks to ignore the previous blocks and point to the new ones
-        byte[] rewrittenPublicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
-        System.arraycopy(publicKeyBlock, 0, rewrittenPublicKeyBlock, 0, BlockUtility.SIGNATURE_SIZE);
-        System.arraycopy(alteredHash, 0, rewrittenPublicKeyBlock, BlockUtility.SIGNATURE_SIZE, BlockUtility.DIGEST_SIZE);
-        outStream = new FileOutputStream(filePath);
-        outStream.write(rewrittenPublicKeyBlock);
-        outStream.close();
-
-        outStream = new FileOutputStream(FileSystemImpl.BASE_PATH + "-1" + File.separatorChar + fileName);
-        outStream.write(rewrittenPublicKeyBlock);
-        outStream.close();
-
-        outStream = new FileOutputStream(FileSystemImpl.BASE_PATH + "-2" + File.separatorChar + fileName);
-        outStream.write(rewrittenPublicKeyBlock);
-        outStream.close();
+            String newBlockName = BlockUtility.getKeyString(alteredHash);
+            
+            String firstBlockPath = FileSystemImpl.BASE_PATH + "-"+i + File.separatorChar + newBlockName;
+            FileOutputStream outStream = new FileOutputStream(firstBlockPath);
+            outStream.write(alteredTextBytes);
+            outStream.close();
+            
+         // rewrite public key blocks to ignore the previous blocks and point to the new ones
+            byte[] rewrittenPublicKeyBlock = new byte[BlockUtility.SIGNATURE_SIZE + BlockUtility.DIGEST_SIZE];
+            System.arraycopy(publicKeyBlock, 0, rewrittenPublicKeyBlock, 0, BlockUtility.SIGNATURE_SIZE);
+            System.arraycopy(alteredHash, 0, rewrittenPublicKeyBlock, BlockUtility.SIGNATURE_SIZE, BlockUtility.DIGEST_SIZE);
+            outStream = new FileOutputStream(filePath);
+            outStream.write(rewrittenPublicKeyBlock);
+            outStream.close();
+        }
 
         byte[] readBuffer = new byte[BlockUtility.BLOCK_SIZE];
 

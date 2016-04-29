@@ -2,6 +2,7 @@ package sec.blockfs.blockclient;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.Arrays;
 
@@ -31,35 +32,39 @@ public class DataBlockAttackThreeFaults {
         byte[] textBytes = text.getBytes();
 
         library.FS_write(0, textBytes.length, textBytes);
+        
+        // give some time to the server threads to write the blocks
+        // otherwise we might not find them
+        Thread.sleep(1000);
 
         // get data block
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(textBytes));
-        String filePath = FileSystemImpl.BASE_PATH + "-0" + File.separatorChar + fileName;
 
-        FileInputStream stream = new FileInputStream(filePath);
-        byte[] dataBlock = new byte[BlockUtility.BLOCK_SIZE];
-        stream.read(dataBlock, 0, dataBlock.length);
-        stream.close();
+        int changesCounter = 0;
+        for (int i = 0; i < BlockLibraryImpl.NUM_REPLICAS_HASH && changesCounter < 3; ++i) {
+            String filePath = FileSystemImpl.BASE_PATH + "-" + i + File.separatorChar + fileName;
+            FileInputStream stream;
+            try {
+                stream = new FileInputStream(filePath);
+                changesCounter++;
+            } catch (FileNotFoundException e) {
+                // if didn't find the file it's possible that this replica wasn't part of the quorum
+                continue;
+            }
 
-        // change data block on first server
-        byte[] alteration = "altered".getBytes();
-        System.arraycopy(alteration, 0, dataBlock, 0, alteration.length);
+            byte[] dataBlock = new byte[BlockUtility.BLOCK_SIZE];
+            stream.read(dataBlock, 0, dataBlock.length);
+            stream.close();
 
-        FileOutputStream outStream = new FileOutputStream(filePath);
-        outStream.write(dataBlock);
-        outStream.close();
+            // change data block on server
+            byte[] alteration = "altered".getBytes();
+            System.arraycopy(alteration, 0, dataBlock, 0, alteration.length);
 
-        // change data block on second server
-        outStream = new FileOutputStream(FileSystemImpl.BASE_PATH + "-1" + File.separatorChar + fileName);
-        outStream.write(dataBlock);
-        outStream.close();
+            FileOutputStream outStream = new FileOutputStream(filePath);
+            outStream.write(dataBlock);
+            outStream.close();
+        }
         
-        // change data block on third server
-        outStream = new FileOutputStream(FileSystemImpl.BASE_PATH + "-2" + File.separatorChar + fileName);
-        outStream.write(dataBlock);
-        outStream.close();
-
-
         byte[] readBuffer = new byte[BlockUtility.BLOCK_SIZE];
         try {
             library.FS_read(library.publicKey.getEncoded(), 0, BlockUtility.BLOCK_SIZE, readBuffer);

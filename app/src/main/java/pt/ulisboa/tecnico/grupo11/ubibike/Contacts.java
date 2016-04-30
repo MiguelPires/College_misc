@@ -42,7 +42,7 @@ import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
 public class Contacts extends AppCompatActivity implements SimWifiP2pManager.GroupInfoListener {
-    private ArrayAdapter<String> listAdapter;
+    public static ArrayAdapter<String> listAdapter;
 
     private SimWifiP2pSocket mCliSocket = null;
     private SimWifiP2pManager mManager = null;
@@ -54,6 +54,9 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
     private String currentUser = null;
     private String message = null;
 
+    public static ArrayList<String> contacts = new ArrayList<>();
+    public static ListView listView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,11 +66,6 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
         progressDialog.setMessage("Please wait.");
 
         ListView listView = (ListView) findViewById(R.id.listView);
-        ArrayList<String> contacts = new ArrayList<String>() {{
-            add("Maria");
-            add("Joao");
-        }};
-
         listAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, contacts);
         listView.setAdapter(listAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -309,7 +307,6 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
 
         if (devicesInNetwork.isEmpty())
             Log.d("WiFi Direct", "There are no users in the network");
-
         for (String name : devicesInNetwork) {
             Log.d("WiFi Direct", "User '" + currentUser + "'");
             if (name.equals(currentUser)) {

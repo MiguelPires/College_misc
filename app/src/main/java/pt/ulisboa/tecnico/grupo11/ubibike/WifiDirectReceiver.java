@@ -100,6 +100,14 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
         try {
+            Contacts.contacts.clear();
+            for (String deviceName : simWifiP2pInfo.getDevicesInNetwork())
+            {
+                if (!deviceName.startsWith("Bike")) {
+                    Contacts.contacts.add(deviceName);
+                }
+            }
+            Contacts.listAdapter.notifyDataSetChanged();
             for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
                 if (deviceName.startsWith("Bike")) {
                     if (!onBike) {

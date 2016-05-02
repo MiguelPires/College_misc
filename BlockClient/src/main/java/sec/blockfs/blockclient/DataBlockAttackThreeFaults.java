@@ -32,7 +32,7 @@ public class DataBlockAttackThreeFaults {
         byte[] textBytes = text.getBytes();
 
         library.FS_write(0, textBytes.length, textBytes);
-        
+
         // give some time to the server threads to write the blocks
         // otherwise we might not find them
         Thread.sleep(1000);
@@ -40,17 +40,19 @@ public class DataBlockAttackThreeFaults {
         // get data block
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(textBytes));
 
-        int changesCounter = 0;
-        for (int i = 0; i < BlockLibraryImpl.NUM_REPLICAS_HASH && changesCounter < 3; ++i) {
-            String filePath = FileSystemImpl.BASE_PATH + "-" + i + File.separatorChar + fileName;
+        int currentReplica = Math.abs(fileName.hashCode() % BlockLibraryImpl.NUM_REPLICAS);
+        for (int corrupted = 0; corrupted < 3;) {
+            String filePath = FileSystemImpl.BASE_PATH + "-" + currentReplica + File.separatorChar + fileName;
             FileInputStream stream;
             try {
                 stream = new FileInputStream(filePath);
-                changesCounter++;
+                ++corrupted;
             } catch (FileNotFoundException e) {
                 // if didn't find the file it's possible that this replica wasn't part of the quorum
+                currentReplica = (currentReplica + 1) % BlockLibraryImpl.NUM_REPLICAS;
                 continue;
             }
+            System.out.println("Corrupting replica: " + currentReplica);
 
             byte[] dataBlock = new byte[BlockUtility.BLOCK_SIZE];
             stream.read(dataBlock, 0, dataBlock.length);
@@ -63,8 +65,9 @@ public class DataBlockAttackThreeFaults {
             FileOutputStream outStream = new FileOutputStream(filePath);
             outStream.write(dataBlock);
             outStream.close();
+            currentReplica = (currentReplica + 1) % BlockLibraryImpl.NUM_REPLICAS;
         }
-        
+
         byte[] readBuffer = new byte[BlockUtility.BLOCK_SIZE];
         try {
             library.FS_read(library.publicKey.getEncoded(), 0, BlockUtility.BLOCK_SIZE, readBuffer);

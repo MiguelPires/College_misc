@@ -18,11 +18,9 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
@@ -41,8 +39,7 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
     // NOTE: some of these attributes are public because of the tests
 
     // byzantine fault tolerance parameters
-    public static int NUM_REPLICAS_HASH = 3;
-    public static int NUM_REPLICAS_PUBLIC = 4;
+    public static int NUM_REPLICAS = 4;
     public static int NUM_FAULTS = 1;
 
     // crypto data
@@ -72,10 +69,9 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
 
         try {
             NUM_FAULTS = Integer.parseInt(numFaults);
-            NUM_REPLICAS_PUBLIC = 3 * NUM_FAULTS + 1;
-            NUM_REPLICAS_HASH = 2 * NUM_FAULTS + 1;
+            NUM_REPLICAS = 3 * NUM_FAULTS + 1;
 
-            for (int i = 0; i < NUM_REPLICAS_PUBLIC; ++i) {
+            for (int i = 0; i < NUM_REPLICAS; ++i) {
 
                 serverName = serviceName + i;
                 Integer port = new Integer(servicePort) + new Integer(i);
@@ -256,7 +252,7 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
     private byte[] readPublicKeyBlockHashes(final String keyBlockName)
             throws FileNotFoundException, InterruptedException, DataIntegrityFailureException {
 
-        final Semaphore readSemaphore = new Semaphore(-((int) Math.ceil((NUM_REPLICAS_PUBLIC + NUM_FAULTS) / 2.0)) + 1);
+        final Semaphore readSemaphore = new Semaphore(-((int) Math.ceil((NUM_REPLICAS + NUM_FAULTS) / 2.0)) + 1);
         final AtomicInteger faultyServers = new AtomicInteger(0);
         final ConcurrentHashMap<Integer, byte[]> readBlocks = new ConcurrentHashMap<>();
 
@@ -330,10 +326,10 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
 
         for (int i = firstBlockIndex; i <= lastBlockIndex; ++i) {
             final String dataBlockName = BlockUtility.getKeyString(blockHashes[num.get()]);
-            final Semaphore dataBlockSemaphore = new Semaphore(-(NUM_REPLICAS_HASH - NUM_FAULTS - 1));
+            final Semaphore dataBlockSemaphore = new Semaphore(0);
 
             // distributes load throughout the system's replicas
-            final List<BlockServer> quorum = obtainQuorumHashBlocks(dataBlockName);
+            final List<BlockServer> quorum = obtainQuorumHashBlocks(dataBlockName, NUM_FAULTS+1);
 
             final ConcurrentLinkedQueue<byte[]> dataBlocks = new ConcurrentLinkedQueue<>();
 
@@ -349,13 +345,14 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
                                 // because the tests run in a single machine /wo fault tolerance
                                 if (NUM_FAULTS == 0)
                                     dataBlockSemaphore.release();
+
                                 return;
                             } else {
+                                // if the response is correct, we release
                                 dataBlocks.add(data);
                                 dataBlockSemaphore.release();
                             }
                         } catch (Exception e) {
-                            faultyServers.incrementAndGet();
                             dataBlockSemaphore.release();
                         }
                     }
@@ -388,9 +385,9 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
         signAlgorithm.update(toWriteBlock, 0, toWriteBlock.length);
         final byte[] keyBlockSignature = signAlgorithm.sign();
 
-        final Semaphore putkSemaphore = new Semaphore(-((int) Math.ceil((NUM_REPLICAS_PUBLIC + NUM_FAULTS) / 2.0)) + 1);
+        final Semaphore putkSemaphore = new Semaphore(-((int) Math.ceil((NUM_REPLICAS + NUM_FAULTS) / 2.0)) + 1);
         final byte[] rewrittenBlockCopy = toWriteBlock;
-
+        
         for (final BlockServer replica : blockServers) {
             new Thread(new Runnable() {
                 public void run() {
@@ -412,12 +409,12 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
     }
 
     private void writeContentBlocks(final byte[][] toWriteBlocks, final byte[][] toWriteHashes) throws InterruptedException {
-        // since the blocks are immutable and self-verifying, we can use a smaller quorum
-        final Semaphore puthSemaphore = new Semaphore(-(NUM_REPLICAS_HASH - NUM_FAULTS - 1));
+        // since the blocks are immutable and self-verifying, we can use a smaller quorum (f+1)
+        final Semaphore puthSemaphore = new Semaphore(-NUM_FAULTS);
 
         for (int i = 0; i < toWriteBlocks.length; ++i) {
             // distributes load throughout the system's replicas
-            final List<BlockServer> quorum = obtainQuorumHashBlocks(toWriteHashes[i]);
+            final List<BlockServer> quorum = obtainQuorumHashBlocks(toWriteHashes[i], NUM_FAULTS+1);
             final int index = i;
 
             for (final BlockServer replica : quorum) {
@@ -441,22 +438,23 @@ public class BlockLibraryImpl extends UnicastRemoteObject implements BlockLibrar
     /*
      * Returns a quorum for hash blocks that is unique for each block hash
      */
-    private List<BlockServer> obtainQuorumHashBlocks(byte[] blockHash) {
+    private List<BlockServer> obtainQuorumHashBlocks(byte[] blockHash, int quorumSize) {
         String hash = BlockUtility.getKeyString(blockHash);
-        return obtainQuorumHashBlocks(hash);
+        return obtainQuorumHashBlocks(hash, quorumSize);
     }
 
     /*
      * Returns a quorum for hash blocks that is unique for each block hash
      */
-    private List<BlockServer> obtainQuorumHashBlocks(String hash) {
-        List<BlockServer> quorum = quorums.get(hash);
-
-        if (quorum == null) {
-            long seed = System.nanoTime();
-            Collections.shuffle(blockServers, new Random(seed));
-            quorum = blockServers.subList(0, NUM_REPLICAS_HASH);
-            quorums.put(hash, quorum);
+    private List<BlockServer> obtainQuorumHashBlocks(String hash, int quorumSize) {
+        int firstReplica = Math.abs(hash.hashCode() % NUM_REPLICAS);
+        List<BlockServer> quorum = new ArrayList<BlockServer>();
+        
+        int currentReplica = firstReplica;
+        for (int i = 0; i < quorumSize; ++i) {
+            System.out.println("Contacting "+currentReplica);
+            quorum.add(blockServers.get(currentReplica));
+            currentReplica = (currentReplica+1) % NUM_REPLICAS;
         }
 
         return quorum;

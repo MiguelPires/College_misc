@@ -42,7 +42,7 @@ public class PublicBlockAttackThreeFaults {
         Thread.sleep(1000);
 
         int changesCounter = 0;
-        for (int i = 0; i < BlockLibraryImpl.NUM_REPLICAS_HASH && changesCounter < 3; ++i) {
+        for (int i = 0; i < BlockLibraryImpl.NUM_REPLICAS && changesCounter < 3; ++i) {
             String filePath = FileSystemImpl.BASE_PATH + "-" + i + File.separatorChar + fileName;
             FileInputStream stream;
             try {

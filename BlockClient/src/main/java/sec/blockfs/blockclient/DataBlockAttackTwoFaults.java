@@ -41,17 +41,20 @@ public class DataBlockAttackTwoFaults {
         // get data block
         String fileName = BlockUtility.getKeyString(BlockUtility.digest(textBytes));
 
-        int changesCounter = 0;
-        for (int i = 0; i < BlockLibraryImpl.NUM_REPLICAS_HASH && changesCounter < 2; ++i) {
-            String filePath = FileSystemImpl.BASE_PATH + "-" + i + File.separatorChar + fileName;
+        int currentReplica = Math.abs(fileName.hashCode() % BlockLibraryImpl.NUM_REPLICAS);
+        for (int corrupted = 0; corrupted < 2;) {
+            String filePath = FileSystemImpl.BASE_PATH + "-" + currentReplica + File.separatorChar + fileName;
             FileInputStream stream;
             try {
                 stream = new FileInputStream(filePath);
-                changesCounter++;
+                ++corrupted;
             } catch (FileNotFoundException e) {
                 // if didn't find the file it's possible that this replica wasn't part of the quorum
+                currentReplica = (currentReplica + 1) % BlockLibraryImpl.NUM_REPLICAS;
                 continue;
             }
+            System.out.println("Corrupting replica: " + currentReplica);
+
 
             byte[] dataBlock = new byte[BlockUtility.BLOCK_SIZE];
             stream.read(dataBlock, 0, dataBlock.length);
@@ -64,6 +67,7 @@ public class DataBlockAttackTwoFaults {
             FileOutputStream outStream = new FileOutputStream(filePath);
             outStream.write(dataBlock);
             outStream.close();
+            currentReplica = (currentReplica + 1) % BlockLibraryImpl.NUM_REPLICAS;
         }
 
         byte[] readBuffer = new byte[BlockUtility.BLOCK_SIZE];

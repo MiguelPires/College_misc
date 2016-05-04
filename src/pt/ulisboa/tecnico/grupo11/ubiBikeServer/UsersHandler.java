@@ -22,12 +22,23 @@ public class UsersHandler implements HttpHandler {
     public UsersHandler() throws UnsupportedEncodingException, InvalidArgumentsException, NoSuchAlgorithmException {
         users = new Hashtable<String, User>();
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update("random".getBytes(Charset.forName("UTF-8")));
+        md.update("miguel".getBytes(Charset.forName("UTF-8")));
         User user = new User(md.digest());
+        
         users.put("miguel", user);
         user.setPoints(51);
                 // default path, for testing
         user.addPath("38.74924838,-9.20676827;38.76019789,-9.18283225");
+        user.addPath("38.1232,-8.20676827;38.4568,-8.18283225");
+        
+        md.reset();
+        md.update("maria".getBytes(Charset.forName("UTF-8")));
+        user = new User(md.digest());
+        
+        users.put("maria", user);
+        user.setPoints(20);
+                // default path, for testing
+        user.addPath("38.74924812,-9.20676827;38.76019732,-9.18283225");
         user.addPath("38.1232,-8.20676827;38.4568,-8.18283225");
     }
 

@@ -28,9 +28,9 @@ import java.util.List;
 import java.util.Map;
 
 public class Stations extends AppCompatActivity implements OnMapReadyCallback {
-    private SimpleAdapter adapter;
+    static SimpleAdapter adapter;
     // the data used in the list
-    List<Map<String, String>> data = new ArrayList<Map<String, String>>();
+    static List<Map<String, String>> data = new ArrayList<Map<String, String>>();
     // the list of coordinates
     private List<String> stationsList = new ArrayList<>();
     MapFragment mapFragment;
@@ -40,10 +40,11 @@ public class Stations extends AppCompatActivity implements OnMapReadyCallback {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stations);
 
-        ListView listView = (ListView) findViewById(R.id.listViewStations);
         stationsList.clear();
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.stationsMap);
         mapFragment.getMapAsync(this);
+
+        ListView listView = (ListView) findViewById(R.id.listViewStations);
 
         int id = 1;
         for (String stationCoord : Tab.stations.keySet()) {
@@ -77,30 +78,30 @@ public class Stations extends AppCompatActivity implements OnMapReadyCallback {
 
                         if (availableBikes > 0) {
                             Tab.stations.put(coord, --availableBikes);
-                            final int newBikeAmount = availableBikes;
                             Map<String, String> listItem = data.get(listPosition);
                             listItem.put("sub", "There are " + availableBikes + " bikes available");
 
                             new Thread(new Runnable() {
                                 public void run() {
-                                    while(true) {
+                                    while (true) {
                                         try {
                                             URL url = new URL(Login.serverUrl + "/stations");
                                             HttpURLConnection createUserConn = (HttpURLConnection) url.openConnection();
                                             createUserConn.setDoOutput(true);
                                             createUserConn.setRequestMethod("PUT");
 
-                                            byte[] updatedData =  (coord + ":-").getBytes("UTF-8");
+                                            byte[] updatedData = (coord + ":-").getBytes("UTF-8");
                                             DataOutputStream wr = new DataOutputStream(createUserConn.getOutputStream());
                                             wr.write(updatedData);
                                             wr.close();
 
                                             int responseCode = createUserConn.getResponseCode();
-                                            if (responseCode == 200)
+                                            if (responseCode == 200) {
+                                                Tab.reservations.put(coord, true);
                                                 return;
-                                            else
+                                            } else
                                                 Thread.sleep(5000);
-                                        } catch(IOException | InterruptedException  e) {
+                                        } catch (IOException | InterruptedException e) {
                                             Log.e("UPDATE_STATIONS", "IOException", e);
                                         }
                                     }
@@ -140,7 +141,7 @@ public class Stations extends AppCompatActivity implements OnMapReadyCallback {
 
             map.addMarker(new MarkerOptions()
                     .position(position)
-                    .title("Station " + id++ ));
+                    .title("Station " + id++));
 
             if (!setCamera) {
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 10.0f));

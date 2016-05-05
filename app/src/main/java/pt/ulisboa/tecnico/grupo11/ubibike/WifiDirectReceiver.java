@@ -23,6 +23,7 @@ import java.security.Signature;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
@@ -101,8 +102,7 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
         try {
             Contacts.contacts.clear();
-            for (String deviceName : simWifiP2pInfo.getDevicesInNetwork())
-            {
+            for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
                 if (!deviceName.startsWith("Bike")) {
                     Contacts.contacts.add(deviceName);
                 }
@@ -113,6 +113,41 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                     if (!onBike) {
                         Tab.currentPath = new ArrayList<Location>();
                         onBike = true;
+
+                        if (Tab.lastLocation != null) {
+                            for (final String stationLocation : Tab.stations.keySet()) {
+                                String[] parts = stationLocation.split(",");
+                                Double longitude = new Double(parts[1]);
+                                Double latitude = new Double(parts[0]);
+
+                                double distance = Tab.calculateDistance(Tab.lastLocation.getLongitude(), Tab.lastLocation.getLatitude(), longitude, latitude);
+                                System.out.println("Distance from station: " + distance);
+                                if (distance < 25) {
+                                    Boolean reservation = Tab.reservations.get(stationLocation);
+                                    if (reservation != null && reservation) {
+                                        // delete reservation
+                                        Tab.reservations.put(stationLocation, false);
+                                    } else {
+                                        Tab.stations.put(stationLocation, Tab.stations.get(stationLocation) - 1);
+                                        // inform server
+                                        updateStationBikes(stationLocation, "-");
+
+                                        if (Stations.data != null) {
+                                            for (Map<String, String> datum : Stations.data) {
+                                                if (datum.get("title").contains(stationLocation)) {
+                                                    String subtitle = "There are " + Tab.stations.get(stationLocation) + " bikes available";
+                                                    datum.put("sub", subtitle);
+                                                    //Stations.data.add(datum);
+                                                    Stations.adapter.notifyDataSetChanged();
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         Home.statusTxt.setText("Riding");
                         Home.circleColor = Color.GREEN;
                         Home.circleView.setCircleColorGreen();
@@ -122,6 +157,33 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
             }
 
             if (onBike) {
+                if (Tab.lastLocation != null) {
+                    for (final String stationLocation : Tab.stations.keySet()) {
+                        String[] parts = stationLocation.split(",");
+                        Double longitude = new Double(parts[1]);
+                        Double latitude = new Double(parts[0]);
+
+                        double distance = Tab.calculateDistance(Tab.lastLocation.getLongitude(), Tab.lastLocation.getLatitude(), longitude, latitude);
+                        System.out.println("Distance from station: " + distance);
+                        if (distance < 25) {
+                            Tab.stations.put(stationLocation, Tab.stations.get(stationLocation) + 1);
+                            updateStationBikes(stationLocation, "+");
+
+                            if (Stations.data != null) {
+                                for (Map<String, String> datum : Stations.data) {
+                                    if (datum.get("title").contains(stationLocation)) {
+                                        String subtitle = "There are " + Tab.stations.get(stationLocation) + " bikes available";
+                                        datum.put("sub", subtitle);
+                                        //Stations.data.add(datum);
+                                        Stations.adapter.notifyDataSetChanged();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 onBike = false;
                 Home.statusTxt.setText("Idle");
                 Home.circleColor = Color.BLUE;
@@ -138,49 +200,82 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
 
                     Tab.trajectories.add(coordsList);
                     final String sendPath = joinedString.substring(0, joinedString.length() - 1);
-
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            while (true) {
-                                try {
-                                    System.out.println("Uploading points to server");
-                                    String pointsUrl = Login.serverUrl + "/users/" + Tab.username + "/points/" + Tab.userPoints;
-                                    URL url = new URL(pointsUrl);
-                                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                                    conn.setDoOutput(true);
-                                    conn.setRequestMethod("PUT");
-                                    conn.getInputStream();
-
-                                    System.out.println("Uploading new path to server");
-                                    String pathUrl = Login.serverUrl + "/users/" + Tab.username + "/path";
-                                    url = new URL(pathUrl);
-                                    conn = (HttpURLConnection) url.openConnection();
-                                    conn.setDoOutput(true);
-                                    conn.setRequestMethod("PUT");
-
-                                    DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
-                                    wr.write(sendPath.getBytes());
-                                    wr.close();
-                                    conn.getInputStream();
-                                    System.out.print("Finished uploading: " + sendPath);
-                                    return;
-                                } catch (Exception e) {
-                                    Log.e("Upload path", e.getMessage(), e);
-                                    try {
-                                        Thread.sleep(5000);
-                                    } catch (Exception e1) {
-                                        Log.e("Upload path", e1.getMessage(), e1);
-                                    }
-                                }
-                            }
-                        }
-                    }).start();
+                    updatePointsAndPath(sendPath);
                 }
             }
         } catch (Exception e) {
             Log.e("Upload path", e.getMessage(), e);
         }
+    }
+
+    private void updatePointsAndPath(final String sendPath) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        System.out.println("Uploading points to server");
+                        String pointsUrl = Login.serverUrl + "/users/" + Tab.username + "/points/" + Tab.userPoints;
+                        URL url = new URL(pointsUrl);
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        conn.setDoOutput(true);
+                        conn.setRequestMethod("PUT");
+                        conn.getInputStream();
+
+                        System.out.println("Uploading new path to server");
+                        String pathUrl = Login.serverUrl + "/users/" + Tab.username + "/path";
+                        url = new URL(pathUrl);
+                        conn = (HttpURLConnection) url.openConnection();
+                        conn.setDoOutput(true);
+                        conn.setRequestMethod("PUT");
+
+                        DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
+                        wr.write(sendPath.getBytes());
+                        wr.close();
+                        conn.getInputStream();
+                        System.out.print("Finished uploading: " + sendPath);
+                        return;
+                    } catch (Exception e) {
+                        Log.e("Upload path", e.getMessage(), e);
+                        try {
+                            Thread.sleep(5000);
+                        } catch (Exception e1) {
+                            Log.e("Upload path", e1.getMessage(), e1);
+                        }
+                    }
+                }
+            }
+        }).start();
+    }
+
+    private void updateStationBikes(final String stationLocation, final String update) {
+        new Thread(new Runnable() {
+            public void run() {
+                while (true) {
+                    try {
+                        URL url = new URL(Login.serverUrl + "/stations");
+                        HttpURLConnection createUserConn = (HttpURLConnection) url.openConnection();
+                        createUserConn.setDoOutput(true);
+                        createUserConn.setRequestMethod("PUT");
+
+                        byte[] updatedData = (stationLocation + ":" + update).getBytes("UTF-8");
+                        DataOutputStream wr = new DataOutputStream(createUserConn.getOutputStream());
+                        wr.write(updatedData);
+                        wr.close();
+
+                        int responseCode = createUserConn.getResponseCode();
+                        System.out.println("Updating server. Code " + responseCode);
+
+                        if (responseCode == 200) {
+                            return;
+                        } else
+                            Thread.sleep(5000);
+                    } catch (IOException | InterruptedException e) {
+                        Log.e("UPDATE_STATIONS", "IOException", e);
+                    }
+                }
+            }
+        }).start();
     }
 
     private class MessageReceiver extends AsyncTask<Void, String, Void> {

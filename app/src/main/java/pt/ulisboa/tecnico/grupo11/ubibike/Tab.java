@@ -46,6 +46,8 @@ public class Tab extends TabActivity implements LocationListener {
     public static String username;
     public static Hashtable<String, Integer> stations = new Hashtable<>();
     public static List<Location> currentPath;
+    public static Location lastLocation;
+    public static Hashtable<String, Boolean> reservations = new Hashtable<>();
 
     // wifi direct connection data
     public static WifiDirectReceiver mReceiver;
@@ -158,13 +160,11 @@ public class Tab extends TabActivity implements LocationListener {
             currentPath.add(location);
         }
 
-        if (WifiDirectReceiver.onStation) {
-
-        }
+        lastLocation = location;
     }
 
     //  Returns the distance between the two coordinates in meters
-    private double calculateDistance(double longitude1, double latitude1, double longitude2, double latitude2) {
+    public static double calculateDistance(double longitude1, double latitude1, double longitude2, double latitude2) {
 
         //convert decimal degrees to radians
         longitude1 = Math.toRadians(longitude1);

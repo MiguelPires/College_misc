@@ -197,10 +197,12 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                         joinedString += coordinate + ";";
                         coordsList.add(coordinate);
                     }
-
+                    /*
+                     TODO: Adicionar a parte da transacao da soma de pontos. ATENÇÃO: Pontos a ser somados diretamente no Tab
+                      */
                     Tab.trajectories.add(coordsList);
                     final String sendPath = joinedString.substring(0, joinedString.length() - 1);
-                    updatePointsAndPath(sendPath);
+                    updatePath(sendPath);
                 }
             }
         } catch (Exception e) {
@@ -208,24 +210,16 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
         }
     }
 
-    private void updatePointsAndPath(final String sendPath) {
+    private void updatePath(final String sendPath) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 while (true) {
                     try {
-                        System.out.println("Uploading points to server");
-                        String pointsUrl = Login.serverUrl + "/users/" + Tab.username + "/points/" + Tab.userPoints;
-                        URL url = new URL(pointsUrl);
-                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                        conn.setDoOutput(true);
-                        conn.setRequestMethod("PUT");
-                        conn.getInputStream();
-
                         System.out.println("Uploading new path to server");
                         String pathUrl = Login.serverUrl + "/users/" + Tab.username + "/path";
-                        url = new URL(pathUrl);
-                        conn = (HttpURLConnection) url.openConnection();
+                        URL url = new URL(pathUrl);
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                         conn.setDoOutput(true);
                         conn.setRequestMethod("PUT");
 
@@ -307,8 +301,15 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
 
                         BufferedReader sockIn = new BufferedReader(
                                 new InputStreamReader(sock.getInputStream()));
-                        String st = sockIn.readLine();
-                        publishProgress(st);
+                        //String st = sockIn.readLine();
+                        StringBuilder out = new StringBuilder();
+                        String st;
+                        while (!(st = sockIn.readLine()).equals("--END--")) {
+                            out.append(st);
+                            Log.d("RECEIVER", "Message part: " + st);
+                        }
+                        Log.d("RECEIVER", "Received message: " + out.toString());
+                        publishProgress(out.toString());
                         sock.getOutputStream().write(("\n").getBytes());
                     } catch (IOException e) {
                         Log.d("Error reading socket:", e.getMessage());
@@ -330,7 +331,9 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                 return;
 
             try {
-                String message = values[0];
+                final String message = values[0];
+                Log.d("MESSAGE", message);
+                Toast.makeText(mActivity, "MESSAGE: " + message , Toast.LENGTH_LONG);
                 if (message.startsWith("#M", 1)) {
                     final String sender = message.substring(message.indexOf("#", 3) + 1, message.lastIndexOf("#"));
                     final String parseMessage = message.substring(message.lastIndexOf("#") + 1);
@@ -338,60 +341,152 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                             Toast.LENGTH_LONG).show();
                     return;
                 }
+                new Thread(new Runnable()
 
-                byte[] decodedMessage = Base64.decode(message, Base64.DEFAULT);
-                final String originalMessage = new String(decodedMessage, "UTF-8");
-
-                if (originalMessage.startsWith("#P", 1)) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            final String sender = originalMessage.substring(originalMessage.indexOf("#", 3) + 1, originalMessage.lastIndexOf("#"));
-                            String parsedMessage = parseSignedMessage(originalMessage, sender);
-                            if (parsedMessage != null) {
-                                String message = parsedMessage.substring(2);
-                                final String stringPoints = message.substring(message.lastIndexOf("#") + 1);
-
-                                int receivedPoints = Integer.parseInt(stringPoints);
-                                Tab.userPoints += receivedPoints;
-                                Tab.updatePoints = true;
-                                if (receivedPoints == 1) {
-                                    mActivity.runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(mActivity, "Received " + stringPoints + " point from " + sender,
-                                                    Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-                                } else {
-                                    mActivity.runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(mActivity, "Received " + stringPoints + " points from " + sender,
-                                                    Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-                                }
-
-                            } else {
-                                mActivity.runOnUiThread(new Runnable() {
+                {
+                    public void run() {
+                        String[] getTransaction = message.split(";;;");
+                        for(final String transaction : getTransaction)
+                        {
+                            mActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(mActivity, transaction, Toast.LENGTH_LONG).show();
+                                Log.e("TRANSACTION CYCLE", transaction);
+                            }});
+                        }
+                        String[] getSender = getTransaction[getTransaction.length - 2].split("#");
+                        String sender = getSender[2];
+                        Log.e("RECEIVEDMESSAGE", "SENDER: " + sender);
+                        Log.e("PASRSESIGNED", "Message: " + getTransaction[getTransaction.length - 2]);
+                        Log.e("PASRSESIGNED", "Signature: " + getTransaction[getTransaction.length - 1]);
+                        //final String parsedMessage = parseSignedMessage(message, sender);
+                        final String parsedMessage = parseSignedMessage(message.replace(";;;" +  getTransaction[getTransaction.length - 1], "" )
+                                , getTransaction[getTransaction.length - 1], sender);
+                        mActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(mActivity, parsedMessage, Toast.LENGTH_LONG).show();
+                                Log.e("RECEIVEDMESSAGE", "PARSEDMESSAGE: " + parsedMessage);
+                            }});
+                        //  byte[] decodedMessage = Base64.decode(message, Base64.DEFAULT);
+                        //Contacts.madeTransactions += parsedMessage + ";;;";
+                        Contacts.madeTransactions += parsedMessage;
+                        final String[] messageSplited = parsedMessage.split(";;;");
+                        if (parsedMessage != null) {
+                            if (messageSplited[messageSplited.length - 1].startsWith("#P")) {
+                                new Thread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Toast.makeText(mActivity, "Message authentication failed",
-                                                Toast.LENGTH_SHORT).show();
+                                        //final String sender = originalMessage.substring(originalMessage.indexOf("#", 3) + 1, originalMessage.lastIndexOf("#"));
+                            /*
+                                Outputs:
+                                0 - vazio
+                                1 - P
+                                2 - Sender
+                                3 - Receiver
+                                4 - Mensagem
+                                5 - Counter
+                                6 - Hash
+                            */
+                                        String[] parsedString = messageSplited[messageSplited.length - 1].split("#");
+                                        final String sender = parsedString[2];
+                                        //String parsedMessage = parseSignedMessage(originalMessage, sender);
+                                        //String message = parsedMessage.substring(2);
+                                        //final String stringPoints = message.substring(message.lastIndexOf("#") + 1);
+                                        final String stringPoints = parsedString[4];
+
+                                        int receivedPoints = Integer.parseInt(stringPoints);
+                                        Tab.userPoints += receivedPoints;
+                                        Tab.updatePoints = true;
+                                        if (receivedPoints == 1) {
+                                            mActivity.runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Toast.makeText(mActivity, "Received " + stringPoints + " point from " + sender,
+                                                            Toast.LENGTH_LONG).show();
+                                                    new Thread(new Runnable() {
+                                                        public void run() {
+                                                            while (true) {
+                                                                try {
+                                                                    URL url = new URL(Login.serverUrl + "/transactions");
+                                                                    HttpURLConnection createUserConn = (HttpURLConnection) url.openConnection();
+                                                                    createUserConn.setDoOutput(true);
+                                                                    createUserConn.setRequestMethod("PUT");
+                                                                    byte[] updatedData = Contacts.madeTransactions.getBytes("UTF-8");
+                                                                    DataOutputStream wr = new DataOutputStream(createUserConn.getOutputStream());
+                                                                    wr.write(updatedData);
+                                                                    wr.close();
+
+                                                                    int responseCode = createUserConn.getResponseCode();
+                                                                    if (responseCode == 200)
+                                                                        return;
+                                                                    else
+                                                                        Thread.sleep(5000);
+                                                                } catch (IOException | InterruptedException e) {
+                                                                    Log.e("TRANSACTIONS", "IOException", e);
+                                                                }
+                                                            }
+                                                        }
+                                                    }).start();
+                                                }
+                                            });
+                                        } else {
+                                            mActivity.runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Toast.makeText(mActivity, "Received " + stringPoints + " points from " + sender,
+                                                            Toast.LENGTH_LONG).show();
+                                                    new Thread(new Runnable() {
+                                                        public void run() {
+                                                            while (true) {
+                                                                try {
+                                                                    URL url = new URL(Login.serverUrl + "/transactions");
+                                                                    HttpURLConnection createUserConn = (HttpURLConnection) url.openConnection();
+                                                                    createUserConn.setDoOutput(true);
+                                                                    createUserConn.setRequestMethod("PUT");
+                                                                    byte[] updatedData = Contacts.madeTransactions.getBytes("UTF-8");
+                                                                    DataOutputStream wr = new DataOutputStream(createUserConn.getOutputStream());
+                                                                    wr.write(updatedData);
+                                                                    wr.close();
+
+                                                                    int responseCode = createUserConn.getResponseCode();
+                                                                    if (responseCode == 200)
+                                                                        return;
+                                                                    else
+                                                                        Thread.sleep(5000);
+                                                                } catch (IOException | InterruptedException e) {
+                                                                    Log.e("TRANSACTIONS", "IOException", e);
+                                                                }
+                                                            }
+                                                        }
+                                                    }).start();
+                                                }
+                                            });
+                                        }
                                     }
-                                });
+                                }).start();
+                            } else {
+                                Log.d("RECEIVER", "Unknown message: " + messageSplited[messageSplited.length - 1]);
                             }
+                        } else {
+                            mActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(mActivity, "Message authentication failed",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            });
                         }
-                    }).start();
-                } else {
-                    Log.d("RECEIVER", "Unknown message: " + message);
-                }
+                    }
+                }).start();
+
             } catch (Exception e) {
                 Log.e("RECEIVER", e.getMessage(), e);
             }
         }
 
+        /*
         private String parseSignedMessage(String signedMessage, String sender) {
             try {
                 byte[] data = signedMessage.getBytes("UTF-8");
@@ -412,7 +507,12 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
 
                 if (responseCode == 200) {
                     InputStream inputStream = httpConnection.getInputStream();
-                    byte[] publicKey = new byte[httpConnection.getContentLength()];
+                    int contentLength = httpConnection.getContentLength();
+                    if (contentLength == -1) {
+                        Log.d("CRYPTO", "Couldn't obtain sender's public key");
+                        return null;
+                    }
+                    byte[] publicKey = new byte[contentLength];
                     inputStream.read(publicKey);
                     inputStream.close();
 
@@ -431,6 +531,48 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                 Log.e("CRYPTO", e.getMessage(), e);
             }
             return null;
+        } */
+
+        private String parseSignedMessage(String signedMessage, String signature, String sender) {
+            try {
+                byte[] data = signedMessage.getBytes("UTF-8");
+                byte[] sig = Base64.decode(signature, Base64.DEFAULT);
+                Log.d("DEBUG", "MSG / SIG: " +  signedMessage + " / " + signature );
+
+
+                final String keyUrl = Login.serverUrl + "/users/" + sender + "/key";
+                URL usersUrl = new URL(keyUrl);
+                HttpURLConnection httpConnection = (HttpURLConnection) usersUrl.openConnection();
+                httpConnection.setInstanceFollowRedirects(false);
+                httpConnection.setRequestMethod("GET");
+                int responseCode = httpConnection.getResponseCode();
+
+                if (responseCode == 200) {
+                    InputStream inputStream = httpConnection.getInputStream();
+                    int contentLength = httpConnection.getContentLength();
+                    if (contentLength == -1) {
+                        Log.d("CRYPTO", "Couldn't obtain sender's public key");
+                        return null;
+                    }
+                    byte[] publicKey = new byte[contentLength];
+                    inputStream.read(publicKey);
+                    inputStream.close();
+
+                    if (!verifyDataIntegrity(data, sig, publicKey)) {
+                        Log.d("CRYPTO", "Signature verification failed");
+                    } else {
+                        Log.d("CRYPTO", "Signature verification successfull");
+                    }
+                    //return signedMessage;
+                    return signedMessage+";;;";
+                } else {
+                    Log.d("Crypto", "Couldn't obtain " + sender + "'s public key");
+                    return null;
+                }
+            } catch (Exception e) {
+                Log.e("CRYPTO", e.getMessage(), e);
+            }
+            return null;
         }
 
         private boolean verifyDataIntegrity(byte[] data, byte[] signature, byte[] publicKeyBytes) {
@@ -440,11 +582,14 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                 KeyFactory keyFactory = KeyFactory.getInstance("RSA");
                 PublicKey publicKey = keyFactory.generatePublic(pubKeySpec);
 
+                Log.e("KEYS", "PUBLICKEY SENDER: " + Base64.encodeToString(publicKey.getEncoded(), Base64.DEFAULT));
+
                 Signature rsaSignature = Signature.getInstance("SHA512withRSA");
 
                 // verify data integrity
                 rsaSignature.initVerify(publicKey);
-                rsaSignature.update(data, 0, data.length);
+                //rsaSignature.update(data, 0, data.length);
+                rsaSignature.update(data);
                 return rsaSignature.verify(signature);
             } catch (Exception e) {
                 e.printStackTrace();

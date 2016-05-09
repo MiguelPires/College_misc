@@ -20,12 +20,17 @@ import android.util.Log;
 import android.widget.TabHost;
 import android.widget.Toast;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.InputMismatchException;
 import java.util.List;
@@ -153,9 +158,47 @@ public class Tab extends TabActivity implements LocationListener {
         if (WifiDirectReceiver.onBike) {
 
             if (!currentPath.isEmpty()) {
-                Location lastLocation = currentPath.get(currentPath.size() - 1);
-                userPoints += calculateDistance(lastLocation.getLongitude(), lastLocation.getLatitude(), location.getLongitude(), location.getLatitude());
-                Tab.updatePoints = true;
+                try {
+                    Location lastLocation = currentPath.get(currentPath.size() - 1);
+                    int distance = (int)calculateDistance(lastLocation.getLongitude(), lastLocation.getLatitude(), location.getLongitude(), location.getLatitude());
+                    userPoints += distance;
+                    long dateTime = new Date().getTime();
+                    String message = "#P#_#" + Tab.username + "#" + distance + "#" + dateTime;
+                    MessageDigest md = null;
+                    md = MessageDigest.getInstance("SHA-256");
+                    md.update(message.getBytes(Charset.forName("UTF-8")));
+                    byte[] messageHash = md.digest();
+                    String hash = new String(messageHash);
+                    message += "#" + hash;
+                    Contacts.madeTransactions += message +";;;";
+                    Tab.updatePoints = true;
+                    new Thread(new Runnable() {
+                        public void run() {
+                            while(true) {
+                                try {
+                                    URL url = new URL(Login.serverUrl + "/transactions");
+                                    HttpURLConnection createUserConn = (HttpURLConnection) url.openConnection();
+                                    createUserConn.setDoOutput(true);
+                                    createUserConn.setRequestMethod("PUT");
+                                    byte[] updatedData = Contacts.madeTransactions.getBytes("UTF-8");
+                                    DataOutputStream wr = new DataOutputStream(createUserConn.getOutputStream());
+                                    wr.write(updatedData);
+                                    wr.close();
+
+                                    int responseCode = createUserConn.getResponseCode();
+                                    if (responseCode == 200)
+                                        return;
+                                    else
+                                        Thread.sleep(5000);
+                                } catch(IOException | InterruptedException  e) {
+                                    Log.e("TRANSACTIONS", "IOException", e);
+                                }
+                            }
+                        }
+                    }).start();
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
             }
             currentPath.add(location);
         }

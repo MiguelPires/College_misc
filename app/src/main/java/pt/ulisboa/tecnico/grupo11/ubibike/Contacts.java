@@ -31,7 +31,15 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
@@ -56,6 +64,8 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
 
     public static ArrayList<String> contacts = new ArrayList<>();
     public static ListView listView;
+
+    public static String madeTransactions = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,18 +138,37 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
                                         Toast.makeText(Contacts.this, "You can't send that amount of points", Toast.LENGTH_SHORT).show();
                                         return;
                                     }
-
-                                    message = "#P#" + Tab.username + "#" + points;
                                     currentUser = listAdapter.getItem(info.position);
+                                    long dateTime = new Date().getTime();
+                                    message = "#P#" + Tab.username + "#" + currentUser + "#" + points + "#" + dateTime;
+                                    MessageDigest md = MessageDigest.getInstance("MD5");
+                                    md.update(message.getBytes(Charset.forName("UTF-8")));
+                                    StringBuffer hexString = new StringBuffer();
+                                    byte[] hash = md.digest();
+                                    for (int i = 0; i < hash.length; i++) {
+                                        if ((0xff & hash[i]) < 0x10) {
+                                            hexString.append("0"
+                                                    + Integer.toHexString((0xFF & hash[i])));
+                                        } else {
+                                            hexString.append(Integer.toHexString(0xFF & hash[i]));
+                                        }
+                                    }
+                                    message += "#" + hexString.toString();
+
                                     mManager.requestGroupInfo(mChannel, Contacts.this);
 
                                     Tab.userPoints -= points;
                                     Tab.updatePoints = true;
-
+                                    //madeTransactions += message +";;;";
+                                    madeTransactions += message;
+                                    message = madeTransactions;
+                                    madeTransactions += ";;;";
                                     dialog.dismiss();
                                     progressDialog.show();
                                 } catch (NumberFormatException e) {
                                     Toast.makeText(Contacts.this, "'" + value.toString() + "' is not a number.", Toast.LENGTH_SHORT).show();
+                                } catch (NoSuchAlgorithmException e) {
+                                    e.printStackTrace();
                                 }
                             }
                         });
@@ -242,23 +271,32 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
 
                 byte[] data = null;
                 if (msg[0].startsWith("#P")) {
+                    Log.d("WiFi Direct", "MSG[0] '" + msg[0] + "'");
                     // non-signed message
                     byte[] byteMessage = msg[0].getBytes("UTF-8");
-                    byte[] sendData = new byte[1 + byteMessage.length];
-                    sendData[0] = (byte) byteMessage.length;
-                    System.arraycopy(byteMessage, 0, sendData, 1, byteMessage.length);
+                    //byte[] sendData = new byte[1 + byteMessage.length];
+                    //sendData[0] = (byte) msg[0].length();
+                    //System.arraycopy(byteMessage, 0, sendData, 1, byteMessage.length);
 
                     // sign message
                     Home.signAlgorithm.initSign(Home.privateKey);
-                    Home.signAlgorithm.update(sendData, 0, sendData.length);
+                    Log.e("KEYS", "PUBLICKEY SENDER: " + Base64.encodeToString(Home.publicKey.getEncoded(), Base64.DEFAULT));
+                    //Home.signAlgorithm.update(sendData, 0, sendData.length);
+                    Home.signAlgorithm.update(byteMessage);
                     byte[] signature = Home.signAlgorithm.sign();
-
+                    //msg[0] += Base64.encodeToString(signature, Base64.DEFAULT);
+                    msg[0] += ";;;" + Base64.encodeToString(signature, Base64.DEFAULT);
+                    Log.d("WiFi Direct", "MSG[0] + Sig '" + msg[0] + "'");
                     // build entire message
-                    data = new byte[sendData.length + signature.length];
-                    System.arraycopy(sendData, 0, data, 0, sendData.length);
-                    System.arraycopy(signature, 0, data, sendData.length, signature.length);
+                    //data = new byte[sendData.length + signature.length];
+                    //System.arraycopy(sendData, 0, data, 0, sendData.length);
+                    //System.arraycopy(signature, 0, data, sendData.length, signature.length);
+                    //data = new byte[byteMessage.length + signature.length];
+                    //System.arraycopy(byteMessage, 0, data, 0, byteMessage.length);
+                    //System.arraycopy(signature, 0, data, byteMessage.length, signature.length);
+                    data = msg[0].getBytes();
 
-                    data = (Base64.encodeToString(data, Base64.DEFAULT) + "\n").getBytes();
+                    //data = (Base64.encodeToString(data, Base64.DEFAULT) + "\n").getBytes();
                 } else if (msg[0].startsWith("#M")){
                     data = ("1"+msg[0]+"\n").getBytes();
                 } else {
@@ -266,8 +304,11 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
                     return null;
                 }
 
+                String endOfMessage = "--END--\n";
                 mCliSocket.getOutputStream().write(data);
                 mCliSocket.getOutputStream().flush();
+                Log.d("WiFi Direct", "SENDING- END");
+                mCliSocket.getOutputStream().write(endOfMessage.getBytes());
 
                 BufferedReader sockIn = new BufferedReader(
                         new InputStreamReader(mCliSocket.getInputStream()));

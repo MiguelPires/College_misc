@@ -17,7 +17,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 public class UsersHandler implements HttpHandler {
-    private Hashtable<String, User> users;
+    public static Hashtable<String, User> users;
 
     public UsersHandler() throws UnsupportedEncodingException, InvalidArgumentsException, NoSuchAlgorithmException {
         users = new Hashtable<String, User>();
@@ -245,7 +245,7 @@ public class UsersHandler implements HttpHandler {
                         exchange.sendResponseHeaders(400, 0);
                     }
                 }
-            } else {
+            }else {
                 System.out.println("Unrecognized request: " + path);
                 exchange.sendResponseHeaders(400, 0);
             }

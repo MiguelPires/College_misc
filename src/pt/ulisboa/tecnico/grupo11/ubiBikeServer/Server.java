@@ -12,6 +12,7 @@ public class Server {
         
         server.createContext("/users", new UsersHandler());
         server.createContext("/stations", new StationsHandler());
+        server.createContext("/transactions", new TransactionsHandler());
 
         server.setExecutor(null); // creates a default executor
         server.start();

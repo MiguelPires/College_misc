@@ -159,7 +159,6 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
 
                                     Tab.userPoints -= points;
                                     Tab.updatePoints = true;
-                                    //madeTransactions += message +";;;";
                                     madeTransactions += message;
                                     message = madeTransactions;
                                     madeTransactions += ";;;";
@@ -274,29 +273,18 @@ public class Contacts extends AppCompatActivity implements SimWifiP2pManager.Gro
                     Log.d("WiFi Direct", "MSG[0] '" + msg[0] + "'");
                     // non-signed message
                     byte[] byteMessage = msg[0].getBytes("UTF-8");
-                    //byte[] sendData = new byte[1 + byteMessage.length];
-                    //sendData[0] = (byte) msg[0].length();
-                    //System.arraycopy(byteMessage, 0, sendData, 1, byteMessage.length);
 
                     // sign message
                     Home.signAlgorithm.initSign(Home.privateKey);
                     Log.e("KEYS", "PUBLICKEY SENDER: " + Base64.encodeToString(Home.publicKey.getEncoded(), Base64.DEFAULT));
-                    //Home.signAlgorithm.update(sendData, 0, sendData.length);
                     Home.signAlgorithm.update(byteMessage);
                     byte[] signature = Home.signAlgorithm.sign();
-                    //msg[0] += Base64.encodeToString(signature, Base64.DEFAULT);
                     msg[0] += ";;;" + Base64.encodeToString(signature, Base64.DEFAULT);
                     Log.d("WiFi Direct", "MSG[0] + Sig '" + msg[0] + "'");
+
                     // build entire message
-                    //data = new byte[sendData.length + signature.length];
-                    //System.arraycopy(sendData, 0, data, 0, sendData.length);
-                    //System.arraycopy(signature, 0, data, sendData.length, signature.length);
-                    //data = new byte[byteMessage.length + signature.length];
-                    //System.arraycopy(byteMessage, 0, data, 0, byteMessage.length);
-                    //System.arraycopy(signature, 0, data, byteMessage.length, signature.length);
                     data = msg[0].getBytes();
 
-                    //data = (Base64.encodeToString(data, Base64.DEFAULT) + "\n").getBytes();
                 } else if (msg[0].startsWith("#M")){
                     data = ("1"+msg[0]+"\n").getBytes();
                 } else {

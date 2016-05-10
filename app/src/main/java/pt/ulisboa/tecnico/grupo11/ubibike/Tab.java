@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.support.v4.app.ActivityCompat;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.TabHost;
 import android.widget.Toast;
@@ -26,14 +27,17 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
@@ -163,24 +167,39 @@ public class Tab extends TabActivity implements LocationListener {
                     int distance = (int)calculateDistance(lastLocation.getLongitude(), lastLocation.getLatitude(), location.getLongitude(), location.getLatitude());
                     userPoints += distance;
                     long dateTime = new Date().getTime();
-                    String message = "#P#_#" + Tab.username + "#" + distance + "#" + dateTime;
-                    MessageDigest md = null;
-                    md = MessageDigest.getInstance("SHA-256");
-                    md.update(message.getBytes(Charset.forName("UTF-8")));
-                    byte[] messageHash = md.digest();
-                    String hash = new String(messageHash);
-                    message += "#" + hash;
-                    Contacts.madeTransactions += message +";;;";
+                    final String message = "#P#_#" + Tab.username + "#" + distance + "#" + dateTime;
                     Tab.updatePoints = true;
                     new Thread(new Runnable() {
                         public void run() {
                             while(true) {
                                 try {
+                                    String msg = message;
+                                    MessageDigest md = null;
+                                    md = MessageDigest.getInstance("SHA-256");
+                                    md.update(msg.getBytes(Charset.forName("UTF-8")));
+                                    StringBuffer hexString = new StringBuffer();
+                                    byte[] hash = md.digest();
+                                    for (int i = 0; i < hash.length; i++) {
+                                        if ((0xff & hash[i]) < 0x10) {
+                                            hexString.append("0"
+                                                    + Integer.toHexString((0xFF & hash[i])));
+                                        } else {
+                                            hexString.append(Integer.toHexString(0xFF & hash[i]));
+                                        }
+                                    }
+                                    msg += "#" + hexString.toString();
+                                    Contacts.madeTransactions += msg +";;;";
+                                    Home.signAlgorithm.initSign(Home.privateKey);
+                                    Log.e("KEYS", "PUBLICKEY SENDER: " + Base64.encodeToString(Home.publicKey.getEncoded(), Base64.DEFAULT));
+                                    Home.signAlgorithm.update(Contacts.madeTransactions.getBytes());
+                                    byte[] signature = Home.signAlgorithm.sign();
+                                    final String signedTransactions = Contacts.madeTransactions + Base64.encodeToString(signature, Base64.DEFAULT);
+                                    Log.d("WiFi Direct", "Transactions signed to server '" + signedTransactions + "'");
                                     URL url = new URL(Login.serverUrl + "/transactions");
                                     HttpURLConnection createUserConn = (HttpURLConnection) url.openConnection();
                                     createUserConn.setDoOutput(true);
                                     createUserConn.setRequestMethod("PUT");
-                                    byte[] updatedData = Contacts.madeTransactions.getBytes("UTF-8");
+                                    byte[] updatedData = signedTransactions.getBytes("UTF-8");
                                     DataOutputStream wr = new DataOutputStream(createUserConn.getOutputStream());
                                     wr.write(updatedData);
                                     wr.close();
@@ -192,11 +211,17 @@ public class Tab extends TabActivity implements LocationListener {
                                         Thread.sleep(5000);
                                 } catch(IOException | InterruptedException  e) {
                                     Log.e("TRANSACTIONS", "IOException", e);
+                                } catch (NoSuchAlgorithmException e) {
+                                    e.printStackTrace();
+                                } catch (SignatureException e) {
+                                    e.printStackTrace();
+                                } catch (InvalidKeyException e) {
+                                    e.printStackTrace();
                                 }
                             }
                         }
                     }).start();
-                } catch (NoSuchAlgorithmException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

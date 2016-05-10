@@ -15,11 +15,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
@@ -197,9 +200,6 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                         joinedString += coordinate + ";";
                         coordsList.add(coordinate);
                     }
-                    /*
-                     TODO: Adicionar a parte da transacao da soma de pontos. ATENÇÃO: Pontos a ser somados diretamente no Tab
-                      */
                     Tab.trajectories.add(coordsList);
                     final String sendPath = joinedString.substring(0, joinedString.length() - 1);
                     updatePath(sendPath);
@@ -301,7 +301,6 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
 
                         BufferedReader sockIn = new BufferedReader(
                                 new InputStreamReader(sock.getInputStream()));
-                        //String st = sockIn.readLine();
                         StringBuilder out = new StringBuilder();
                         String st;
                         while (!(st = sockIn.readLine()).equals("--END--")) {
@@ -360,7 +359,6 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                         Log.e("RECEIVEDMESSAGE", "SENDER: " + sender);
                         Log.e("PASRSESIGNED", "Message: " + getTransaction[getTransaction.length - 2]);
                         Log.e("PASRSESIGNED", "Signature: " + getTransaction[getTransaction.length - 1]);
-                        //final String parsedMessage = parseSignedMessage(message, sender);
                         final String parsedMessage = parseSignedMessage(message.replace(";;;" +  getTransaction[getTransaction.length - 1], "" )
                                 , getTransaction[getTransaction.length - 1], sender);
                         mActivity.runOnUiThread(new Runnable() {
@@ -369,8 +367,6 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                                 Toast.makeText(mActivity, parsedMessage, Toast.LENGTH_LONG).show();
                                 Log.e("RECEIVEDMESSAGE", "PARSEDMESSAGE: " + parsedMessage);
                             }});
-                        //  byte[] decodedMessage = Base64.decode(message, Base64.DEFAULT);
-                        //Contacts.madeTransactions += parsedMessage + ";;;";
                         Contacts.madeTransactions += parsedMessage;
                         final String[] messageSplited = parsedMessage.split(";;;");
                         if (parsedMessage != null) {
@@ -378,7 +374,6 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                                 new Thread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        //final String sender = originalMessage.substring(originalMessage.indexOf("#", 3) + 1, originalMessage.lastIndexOf("#"));
                             /*
                                 Outputs:
                                 0 - vazio
@@ -391,9 +386,6 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                             */
                                         String[] parsedString = messageSplited[messageSplited.length - 1].split("#");
                                         final String sender = parsedString[2];
-                                        //String parsedMessage = parseSignedMessage(originalMessage, sender);
-                                        //String message = parsedMessage.substring(2);
-                                        //final String stringPoints = message.substring(message.lastIndexOf("#") + 1);
                                         final String stringPoints = parsedString[4];
 
                                         int receivedPoints = Integer.parseInt(stringPoints);
@@ -409,12 +401,19 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                                                         public void run() {
                                                             while (true) {
                                                                 try {
+                                                                    Home.signAlgorithm.initSign(Home.privateKey);
+                                                                    Log.e("KEYS", "PUBLICKEY SENDER: " + Base64.encodeToString(Home.publicKey.getEncoded(), Base64.DEFAULT));
+                                                                    Home.signAlgorithm.update(Contacts.madeTransactions.getBytes("UTF-8"));
+                                                                    byte[] signature = Home.signAlgorithm.sign();
+                                                                    String msg = Contacts.madeTransactions + Base64.encodeToString(signature, Base64.DEFAULT);
                                                                     URL url = new URL(Login.serverUrl + "/transactions");
                                                                     HttpURLConnection createUserConn = (HttpURLConnection) url.openConnection();
                                                                     createUserConn.setDoOutput(true);
                                                                     createUserConn.setRequestMethod("PUT");
-                                                                    byte[] updatedData = Contacts.madeTransactions.getBytes("UTF-8");
-                                                                    DataOutputStream wr = new DataOutputStream(createUserConn.getOutputStream());
+                                                                    byte[] updatedData = msg.getBytes("UTF-8");
+                                                                    createUserConn.setFixedLengthStreamingMode(updatedData.length);
+                                                                    createUserConn.setRequestProperty("Content-Type", "charset=UTF-8");
+                                                                    OutputStream wr = createUserConn.getOutputStream();
                                                                     wr.write(updatedData);
                                                                     wr.close();
 
@@ -425,6 +424,10 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                                                                         Thread.sleep(5000);
                                                                 } catch (IOException | InterruptedException e) {
                                                                     Log.e("TRANSACTIONS", "IOException", e);
+                                                                } catch (SignatureException e) {
+                                                                    e.printStackTrace();
+                                                                } catch (InvalidKeyException e) {
+                                                                    e.printStackTrace();
                                                                 }
                                                             }
                                                         }
@@ -441,12 +444,19 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                                                         public void run() {
                                                             while (true) {
                                                                 try {
+                                                                    Home.signAlgorithm.initSign(Home.privateKey);
+                                                                    Log.e("KEYS", "PUBLICKEY SENDER: " + Base64.encodeToString(Home.publicKey.getEncoded(), Base64.DEFAULT));
+                                                                    Home.signAlgorithm.update(Contacts.madeTransactions.getBytes("UTF-8"));
+                                                                    byte[] signature = Home.signAlgorithm.sign();
+                                                                    String msg = Contacts.madeTransactions + Base64.encodeToString(signature, Base64.DEFAULT);
                                                                     URL url = new URL(Login.serverUrl + "/transactions");
                                                                     HttpURLConnection createUserConn = (HttpURLConnection) url.openConnection();
                                                                     createUserConn.setDoOutput(true);
                                                                     createUserConn.setRequestMethod("PUT");
-                                                                    byte[] updatedData = Contacts.madeTransactions.getBytes("UTF-8");
-                                                                    DataOutputStream wr = new DataOutputStream(createUserConn.getOutputStream());
+                                                                    byte[] updatedData = msg.getBytes("UTF-8");
+                                                                    createUserConn.setFixedLengthStreamingMode(updatedData.length);
+                                                                    createUserConn.setRequestProperty("Content-Type", "charset=UTF-8");
+                                                                    OutputStream wr =  createUserConn.getOutputStream();
                                                                     wr.write(updatedData);
                                                                     wr.close();
 
@@ -457,6 +467,10 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                                                                         Thread.sleep(5000);
                                                                 } catch (IOException | InterruptedException e) {
                                                                     Log.e("TRANSACTIONS", "IOException", e);
+                                                                } catch (SignatureException e) {
+                                                                    e.printStackTrace();
+                                                                } catch (InvalidKeyException e) {
+                                                                    e.printStackTrace();
                                                                 }
                                                             }
                                                         }
@@ -485,53 +499,6 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                 Log.e("RECEIVER", e.getMessage(), e);
             }
         }
-
-        /*
-        private String parseSignedMessage(String signedMessage, String sender) {
-            try {
-                byte[] data = signedMessage.getBytes("UTF-8");
-                int messageLength = (int) data[0];
-
-                byte[] messageAndSize = new byte[1 + messageLength];
-                System.arraycopy(data, 0, messageAndSize, 0, 1 + messageLength);
-
-                byte[] signature = new byte[data.length - (1 + messageLength)];
-                System.arraycopy(data, (1 + messageLength), signature, 0, signature.length);
-
-                final String keyUrl = Login.serverUrl + "/users/" + sender + "/key";
-                URL usersUrl = new URL(keyUrl);
-                HttpURLConnection httpConnection = (HttpURLConnection) usersUrl.openConnection();
-                httpConnection.setInstanceFollowRedirects(false);
-                httpConnection.setRequestMethod("GET");
-                int responseCode = httpConnection.getResponseCode();
-
-                if (responseCode == 200) {
-                    InputStream inputStream = httpConnection.getInputStream();
-                    int contentLength = httpConnection.getContentLength();
-                    if (contentLength == -1) {
-                        Log.d("CRYPTO", "Couldn't obtain sender's public key");
-                        return null;
-                    }
-                    byte[] publicKey = new byte[contentLength];
-                    inputStream.read(publicKey);
-                    inputStream.close();
-
-                    if (!verifyDataIntegrity(messageAndSize, signature, publicKey)) {
-                        Log.d("CRYPTO", "Signature verification failed");
-                    }
-
-                    byte[] msg = new byte[messageLength];
-                    System.arraycopy(messageAndSize, 1, msg, 0, messageLength);
-                    return new String(msg, "UTF-8");
-                } else {
-                    Log.d("Crypto", "Couldn't obtain " + sender + "'s public key");
-                    return null;
-                }
-            } catch (Exception e) {
-                Log.e("CRYPTO", e.getMessage(), e);
-            }
-            return null;
-        } */
 
         private String parseSignedMessage(String signedMessage, String signature, String sender) {
             try {
@@ -588,7 +555,6 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
 
                 // verify data integrity
                 rsaSignature.initVerify(publicKey);
-                //rsaSignature.update(data, 0, data.length);
                 rsaSignature.update(data);
                 return rsaSignature.verify(signature);
             } catch (Exception e) {

@@ -3,16 +3,31 @@ package pt.ulisboa.tecnico.grupo11.ubiBikeServer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 public class TransactionsHandler implements HttpHandler {
 
 	private List<String> transactionsLog = new ArrayList<String>();
+	Signature rsaSignature;
 
+	public TransactionsHandler() throws NoSuchAlgorithmException
+	{
+		rsaSignature  = Signature.getInstance("SHA512withRSA");
+	}
+	
 	public void handle(HttpExchange exchange) throws IOException {
 		String path = exchange.getRequestURI().toString();
 		System.out.println("URI: " + path);
@@ -23,7 +38,21 @@ public class TransactionsHandler implements HttpHandler {
 			parseGetRequest(exchange, path);
 			break;
 		case "PUT":
-			parsePutRequest(exchange, path);
+			try {
+				parsePutRequest(exchange, path);
+			} catch (InvalidKeyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvalidKeySpecException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SignatureException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			break;
 		}
 
@@ -33,7 +62,7 @@ public class TransactionsHandler implements HttpHandler {
 
 	}
 
-	private void parsePutRequest(HttpExchange exchange, String path) throws IOException {
+	private void parsePutRequest(HttpExchange exchange, String path) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
 		if (path.contains("/transactions")) {
 			System.out.println("Entered transactions");
 			InputStream inputStream = exchange.getRequestBody();
@@ -49,9 +78,28 @@ public class TransactionsHandler implements HttpHandler {
 			System.arraycopy(buffer, 0, data, 0, offset);
 
 			String transactionsString = new String(data, "UTF-8");
+			exchange.sendResponseHeaders(200, 0);
 			if (!transactionsString.equals("")) {
 				System.out.println("Transaction not empty!");
-				String[] splittedTransactions = transactionsString.split(";;;");
+				System.out.println("Transaction: " + transactionsString);
+				String[] splittToVerify = transactionsString.split(";;;");
+				for (String part : splittToVerify)
+				{
+					System.out.println("Part: " + part);
+				}
+				String[] getreceiver = splittToVerify[splittToVerify.length - 2].split("#");
+				String receiver = getreceiver[3];
+                X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(UsersHandler.users.get(receiver).getKey());
+                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                PublicKey publicKey = keyFactory.generatePublic(pubKeySpec);
+                rsaSignature.initVerify(publicKey);
+                rsaSignature.update((transactionsString.replace(splittToVerify[splittToVerify.length-1], "")).getBytes());
+                if(!rsaSignature.verify(Base64.decode(splittToVerify[splittToVerify.length-1])))
+                {
+                	System.out.println("Failed to validate message!");
+                	return;
+                }
+				String[] splittedTransactions = (transactionsString.replace(splittToVerify[splittToVerify.length-1], "")).split(";;;");
 				for (String transaction : splittedTransactions) {
 					System.out.println("Transaction: " + transaction);
 					String[] splittedTransaction = transaction.split("#");

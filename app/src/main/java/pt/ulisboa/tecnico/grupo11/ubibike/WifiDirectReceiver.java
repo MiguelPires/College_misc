@@ -367,9 +367,9 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                                 Toast.makeText(mActivity, parsedMessage, Toast.LENGTH_LONG).show();
                                 Log.e("RECEIVEDMESSAGE", "PARSEDMESSAGE: " + parsedMessage);
                             }});
-                        Contacts.madeTransactions += parsedMessage;
-                        final String[] messageSplited = parsedMessage.split(";;;");
                         if (parsedMessage != null) {
+                            Contacts.madeTransactions += parsedMessage;
+                            final String[] messageSplited = parsedMessage.split(";;;");
                             if (messageSplited[messageSplited.length - 1].startsWith("#P")) {
                                 new Thread(new Runnable() {
                                     @Override
@@ -527,11 +527,11 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
 
                     if (!verifyDataIntegrity(data, sig, publicKey)) {
                         Log.d("CRYPTO", "Signature verification failed");
+                        return null;
                     } else {
                         Log.d("CRYPTO", "Signature verification successfull");
+                        return signedMessage+";;;";
                     }
-                    //return signedMessage;
-                    return signedMessage+";;;";
                 } else {
                     Log.d("Crypto", "Couldn't obtain " + sender + "'s public key");
                     return null;

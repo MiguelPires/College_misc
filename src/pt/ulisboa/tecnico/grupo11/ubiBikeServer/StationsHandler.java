@@ -4,19 +4,33 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 public class StationsHandler implements HttpHandler {
 
-    private Hashtable<String, Integer> stations;
+    private Hashtable<String, List<String>> stations;
 
     public StationsHandler() {
-        stations = new Hashtable<String, Integer>();
-        stations.put("38.75322986,-9.20676827", 3);
-        stations.put("38.75077,-9.19113", 1);
+        stations = new Hashtable<String, List<String>>();
+        List<String> bikes = new ArrayList<String>() {
+            {
+                add("Bike1");
+                add("Bike2");
+                add("Bike3");
+            }
+        };
+        stations.put("38.75322986,-9.20676827", bikes);
+        bikes = new ArrayList<String>() {
+            {
+                add("Bike4");
+            }
+        };
+        stations.put("38.75077,-9.19113", bikes);
     }
 
     @Override
@@ -42,7 +56,8 @@ public class StationsHandler implements HttpHandler {
                 String stationsResponse = "";
 
                 for (String station : stations.keySet()) {
-                    stationsResponse += station + ":" + stations.get(station) + ";";
+                    List<String> bikes = stations.get(station);
+                    stationsResponse += station + ":" + String.join(",", bikes) + ";";
                 }
 
                 byte[] byteValue = stationsResponse.getBytes("UTF-8");
@@ -77,19 +92,27 @@ public class StationsHandler implements HttpHandler {
 
                 String stationData = new String(data, "UTF-8");
                 String[] updateParts = stationData.split(":");
+                String operation = updateParts[1].substring(0, 1);
+                String bike = updateParts[1].substring(1);
 
-                int numBikes = stations.get(updateParts[0].trim());
-                if (updateParts[1].equals("-") && numBikes > 0)
-                    stations.put(updateParts[0].trim(), --numBikes);
-                else if (updateParts[1].equals("+"))
-                    stations.put(updateParts[0].trim(), ++numBikes);
-                else
-                    throw new MalformedURLException();
+                List<String> bikes = stations.get(updateParts[0].trim());
+
+                if (operation.equals("-")) {
+                    bikes.remove(bike);
+                    System.out.println("Bike " + bike + " was removed from station " + updateParts[0].trim());
+                } else if (operation.equals("+")) {
+                    bikes.add(bike);
+                    System.out.println("Bike " + bike + " was added to station " + updateParts[0].trim());
+                } else {
+                    System.out.println("Unknown operation about station");
+                    exchange.sendResponseHeaders(400, 0);
+                    return;
+                }
 
                 exchange.sendResponseHeaders(200, 0);
             }
-
         } catch (IOException e) {
+            e.printStackTrace();
             exchange.sendResponseHeaders(400, 0);
         } finally {
             exchange.close();

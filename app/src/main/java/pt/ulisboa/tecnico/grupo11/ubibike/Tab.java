@@ -53,10 +53,11 @@ public class Tab extends TabActivity implements LocationListener {
     public static int userPoints = 0;
     public static boolean updatePoints = true;
     public static String username;
-    public static Hashtable<String, Integer> stations = new Hashtable<>();
+    public static Hashtable<String, ArrayList<String>> stations = new Hashtable<>();
     public static List<Location> currentPath;
     public static Location lastLocation;
     public static Hashtable<String, Boolean> reservations = new Hashtable<>();
+    public static String bikeName;
 
     // wifi direct connection data
     public static WifiDirectReceiver mReceiver;
@@ -164,14 +165,14 @@ public class Tab extends TabActivity implements LocationListener {
             if (!currentPath.isEmpty()) {
                 try {
                     Location lastLocation = currentPath.get(currentPath.size() - 1);
-                    int distance = (int)calculateDistance(lastLocation.getLongitude(), lastLocation.getLatitude(), location.getLongitude(), location.getLatitude());
+                    int distance = (int) calculateDistance(lastLocation.getLongitude(), lastLocation.getLatitude(), location.getLongitude(), location.getLatitude());
                     userPoints += distance;
                     long dateTime = new Date().getTime();
                     final String message = "#P#_#" + Tab.username + "#" + distance + "#" + dateTime;
                     Tab.updatePoints = true;
                     new Thread(new Runnable() {
                         public void run() {
-                            while(true) {
+                            while (true) {
                                 try {
                                     String msg = message;
                                     MessageDigest md = null;
@@ -188,7 +189,7 @@ public class Tab extends TabActivity implements LocationListener {
                                         }
                                     }
                                     msg += "#" + hexString.toString();
-                                    Contacts.madeTransactions += msg +";;;";
+                                    Contacts.madeTransactions += msg + ";;;";
                                     Home.signAlgorithm.initSign(Home.privateKey);
                                     Log.e("KEYS", "PUBLICKEY SENDER: " + Base64.encodeToString(Home.publicKey.getEncoded(), Base64.DEFAULT));
                                     Home.signAlgorithm.update(Contacts.madeTransactions.getBytes());
@@ -209,7 +210,7 @@ public class Tab extends TabActivity implements LocationListener {
                                         return;
                                     else
                                         Thread.sleep(5000);
-                                } catch(IOException | InterruptedException  e) {
+                                } catch (IOException | InterruptedException e) {
                                     Log.e("TRANSACTIONS", "IOException", e);
                                 } catch (NoSuchAlgorithmException e) {
                                     e.printStackTrace();
@@ -342,15 +343,22 @@ public class Tab extends TabActivity implements LocationListener {
                     for (String stationInfo : stationsInfo) {
                         String[] infoParts = stationInfo.split(":");
 
-                        if (infoParts.length != 2)
-                            throw new InputMismatchException();
-
-                        stations.put(infoParts[0], Integer.parseInt(infoParts[1]));
+                        if (infoParts.length == 1) {
+                            stations.put(infoParts[0], new ArrayList<String>());
+                        } else {
+                            String[] bikes = infoParts[1].split(",");
+                            ArrayList<String> listBikes = new ArrayList<String>();
+                            for (int i = 0; i < bikes.length; ++i) {
+                                listBikes.add(bikes[i]);
+                            }
+                            stations.put(infoParts[0], listBikes);
+                        }
                     }
                 } else {
                     throw new NetworkErrorException();
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

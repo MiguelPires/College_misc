@@ -74,7 +74,6 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
             }
 
         } else if (SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-
             // Request available peers from the wifi p2p manager. This is an
             // asynchronous call and the calling activity is notified with a
             // callback on PeerListListener.onPeersAvailable()
@@ -114,8 +113,13 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
             for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
                 if (deviceName.startsWith("Bike")) {
                     if (!onBike) {
+
                         Tab.currentPath = new ArrayList<Location>();
                         onBike = true;
+                        Tab.bikeName = deviceName;
+                        Home.statusTxt.setText("Riding");
+                        Home.circleColor = Color.GREEN;
+                        Home.circleView.setCircleColorGreen();
 
                         if (Tab.lastLocation != null) {
                             for (final String stationLocation : Tab.stations.keySet()) {
@@ -124,21 +128,37 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                                 Double latitude = new Double(parts[0]);
 
                                 double distance = Tab.calculateDistance(Tab.lastLocation.getLongitude(), Tab.lastLocation.getLatitude(), longitude, latitude);
-                                System.out.println("Distance from station: " + distance);
+                                System.out.println("Pick-up. Distance: " + distance);
+
                                 if (distance < 25) {
+                                    System.out.println("Near station: " + stationLocation);
+
                                     Boolean reservation = Tab.reservations.get(stationLocation);
+                                    System.out.println("get reserve " + reservation);
+
                                     if (reservation != null && reservation) {
                                         // delete reservation
                                         Tab.reservations.put(stationLocation, false);
                                     } else {
-                                        Tab.stations.put(stationLocation, Tab.stations.get(stationLocation) - 1);
+                                        ArrayList<String> bikes = Tab.stations.get(stationLocation);
+                                        try {
+                                            bikes.remove(bikes.indexOf(deviceName));
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            Toast.makeText(mActivity, "There are no bikes called '" + deviceName + "' at this station", Toast.LENGTH_LONG).show();
+                                            return;
+                                        }
+
+                                        System.out.println("Found bike " + deviceName);
+
+                                        Tab.stations.put(stationLocation, bikes);
                                         // inform server
-                                        updateStationBikes(stationLocation, "-");
+                                        updateStationBikes(stationLocation, "-" + deviceName);
 
                                         if (Stations.data != null) {
                                             for (Map<String, String> datum : Stations.data) {
                                                 if (datum.get("title").contains(stationLocation)) {
-                                                    String subtitle = "There are " + Tab.stations.get(stationLocation) + " bikes available";
+                                                    String subtitle = "There are " + Tab.stations.get(stationLocation).size() + " bikes available";
                                                     datum.put("sub", subtitle);
                                                     //Stations.data.add(datum);
                                                     Stations.adapter.notifyDataSetChanged();
@@ -146,16 +166,17 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                                                 }
                                             }
                                         }
+                                        return;
+
                                     }
                                 }
                             }
                         }
 
-                        Home.statusTxt.setText("Riding");
-                        Home.circleColor = Color.GREEN;
-                        Home.circleView.setCircleColorGreen();
+
                     }
                     return;
+
                 }
             }
 
@@ -167,15 +188,20 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                         Double latitude = new Double(parts[0]);
 
                         double distance = Tab.calculateDistance(Tab.lastLocation.getLongitude(), Tab.lastLocation.getLatitude(), longitude, latitude);
-                        System.out.println("Distance from station: " + distance);
+                        System.out.println("Drop-off. Distance: " + distance);
+
                         if (distance < 25) {
-                            Tab.stations.put(stationLocation, Tab.stations.get(stationLocation) + 1);
-                            updateStationBikes(stationLocation, "+");
+                            System.out.println("Near station: " + stationLocation);
+
+                            ArrayList<String> bikes = Tab.stations.get(stationLocation);
+                            bikes.add(Tab.bikeName);
+                            Tab.stations.put(stationLocation, bikes);
+                            updateStationBikes(stationLocation, "+" + Tab.bikeName);
 
                             if (Stations.data != null) {
                                 for (Map<String, String> datum : Stations.data) {
                                     if (datum.get("title").contains(stationLocation)) {
-                                        String subtitle = "There are " + Tab.stations.get(stationLocation) + " bikes available";
+                                        String subtitle = "There are " + Tab.stations.get(stationLocation).size() + " bikes available";
                                         datum.put("sub", subtitle);
                                         //Stations.data.add(datum);
                                         Stations.adapter.notifyDataSetChanged();
@@ -188,6 +214,7 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                 }
 
                 onBike = false;
+                Tab.bikeName = "";
                 Home.statusTxt.setText("Idle");
                 Home.circleColor = Color.BLUE;
                 Home.circleView.setCircleColorBlue();
@@ -332,7 +359,7 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
             try {
                 final String message = values[0];
                 Log.d("MESSAGE", message);
-                Toast.makeText(mActivity, "MESSAGE: " + message , Toast.LENGTH_LONG);
+                Toast.makeText(mActivity, "MESSAGE: " + message, Toast.LENGTH_LONG);
                 if (message.startsWith("#M", 1)) {
                     final String sender = message.substring(message.indexOf("#", 3) + 1, message.lastIndexOf("#"));
                     final String parseMessage = message.substring(message.lastIndexOf("#") + 1);
@@ -345,28 +372,29 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                 {
                     public void run() {
                         String[] getTransaction = message.split(";;;");
-                        for(final String transaction : getTransaction)
-                        {
+                        for (final String transaction : getTransaction) {
                             mActivity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(mActivity, transaction, Toast.LENGTH_LONG).show();
-                                Log.e("TRANSACTION CYCLE", transaction);
-                            }});
+                                @Override
+                                public void run() {
+                                    Toast.makeText(mActivity, transaction, Toast.LENGTH_LONG).show();
+                                    Log.e("TRANSACTION CYCLE", transaction);
+                                }
+                            });
                         }
                         String[] getSender = getTransaction[getTransaction.length - 2].split("#");
                         String sender = getSender[2];
                         Log.e("RECEIVEDMESSAGE", "SENDER: " + sender);
                         Log.e("PASRSESIGNED", "Message: " + getTransaction[getTransaction.length - 2]);
                         Log.e("PASRSESIGNED", "Signature: " + getTransaction[getTransaction.length - 1]);
-                        final String parsedMessage = parseSignedMessage(message.replace(";;;" +  getTransaction[getTransaction.length - 1], "" )
+                        final String parsedMessage = parseSignedMessage(message.replace(";;;" + getTransaction[getTransaction.length - 1], "")
                                 , getTransaction[getTransaction.length - 1], sender);
                         mActivity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 Toast.makeText(mActivity, parsedMessage, Toast.LENGTH_LONG).show();
                                 Log.e("RECEIVEDMESSAGE", "PARSEDMESSAGE: " + parsedMessage);
-                            }});
+                            }
+                        });
                         if (parsedMessage != null) {
                             Contacts.madeTransactions += parsedMessage;
                             final String[] messageSplited = parsedMessage.split(";;;");
@@ -456,7 +484,7 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                                                                     byte[] updatedData = msg.getBytes("UTF-8");
                                                                     createUserConn.setFixedLengthStreamingMode(updatedData.length);
                                                                     createUserConn.setRequestProperty("Content-Type", "charset=UTF-8");
-                                                                    OutputStream wr =  createUserConn.getOutputStream();
+                                                                    OutputStream wr = createUserConn.getOutputStream();
                                                                     wr.write(updatedData);
                                                                     wr.close();
 
@@ -504,7 +532,7 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
             try {
                 byte[] data = signedMessage.getBytes("UTF-8");
                 byte[] sig = Base64.decode(signature, Base64.DEFAULT);
-                Log.d("DEBUG", "MSG / SIG: " +  signedMessage + " / " + signature );
+                Log.d("DEBUG", "MSG / SIG: " + signedMessage + " / " + signature);
 
 
                 final String keyUrl = Login.serverUrl + "/users/" + sender + "/key";
@@ -530,7 +558,7 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                         return null;
                     } else {
                         Log.d("CRYPTO", "Signature verification successfull");
-                        return signedMessage+";;;";
+                        return signedMessage + ";;;";
                     }
                 } else {
                     Log.d("Crypto", "Couldn't obtain " + sender + "'s public key");

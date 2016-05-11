@@ -52,7 +52,7 @@ public class Stations extends AppCompatActivity implements OnMapReadyCallback {
             stationsList.add(stationCoord);
             String title = "Station " + id++ + " - " + stationCoord;
             datum.put("title", title);
-            String subtitle = "There are " + Tab.stations.get(stationCoord) + " bikes available";
+            String subtitle = "There are " + Tab.stations.get(stationCoord).size() + " bikes available";
             datum.put("sub", subtitle);
             data.add(datum);
         }
@@ -74,12 +74,14 @@ public class Stations extends AppCompatActivity implements OnMapReadyCallback {
                     public void onClick(DialogInterface dialog, int which) {
                         int listPosition = (int) id;
                         final String coord = stationsList.get(listPosition);
-                        int availableBikes = Tab.stations.get(coord);
+                        ArrayList<String> bikes = Tab.stations.get(coord);
 
-                        if (availableBikes > 0) {
-                            Tab.stations.put(coord, --availableBikes);
+                        if (bikes != null && !bikes.isEmpty()) {
+                            final String bike = bikes.get(0);
+                            bikes.remove(0);
+                            Tab.stations.put(coord, bikes);
                             Map<String, String> listItem = data.get(listPosition);
-                            listItem.put("sub", "There are " + availableBikes + " bikes available");
+                            listItem.put("sub", "There are " + Tab.stations.get(coord).size() + " bikes available");
 
                             new Thread(new Runnable() {
                                 public void run() {
@@ -90,7 +92,7 @@ public class Stations extends AppCompatActivity implements OnMapReadyCallback {
                                             createUserConn.setDoOutput(true);
                                             createUserConn.setRequestMethod("PUT");
 
-                                            byte[] updatedData = (coord + ":-").getBytes("UTF-8");
+                                            byte[] updatedData = (coord + ":-"+bike).getBytes("UTF-8");
                                             DataOutputStream wr = new DataOutputStream(createUserConn.getOutputStream());
                                             wr.write(updatedData);
                                             wr.close();
@@ -110,7 +112,7 @@ public class Stations extends AppCompatActivity implements OnMapReadyCallback {
 
                             adapter.notifyDataSetChanged();
 
-                            Toast.makeText(Stations.this, "Successfully booked a bike", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Stations.this, "Successfully booked bike '"+bike+"'", Toast.LENGTH_SHORT).show();
                             dialog.dismiss();
                         } else {
                             Toast.makeText(Stations.this, "There are no available bikes", Toast.LENGTH_SHORT).show();

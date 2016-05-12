@@ -46,7 +46,6 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 public class Tab extends TabActivity implements LocationListener {
-    public static final int ACCEPTED = 1;
 
     // user data
     public static List<List<String>> trajectories = new ArrayList<>();
@@ -116,7 +115,7 @@ public class Tab extends TabActivity implements LocationListener {
 
         // Setup Location manager and receiver
         LocationManager lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        lManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 1, this);
+        lManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, this);
     }
 
     @Override

@@ -372,15 +372,7 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                 {
                     public void run() {
                         String[] getTransaction = message.split(";;;");
-                        for (final String transaction : getTransaction) {
-                            mActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(mActivity, transaction, Toast.LENGTH_LONG).show();
-                                    Log.e("TRANSACTION CYCLE", transaction);
-                                }
-                            });
-                        }
+
                         String[] getSender = getTransaction[getTransaction.length - 2].split("#");
                         String sender = getSender[2];
                         Log.e("RECEIVEDMESSAGE", "SENDER: " + sender);
@@ -388,13 +380,7 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                         Log.e("PASRSESIGNED", "Signature: " + getTransaction[getTransaction.length - 1]);
                         final String parsedMessage = parseSignedMessage(message.replace(";;;" + getTransaction[getTransaction.length - 1], "")
                                 , getTransaction[getTransaction.length - 1], sender);
-                        mActivity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(mActivity, parsedMessage, Toast.LENGTH_LONG).show();
-                                Log.e("RECEIVEDMESSAGE", "PARSEDMESSAGE: " + parsedMessage);
-                            }
-                        });
+                     
                         if (parsedMessage != null) {
                             Contacts.madeTransactions += parsedMessage;
                             final String[] messageSplited = parsedMessage.split(";;;");
@@ -477,10 +463,12 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                                                                     Home.signAlgorithm.update(Contacts.madeTransactions.getBytes("UTF-8"));
                                                                     byte[] signature = Home.signAlgorithm.sign();
                                                                     String msg = Contacts.madeTransactions + Base64.encodeToString(signature, Base64.DEFAULT);
+
                                                                     URL url = new URL(Login.serverUrl + "/transactions");
                                                                     HttpURLConnection createUserConn = (HttpURLConnection) url.openConnection();
                                                                     createUserConn.setDoOutput(true);
                                                                     createUserConn.setRequestMethod("PUT");
+
                                                                     byte[] updatedData = msg.getBytes("UTF-8");
                                                                     createUserConn.setFixedLengthStreamingMode(updatedData.length);
                                                                     createUserConn.setRequestProperty("Content-Type", "charset=UTF-8");
@@ -557,7 +545,7 @@ public class WifiDirectReceiver extends BroadcastReceiver implements SimWifiP2pM
                         Log.d("CRYPTO", "Signature verification failed");
                         return null;
                     } else {
-                        Log.d("CRYPTO", "Signature verification successfull");
+                        Log.d("CRYPTO", "Signature verification successful");
                         return signedMessage + ";;;";
                     }
                 } else {

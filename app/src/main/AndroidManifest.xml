@@ -42,7 +42,6 @@
         <service android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService" />
 
         <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.Info" />
-        <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.TrajectoryDetails" />
         <activity android:name="pt.ulisboa.tecnico.grupo11.ubibike.Stations" />
 
         <uses-library android:name="com.google.android.maps" />

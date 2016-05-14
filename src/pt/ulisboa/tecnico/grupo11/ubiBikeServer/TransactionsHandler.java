@@ -64,7 +64,7 @@ public class TransactionsHandler implements HttpHandler {
     private void parsePutRequest(HttpExchange exchange, String path)
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
         if (path.contains("/transactions")) {
-            //System.out.println("Entered transactions");
+            // System.out.println("Entered transactions");
             InputStream inputStream = exchange.getRequestBody();
             byte[] buffer = new byte[Server.MAX_PUT_SIZE];
             int offset = 0;
@@ -80,24 +80,19 @@ public class TransactionsHandler implements HttpHandler {
             String transactionsString = new String(data, "UTF-8");
             exchange.sendResponseHeaders(200, 0);
             if (!transactionsString.equals("")) {
-                /*System.out.println("Transaction not empty!");
-                System.out.println("Transaction: " + transactionsString);*/
+                System.out.println("Signed transaction: " + transactionsString);
                 String[] splitToVerify = transactionsString.split(";;;");
-               
-                /*for (String part : splitToVerify) {
-                    System.out.println("Part: " + part);
-                }*/
-                
+
                 String[] getreceiver = splitToVerify[splitToVerify.length - 2].split("#");
-                String receiver = getreceiver[3];
-                
-                X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(UsersHandler.users.get(receiver).getKey());
+
+                // get receiver's public key
+                X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(UsersHandler.users.get(getreceiver[3]).getKey());
                 KeyFactory keyFactory = KeyFactory.getInstance("RSA");
                 PublicKey publicKey = keyFactory.generatePublic(pubKeySpec);
-                
+
                 rsaSignature.initVerify(publicKey);
                 rsaSignature.update((transactionsString.replace(splitToVerify[splitToVerify.length - 1], "")).getBytes());
-                
+
                 if (!rsaSignature.verify(Base64.decode(splitToVerify[splitToVerify.length - 1]))) {
                     System.out.println("Failed to validate message!");
                     return;
@@ -113,27 +108,31 @@ public class TransactionsHandler implements HttpHandler {
                         transactionsLog.add(splittedTransaction[6]);
                         System.out.println("Log does not contain this hash: " + splittedTransaction[6]);
 
+                        String sender = splittedTransaction[2];
+                        String receiver = splittedTransaction[3];
+
+                        User receiverUser = UsersHandler.users.get(receiver);
+                        int receiverPoints = receiverUser.getPoints();
+
                         if (splittedTransaction[2].equals("_")) {
-                            System.out.println(splittedTransaction[4]+" points won by biking.");
-                            UsersHandler.users.get(splittedTransaction[3])
-                                    .setPoints(UsersHandler.users.get(splittedTransaction[3]).getPoints()
-                                            + Integer.valueOf(splittedTransaction[4]));
+                            System.out.println(splittedTransaction[4] + " points won by biking.");
+                            receiverUser.setPoints(receiverPoints + Integer.valueOf(splittedTransaction[4]));
                         } else {
-                            String sender = splittedTransaction[2];
-                            String receiverUser = splittedTransaction[3];
+                            User senderUser = UsersHandler.users.get(sender);
+                            int senderPoints = senderUser.getPoints();
 
-                            if ((UsersHandler.users.get(sender).getPoints() - Integer.valueOf(splittedTransaction[4])) >= 0) {
+                            if ((senderPoints - Integer.valueOf(splittedTransaction[4])) >= 0) {
 
-                                System.out.println(sender+" (sender) points: " + UsersHandler.users.get(sender).getPoints());
-                                UsersHandler.users.get(sender).setPoints(
-                                        UsersHandler.users.get(sender).getPoints() - Integer.valueOf(splittedTransaction[4]));
-                                System.out.println(sender+" (sender) points final: " + UsersHandler.users.get(sender).getPoints());
-                                System.out.println(receiverUser+" (receiver) points: " + UsersHandler.users.get(receiverUser).getPoints());
-                                UsersHandler.users.get(receiverUser)
-                                        .setPoints(UsersHandler.users.get(receiverUser).getPoints()
-                                                + Integer.valueOf(splittedTransaction[4]));
-                                System.out.println(receiverUser+
-                                        " (receiver) points final: " + UsersHandler.users.get(receiverUser).getPoints());
+                                // update sender
+                                System.out.println(sender + " (sender) points: " + senderPoints);
+                                senderUser.setPoints(senderPoints - Integer.valueOf(splittedTransaction[4]));
+                                System.out.println(sender + " (sender) points final: " + senderUser.getPoints());
+
+                                // update receiver
+
+                                System.out.println(receiver + " (receiver) points: " + receiverPoints);
+                                receiverUser.setPoints(receiverPoints + Integer.valueOf(splittedTransaction[4]));
+                                System.out.println(receiver + " (receiver) points final: " + receiverUser.getPoints());
                             }
                         }
                     } else {

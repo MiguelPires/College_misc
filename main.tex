@@ -49,7 +49,6 @@
 \usepackage{ioa_code}
 
 \usepackage{xcolor,colortbl}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%=
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %pour avoir plus de place
@@ -217,6 +216,124 @@ the need for low-latency protocols that cater to failure patterns specific to su
 some \emph{relaxed} form of \emph{cross-site consistency}. There is a need for constructing modular protocols for state-machine replication
 in such geo-distributed settings that are tunable to specific consistency levels and failure patterns.
 %
+\par 
+{\color{red} TODO: Write assumptions and properties}
+
+\begin{algorithm}
+\caption{Generalized Paxos - Proposer p}
+\textbf{Local variables:}
+\begin{algorithmic}[1]
+    
+    \Function{Propose}{\textit{C}}
+        \If{classic\_ballot}
+            \State \textbf{run} \Call{send}{\textit{propose, C}} to Leader;
+        \Else
+            \State \textbf{run} \Call{send}{\textit{propose, C}} to Acceptors;
+        \EndIf
+    \EndFunction    
+    
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Generalized Paxos - Leader l}
+\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot$
+%\Comment{$bal_c is the last ballot c has started and maxTried_c is the c-struct it suggested at bal_c$}
+\begin{algorithmic}[1]
+    
+    \State \textbf{upon} \textit{receive(propose, C)} from proposer \textit{p} \textbf{do}
+        \State \hspace{\algorithmicindent} $C_l = C$;
+        \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_1a}{};
+    
+    \State
+    \State \textbf{upon} $receive (p1b, ballot_l, bal_i, val_i)$ from Q
+        \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2a}{$ballot_l, Q$};
+        
+    %\item[] % unnumbered empty line
+    \State
+    \Function{Phase\_1a}{}
+        \State \textbf{run} \Call{send}{$p1a, ballot_l$} to Acceptors;
+    \EndFunction
+    
+    \State
+    \Function{Phase\_2a}{$bal, Q$}
+        \State $maxTried_l$ = \textbf{run} \Call{ProvedSafe}{$Q, bal$};
+        \State $maxTried_l = maxTried_l \bullet C_l$;
+        \State \textbf{run} \Call{send}{$p2a,ballot_l, maxTried_l$} to Acceptors;
+    \EndFunction
+    
+    \State
+    \Function{Proved\_Safe}{Q, m}
+        \State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
+        \State $R = \{R \in k$-$quorum\ |\ \forall_a \in R \cap Q : val_a[k] \neq null\}$;
+        
+        \State
+        \If{$R = \varnothing$}
+            \State \textbf{return} $\{val_a[k]\ |\ (a \in Q) \wedge (val_a[k] \neq null)\}$;
+        \Else
+            \State \textbf{return} \textbf{run} $lowerUpperBound(val_a[k]\ |\ a \in Q \cap R$);
+            
+        \EndIf
+    \EndFunction
+        
+
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Generalized Paxos - Acceptor a}
+\textbf{Local variables: } $bal_a = 0,\ mbal_a = 0, \val_a = \bot$ 
+\begin{algorithmic}[1]
+  
+  \State \textbf{upon} \textit{receive(propose, val)} from proposer \textit{p} \textbf{do}
+    \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_fast}{$val$};
+    
+    \State
+    \State \textbf{upon} \textit{receive(p1a, ballot)} from acceptor \textit{a} \textbf{do}
+    \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_1b}{$ballot$};
+    
+    \State
+    \State \textbf{upon} \textit{receive(p2a, ballot, value)} from acceptor \textit{a} \textbf{do}
+    \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_classic}{$ballot, value$};
+    
+    \State
+    \Function{Phase\_1b}{$m$}
+        \If {$bal_a < m$}
+            \State $bal_a = m$;
+            \State \Call{send}{$p1b, m, mbal_a, val_a$} to coord($m$);
+        \EndIf
+    \EndFunction
+    
+    \State
+    \Function{Phase\_2b\_Classic}{$m, u$}
+        \If {$bal_a \leq m$}
+            \State $bal_a = m$;
+            \State $val_a = u$;
+            \State \Call{send}{$p2b, bal_a, val_a$} to learners;
+        \EndIf
+    \EndFunction
+    
+        \State
+    \Function{Phase\_2b\_Fast}{$u$}
+        \If {$bal_a == m$}
+            \State $val_a = u$;
+            \State \Call{send}{$p2b, bal_a, val_a$} to learners;
+        \EndIf
+    \EndFunction
+    
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Generalized Paxos - Learner l}
+\textbf{Local variables: } $learned = \varnothing$ 
+\begin{algorithmic}[1]
+  
+    \State \textbf{upon} $receive (p2b, bal, val)$ from Q \textbf{do}
+        \State \hspace{\algorithmicindent} $learned = learned \cup val$;
+\end{algorithmic}
+\end{algorithm}
+
 \pagenumbering{arabic}\setcounter{page}{1}
 
 \bibliography{references}

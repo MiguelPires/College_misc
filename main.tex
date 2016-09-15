@@ -265,7 +265,7 @@ in such geo-distributed settings that are tunable to specific consistency levels
     \State
     \Function{Proved\_Safe}{Q, m}
         \State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
-        \State $R = \{R \in k$-$quorum\ |\ \forall_a \in R \cap Q : val_a[k] \neq null\}$;
+        \State $R = \{R \in k$-$quorum\ |\ \forall a \in R \cap Q : val_a[k] \neq null\}$;
         
         \State
         \If{$R = \varnothing$}
@@ -289,11 +289,11 @@ in such geo-distributed settings that are tunable to specific consistency levels
     \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_fast}{$val$};
     
     \State
-    \State \textbf{upon} \textit{receive(p1a, ballot)} from acceptor \textit{a} \textbf{do}
+    \State \textbf{upon} \textit{receive(p1a, ballot)} from leader \textit{l} \textbf{do}
     \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_1b}{$ballot$};
     
     \State
-    \State \textbf{upon} \textit{receive(p2a, ballot, value)} from acceptor \textit{a} \textbf{do}
+    \State \textbf{upon} \textit{receive(p2a, ballot, value)} from leader \textit{l} \textbf{do}
     \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_classic}{$ballot, value$};
     
     \State
@@ -313,7 +313,7 @@ in such geo-distributed settings that are tunable to specific consistency levels
         \EndIf
     \EndFunction
     
-        \State
+    \State
     \Function{Phase\_2b\_Fast}{$u$}
         \If {$bal_a == m$}
             \State $val_a = u$;

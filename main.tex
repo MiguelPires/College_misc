@@ -221,22 +221,6 @@ in such geo-distributed settings that are tunable to specific consistency levels
 
 \begin{algorithm}
 \caption{Generalized Paxos - Proposer p}
-\textbf{Local variables:}
-\begin{algorithmic}[1]
-    
-    \Function{Propose}{\textit{C}}
-        \If{classic\_ballot}
-            \State \textbf{run} \Call{send}{\textit{propose, C}} to Leader;
-        \Else
-            \State \textbf{run} \Call{send}{\textit{propose, C}} to Acceptors;
-        \EndIf
-    \EndFunction    
-    
-\end{algorithmic}
-\end{algorithm}
-
-\begin{algorithm}
-\caption{Generalized Paxos - Proposer p}
 \textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot,\ timer = \bot,\ quorumSize = 0,\ messages = \bot,\ previousMessages = \bot, collected = False$
 \begin{algorithmic}[1]
 

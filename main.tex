@@ -236,28 +236,87 @@ in such geo-distributed settings that are tunable to specific consistency levels
 \end{algorithm}
 
 \begin{algorithm}
-\caption{Generalized Paxos - Leader l}
-\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot$
-%\Comment{$bal_c is the last ballot c has started and maxTried_c is the c-struct it suggested at bal_c$}
+\caption{Generalized Paxos - Proposer p}
+\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot,\ timer = \bot,\ quorumSize = 0,\ messages = \bot,\ previousMessages = \bot, collected = False$
 \begin{algorithmic}[1]
-    
-    \State \textbf{upon} \textit{receive(propose, C)} from proposer \textit{p} \textbf{do}
-        \State \hspace{\algorithmicindent} $C_l = C$;
-        \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_1a}{};
-    
-    \State
-    \State \textbf{upon} $receive (p1b, ballot_l, bal_i, val_i)$ from Q
-        \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2a}{$ballot_l, Q$};
+
+    \Function{Propose}{\textit{C}}
+    \If{fast\_ballot}
+        \State \textbf{run} \Call{phase\_1a}{fast,\textit{C}};
+    \Else
+        \State \textbf{run} \Call{send}{\textit{propose, C}} to Leader;
+    \EndIf
+    \EndFunction
         
-    %\item[] % unnumbered empty line
     \State
-    \Function{Phase\_1a}{}
-        \State \textbf{run} \Call{send}{$p1a, ballot_l$} to Acceptors;
+    \State \textbf{upon} \textit{receive(propose, C)} from proposer \textit{p} \textbf{do}
+        \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_1a}{C};
+    
+    \State
+    \State \textbf{upon} $receive (p1b, ballot_l, bal_i, val_i)$ from $n-s$ acceptors \textbf{do}
+        \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2a}{$ballot_l, Q$};
+    
+    \State
+    \State \textbf{upon} \textit{receive(p, statement)} \textbf{do}
+    \State \hspace{\algorithmicindent} $messages[p] = statement$;
+    
+    \State
+    \State \textbf{upon} $timer$ \textbf{do} 
+    \State \hspace{\algorithmicindent} $quorumSize = n-u$;
+
+    \State     
+    \State \textbf{upon} $\#(messages) \geq quorumSize \land collected = False$ \textbf{do} 
+        \State \hspace{\algorithmicindent} \textbf{if }{$\#(messages) < n-s \land verification = False$} \textbf{then}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $quorumSize = n-f$;
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}
+            $previousMessages = messages$;
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}
+            $messages = \bot$;
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $verification = True$;
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $timer = \textbf{run}\ \Call{start\_timer}{2T}$;
+
+        \State \hspace{\algorithmicindent} \textbf{else}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $collected = True$;
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if}\ $messageRound = p1b$ \textbf{then}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
+            \textbf{run} \Call{phase\_2a}{$ballot_l, Q$};
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{else}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{run} \Call{send}{$p2b, message.bal, message.val$} to learners;
+            
+        
+            
+    \State
+    \State \textbf{upon} $verification = True \land collected = False \land (\#(messages) \geq quorumSize \lor \#(messages \cup previousMessages) \geq n-s)$ \textbf{do}
+    \State \hspace{\algorithmicindent} $collected = True$;
+    \State\ \hspace{\algorithmicindent}\textbf{if}\ $messageRound = p1b$ \textbf{then}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} 
+            \textbf{run} \Call{phase\_2a}{$ballot_l, Q$};
+            \State \hspace{\algorithmicindent} \textbf{else}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{run} \Call{send}{$p2b, message.bal, message.val$} to learners;
+
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Generalized Paxos - Proposer p (continued)}
+\begin{algorithmic}[1]
+    %\item[] % unnumbered empty line
+    \Function{Phase\_1a}{ballot\_type, C}
+        \State $C_l = C$;
+        \State $quorumSize = n-s$;
+        \State $timer$ = \textbf{run} \Call{start\_Timer}{2T};
+        
+        \State
+        \If{ballot\_type = fast}
+            \State \textbf{run} \Call{send}{$fast, ballot_l$} to Acceptors;
+        \Else
+            \State \textbf{run} \Call{send}{$p1a, ballot_l$} to Acceptors;
+        \EndIf
     \EndFunction
     
     \State
     \Function{Phase\_2a}{$bal, Q$}
-        \State $maxTried_l$ = \textbf{run} \Call{ProvedSafe}{$Q, bal$};
+        \State $maxTried_l$ = \textbf{run} \Call{Proved\_Safe}{$Q, bal$};
         \State $maxTried_l = maxTried_l \bullet C_l$;
         \State \textbf{run} \Call{send}{$p2a,ballot_l, maxTried_l$} to Acceptors;
     \EndFunction
@@ -265,10 +324,10 @@ in such geo-distributed settings that are tunable to specific consistency levels
     \State
     \Function{Proved\_Safe}{Q, m}
         \State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
-        \State $R = \{R \in k$-$quorum\ |\ \forall a \in R \cap Q : val_a[k] \neq null\}$;
+        \State $RS = \{R \in k$-$quorum\ |\ \forall a \in R \cap Q : val_a[k] \neq null\}$;
         
         \State
-        \If{$R = \varnothing$}
+        \If{$RS = \varnothing$}
             \State \textbf{return} $\{val_a[k]\ |\ (a \in Q) \wedge (val_a[k] \neq null)\}$;
         \Else
             \State \textbf{return} \textbf{run} $lowerUpperBound(val_a[k]\ |\ a \in Q \cap R$);
@@ -276,7 +335,6 @@ in such geo-distributed settings that are tunable to specific consistency levels
         \EndIf
     \EndFunction
         
-
 \end{algorithmic}
 \end{algorithm}
 
@@ -285,39 +343,40 @@ in such geo-distributed settings that are tunable to specific consistency levels
 \textbf{Local variables: } $bal_a = 0,\ mbal_a = 0, \val_a = \bot$ 
 \begin{algorithmic}[1]
   
-  \State \textbf{upon} \textit{receive(propose, val)} from proposer \textit{p} \textbf{do}
-    \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_fast}{$val$};
+  \State \textbf{upon} \textit{receive(fast, val)} from proposer \textit{p} \textbf{do}
+    \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_fast}{$val, p$};
     
     \State
     \State \textbf{upon} \textit{receive(p1a, ballot)} from leader \textit{l} \textbf{do}
-    \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_1b}{$ballot$};
+    \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_1b}{$ballot, l$};
     
     \State
     \State \textbf{upon} \textit{receive(p2a, ballot, value)} from leader \textit{l} \textbf{do}
-    \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_classic}{$ballot, value$};
+    \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_classic}{$ballot, value, l$};
     
     \State
-    \Function{Phase\_1b}{$m$}
+    \Function{Phase\_1b}{$m, l$}
         \If {$bal_a < m$}
             \State $bal_a = m$;
-            \State \Call{send}{$p1b, m, mbal_a, val_a$} to coord($m$);
+            \State \Call{send}{$p1b, m, mbal_a, val_a$} to leader l;
         \EndIf
     \EndFunction
     
     \State
-    \Function{Phase\_2b\_Classic}{$m, u$}
-        \If {$bal_a \leq m$}
-            \State $bal_a = m$;
+    \Function{Phase\_2b\_Classic}{$m, u, l$}
+        \State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
+        \If {$m \geq k$}
             \State $val_a = u$;
-            \State \Call{send}{$p2b, bal_a, val_a$} to learners;
+            \State \Call{send}{$p2b, bal_a, val_a$} to leader l;
         \EndIf
     \EndFunction
     
     \State
-    \Function{Phase\_2b\_Fast}{$u$}
-        \If {$bal_a == m$}
-            \State $val_a = u$;
-            \State \Call{send}{$p2b, bal_a, val_a$} to learners;
+    \Function{Phase\_2b\_Fast}{$u, p$}
+        \State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
+        \If {$bal_a == k$}
+            \State $val_a = val_a \bullet u$;
+            \State \Call{send}{$p2b, bal_a, val_a$} to process p;
         \EndIf
     \EndFunction
     

@@ -195,7 +195,6 @@
 
 \newcommand{\ignore}[1]{}
 
-
 \begin{document}
 \bibliographystyle{abbrv}
 
@@ -233,16 +232,13 @@ in such geo-distributed settings that are tunable to specific consistency levels
     \EndFunction
         
     \State
-    \State \textbf{upon} \textit{receive(propose, C)} from proposer \textit{p} \textbf{do}
-        \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_1a}{C};
+    \State \textbf{upon} \textit{receive(propose, C)} from proposer $p_i$ \textbf{do} 
+        \State \hspace{\algorithmicindent} \textbf{if} $p = Leader$ \textbf{then}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{run} \Call{phase\_1a}{slow, C};
     
     \State
-    \State \textbf{upon} $receive (p1b, ballot_l, bal_i, val_i)$ from $n-s$ acceptors \textbf{do}
-        \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2a}{$ballot_l, Q$};
-    
-    \State
-    \State \textbf{upon} \textit{receive(p, statement)} \textbf{do}
-    \State \hspace{\algorithmicindent} $messages[p] = statement$;
+    \State \textbf{upon} \textit{receive(statement)} from proposer $p_i$ \textbf{do}
+    \State \hspace{\algorithmicindent} $messages[p_i] = statement$;
     
     \State
     \State \textbf{upon} $timer$ \textbf{do} 
@@ -372,7 +368,7 @@ in such geo-distributed settings that are tunable to specific consistency levels
 \textbf{Local variables: } $learned = \varnothing$ 
 \begin{algorithmic}[1]
   
-    \State \textbf{upon} $receive (p2b, bal, val)$ from Q \textbf{do}
+    \State \textbf{upon} $receive (p2b, bal, val)$ from proposer p \textbf{do}
         \State \hspace{\algorithmicindent} $learned = learned \cup val$;
 \end{algorithmic}
 \end{algorithm}

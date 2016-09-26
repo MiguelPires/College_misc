@@ -89,7 +89,7 @@
 % \newtheorem{conjecture}[theorem]{Conjecture}
 % \newtheorem{corollary}[theorem]{Corollary}
 % % \newtheorem{criterion}[theorem]{Criterion}
-% \newtheorem{definition}{Definition}
+ \newtheorem{definition}{Definition}
 % % \newtheorem{exercise}[theorem]{Exercise}
 % \newtheorem{lemma}[theorem]{Lemma}
 % % \newtheorem{notation}[theorem]{Notation}
@@ -218,6 +218,21 @@ in such geo-distributed settings that are tunable to specific consistency levels
 \par 
 {\color{red} TODO: Write assumptions and properties}
 
+\begin{definition}
+(Multi-valued wait-free consensus with adversary $\mathcal{A}$)
+
+A process is \emph{correct} with respect to crash adversary 
+in an execution $E$ if it takes infinitely many steps in $E$.
+%
+\begin{itemize}
+\item (Agreement): No two processes agree on different values  
+\item (Liveness): Every correct process (w.r.t $\mathcal{A}$) 
+eventually decides on a value previously proposed by a correct process (w.r.t $\mathcal{A}$).
+\end{itemize}
+%
+\end{definition}
+%
+%
 \begin{algorithm}
 \caption{Generalized Paxos - Proposer p}
 \textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot,\ timer = \bot,\ quorumSize = 0,\ messages = \bot,\ previousMessages = \bot, collected = False$

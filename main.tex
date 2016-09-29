@@ -235,7 +235,7 @@ eventually decides on a value previously proposed by a correct process (w.r.t $\
 %
 \begin{algorithm}
 \caption{Generalized Paxos - Proposer p}
-\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot,\ timer = \bot,\ quorumSize = 0,\ messages = \bot,\ previousMessages = \bot, collected = False$
+\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot,\ timer = \bot,\ quorumSize = 0,\ messages = \bot,\ previousMessages = \bot,\ collected = False,\ verification = False, \ currentPhase = \bot$
 \begin{algorithmic}[1]
 
     \Function{Propose}{\textit{C}}
@@ -253,37 +253,41 @@ eventually decides on a value previously proposed by a correct process (w.r.t $\
     
     \State
     \State \textbf{upon} \textit{receive(statement)} from proposer $p_i$ \textbf{do}
-    \State \hspace{\algorithmicindent} $messages[p_i] = statement$;
+    \State \hspace{\algorithmicindent} $messages[ballot_l][p_i] = statement$;
     
     \State
     \State \textbf{upon} $timer$ \textbf{do} 
     \State \hspace{\algorithmicindent} $quorumSize = n-u$;
 
     \State     
-    \State \textbf{upon} $\#(messages) \geq quorumSize \land collected = False$ \textbf{do} 
+    \State \textbf{upon} $\#(messages) \geq quorumSize \land collected[ballot_l][round] = False$ \textbf{do} 
         \State \hspace{\algorithmicindent} \textbf{if }{$\#(messages) < n-s \land verification = False$} \textbf{then}
-            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $quorumSize = n-f$;
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $quorumSize = n-u$;
             \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}
             $previousMessages = messages$;
             \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}
             $messages = \bot$;
             \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $verification = True$;
             \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $timer = \textbf{run}\ \Call{start\_timer}{2T}$;
-
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $fast\_ballot$ \textbf{then}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{run} \Call{phase\_1a}{$fast,C$};
+            \State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{else}
+            \State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{run} \Call{Phase\_1a}{slow, C};
+            
+            
         \State \hspace{\algorithmicindent} \textbf{else}
-            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $collected = True$;
-            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if}\ $messageRound = p1b$ \textbf{then}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $collected[ballot_l][currentPhase] = True$;
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if}\ $currentPhase = p1b$ \textbf{then}
             \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
             \textbf{run} \Call{phase\_2a}{$ballot_l, Q$};
             \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{else}
             \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{run} \Call{send}{$p2b, message.bal, message.val$} to learners;
             
-        
-            
     \State
-    \State \textbf{upon} $verification = True \land collected = False \land (\#(messages) \geq quorumSize \lor \#(messages \cup previousMessages) \geq n-s)$ \textbf{do}
-    \State \hspace{\algorithmicindent} $collected = True$;
-    \State\ \hspace{\algorithmicindent}\textbf{if}\ $messageRound = p1b$ \textbf{then}
+    \State \textbf{upon} $verification = True \land collected[ballot_l][currentPhase] = False \land (\#(messages) \geq quorumSize \lor\ \#(quorum(messages)\ \cup\ quorum(previousMessages)) \geq n-s)$ \textbf{do}
+    \State \hspace{\algorithmicindent} $Q = quorum(messages)\ \cup\ quorum(previousMessages)$;
+    \State \hspace{\algorithmicindent} $collected[ballot_l][lastPhase] = True$;
+    \State\ \hspace{\algorithmicindent}\textbf{if}\ $currentPhase = p1b$ \textbf{then}
             \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} 
             \textbf{run} \Call{phase\_2a}{$ballot_l, Q$};
             \State \hspace{\algorithmicindent} \textbf{else}
@@ -299,6 +303,7 @@ eventually decides on a value previously proposed by a correct process (w.r.t $\
     \Function{Phase\_1a}{ballot\_type, C}
         \State $C_l = C$;
         \State $quorumSize = n-s$;
+        \State $currentPhase = p1a$;
         \State $timer$ = \textbf{run} \Call{start\_Timer}{2T};
         
         \State
@@ -313,6 +318,7 @@ eventually decides on a value previously proposed by a correct process (w.r.t $\
     \Function{Phase\_2a}{$bal, Q$}
         \State $maxTried_l$ = \textbf{run} \Call{Proved\_Safe}{$Q, bal$};
         \State $maxTried_l = maxTried_l \bullet C_l$;
+        \State $currentPhase = p2a$;
         \State \textbf{run} \Call{send}{$p2a,ballot_l, maxTried_l$} to Acceptors;
     \EndFunction
     
@@ -326,7 +332,6 @@ eventually decides on a value previously proposed by a correct process (w.r.t $\
             \State \textbf{return} $\{val_a[k]\ |\ (a \in Q) \wedge (val_a[k] \neq null)\}$;
         \Else
             \State \textbf{return} \textbf{run} $lowerUpperBound(val_a[k]\ |\ a \in Q \cap R$);
-            
         \EndIf
     \EndFunction
         
@@ -358,19 +363,19 @@ eventually decides on a value previously proposed by a correct process (w.r.t $\
     \EndFunction
     
     \State
-    \Function{Phase\_2b\_Classic}{$m, u, l$}
+    \Function{Phase\_2b\_Classic}{$m, v, l$}
         \State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
         \If {$m \geq k$}
-            \State $val_a = u$;
+            \State $val_a = v$;
             \State \Call{send}{$p2b, bal_a, val_a$} to leader l;
         \EndIf
     \EndFunction
     
     \State
-    \Function{Phase\_2b\_Fast}{$u, p$}
+    \Function{Phase\_2b\_Fast}{$v, p$}
         \State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
         \If {$bal_a == k$}
-            \State $val_a = val_a \bullet u$;
+            \State $val_a = val_a \bullet v$;
             \State \Call{send}{$p2b, bal_a, val_a$} to process p;
         \EndIf
     \EndFunction

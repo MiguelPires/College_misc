@@ -8,9 +8,13 @@
 2 4 vogal =
 3 4 consoante =
 4 4 consoante =
+4 7 vogal =
 4 5 vogal =
 5 4 [^s] =
-5 4 eps eps
 5 6 s z
+5 8 s s
 6 4 vogal =
+8 4 consoante =
 4
+7
+8

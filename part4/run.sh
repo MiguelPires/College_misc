@@ -17,7 +17,7 @@ echo "Compiled transducer"
 array=( aleluia aspartame extremo cisterna camisola 4ato a2o )
 for i in "${array[@]}"
 do
-	echo "Testing the conversion of \"$i\""
+	echo "Compiling test word \"$i\""
 	python3 ../word2fst.py $i > s-$i.txt
 	fstcompile --isymbols=../syms.txt --osymbols=../syms.txt s-$i.txt | fstarcsort > s-$i.fst
  	fstcompose s-$i.fst p4.fst > result-s-$i.fst
@@ -30,7 +30,7 @@ done
 array=( as )
 for i in "${array[@]}"
 do
-        echo "Testing the conversion of \"$i\""
+        echo "Compiling test word \"$i\""
         python3 ../word2fst.py $i > f-$i.txt
 
         fstcompile --isymbols=../syms.txt --osymbols=../syms.txt f-$i.txt | fstarcsort > f-$i.fst
@@ -38,4 +38,3 @@ do
         fstdraw --isymbols=../syms.txt --osymbols=../syms.txt result-f-$i.fst | dot -Tpdf > f-$i.pdf
         fstprint --isymbols=../syms.txt --osymbols=../syms.txt result-f-$i.fst > result-f-$i.txt
 done
-echo "Ran tests"

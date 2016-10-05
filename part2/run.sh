@@ -1,4 +1,4 @@
-rm -f *.pdf *.fst s-*.txt f-*.txt result-*.txt
+rm -f *.pdf *.fst s-*.txt f-*.txt result-*.txt result-*.fst
 
 echo "Cleaned dir"
 
@@ -19,8 +19,9 @@ do
 	echo "Testing the conversion of \"$i\""
 	python3 ../word2fst.py $i > s-$i.txt
 	fstcompile --isymbols=../syms.txt --osymbols=../syms.txt s-$i.txt | fstarcsort > s-$i.fst
- 	fstcompose s-$i.fst p2.fst | fstshortestpath | fstproject --project_output | fstrmepsilon | fstprint --acceptor --isymbols=../syms.txt > result-s-$i.txt
-	fstdraw --portrait --isymbols=../syms.txt --osymbols=../syms.txt s-$i.fst | dot -Tpdf  > s-$i.pdf
+ 	fstcompose s-$i.fst p2.fst > result-s-$i.fst
+	fstdraw --isymbols=../syms.txt --osymbols=../syms.txt result-s-$i.fst | dot -Tpdf  > s-$i.pdf
+	fstprint --isymbols=../syms.txt --osymbols=../syms.txt result-s-$i.fst > result-s-$i.txt
 done
 
 # compiles and composes failure tests
@@ -29,10 +30,10 @@ for i in "${array[@]}"
 do
         echo "Testing the conversion of \"$i\""
         python3 ../word2fst.py $i > f-$i.txt
+
         fstcompile --isymbols=../syms.txt --osymbols=../syms.txt f-$i.txt | fstarcsort > f-$i.fst
-        fstcompose f-$i.fst p2.fst | fstshortestpath | fstproject --project_output | fstrmepsilon | fstprint --acceptor --isymbols=../syms.txt > result-f-$i.txt
-        fstdraw --portrait --isymbols=../syms.txt --osymbols=../syms.txt f-$i.fst | dot -Tpdf  > f-$i.pdf
+        fstcompose f-$i.fst p2.fst > result-f-$i.fst
+        fstdraw --isymbols=../syms.txt --osymbols=../syms.txt result-f-$i.fst | dot -Tpdf > f-$i.pdf
+        fstprint --isymbols=../syms.txt --osymbols=../syms.txt result-f-$i.fst > result-f-$i.txt
 done
-
-
 echo "Ran tests"

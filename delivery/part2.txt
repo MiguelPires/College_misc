@@ -176,13 +176,9 @@
 9	0	3	3
 9	0	4	4
 9	0	s	eps
-1	10	eps	eps
 2	10	eps	eps
-3	10	eps	eps
 4	10	eps	eps
-5	10	eps	eps
 6	10	eps	eps
-7	10	eps	eps
 8	10	eps	eps
 9	10	eps	eps
 10

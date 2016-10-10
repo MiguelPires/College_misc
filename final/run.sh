@@ -31,7 +31,7 @@ fstprint --isymbols=../syms.txt --osymbols=../syms.txt final.fst > final.txt
 # testing final transducer
 echo "Generating tests for final transducer"
 
-array=( lusitana excitado armas assinalados ocidental )
+array=( as baroes praia mares por antes navegados passaram ainda nunca pires lusitana excitado armas assinalados ocidental )
 for i in "${array[@]}"
 do 
 	python ../word2fst.py $i > s-$i.txt

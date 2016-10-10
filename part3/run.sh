@@ -25,7 +25,7 @@ do
 done
 
 # compiles and composes failure tests
-array=( xarope )
+array=( massas baroes xarope )
 for i in "${array[@]}"
 do
         echo "Compiling test word \"$i\""

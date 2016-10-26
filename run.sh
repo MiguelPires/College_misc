@@ -15,25 +15,33 @@ fi
 
 if [[ $# == 0 ]] || [[ $1 == "clean" ]]; then
 	echo "Cleaning directory"
-	rm -f *arpa.txt temp-*.txt
+	rm -f *arpa.txt temp-*.txt norm-*
 	
 	if [[ $1 == "clean" ]]; then
 		exit
 	fi
 fi
 
+
+
 # Generates the author n-grams and profiles
 if [[ $# == 0 ]] || [[ $1 == "generate" ]]; then
 	for AUTHOR in $( ls $TRAIN_DIR ); do
+		echo "Normalizing text files"			
+
 		count=0
-		echo "Generating n-grams for author '$AUTHOR'"
-	
-		for i in $TRAIN_DIR/$AUTHOR/*.txt; do
-			ngram-count -sort -order 2 -text "$i" -addsmooth 0 -write temp-$AUTHOR-$count.txt
+		OLDIFS="$IFS"
+		IFS=$'\n'
+		for i in $( ls $TRAIN_DIR/$AUTHOR ); do
+			cat $TRAIN_DIR/$AUTHOR/$i | tr -d "[?|\.|!|:|,|;_\(\)]*" > norm-$i
+			
+			ngram-count -sort -order 2 -text norm-$i -addsmooth 0 -write temp-$AUTHOR-$count.txt
 			let count=count+1
 		done
-		
+		IFS=$OLDIFS
+
 		# create author profile
+		echo "Generating n-grams for author '$AUTHOR'"
 		ngram-merge -write $AUTHOR-count.txt temp-$AUTHOR-*.txt
 		ngram-count -sort -read $AUTHOR-count.txt -addsmooth 0 -lm $AUTHOR-arpa.txt 
 		rm temp-*.txt $AUTHOR-count.txt

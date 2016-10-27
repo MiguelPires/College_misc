@@ -30,6 +30,8 @@ if [[ $# == 0 ]] || [[ $1 == "generate" ]]; then
 		echo "Normalizing text files"			
 
 		count=0
+		# we change the filename separator to be \n because
+		# some of the text files have spaces in them
 		OLDIFS="$IFS"
 		IFS=$'\n'
 		for i in $( ls $TRAIN_DIR/$AUTHOR ); do

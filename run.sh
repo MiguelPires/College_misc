@@ -1,3 +1,11 @@
+DEBUG=true
+
+if [[ "$DEBUG" = true ]]; then
+	OLD_PS4=$PS4
+	PS4='Line ${LINENO}: '
+	set -x
+fi
+
 TRAIN_DIR=Corpora/treino
 #TEST_DIR=Corpora/teste/500Palavras
 TEST_DIR=Corpora/teste/1000Palavras
@@ -40,7 +48,10 @@ if [[ $# == 0 ]] || [[ $1 == "generate" ]]; then
 		IFS=$'\n'
 		for i in $( ls $TRAIN_DIR/$AUTHOR ); do
 			# normalize text files and move them to every experiment's folder
-			cat $TRAIN_DIR/$AUTHOR/$i | tr -d "[?|\.|!|:|,|;_\(\)\+\#\$\%]*" > norm-$AUTHOR-$COUNT.txt
+			# TODO: it may be beneficial to substitute punctuation by whitespace
+			# instead of deleting it. It's something to explroe, when the test set 
+			# annotations become available 
+			cat $TRAIN_DIR/$AUTHOR/$i | tr -d "[?|\.|!|:|,|;_\(\)\+\#\$\%»«']*" > norm-$AUTHOR-$COUNT.txt
 			cp norm-$AUTHOR-$COUNT.txt experiment1/norm-$AUTHOR-$COUNT.txt
 			cp norm-$AUTHOR-$COUNT.txt experiment2/norm-$AUTHOR-$COUNT.txt
 			cp norm-$AUTHOR-$COUNT.txt experiment3/norm-$AUTHOR-$COUNT.txt
@@ -87,7 +98,6 @@ if [[ $# == 0 ]] || [[ $1 == "generate" ]]; then
 fi
 
 if [[ $# == 0 ]] || [[ $1 == "run" ]]; then
-
 	for DIR in experiment*/; do
 		echo "Running experiment $( echo "$DIR" | grep -o "[123]" )"
 		cd $DIR
@@ -115,3 +125,8 @@ if [[ $# == 0 ]] || [[ $1 == "run" ]]; then
 		exit
 	fi
 fi
+
+if [[ "DEBUG" = true ]]; then
+	set +x
+	PS4=$OLD_PS4
+then

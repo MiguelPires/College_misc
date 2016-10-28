@@ -11,12 +11,16 @@ split_path = str(sys.argv[1]).split("/")
 old_filename = sys.argv[1]
 new_filename = "stemmed-"+ split_path[len(split_path)-1]
 
-print("Stemming file '"+old_filename+"' and writing in '"+new_filename+"'")
-with open(old_filename) as old_file:
-    with open(new_filename, 'w+') as new_file:
-        for line in old_file:
-            new_line = line
-            for token in line.split():
-                new_line = new_line.replace(token, stemmer.stem(token))
+#print("Stemming file '"+old_filename+"' and writing in '"+new_filename+"'")
+try:
+    with open(old_filename) as old_file:
+        with open(new_filename, 'w+') as new_file:
+            for line in old_file:
+                new_line = line
+                for token in line.split():
+                    new_line = new_line.replace(token, stemmer.stem(token))
 
-            new_file.write(new_line)
+                new_file.write(new_line)
+except UnicodeDecodeError as err:
+    print("Exception object: " + str(err.object))
+    raise err

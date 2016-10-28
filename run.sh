@@ -1,4 +1,4 @@
-DEBUG=true
+DEBUG=false
 
 if [[ "$DEBUG" = true ]]; then
 	OLD_PS4=$PS4
@@ -7,8 +7,7 @@ if [[ "$DEBUG" = true ]]; then
 fi
 
 TRAIN_DIR=Corpora/treino
-#TEST_DIR=Corpora/teste/500Palavras
-TEST_DIR=Corpora/teste/1000Palavras
+TEST_DIR=Corpora/teste
 PROFILE_SIZE=100
 
 if [[ $1 == help ]]; then
@@ -39,8 +38,8 @@ if [[ $# == 0 ]] || [[ $1 == "generate" ]]; then
 	mkdir experiment1 experiment2 experiment3
 
 	for AUTHOR in $( ls $TRAIN_DIR ); do
-		echo "Normalizing text files"			
-
+		echo "Normalizing and stemming text files for $AUTHOR"			
+		
 		COUNT=0
 		# we change the filename separator to be \n because
 		# some of the text files have spaces in them
@@ -51,7 +50,9 @@ if [[ $# == 0 ]] || [[ $1 == "generate" ]]; then
 			# TODO: it may be beneficial to substitute punctuation by whitespace
 			# instead of deleting it. It's something to explroe, when the test set 
 			# annotations become available 
-			cat $TRAIN_DIR/$AUTHOR/$i | tr -d "[?|\.|!|:|,|;_\(\)\+\#\$\%»«']*" > norm-$AUTHOR-$COUNT.txt
+			#cat $TRAIN_DIR/$AUTHOR/$i | tr -d "[?|\.|!|:|,|;_\(\)\+\#\$\%'$£§ªº@&³¡©“´\`/]*" > norm-$AUTHOR-$COUNT.txt
+			cat $TRAIN_DIR/$AUTHOR/$i | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\']" > norm-$AUTHOR-$COUNT.txt
+
 			cp norm-$AUTHOR-$COUNT.txt experiment1/norm-$AUTHOR-$COUNT.txt
 			cp norm-$AUTHOR-$COUNT.txt experiment2/norm-$AUTHOR-$COUNT.txt
 			cp norm-$AUTHOR-$COUNT.txt experiment3/norm-$AUTHOR-$COUNT.txt
@@ -59,7 +60,7 @@ if [[ $# == 0 ]] || [[ $1 == "generate" ]]; then
 			# stem and move the stemmed files to experiments 2 and 3
 			python3 stemmer.py norm-$AUTHOR-$COUNT.txt
 			cp stemmed-norm-$AUTHOR-$COUNT.txt experiment2/stemmed-norm-$AUTHOR-$COUNT.txt
-			cp stemmed-norm-$AUTHOR-$COUNT.txt experiment3/stemmed-norm-$AUTHOR-$COUNT.txt
+				cp stemmed-norm-$AUTHOR-$COUNT.txt experiment3/stemmed-norm-$AUTHOR-$COUNT.txt
 		
 			# generate ngram counts
 			# just normalization	
@@ -75,19 +76,19 @@ if [[ $# == 0 ]] || [[ $1 == "generate" ]]; then
 		IFS=$OLDIFS
 		
 		# create author profile
-		echo "Generating n-grams for author '$AUTHOR'"
+		echo "Generating bigram/unigram model for author '$AUTHOR'"
 		
 		cd experiment1
 		ngram-merge -write $AUTHOR-count.txt temp-$AUTHOR-*.txt	
-		ngram-count -sort -read $AUTHOR-count.txt -addsmooth 0 -lm $AUTHOR-arpa.txt 
+		ngram-count -order 2 -sort -read $AUTHOR-count.txt -addsmooth 0 -lm $AUTHOR-arpa.txt 
 		
 		cd ../experiment2
 		ngram-merge -write $AUTHOR-count.txt temp-$AUTHOR-*.txt
-		ngram-count -sort -read $AUTHOR-count.txt -addsmooth 0 -lm $AUTHOR-arpa.txt 
+		ngram-count -order 2 -sort -read $AUTHOR-count.txt -addsmooth 0 -lm $AUTHOR-arpa.txt 
 		
 		cd ../experiment3
 		ngram-merge -write $AUTHOR-count.txt temp-$AUTHOR-*.txt
-		ngram-count -sort -read $AUTHOR-count.txt -addsmooth 0 -lm $AUTHOR-arpa.txt
+		ngram-count -order 2 -sort -read $AUTHOR-count.txt -addsmooth 0 -lm $AUTHOR-arpa.txt
 		
 		cd ..
 	done
@@ -101,22 +102,24 @@ if [[ $# == 0 ]] || [[ $1 == "run" ]]; then
 	for DIR in experiment*/; do
 		echo "Running experiment $( echo "$DIR" | grep -o "[123]" )"
 		cd $DIR
-		rm results.txt
+		rm -f results.txt
 
-		for TEST_FILE in $( ls ../$TEST_DIR ); do	
-			BEST_PPL=-1
-			BEST_AUTHOR=""
+		for SUB_DIR in $( ls ../$TEST_DIR ); do
+			for TEST_FILE in $( ls ../$TEST_DIR/$SUB_DIR ); do	
+				BEST_PPL=-1
+				BEST_AUTHOR=""
 
-			for AUTHOR in $( ls ../$TRAIN_DIR ); do	
-				# apply the model to the text and extract the perplexity
-				PPL="$(ngram -lm $AUTHOR-arpa.txt -ppl ../$TEST_DIR/$TEST_FILE  | grep -o "ppl= [0-9]*" | grep -o "[0-9]*")"
+				for AUTHOR in $( ls ../$TRAIN_DIR ); do	
+					# apply the model to the text and extract the perplexity
+					PPL="$( ngram -lm $AUTHOR-arpa.txt -ppl ../$TEST_DIR/$SUB_DIR/$TEST_FILE  | grep -o "ppl= [0-9]*" | grep -o "[0-9]*" )"
 
-				if [[ $BEST_PPL == -1 ]] || [[ $PPL -lt $BEST_PPL ]]; then
-					BEST_AUTHOR=$AUTHOR
-					BEST_PPL=$PPL
-				fi				
-			done
-			echo "$TEST_DIR/$TEST_FILE's author is $BEST_AUTHOR (perplexity = $BEST_PPL)." >> results.txt
+					if [[ $BEST_PPL == -1 ]] || [[ $PPL -lt $BEST_PPL ]]; then
+						BEST_AUTHOR=$AUTHOR
+						BEST_PPL=$PPL
+					fi				
+				done
+			echo "$SUB_DIR/$TEST_FILE's author is $BEST_AUTHOR (perplexity = $BEST_PPL)." >> results.txt
+			done	
 		done		
 		cd ..
 	done
@@ -129,4 +132,4 @@ fi
 if [[ "DEBUG" = true ]]; then
 	set +x
 	PS4=$OLD_PS4
-then
+fi

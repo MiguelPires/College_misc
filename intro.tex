@@ -1,0 +1,9 @@
+\section{Introduction}
+Distributed protocols for building stateful fault-tolerant applications in data centers typically strive to provide strong consistency \`a la \emph{linearizability}~\cite{Her91}.
+However, the complexity of achieving consistent replication of state while ensuring availability makes it hard to justify its deployment in \emph{geo-distributed data centers}.
+The increasing popularity of replicating online services across diverse data centers emphasizes 
+the need for low-latency protocols that cater to failure patterns specific to such a setting while still maintaining 
+some \emph{relaxed} form of \emph{cross-site consistency}. There is a need for constructing modular protocols for state-machine replication
+in such geo-distributed settings that are tunable to specific consistency levels and failure patterns.
+%
+

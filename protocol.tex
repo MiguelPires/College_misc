@@ -1,0 +1,18 @@
+\section{Protocol}
+%
+\begin{definition}
+(Multi-valued wait-free consensus with adversary $\mathcal{A}$)
+
+A process is \emph{correct} with respect to crash adversary 
+in an execution $E$ if it takes infinitely many steps in $E$.
+%
+\begin{itemize}
+\item (Agreement): No two processes agree on different values  
+\item (Liveness): Every correct process (w.r.t $\mathcal{A}$) 
+eventually decides on a value previously proposed by a correct process (w.r.t $\mathcal{A}$).
+\end{itemize}
+%
+\end{definition}
+%
+\input{algo}
+%

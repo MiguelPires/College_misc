@@ -1,0 +1,159 @@
+\begin{algorithm}
+\caption{Generalized Paxos - Proposer p}
+\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot,\ timer = \bot,\ quorumSize = 0,\ messages = \bot,\ previousMessages = \bot,\ collected = False,\ verification = False, \ currentPhase = \bot$
+\begin{algorithmic}[1]
+
+    \Function{Propose}{\textit{C}}
+    \If{fast\_ballot}
+        \State \textbf{run} \Call{phase\_1a}{fast,\textit{C}};
+    \Else
+        \State \textbf{run} \Call{send}{\textit{propose, C}} to Leader;
+    \EndIf
+    \EndFunction
+        
+    \State
+    \State \textbf{upon} \textit{receive(propose, C)} from proposer $p_i$ \textbf{do} 
+        \State \hspace{\algorithmicindent} \textbf{if} $p = Leader$ \textbf{then}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{run} \Call{phase\_1a}{slow, C};
+    
+    \State
+    \State \textbf{upon} \textit{receive(statement)} from proposer $p_i$ \textbf{do}
+    \State \hspace{\algorithmicindent} $messages[ballot_l][p_i] = statement$;
+    
+    \State
+    \State \textbf{upon} $timer$ \textbf{do} 
+    \State \hspace{\algorithmicindent} $quorumSize = n-u$;
+
+    \State     
+    \State \textbf{upon} $\#(messages) \geq quorumSize \land collected[ballot_l][round] = False$ \textbf{do} 
+        \State \hspace{\algorithmicindent} \textbf{if }{$\#(messages) < n-s \land verification = False$} \textbf{then}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $quorumSize = n-u$;
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}
+            $previousMessages = messages$;
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}
+            $messages = \bot$;
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $verification = True$;
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $timer = \textbf{run}\ \Call{start\_timer}{2T}$;
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $fast\_ballot$ \textbf{then}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{run} \Call{phase\_1a}{$fast,C$};
+            \State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{else}
+            \State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{run} \Call{Phase\_1a}{slow, C};
+            
+            
+        \State \hspace{\algorithmicindent} \textbf{else}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $collected[ballot_l][currentPhase] = True$;
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if}\ $currentPhase = p1b$ \textbf{then}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
+            \textbf{run} \Call{phase\_2a}{$ballot_l, Q$};
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{else}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{run} \Call{send}{$p2b, message.bal, message.val$} to learners;
+            
+    \State
+    \State \textbf{upon} $verification = True \land collected[ballot_l][currentPhase] = False \land (\#(messages) \geq quorumSize \lor\ \#(quorum(messages)\ \cup\ quorum(previousMessages)) \geq n-s)$ \textbf{do}
+    \State \hspace{\algorithmicindent} $Q = quorum(messages)\ \cup\ quorum(previousMessages)$;
+    \State \hspace{\algorithmicindent} $collected[ballot_l][lastPhase] = True$;
+    \State\ \hspace{\algorithmicindent}\textbf{if}\ $currentPhase = p1b$ \textbf{then}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} 
+            \textbf{run} \Call{phase\_2a}{$ballot_l, Q$};
+            \State \hspace{\algorithmicindent} \textbf{else}
+            \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{run} \Call{send}{$p2b, message.bal, message.val$} to learners;
+
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Generalized Paxos - Proposer p (continued)}
+\begin{algorithmic}[1]
+    %\item[] % unnumbered empty line
+    \Function{Phase\_1a}{ballot\_type, C}
+        \State $C_l = C$;
+        \State $quorumSize = n-s$;
+        \State $currentPhase = p1a$;
+        \State $timer$ = \textbf{run} \Call{start\_Timer}{2T};
+        
+        \State
+        \If{ballot\_type = fast}
+            \State \textbf{run} \Call{send}{$fast, ballot_l$} to Acceptors;
+        \Else
+            \State \textbf{run} \Call{send}{$p1a, ballot_l$} to Acceptors;
+        \EndIf
+    \EndFunction
+    
+    \State
+    \Function{Phase\_2a}{$bal, Q$}
+        \State $maxTried_l$ = \textbf{run} \Call{Proved\_Safe}{$Q, bal$};
+        \State $maxTried_l = maxTried_l \bullet C_l$;
+        \State $currentPhase = p2a$;
+        \State \textbf{run} \Call{send}{$p2a,ballot_l, maxTried_l$} to Acceptors;
+    \EndFunction
+    
+    \State
+    \Function{Proved\_Safe}{Q, m}
+        \State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
+        \State $RS = \{R \in k$-$quorum\ |\ \forall a \in R \cap Q : val_a[k] \neq null\}$;
+        
+        \State
+        \If{$RS = \varnothing$}
+            \State \textbf{return} $\{val_a[k]\ |\ (a \in Q) \wedge (val_a[k] \neq null)\}$;
+        \Else
+            \State \textbf{return} \textbf{run} $lowerUpperBound(val_a[k]\ |\ a \in Q \cap R$);
+        \EndIf
+    \EndFunction
+        
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Generalized Paxos - Acceptor a}
+\textbf{Local variables: } $bal_a = 0,\ mbal_a = 0, \val_a = \bot$ 
+\begin{algorithmic}[1]
+  
+  \State \textbf{upon} \textit{receive(fast, val)} from proposer \textit{p} \textbf{do}
+    \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_fast}{$val, p$};
+    
+    \State
+    \State \textbf{upon} \textit{receive(p1a, ballot)} from leader \textit{l} \textbf{do}
+    \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_1b}{$ballot, l$};
+    
+    \State
+    \State \textbf{upon} \textit{receive(p2a, ballot, value)} from leader \textit{l} \textbf{do}
+    \State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_classic}{$ballot, value, l$};
+    
+    \State
+    \Function{Phase\_1b}{$m, l$}
+        \If {$bal_a < m$}
+            \State $bal_a = m$;
+            \State \Call{send}{$p1b, m, mbal_a, val_a$} to leader l;
+        \EndIf
+    \EndFunction
+    
+    \State
+    \Function{Phase\_2b\_Classic}{$m, v, l$}
+        \State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
+        \If {$m \geq k$}
+            \State $val_a = v$;
+            \State \Call{send}{$p2b, bal_a, val_a$} to leader l;
+        \EndIf
+    \EndFunction
+    
+    \State
+    \Function{Phase\_2b\_Fast}{$v, p$}
+        \State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
+        \If {$bal_a == k$}
+            \State $val_a = val_a \bullet v$;
+            \State \Call{send}{$p2b, bal_a, val_a$} to process p;
+        \EndIf
+    \EndFunction
+    
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Generalized Paxos - Learner l}
+\textbf{Local variables: } $learned = \varnothing$ 
+\begin{algorithmic}[1]
+  
+    \State \textbf{upon} $receive (p2b, bal, val)$ from proposer p \textbf{do}
+        \State \hspace{\algorithmicindent} $learned = learned \cup val$;
+\end{algorithmic}
+\end{algorithm}

@@ -98,13 +98,20 @@ if [[ $# == 0 ]] || [[ $1 == "generate" ]]; then
 	fi
 fi
 
+authors=( "JoseSaramago" "AlmadaNegreiros" "LuisaMarquesSilva" "EcaDeQueiros" "CamiloCasteloBranco" "JoseRodriguesSantos" )
+
 if [[ $# == 0 ]] || [[ $1 == "run" ]]; then
 	for DIR in experiment*/; do
+		CORRECT=0
+		TOTAL=0
+
 		echo "Running experiment $( echo "$DIR" | grep -o "[123]" )"
 		cd $DIR
 		rm -f results.txt
 
 		for SUB_DIR in $( ls ../$TEST_DIR ); do
+			
+			COUNT=1
 			for TEST_FILE in $( ls ../$TEST_DIR/$SUB_DIR ); do	
 				BEST_PPL=-1
 				BEST_AUTHOR=""
@@ -119,9 +126,23 @@ if [[ $# == 0 ]] || [[ $1 == "run" ]]; then
 					fi				
 				done
 			echo "$SUB_DIR/$TEST_FILE's author is $BEST_AUTHOR (perplexity = $BEST_PPL)." >> results.txt
+			
+			if [[ $TEST_FILE = "text$COUNT.txt" ]]; then
+				if [[ $BEST_AUTHOR = ${authors[$(expr $COUNT - 1)]} ]]; then
+					let CORRECT=CORRECT+1
+					echo "Correct author for $SUB_DIR/text$COUNT"
+					
+				fi
+			fi
+			let TOTAL=TOTAL+1					
+			let COUNT=COUNT+1
 			done	
 		done		
-		cd ..
+		
+		prec="Accuracy: $(echo "scale=2;$CORRECT/$TOTAL*100" | bc)%"
+		echo $prec
+		echo $prec >> results.txt
+		cd ..	
 	done
 	
 	if [[ $1 == "run" ]]; then
@@ -133,3 +154,5 @@ if [[ "DEBUG" = true ]]; then
 	set +x
 	PS4=$OLD_PS4
 fi
+
+

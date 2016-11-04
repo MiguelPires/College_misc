@@ -43,3 +43,4 @@ fabric.properties
 # project dir
 
 experiment[123]/
+*.swp

@@ -50,38 +50,31 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 		OLDIFS="$IFS"
 		IFS=$'\n'
 		for i in $( ls $TRAIN_DIR/$AUTHOR ); do
-			# normalize text files and move them to every experiment's folder
-			# TODO: it may be beneficial to substitute punctuation by whitespace
-			# instead of deleting it. It's something to explroe, when the test set 
-			# annotations become available
-				
-			cat $TRAIN_DIR/$AUTHOR/$i | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\']" > norm-$AUTHOR-$COUNT.txt
+			# normalization		
+			cat $TRAIN_DIR/$AUTHOR/$i | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*]" > norm-$AUTHOR-$COUNT.txt
+			cp norm-$AUTHOR-$COUNT.txt experiment1/
+			cp norm-$AUTHOR-$COUNT.txt experiment2/
+			rm norm-$AUTHOR-$COUNT.txt
 
-			let WORDS+=$(wc -w norm-$AUTHOR-$COUNT.txt | grep -o -E "[0-9]+")
-			#cat $TRAIN_DIR/$AUTHOR/$i | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\']" | sed -r "s/ as / /g;s/ os / /g;s/ a / /g;s/ o / /g;s/ de / /g;s/ das / /g;s/ dos / /g;" > norm-$AUTHOR-$COUNT.txt
-			#cat $TRAIN_DIR/$AUTHOR/$i |  "(\was\w|\wa\w|\wos\w|\wo\w|\wde\w|\wdas\w|\wdos\w)" > norm-$AUTHOR-$COUNT.txt
-
-			#[?|\.|!|:|,|;|_|\(|\)\$#\$\'])" > norm-$AUTHOR-$COUNT.txt
-			#TODO: eliminate stop words
-			#cat norm-$AUTHOR_$COUNT.txt | tr -d "( as | a | os | o | de | das | dos )" >  experiment3/norm-$AUTHOR-$COUNT.txt
-			cp norm-$AUTHOR-$COUNT.txt experiment1/norm-$AUTHOR-$COUNT.txt
-			cp norm-$AUTHOR-$COUNT.txt experiment2/norm-$AUTHOR-$COUNT.txt
-			cp norm-$AUTHOR-$COUNT.txt experiment3/norm-$AUTHOR-$COUNT.txt
+			cat $TRAIN_DIR/$AUTHOR/$i | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*]" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;" > experiment3/norm-$AUTHOR-$COUNT.txt
 			
-			# stem and move the stemmed files to experiments 2 and 3
-			python3 stemmer.py norm-$AUTHOR-$COUNT.txt
-			cp stemmed-norm-$AUTHOR-$COUNT.txt experiment2/stemmed-norm-$AUTHOR-$COUNT.txt
-			cp stemmed-norm-$AUTHOR-$COUNT.txt experiment3/stemmed-norm-$AUTHOR-$COUNT.txt
+			let WORDS+=$(wc -w experiment1/norm-$AUTHOR-$COUNT.txt | grep -o -E "[0-9][0-9][0-9]+")
 
+			# stem and move the stemmed files to experiments 2 and 3
+			cd experiment2/
+			python3 ../stemmer.py norm-$AUTHOR-$COUNT.txt
+			cd ../experiment3
+			python3 ../stemmer.py norm-$AUTHOR-$COUNT.txt
+			cd ..	
+			
 			# generate ngram counts
 			# just normalization	
-			ngram-count -tolower -sort -order 2 -text norm-$AUTHOR-$COUNT.txt -addsmooth 0 -write experiment1/temp-$AUTHOR-$COUNT.txt
+			ngram-count -tolower -sort -order 2 -text experiment1/norm-$AUTHOR-$COUNT.txt -addsmooth 0 -write experiment1/temp-$AUTHOR-$COUNT.txt
 			# normalization and stemming
-			ngram-count -tolower -sort -order 2 -text stemmed-norm-$AUTHOR-$COUNT.txt -addsmooth 0 -write experiment2/temp-$AUTHOR-$COUNT.txt
+			ngram-count -tolower -sort -order 2 -text experiment2/stemmed-norm-$AUTHOR-$COUNT.txt -addsmooth 0 -write experiment2/temp-$AUTHOR-$COUNT.txt
 			# normalization, stemming and LaPlace smoothing
-			ngram-count -tolower -sort -order 2 -text stemmed-norm-$AUTHOR-$COUNT.txt -addsmooth 0 -write experiment3/temp-$AUTHOR-$COUNT.txt
+			ngram-count -tolower -sort -order 2 -text experiment3/stemmed-norm-$AUTHOR-$COUNT.txt -kndiscount -write experiment3/temp-$AUTHOR-$COUNT.txt
 			
-			rm norm-$AUTHOR-$COUNT.txt stemmed-norm-$AUTHOR-$COUNT.txt
 			let COUNT=COUNT+1
 			if [[ $WORDS -gt $WORD_LIMIT ]]; then
 				break			
@@ -99,8 +92,6 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 		else	
 			mv temp-$AUTHOR-0.txt $AUTHOR-count.txt
 		fi
-		
-		#head --lines=38000 $AUTHOR-count.txt > trunc-$AUTHOR-count.txt
 		ngram-count -tolower -order 2 -sort -read $AUTHOR-count.txt -addsmooth 0 -lm $AUTHOR-arpa.txt 
 		
 		cd ../experiment2
@@ -111,7 +102,6 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 		else	
 			mv temp-$AUTHOR-0.txt $AUTHOR-count.txt
 		fi
-		#head --lines=38000 $AUTHOR-count.txt > trunc-$AUTHOR-count.txt
 		ngram-count -tolower -order 2 -sort -read $AUTHOR-count.txt  -addsmooth 0 -lm $AUTHOR-arpa.txt 
 		
 		cd ../experiment3
@@ -131,12 +121,7 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 			mv temp-$AUTHOR-0.txt $AUTHOR-count.txt
 		fi
 
-		# o resultado do merge nao ta sorted e portanto isto descarta coisas arbitrarias
-		# nao se devia de fazer a truncacao aqui devia ser ao consumir o texto
-		# fazer wordcount dos ficheiros e parar quando se excede um limite
-		#head --lines=38000 $AUTHOR-count.txt > trunc-$AUTHOR-count.txt
-		#echo "$AUTHOR lines: $( wc -l $AUTHOR-count.txt | grep -o -E "[0-9]+" )"
-		ngram-count -tolower -order 2 -sort -read $AUTHOR-count.txt -addsmooth 0 -lm $AUTHOR-arpa.txt
+		ngram-count -tolower -order 2 -sort -read $AUTHOR-count.txt -kndiscount -lm $AUTHOR-arpa.txt
 		
 		cd ..
 	done
@@ -165,16 +150,30 @@ if [[ $# == 0 ]] || [[ $1 == "evaluate" ]]; then
 				BEST_AUTHOR=""
 
 				for AUTHOR in $( ls ../$TRAIN_DIR ); do	
-					# normalize or stem the test files
-					cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\']" > $TEST_FILE-normed.txt
-					python3 ../stemmer.py $TEST_FILE-normed.txt
 					# apply the model to the text and extract the perplexity
 
 					DIR_NO=$( echo "$DIR" | grep -o "[123]" ) 
 					if [[ $DIR_NO = "1" ]]; then
+						# normalize test file
+						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\+\-\*]" > $TEST_FILE-normed.txt
+						# apply model
 						PPL="$( ngram -skipoovs -tolower -lm $AUTHOR-arpa.txt -ppl $TEST_FILE-normed.txt | grep -o "ppl= [0-9]*" | grep -o "[0-9]*" )"
 					fi
-					if [[ $DIR_NO = "2" || $DIR_NO = "3" ]]; then
+					if [[ $DIR_NO = "2" ]]; then
+						# normalize test file
+						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*]" > $TEST_FILE-normed.txt
+						# stem test file
+						python3 ../stemmer.py $TEST_FILE-normed.txt
+						# apply model
+						PPL="$( ngram -skipoovs -tolower -lm $AUTHOR-arpa.txt -ppl stemmed-$TEST_FILE-normed.txt | grep -o "ppl= [0-9]*" | grep -o "[0-9]*" )"
+					fi		
+					
+					if [[ $DIR_NO = "3" ]]; then
+						# normalize test file
+						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*]" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;" > $TEST_FILE-normed.txt
+						# stem test file
+						python3 ../stemmer.py $TEST_FILE-normed.txt
+						# apply model
 						PPL="$( ngram -skipoovs -tolower -lm $AUTHOR-arpa.txt -ppl stemmed-$TEST_FILE-normed.txt | grep -o "ppl= [0-9]*" | grep -o "[0-9]*" )"
 					fi		
 					

@@ -57,7 +57,6 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 			rm norm-$AUTHOR-$COUNT.txt
 
 			cat $TRAIN_DIR/$AUTHOR/$i | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/ô/o/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[/™?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*\"\“\”-]//g" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;s/ e / /Ig;s/ em / /Ig;s/ por / /Ig;s/ ao / /Ig;s/ aos / /Ig;" > experiment3/norm-$AUTHOR-$COUNT.txt
-			
 			let WORDS+=$(wc -w experiment1/norm-$AUTHOR-$COUNT.txt | grep -o -E "[0-9][0-9][0-9]+")
 
 			# stem and move the stemmed files to experiments 2 and 3
@@ -73,7 +72,7 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 			# normalization and stemming
 			ngram-count -tolower -sort -order 2 -text experiment2/stemmed-norm-$AUTHOR-$COUNT.txt -addsmooth 0 -write experiment2/temp-$AUTHOR-$COUNT.txt
 			# normalization, stemming and LaPlace smoothing
-			ngram-count -tolower -sort -order 2 -text experiment3/stemmed-norm-$AUTHOR-$COUNT.txt -wbdiscount -write experiment3/temp-$AUTHOR-$COUNT.txt
+			ngram-count -tolower -sort -order 2 -text experiment3/stemmed-norm-$AUTHOR-$COUNT.txt -kndiscount -write experiment3/temp-$AUTHOR-$COUNT.txt
 			
 			let COUNT=COUNT+1
 			if [[ $WORDS -gt $WORD_LIMIT ]]; then
@@ -106,14 +105,6 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 		
 		cd ../experiment3
 		
-		# Uses only the N most frequent ngrams
-		#for STEMMED_FILE in temp-$AUTHOR-*.txt; do
-		#	LEN=$(wc -l $STEMMED_FILE | grep -o -E "[0-9]+[0-9][0-9]" | tr -d '\n ')
-		#	HALF=$(echo "$LEN/2" | bc )
-		#	head --lines=$HALF $STEMMED_FILE > $STEMMED_FILE-rand
-		#	rm $STEMMED_FILE
-		#	mv $STEMMED_FILE-rand $STEMMED_FILE
-		#done
 		FILES_NUM=$(find . -name "temp-$AUTHOR-*.txt" | wc -l)
 		if [[ $FILES_NUM -gt 1 ]]; then
 			ngram-merge -write $AUTHOR-count.txt temp-$AUTHOR-*.txt	
@@ -121,7 +112,7 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 			mv temp-$AUTHOR-0.txt $AUTHOR-count.txt
 		fi
 
-		ngram-count -tolower -order 2 -sort -read $AUTHOR-count.txt -wbdiscount -lm $AUTHOR-arpa.txt
+		ngram-count -tolower -order 2 -sort -read $AUTHOR-count.txt -kndiscount -lm $AUTHOR-arpa.txt
 		
 		cd ..
 	done

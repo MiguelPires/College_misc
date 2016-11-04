@@ -51,12 +51,12 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 		IFS=$'\n'
 		for i in $( ls $TRAIN_DIR/$AUTHOR ); do
 			# normalization		
-			cat $TRAIN_DIR/$AUTHOR/$i | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*]" > norm-$AUTHOR-$COUNT.txt
+			cat $TRAIN_DIR/$AUTHOR/$i | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ô/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[™/™?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*\"\“\”-]//g" > norm-$AUTHOR-$COUNT.txt
 			cp norm-$AUTHOR-$COUNT.txt experiment1/
 			cp norm-$AUTHOR-$COUNT.txt experiment2/
 			rm norm-$AUTHOR-$COUNT.txt
 
-			cat $TRAIN_DIR/$AUTHOR/$i | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*]" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;" > experiment3/norm-$AUTHOR-$COUNT.txt
+			cat $TRAIN_DIR/$AUTHOR/$i | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/ô/o/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[/™?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*\"\“\”-]//g" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;s/ e / /Ig;s/ em / /Ig;s/ por / /Ig;s/ ao / /Ig;s/ aos / /Ig;" > experiment3/norm-$AUTHOR-$COUNT.txt
 			
 			let WORDS+=$(wc -w experiment1/norm-$AUTHOR-$COUNT.txt | grep -o -E "[0-9][0-9][0-9]+")
 
@@ -73,7 +73,7 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 			# normalization and stemming
 			ngram-count -tolower -sort -order 2 -text experiment2/stemmed-norm-$AUTHOR-$COUNT.txt -addsmooth 0 -write experiment2/temp-$AUTHOR-$COUNT.txt
 			# normalization, stemming and LaPlace smoothing
-			ngram-count -tolower -sort -order 2 -text experiment3/stemmed-norm-$AUTHOR-$COUNT.txt -kndiscount -write experiment3/temp-$AUTHOR-$COUNT.txt
+			ngram-count -tolower -sort -order 2 -text experiment3/stemmed-norm-$AUTHOR-$COUNT.txt -wbdiscount -write experiment3/temp-$AUTHOR-$COUNT.txt
 			
 			let COUNT=COUNT+1
 			if [[ $WORDS -gt $WORD_LIMIT ]]; then
@@ -121,7 +121,7 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 			mv temp-$AUTHOR-0.txt $AUTHOR-count.txt
 		fi
 
-		ngram-count -tolower -order 2 -sort -read $AUTHOR-count.txt -kndiscount -lm $AUTHOR-arpa.txt
+		ngram-count -tolower -order 2 -sort -read $AUTHOR-count.txt -wbdiscount -lm $AUTHOR-arpa.txt
 		
 		cd ..
 	done
@@ -155,13 +155,13 @@ if [[ $# == 0 ]] || [[ $1 == "evaluate" ]]; then
 					DIR_NO=$( echo "$DIR" | grep -o "[123]" ) 
 					if [[ $DIR_NO = "1" ]]; then
 						# normalize test file
-						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\+\-\*]" > $TEST_FILE-normed.txt
+						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE  | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ô/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[/™?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\+\-\*\"\“\”-]//g" > $TEST_FILE-normed.txt
 						# apply model
 						PPL="$( ngram -skipoovs -tolower -lm $AUTHOR-arpa.txt -ppl $TEST_FILE-normed.txt | grep -o "ppl= [0-9]*" | grep -o "[0-9]*" )"
 					fi
 					if [[ $DIR_NO = "2" ]]; then
 						# normalize test file
-						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*]" > $TEST_FILE-normed.txt
+						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE  | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/ô/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[/™?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\+\*\"\“\”-]//g" > $TEST_FILE-normed.txt
 						# stem test file
 						python3 ../stemmer.py $TEST_FILE-normed.txt
 						# apply model
@@ -170,7 +170,7 @@ if [[ $# == 0 ]] || [[ $1 == "evaluate" ]]; then
 					
 					if [[ $DIR_NO = "3" ]]; then
 						# normalize test file
-						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE | tr -d "[?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*]" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;" > $TEST_FILE-normed.txt
+						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ô/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;" | sed -r "s/[™/[?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\+\*\"\“\”-]//g" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;s/ e / /Ig;s/ em / /Ig;s/ por / /Ig;s/ ao / /Ig;s/ aos / /Ig;" > $TEST_FILE-normed.txt
 						# stem test file
 						python3 ../stemmer.py $TEST_FILE-normed.txt
 						# apply model

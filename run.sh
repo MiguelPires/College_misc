@@ -51,12 +51,14 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 		IFS=$'\n'
 		for i in $( ls $TRAIN_DIR/$AUTHOR ); do
 			# normalization		
-			cat $TRAIN_DIR/$AUTHOR/$i | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ô/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[™/™?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*\"\“\”-]/ /g" > norm-$AUTHOR-$COUNT.txt
+			#cat $TRAIN_DIR/$AUTHOR/$i | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ô/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[™/™?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*\"\“\”-]/ /g" > norm-$AUTHOR-$COUNT.txt
+			cat $TRAIN_DIR/$AUTHOR/$i | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ô/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[[:punct:]]/ /g" > norm-$AUTHOR-$COUNT.txt
 			cp norm-$AUTHOR-$COUNT.txt experiment1/
 			cp norm-$AUTHOR-$COUNT.txt experiment2/
 			rm norm-$AUTHOR-$COUNT.txt
 
-			cat $TRAIN_DIR/$AUTHOR/$i | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/ô/o/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[/™?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*\"\“\”-]/ /g" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;s/ e / /Ig;s/ em / /Ig;s/ por / /Ig;s/ ao / /Ig;s/ aos / /Ig;" > experiment3/norm-$AUTHOR-$COUNT.txt
+			#cat $TRAIN_DIR/$AUTHOR/$i | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/ô/o/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[/™?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*\"\“\”-]/ /g" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;s/ e / /Ig;s/ em / /Ig;s/ por / /Ig;s/ ao / /Ig;s/ aos / /Ig;" > experiment3/norm-$AUTHOR-$COUNT.txt
+			cat $TRAIN_DIR/$AUTHOR/$i | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/ô/o/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[[:punct:]]/ /g" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;s/ e / /Ig;s/ em / /Ig;s/ por / /Ig;s/ ao / /Ig;s/ aos / /Ig;" > experiment3/norm-$AUTHOR-$COUNT.txt
 			let WORDS+=$(wc -w experiment1/norm-$AUTHOR-$COUNT.txt | grep -o -E "[0-9][0-9][0-9]+")
 
 			# stem and move the stemmed files to experiments 2 and 3
@@ -145,7 +147,7 @@ if [[ $# == 0 ]] || [[ $1 == "evaluate" ]]; then
 					DIR_NO=$( echo "$DIR" | grep -o "[123]" ) 
 					if [[ $DIR_NO = "1" ]]; then
 						# normalize test file
-						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE  | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ô/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[/™?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\+\-\*\"\“\”-]/ /g" > $SUB_DIR-$TEST_FILE-normed.txt
+						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE  | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ô/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[[:punct:]]/ /g" > $SUB_DIR-$TEST_FILE-normed.txt
 						# apply model
 
 						PPL_TEXT="$( ngram -skipoovs -tolower -lm $AUTHOR-arpa.txt -ppl $SUB_DIR-$TEST_FILE-normed.txt |  grep -o -E "ppl= [0-9]+(\.[0-9]*e\+)*[0-9]*" | grep -o -E "[0-9]+(\.[0-9]*e\+)*[0-9]*")"
@@ -158,7 +160,7 @@ if [[ $# == 0 ]] || [[ $1 == "evaluate" ]]; then
 					fi
 					if [[ $DIR_NO = "2" ]]; then
 						# normalize test file
-						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE  | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/ô/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[/™?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\+\*\"\“\”-]/ /g" > $SUB_DIR-$TEST_FILE-normed.txt
+						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE  | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/ô/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[[:punct:]]/ /g" > $SUB_DIR-$TEST_FILE-normed.txt
 						# stem test file
 						python3 ../stemmer.py $SUB_DIR-$TEST_FILE-normed.txt
 						
@@ -174,7 +176,7 @@ if [[ $# == 0 ]] || [[ $1 == "evaluate" ]]; then
 					
 					if [[ $DIR_NO = "3" ]]; then
 						# normalize test file
-						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ô/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;" | sed -r "s/[™/[?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\+\*\"\“\”-]/ /g" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;s/ e / /Ig;s/ em / /Ig;s/ por / /Ig;s/ ao / /Ig;s/ aos / /Ig;" > $SUB_DIR-$TEST_FILE-normed.txt
+						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ô/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;" | sed -r "s/[[:punct:]]/ /g" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;s/ e / /Ig;s/ em / /Ig;s/ por / /Ig;s/ ao / /Ig;s/ aos / /Ig;" > $SUB_DIR-$TEST_FILE-normed.txt
 						# stem test file
 						python3 ../stemmer.py $SUB_DIR-$TEST_FILE-normed.txt
 						

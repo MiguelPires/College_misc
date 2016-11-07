@@ -15,7 +15,7 @@ if [[ $1 == help ]]; then
 	echo "run.sh | run.sh <command>"
 	echo "Running this script with no argument runs every phase sequentially"
 	echo "clean: deletes the author n-grams and profiles" 
-	echo "profile: generates the authors' n-grams and profiles"
+	echo "model: generates the authors' n-grams and profiles"
 	echo "evaluate: runs the n-gram models in each experiment against test data"
 	echo "help: displays this list"
 	exit
@@ -33,7 +33,7 @@ if [[ $# == 0 ]] || [[ $1 == "clean" ]]; then
 fi
 
 # Generates the author n-grams and profiles
-if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
+if [[ $# == 0 ]] || [[ $1 == "model" ]]; then
 	# experiment1 only uses simple normalization (removal of punctuation)
 	# experiment2 uses normalization and stemming
 	# experiment3 uses normalization, stemming and smoothing
@@ -51,13 +51,11 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 		IFS=$'\n'
 		for i in $( ls $TRAIN_DIR/$AUTHOR ); do
 			# normalization		
-			#cat $TRAIN_DIR/$AUTHOR/$i | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ô/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[™/™?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*\"\“\”-]/ /g" > norm-$AUTHOR-$COUNT.txt
 			cat $TRAIN_DIR/$AUTHOR/$i | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ô/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[[:punct:]]/ /g" > norm-$AUTHOR-$COUNT.txt
 			cp norm-$AUTHOR-$COUNT.txt experiment1/
 			cp norm-$AUTHOR-$COUNT.txt experiment2/
 			rm norm-$AUTHOR-$COUNT.txt
 
-			#cat $TRAIN_DIR/$AUTHOR/$i | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/ô/o/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[/™?|\.|!|:|,|;|_|\(|\)\$#\$\'\.\-\+\*\"\“\”-]/ /g" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;s/ e / /Ig;s/ em / /Ig;s/ por / /Ig;s/ ao / /Ig;s/ aos / /Ig;" > experiment3/norm-$AUTHOR-$COUNT.txt
 			cat $TRAIN_DIR/$AUTHOR/$i | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/ô/o/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[[:punct:]]/ /g" | sed -r "s/ as / /Ig;s/ os / /Ig;s/ a / /Ig;s/ o / /Ig;s/ de / /Ig;s/ das / /Ig;s/ dos / /Ig;s/ e / /Ig;s/ em / /Ig;s/ por / /Ig;s/ ao / /Ig;s/ aos / /Ig;" > experiment3/norm-$AUTHOR-$COUNT.txt
 			let WORDS+=$(wc -w experiment1/norm-$AUTHOR-$COUNT.txt | grep -o -E "[0-9][0-9][0-9]+")
 
@@ -83,7 +81,7 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 		done
 		IFS=$OLDIFS
 		
-		# create author profile
+		# create author model
 		echo "Generating bigram/unigram model for author '$AUTHOR'"
 		
 		cd experiment1
@@ -119,7 +117,7 @@ if [[ $# == 0 ]] || [[ $1 == "profile" ]]; then
 		cd ..
 	done
 
-	if [[ $1 == "profile" ]]; then
+	if [[ $1 == "model" ]]; then
 		exit
 	fi
 fi
@@ -148,8 +146,8 @@ if [[ $# == 0 ]] || [[ $1 == "evaluate" ]]; then
 					if [[ $DIR_NO = "1" ]]; then
 						# normalize test file
 						cat ../$TEST_DIR/$SUB_DIR/$TEST_FILE  | sed "s/ã/a/Ig;s/à/a/Ig;s/á/a/Ig;s/â/a/Ig;s/é/e/Ig;s/è/e/Ig;s/ó/o/Ig;s/ô/o/Ig;s/ò/o/Ig;s/õ/o/Ig;s/ç/c/Ig;s/í/i/Ig;s/ì/i/Ig;s/ê/e/Ig;s/ú/u/Ig;s/û/u/Ig;"  | sed -r "s/[[:punct:]]/ /g" > $SUB_DIR-$TEST_FILE-normed.txt
-						# apply model
 
+						# apply model
 						PPL_TEXT="$( ngram -skipoovs -tolower -lm $AUTHOR-arpa.txt -ppl $SUB_DIR-$TEST_FILE-normed.txt |  grep -o -E "ppl= [0-9]+(\.[0-9]*e\+)*[0-9]*" | grep -o -E "[0-9]+(\.[0-9]*e\+)*[0-9]*")"
 					       	
 						if [[ $( echo $PPL_TEXT | grep -E -o "e\+" ) != "" ]]; then

@@ -1,0 +1,115 @@
+@article{Renesse2011,
+abstract = {This article explains the full reconfigurable multidecree Paxos (or multi-Paxos) protocol. Paxos is by no means a simple protocol, even though it is based on relatively simple invariants. We provide pseudocode and explain it guided by invariants. We initially avoid optimizations that complicate comprehension. Next we discuss liveness, list various optimizations that make the protocol practical, and present variants of the protocol.},
+author = {van Renesse, Robbert},
+doi = {10.1145/2673577},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/paxos.pdf:pdf},
+issn = {15577341},
+journal = {ACM Computing Surveys},
+number = {3},
+pages = {1--36},
+title = {{Paxos Made Moderately Complex}},
+volume = {47},
+year = {2011}
+}
+
+@article{Lamport2006,
+abstract = {As used in practice, traditional consensus algorithms require three message delays before any process can learn the chosen value. Fast Paxos is an extension of the classic Paxos algorithm that allows the value to be learned in two message delays. How and why the algorithm works are explained informally, and a TLA+ specification of the algorithm appears as an appendix.},
+author = {Lamport, Leslie},
+doi = {10.1007/s00446-006-0005-x},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/Fast Paxos.pdf:pdf},
+isbn = {0178-2770},
+issn = {01782770},
+journal = {Distributed Computing},
+keywords = {Consensus,Distributed algorithms,Fault tolerance,Paxos},
+number = {2},
+pages = {79--103},
+title = {{Fast Paxos}},
+volume = {19},
+year = {2006}
+}
+
+@article{Lamport2005,
+abstract = {The state-machine approach to implementing a fault-tolerant distributed system involves reaching agreement on the sequence of system commands by executing a sequence of separate instances of a consensus algorithm. It can be shown that any fault-tolerant asynchronous consensus algorithm re- quires at least two message delays between the issuing of a command and when it can be executed. But even in the absence of faults, no algorithm can guarantee this fast an execution if two different commands are issued concurrently. We generalize the state-machine approach to involve reach- ing agreement on a partially ordered set of commands. By generalizing the Paxos consensus algorithm, we can implement a system in which concur- rently issued commands can always be executed in two message delays if they are non-interfering, so it does not matter in which order those com- mands are executed. For many systems, concurrent commands are rarely interfering, so the generalized Paxos algorithm can be quite efficient. And command-structure sets are very simple.},
+author = {Lamport, Leslie},
+doi = {MSR-TR-2005-33},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/Generalized Paxos.pdf:pdf},
+issn = {{\textless}null{\textgreater}},
+number = {April},
+pages = {60},
+title = {{Generalized Consensus and Paxos}},
+url = {http://research.microsoft.com/apps/pubs/default.aspx?id=64631},
+year = {2005}
+}
+
+@article{Mao2008,
+abstract = {We present a protocol for general state machine replication – a method that provides strong consistency – that has high performance in a wide-area network. In particular, our protocol Mencius has high throughput under high client load and lowlatency under lowclient load even under changing wide-area network environment and client load. We develop our protocol as a derivation from the well-known protocol Paxos. Such a development can be changed or further refined to take advantage of specific network or application requirements.},
+author = {Mao, Yanhua and Junqueira, Flavio P. and Marzullo, Keith},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/mencius.pdf:pdf},
+journal = {Proceedings of the Symposium on Operating System Design and Implementation},
+pages = {369--384},
+title = {{Mencius: Building Efficient Replicated State Machines for WANs}},
+url = {https://www.usenix.org/legacy/events/osdi08/tech/full_papers/mao/mao.pdf},
+year = {2008}
+}
+
+@article{Fischer1985,
+abstract = {The consensus problem involves an asynchronous system of processes, some of which may be unreliable. The problem is for the reliable processes to agree on a binary value. In this paper, it is shown that every protocol for this problem has the possibility of nontermination, even with only one faulty process. By way of contrast, solutions are known for the synchronous case, the “Byzantine Generals” problem.},
+author = {Fischer, Michael J. and Lynch, Nancy A. and Paterson, Michael S.},
+doi = {10.1145/3149.214121},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/jacm85.pdf:pdf},
+isbn = {3-540-50840-6},
+issn = {00045411},
+journal = {Journal of the ACM},
+number = {2},
+pages = {374--382},
+title = {{Impossibility of Distributed Consensus with One Faulty Process}},
+url = {http://portal.acm.org/citation.cfm?doid=3149.214121},
+volume = {32},
+year = {1985}
+}
+
+@article{Lamport2001,
+abstract = {The Paxos algorithm, when presented in plain English, is very simple.},
+author = {Lamport, Leslie},
+doi = {10.1145/568425.568433},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/paxos-simple.pdf:pdf},
+isbn = {2-912590-26-4},
+issn = {01635700},
+journal = {ACM SIGACT news distributed computing column 5},
+number = {4},
+pages = {51--58},
+title = {{Paxos Made Simple}},
+url = {http://portal.acm.org/citation.cfm?doid=568425.568433},
+volume = {32},
+year = {2001}
+}
+
+@article{Lamport1982,
+abstract = {Reliable computer systems must handle malfunctioning components that give conflicting information to different parts of the system. This situation can be expressed abstractly in terms of a group of generals of the Byzantine army camped with their troops around an enemy city. Communicating only by messenger, the generals must agree upon a common battle plan. However, one of more of them may be traitors who will try to confuse the others. The problem is to find an algorithm to ensure that the loyal generals will reach agreement. It is shown that, using only oral messages, this problem is solvable if and only if more than two-thirds of the generals are loyal; so a single traitor can confound two loyal generals. With unforgeable written messages, the problem is solvable for any number of generals and possible traitors. Applications of the solutions to reliable computer systems are then discussed.},
+author = {Lamport, Leslie and Shostak, Robert and Pease, Marshall},
+doi = {10.1145/357172.357176},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/byz.pdf:pdf},
+isbn = {0164-0925},
+issn = {01640925},
+journal = {ACM Transactions on Programming Languages and Systems},
+number = {3},
+pages = {382--401},
+title = {{The Byzantine Generals Problem}},
+volume = {4},
+year = {1982}
+}
+@article{Castro1999,
+abstract = {This paper describes a new replication algorithm that is able to tolerate Byzantine faults. We believe that Byzantine- fault-tolerant algorithms will be increasingly important in the future because malicious attacks and software errors are increasingly common and can cause faulty nodes to exhibit arbitrary behavior. Whereas previous algorithms assumed a synchronous system or were too slow to be used in practice, the algorithm described in this paper is practical: it works in asynchronous environments like the Internet and incorporates several important optimizations that improve the response time of previous algorithms by more than an order of magnitude. We implemented a Byzantine-fault-tolerant NFS service using our algorithm and measured its performance. The results show that our service is only3{\%}slower than a standard unreplicated NFS.},
+author = {Castro, Miguel and Liskov, Barbara},
+doi = {10.1145/571637.571640},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/PBFT.pdf:pdf},
+isbn = {1-880446-39-1},
+issn = {07342071},
+journal = {Proceedings of the Symposium on Operating System Design and Implementation},
+number = {February},
+pages = {1--14},
+pmid = {380302},
+title = {{Practical Byzantine Fault Tolerance}},
+url = {http://www.itu.dk/stud/speciale/bepjea/xwebtex/litt/practical-byzantine-fault-tolerant.pdf},
+year = {1999}
+}

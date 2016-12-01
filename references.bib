@@ -268,3 +268,67 @@ year = {1999}
 	volume = {34},
 	year = {1983}
 }
+
+@article{Aguilera2012,
+	abstract = {We introduce a new model of partial synchrony for read-write shared$\backslash$nmemory systems. This model is based on the simple notion of set$\backslash$ntimeliness-a natural generalization of the seminal concept of timeliness$\backslash$nin the partially synchrony model of Dwork et al. (J. ACM 35(2):288-323,$\backslash$n1988). Despite its simplicity, the concept of set timeliness is powerful$\backslash$nenough to define a family of partially synchronous systems that closely$\backslash$nmatch individual instances of the t-resilient k-set agreement problem$\backslash$namong n processes, henceforth denoted (t, k, n)-agreement. In$\backslash$nparticular, we use it to give a partially synchronous system that is$\backslash$nsynchronous enough for solving (t, k, n)-agreement, but not enough for$\backslash$nsolving two incrementally stronger problems, namely, (t + 1, k,$\backslash$nn)-agreement, which has a slightly stronger resiliency requirement, and$\backslash$n(t, k - 1, n)-agreement, which has a slightly stronger agreement$\backslash$nrequirement. This is the first partially synchronous system that$\backslash$nseparates these sub-consensus problems. The above results show that set$\backslash$ntimeliness can be used to study and compare the partial synchrony$\backslash$nrequirements of problems that are strictly weaker than consensus.},
+	author = {Aguilera, Marcos K. and Delporte-Gallet, Carole and Fauconnier, Hugues and Toueg, Sam},
+	doi = {10.1007/s00446-012-0158-8},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/partial{\_}synch{\_}set.pdf:pdf},
+	isbn = {9781605583969},
+	issn = {01782770},
+	journal = {Distributed Computing},
+	keywords = {algorithms,bivalency,consensus,failure detectors,impossibility,partial synchrony,set agreement,timeliness},
+	number = {3},
+	pages = {249--260},
+	title = {{Partial synchrony based on set timeliness}},
+	volume = {25},
+	year = {2012}
+}
+@article{Lamport2001,
+	abstract = {The Paxos algorithm, when presented in plain English, is very simple.},
+	author = {Lamport, Leslie},
+	doi = {10.1145/568425.568433},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/paxos-simple.pdf:pdf},
+	isbn = {2-912590-26-4},
+	issn = {01635700},
+	journal = {ACM SIGACT news distributed computing column 5},
+	number = {4},
+	pages = {51--58},
+	title = {{Paxos Made Simple}},
+	url = {http://portal.acm.org/citation.cfm?doid=568425.568433},
+	volume = {32},
+	year = {2001}
+}
+
+@misc{Chaudhuri1993,
+	abstract = {We define the k-set consensus problem as an extension of the consensus problem, where each processor decides on a single value such that the set of decided values in any run is of size at most k. We require the agreement condition that all values decided upon are initial values of some processor. We show that the problem has a simple (k - 1)-resilient protocol in a totally asynchronous system. In an attempt to come up with a matching lower bound on the number of failures, we study the uncertainty condition, which requires that there must be some initial configuration from which all possible input values can be decided. We prove using a combinatorial argument that any k-resilient protocol for the k-set agreement problem would satisfy the uncertainty condition, while this is not true for any (k - 1)-resilient protocol.},
+	author = {Chaudhuri, S.},
+	booktitle = {Information and Computation},
+	doi = {10.1006/inco.1993.1043},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/Chaudhuri.pdf:pdf},
+	isbn = {089791404X},
+	issn = {08905401},
+	number = {1},
+	pages = {132--158},
+	title = {{More Choices Allow More Faults: Set Consensus Problems in Totally Asynchronous Systems}},
+	url = {http://linkinghub.elsevier.com/retrieve/pii/S0890540183710436},
+	volume = {105},
+	year = {1993}
+}
+
+@article{Zielinski2010,
+	abstract = {In the set agreement problem, n processes have to decide on at most n-1 of the proposed values. This paper shows that the anti-Omega failure detector is both sufficient and necessary to solve set agreement in an asynchronous shared-memory system. Each query to anti-Omega returns a single process id; the specification ensures that there is a correct process whose id is returned only finitely many times.},
+	author = {Ziel{\'{i}}nski, Piotr},
+	doi = {10.1007/s00446-010-0101-9},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/anti-omega.pdf:pdf},
+	isbn = {9781595939890},
+	issn = {01782770},
+	journal = {Distributed Computing},
+	keywords = {Failure detectors,Set agreement,Wait-free impossibilities,Weakest failure detector ever},
+	number = {5-6},
+	pages = {335--348},
+	pmid = {21158571},
+	title = {{Anti$\omega$O: The weakest failure detector for set agreement}},
+	volume = {22},
+	year = {2010}
+}

@@ -4,7 +4,7 @@ To adapt Generalized Paxos to the Byzantine setting, the fast quorums must be re
 
 $\\ \begin{cases}
 		Q = N - Q_f + N-Q_f + x \\
-		x \geq f +1 \\
+		x > f \\
 		Q = \lceil \frac{N+f}{2}\rceil
 \end{cases} \\$
 
@@ -13,7 +13,7 @@ By solving the system, we get:
 $\lceil\frac{N+f}{2}\rceil = 2N - 2Q_f + x \\
 N+f = 4N - 4Q_f + 2x \\
 Q_f = \frac{3N+2x-f}{4} \\ 
-\text{Since $x \geq f+1$} \implies Q_f \geq \frac{3N+f+2}{4} \\$
+\text{Since $x > f$} \implies Q_f \geq \frac{3N+f+1}{4} \\$
 
 
 \par

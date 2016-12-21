@@ -393,3 +393,17 @@ year = {1999}
 	url = {http://dl.acm.org/citation.cfm?doid=2517349.2517350},
 	year = {2013}
 }
+
+@article{Balegas2015,
+	abstract = {Geo-replicated storage systems are at the core of current Internet services. The designers of the replication protocols used by these systems must choose between either supporting low-latency, eventually-consistent operations, or ensuring strong consistency to ease application correctness. We propose an alternative consistency model, Explicit Consistency, that strengthens eventual consistency with a guarantee to preserve specific invariants defined by the applications. Given these application-specific invariants, a system that supports Explicit Consistency identifies which operations would be unsafe under concurrent execution, and allows programmers to select either violation-avoidance or invariant-repair techniques. We show how to achieve the former, while allowing operations to complete locally in the common case, by relying on a reservation system that moves coordination off the critical path of operation execution. The latter, in turn, allows operations to execute without restriction, and restore invariants by applying a repair operation to the database state. We present the design and evaluation of Indigo, a middleware that provides Explicit Consistency on top of a causally-consistent data store. Indigo guarantees strong application invariants while providing similar latency to an eventually-consistent system in the common case.},
+	author = {Balegas, Valter and Duarte, S{\'{e}}rgio and Ferreira, Carla and Rodrigues, Rodrigo and Pregui{\c{c}}a, Nuno and Najafzadeh, Mahsa and Shapiro, Marc},
+	doi = {10.1145/2741948.2741972},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/indigo{\_}eurosys15.pdf:pdf},
+	isbn = {9781450332385},
+	journal = {Proceedings of the Tenth European Conference on Computer Systems - EuroSys '15},
+	pages = {1--16},
+	title = {{Putting consistency back into eventual consistency}},
+	url = {http://dl.acm.org/citation.cfm?doid=2741948.2741972{\%}5Cnhttp://dl.acm.org/citation.cfm?id=2741948.2741967{\%}5Cnhttp://dl.acm.org/citation.cfm?doid=2741948.2741972{\%}5Cnhttp://doi.acm.org/10.1145/2741948.2741972},
+	year = {2015}
+}
+

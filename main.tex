@@ -29,8 +29,22 @@
 \usepackage{amsmath}
 \usepackage[colorinlistoftodos,prependcaption,textsize=small]{todonotes}
 
+\usepackage[titletoc, title]{appendix}
+\usepackage[ruled]{algorithm}
+\usepackage{algpseudocode}
+
+% to increase the spacing between the caption and the table
+\usepackage{caption}
+\captionsetup[table]{skip=10pt}
+
 \newcommand{\keywords}[1]{\par\addvspace\baselineskip
 \noindent\keywordname\enspace\ignorespaces#1}
+
+\raggedbottom
+
+% Suposto ter glossario?
+%\makeglossaries
+%\newacronym{smr}{SMR}{State Machine Replication}
 
 \begin{document}
 
@@ -85,8 +99,9 @@ contain at least 70 and at most 150 words. It should be written using the
 \subsection{Motivation}
 
 Generalized consensus is a generalization of traditional consensus that abstracts the problem of agreeing on a single value to a problem of agreeing on a monotonically increasing set of values. This problem is defined in terms of a set of values called command structures, \textit{c-structs} \cite{Lamport2005}. These structures allow for the formulation of different consensus problems, including consensus problems where commutative operations are allowed to be ordered differently at different replicas. The advantage of such a problem can be seen in Fast Paxos, where fast ballots are executed by having proposers propose directly to acceptors \cite{Lamport2006}. By avoiding sending the proposal to the leader, values can be learned in the optimal number of two message delays. However, if two proposers concurrently propose different values to acceptors, a conflict arises and at least an additional message delay is required for the leader to solve it. Generalized Paxos takes advantage of the possibility of reordering commutative commands by allowing acceptors to accept different but compatible \textit{c-structs}. Two \textit{c-structs} are considered to be compatible if they can later be extended to equivalent \textit{c-structs}. If all non-commutative commands are totally ordered, then two \textit{c-structs} are considered equivalent. \par
+
 The approach of allowing the system to reorder operations may feel familiar to the reader, since it resembles weak consistency models that relax consistency guarantees to allow replicas to reorder operations. \textcolor{red}{Exemplify}. Relaxed consistency models decrease latency by reducing coordination requirements and increasing operation concurrency but also introduce the chance of state divergence. These approaches are critical to geo-replicated scenarios where it's important to reduce round trips between data centers and maintaining strong consistency incurs in a high latency cost. \par
-The Paxos protocol family that has been a subject of study for some time, due to its importance in the area of consensus and state machine replication (SMR). Recent work in this area includes Mencius \cite{Mao2008} and EPaxos \cite{Moraru2013}, which try to increase throughput by eliminating the bottleneck caused by having a single leader that sends proposals to acceptors. However, despite generalized consensus' potential, it's still an unexplored problem and its formulation is rather complex and abstract which makes it harder for researchers to reason about it. A symptom of this is that only the original Generalized Paxos protocol exists for this problem and few works make use of it. Another consequence of the lack of knowledge about generalized consensus is that there several potentially interesting research questions that researchers haven't answered. For instance, despite the connection between generalized consensus' commutativity observation and the reduced coordination requirements made possible by weak consistency, it is unclear how Generalized Paxos would function in geo-replicated scenarios where the goal is to minimize cross-datacenter round trips. The goal of Generalized Paxos is to reduce communication steps without requiring a leader to solve conflicts that emerge from concurrently executed operations but few works have tried to align this algorithm with a multi-datacenter scenario \todo{Should I mention MDCC here? The goal is different (transactions) but it used Gen. Paxos}. Similarly, there is no research on what effects the Byzantine assumption would have on the solution of the generalized consensus problem. \textcolor{red}{Gen. Paxos. with partial synchrony?}
+The Paxos protocol family that has been a subject of study for some time, due to its importance in the area of consensus and state machine replication (SMR). Recent work in this area includes Mencius \cite{Mao2008} and EPaxos \cite{Moraru2013}, which try to increase throughput by eliminating the bottleneck caused by having a single leader that sends proposals to acceptors. However, despite generalized consensus' potential, it's still an unexplored problem and its formulation is rather complex and abstract which makes it harder for researchers to reason about it. A symptom of this is that only the original Generalized Paxos protocol exists for this problem and few works make use of it. Another consequence of the lack of knowledge about generalized consensus is that there several potentially interesting research questions that researchers haven't answered. For instance, despite the connection between generalized consensus' commutativity observation and the reduced coordination requirements made possible by weak consistency, it is unclear how Generalized Paxos would function in geo-replicated scenarios where the goal is to minimize cross-datacenter round trips. The goal of Generalized Paxos is to reduce communication steps without requiring a leader to solve conflicts that emerge from concurrently executed operations but few works have tried to align this algorithm with a multi-datacenter scenario \todo{Should I mention MDCC here? The goal is different (transactions) but it used Gen. Paxos}. Similarly, there is no research on what effects the Byzantine assumption would have on the solution of the generalized consensus problem. \textcolor{red}{Gen. Paxos. with partial synchrony?}\todo{Doesn't Paxos work always in partial synchrony?}
 
 
 \subsection{Expected Contribution}
@@ -105,15 +120,14 @@ Due to the specific characteristics of the scenario for which we try to optimize
 The Paxos protocol family solves consensus by circumventing the well-known FLP impossibility result \cite{Fischer1985}. It does this by making the observation that, while consensus is unsolvable in asynchronous systems, a system is usually synchronous since delays are sporadic and temporary. Therefore, as long as consistency is guaranteed regardless of synchrony, Paxos can forgo of progress during the temporary periods of asynchrony. Using this insight, Paxos ensures consistency even when the system is asynchronous but can only guarantee progress while it is synchronous and no more than $f$ faults occur for a system of $2f+1$ replicas \cite{Lamport2001}. The classic form of Paxos employs a set of proposers, acceptors and learners and runs in a sequence of ballots. To ensure progress during synchronous periods, proposals are serialized by a distinguished proposer, the leader. It is the leader that gathers proposals from other proposers and requests, in a \textit{phase 1a} message, that acceptors promise to not accept any ballots smaller than its own. Each acceptor responds to the leader's request, in a \textit{phase 1b} message, with either a promise or a message stating that it has already sent a promise to a proposer with a higher-numbered ballot. If the leader manages to obtain a promise from a quorum of acceptors, then it sends a \textit{phase 2a} message containing its proposal. The acceptors may accept the proposal and inform the learners with a \textit{phase 2b} message, if another proposer hasn't requested a promise for a higher-numbered ballot in the meanwhile. The fact that any proposer can request a promise and prevent lower ballots from being completed is the reason why Paxos can only ensure progress in a synchronous environment. Some proposer must be able to establish itself as the only leader in order to prevent proposers from continuously requesting promises for ballots with higher numbers. \par
 We now describe the form in which Paxos is most commonly deployed, Multi(Decree)-Paxos. Multi-Paxos provides an optimization of the basic Paxos' message pattern by omitting the first phase of messages from all but the first ballot for each leader \cite{Renesse2011}. This means that a leader only needs to send a \textit{prepare} message once and subsequent proposals may be sent directly in \textit{phase 2a} messages, without requesting a promise from the acceptors. This reduces the message pattern in the common case from five message delays to just three (from proposal to learning). Since there are no implications on the quorum size or guarantees provided by Paxos, the reduced latency comes at no additional cost. \par
 Fast Paxos observes that it's possible to improve on previous results by allowing proposers to propose values directly to acceptors. To this end, the protocol distinguishes between fast and classic ballots, where fast ballots use $3f+1$ acceptors instead of the usual $2f+1$ \cite{Lamport2006}. The optimized scenario occurs during fast ballots, in which only two messages broadcasts are necessary: \textit{phase 2a} messages between a proposer and the acceptors, and \textit{phase 2b} messages between acceptors and learners. This creates the possibility of two proposers concurrently proposing values to the acceptors and generating a conflict. The cost of dealing with this conflict depends on the chosen method of recovery, coordinated or uncoordinated, and if the leader or acceptors are also learners. The leader may choose  the recovery method in the beginning of the ballot. If coordinated recovery is chosen in a ballot $i$, then the cost is a \textit{phase 2} of round $i+1$ (i.e., two additional message delays). If uncoordinated recovery is chosen then the cost is a single \textit{phase 2b} message in round $i+1$ (i.e., one message delay) \cite{Lamport2006}. These numbers assume that either the leader (coordinated recovery) or the acceptors (uncoordinated recovery) are learners, which is a reasonable assumption. \par
-Generalized Paxos addresses Fast Paxos' shortcomings regarding collisions. More precisely, it allows acceptors to accept different sequences of commands as long as non-commutative operations are totally ordered \cite{Lamport2005}.  Non-commutativity between operations is generically represented as a dependence relation. Generalized Paxos abstracts the traditional consensus problem of agreeing on a single value to the problem of agreeing on an increasing set of values. \textit{C-structs} provide this increasing sequence abstraction and allow us to define different consensus problems. If we define the sequence of learned commands of a learner $l_i$ as a \textit{c-struct} $learned[l_i]$, then the consistency requirement for consensus can be defined as:\par
+Generalized Paxos addresses Fast Paxos' shortcomings regarding collisions. More precisely, it allows acceptors to accept different sequences of commands as long as non-commutative operations are totally ordered \cite{Lamport2005}.  Non-commutativity between operations is generically represented as an interference relation. Generalized Paxos abstracts the traditional consensus problem of agreeing on a single value to the problem of agreeing on an increasing set of values. \textit{C-structs} provide this increasing sequence abstraction and allow us to define different consensus problems. If we define the sequence of learned commands of a learner $l_i$ as a \textit{c-struct} $learned[l_i]$, then the consistency requirement for consensus can be defined as:\par
 \textbf{Consistency} $learned[l_1]$ and $learned[l_2]$ are always compatible, for all learners $l_1$ and $l_2$. \par
-For two \textit{c-structs} to be compatible, they must have a \textit{common upper bound}. Plainly spoken this means that, for any two \textit{c-structs} such as $learned[l_1]$ and $learned[l_2]$, there must exist some \textit{c-struct} to which they are both prefixes. If  Defining \textit{c-structs} as command histories enables acceptors to agree on different sequences of commands and still preserve consistency as long as dependence relationships are not violated. This means that commutative commands can be ordered differently regarding each other but interfering commands must preserve the same order across each sequence at any learner. This guarantees that solving the consensus problem for histories is enough to implement a state-machine replicated system. \par
+For two \textit{c-structs} to be compatible, they must have a \textit{common upper bound}. This means that, for any two learned \textit{c-structs} such as $learned[l_1]$ and $learned[l_2]$, there must exist some \textit{c-struct} to which they are both prefixes. This prohibits non-commutative commands from being concurrently accepted because no subsequent \textit{c-struct} would extend them both since it wouldn't have a total order of non-commutative operations. For instance, consider a set of commands $\lbrace A$, $B$, $C\rbrace$ and an interference relation between commands $A$ and $B$ (i.e., they are non-commutative with respect to each other). If clients propose $A$ and $C$, some learners may learn one command before the other and the resulting \textit{c-structs} would be either $C \bullet A$ or $A \bullet C$. These are compatible because there are \textit{c-structs} that extend them, namely $A \bullet C \bullet B$ and $C \bullet A \bullet B$. These \textit{c-structs} that extend them are valid because the interfering commands are totally ordered. However, if two clients propose $A$ and $B$, learners could learn either one in the first ballot and these \textit{c-structs} would not be compatible because no \textit{c-struct} extends them. Any \textit{c-struct} would start either by $A \bullet B$ or $B \bullet A$, which means that an interference relation would be violated. In the Generalized Paxos protocol, when such a collision occurs, no value is chosen and the leader intervenes by starting a new ballot and proposing a \textit{c-struct}. Defining \textit{c-structs} as command histories enables acceptors to agree on different sequences of commands and still preserve consistency as long as dependence relationships are not violated. This means that commutative commands can be ordered differently regarding each other but interfering commands must preserve the same order across each sequence at any learner. This guarantees that solving the consensus problem for histories is enough to implement a state-machine replicated system. \par
 Mencius is also a variant of Paxos that tries to address the bottleneck of having a single leader through which every proposal must go through. In Mencius, the leader of each round rotates between every process. The leader of round $i$ is the process $p_k$, such that $k = n mod\ i$.  Leaders with nothing to propose can skip their turn by proposing a \textit{no-op}. If a leader is slow or faulty, the other replicas can execute \textit{phase 1} to revoke the leader's right to propose a value but they can only propose a \textit{no-op} instead \cite{Mao2008}. Considering that non-leader replicas can only propose \textit{no-ops}, a \textit{no-op} command from the leader can be accepted in a single message delay since there is no chance of another value being accepted. If some non-leader server revokes the leader's right to propose and suggests a \textit{no-op}, then the leader can still suggest a value $v \neq$ \textit{no-op} that will eventually be accepted as long as $l$ isn't permanently suspected. The usage of an unreliable failure detector is enough to guarantee that eventually all faulty processes, and only those, will be suspected. Mencius also takes advantage of commutativity by allowing out-of-order commits, where values $x$ and $y$ can be learned in different orders by different learners if there isn't a dependence relationship between them. Experimental evaluation confirms that Mencius is able of scaling to a higher throughput than Paxos. \par
 Egalitarian Paxos (EPaxos) extends Mencius' goal of achieving a better throughput than Paxos by removing the bottleneck caused by having a leader. Additionally, EPaxos also achieves optimal commit latency in certain conditions and graceful performance degradation if replicas fail or become slow \cite{Moraru2013}. To avoid choosing a leader, the proposal of commands for a command slot is done in a decentralized manner. Each replica can propose a command with ordering constraints attached so that interfering commands can be totally ordered. In this way, EPaxos takes advantage of the commutativity observations made by Generalized Paxos that state that commutative commands may be ordered differently at different replicas without losing state convergence \cite{Lamport2005}. If two replicas unknowingly propose commands concurrently, one will commit its proposal in one round trip after getting replies from a quorum of replicas. However, some replica will see that another command was concurrently proposed and may interfere with the already committed command. If the commands are commutative then there is no need to impose a particular order but, if they're not commutative, then the replica must reply with a dependency between the commands. If a replica proposes a command $A$ first in a single round trip then a the replica that tries to concurrently propose a non-commutative command $B$ would receive a reply with the ordering $B \rightarrow \{A\}$, to indicate that $B$ should be committed after $A$. In this scenario, committing command $B$ would require two round trips since the proposer would need to send another message to inform the other replicas of the new ordering constraint. This commit latency is achieved by using a \textit{fast-path quorum} of $f+\lfloor\frac{f+1}{2}\rfloor$ replicas which is the same as the \textit{slow-path quorum} of $f+1$ replicas, for $f \leq 2$. Similarly to Mencius, EPaxos achieves a substantially higher throughput than Multi-Paxos, especially when $2\%$ of commands interfere with each other. However, since, unlike Mencius, replicas don't have to wait for previous replicas to propose their commands, commit latency is significantly lower.
 
 \subsection{Non-crash Fault Models} \label{Non-Crash}
-\textcolor{red}{Explain why this is relevant}\par
-Non-crash fault models emerged to cope with the effect of malicious attacks and software errors. These models (e.g., the arbitrary fault model) assume a stronger adversary than previous crash fault models. The Byzantine Generals Problem is defined as a set of Byzantine generals that are camped in the outskirts of an enemy city and have to coordinate an attack. Each general can either decide to attack or retreat and there may be $f$ traitors among the generals that try to prevent the loyal generals from agreeing on the same action. The problem is solved if every loyal general agrees on what action to take \cite{Lamport1982}. Like the traitorous generals, the Byzantine adversary is one that may force a faulty replica to display arbitrary behaviour and even coordinate multiple faulty replicas in an attack. \par
+Non-crash fault models emerged to cope with the effect of malicious attacks and software errors. These models (e.g., the arbitrary fault model) assume a stronger adversary than previous crash fault models. The Byzantine Generals Problem is defined as a set of Byzantine generals that are camped in the outskirts of an enemy city and have to coordinate an attack. Each general can either decide to attack or retreat and there may be $f$ traitors among the generals that try to prevent the loyal generals from agreeing on the same action. The problem is solved if every loyal general agrees on what action to take \cite{Lamport1982}. Like the traitorous generals, the Byzantine adversary is one that may force a faulty replica to display arbitrary behaviour and even coordinate multiple faulty replicas in an attack. It's interesting to survey non-crash fault models since we intend to explore the effects that different models have on the solutions for the generalized consensus problem. \par
 PBFT is a protocol that solves consensus for state machine replication (SMR) while tolerating up to $f$ Byzantine faults \cite{Castro1999}. The system moves through configurations called \textit{views} in which one replica is the primary and the remaining replicas are the backups. The safety property of the algorithm requires that operations be totally ordered. The protocol starts when a client sends a request for an operation to the primary, which in turn assigns a sequence number to the request and multicasts a \textit{pre-prepare} message to the backups. This message contains the timestamp, the message's digest, the view and the actual message. If a backup replica accepts the pre-prepare message, after verifying that the view number and timestamp are correct, it multicasts a \textit{prepare} message to and adds both messages to its log. The prepare message is similar to the pre-prepare message except that it doesn't contain the client's request message. Both of these phases are needed to ensure that the requested operation is totally ordered at every correct replica. The protocol's safety property requires that the replicated service must satisfy linearizability, and therefore operations must be totally ordered. After receiving $2f$ prepare messages, a replica multicasts a \textit{commit} message and commits the message to its log when it has received $2f$ commit messages from other replicas. The liveness property requires that clients must eventually receive replies to their requests, provided that there are at most $\lfloor\frac{n-1}{3}\rfloor$ faults and the transmission time doesn't increase continuously. This property represents a weak liveness condition but one that is enough to circumvent Fischer, Lynch and Paterson's impossibility result \cite{Fischer1985}. A Byzantine leader may try to prevent progress by omitting pre-prepare messages when it receives operation requests from clients, but backups can trigger new views after waiting for a certain period of time. \par
 The cost of $3f+1$ replicas in a PBFT system stems from the immense power given to the adversary. The cross fault tolerance (XFT) model claims that this adversary is too strong when compared to the behavior of deployed systems \cite{Liu2015}. XFT assumes that machine and network faults are uncorrelated and this assumption allows it to have a cost equal to crash fault tolerant systems, $2f+1$, while still tolerating $f$ non-crash faults. The safety condition for this model is that correct replicas commit requests in a total order, as long as the system is not in anarchy. A system is in anarchy if there are any non-crash faults $f_{nc}(s)$ and the sum of crash faults $f_c(s)$, non-crash faults $f_{nc}(s)$ and partitioned replicas $f_p(s)$ is larger than the fault threshold. That is, the system is in anarchy if $f_{nc}(s) > 0\ \land\ f_{nc}(s)+ f_c(s)+f_p(s) > f$. Liveness is also guaranteed as long as the system is outside of anarchy. XFT replicates client requests to $f+1$ replicas synchronously while the remaining $f$ may learn about requests through lazy replication \cite{Ladin1992}. If an active replica fails, a view change is triggered. A view change requires all the replicas in the new view to collect the recent state, including the commit log, which may be substantial. This overhead can be decreased through the use of checkpointing. The protocol includes the exchange of four rounds of messages: SUSPECT, VIEW-CHANGE, VC-FINAL and NEW-VIEW. The experimental evaluation performed by the authors shows that, after each crash, the system triggers a view change that last less than 10 seconds. \par
 The creators of the Visigoth Fault Tolerance (VFT) model also make the observation that the Byzantine model is unrealistic, especially for environments such as data centers. The Byzantine adversary's strength forces protocols to incur in an unnecessary cost of $3f+1$ replicas. VFT also notes that while data centers rarely observe arbitrary coordinated faults, they commonly experience data corruption faults (e.g., bit flips) and these also represent a type of arbitrary behaviour \cite{AmazonS31}\cite{AmazonS32}. To reconcile the need to tolerate different types of arbitrary faults, VFT observes that it is very unlikely for data corruption to affect the same data across multiple replicas. Therefore, the key distinguishing factor between these types of arbitrary faults is \textit{correlation}. VFT proposes a customizable model that defines a limit of $u$ faults, that bounds the number of allowed omission (i.e., crash) and comission (i.e., arbitrary) faults, a limit of $o$ correlated comission faults, a limit of $r$ arbitrary faults and, for every process $p_i$, $s$ correct processes $p_j$ that are slow with respect to it \cite{Porto2015}. These additional assumptions allow the Visigoth model to decrease the replication factor from $n \geq 2u+r+1$ (i.e., $3f+1$ in the traditional notation) to $n \geq u+s+o+1$ (i.e., $f+s+o+1$), when $u > s$. These parameters allow the system administrator to configure the system to tolerate any combination of faults. The authors also propose a VFT state machine replication protocol, which is adapted from the BFT-SMaRT protocol and contains two main message patterns: the first consists in two message steps that are executed during epoch changes to collect information about previous epochs and disseminate this information to replicas; and the second consists in two multicast phases that are executed for each client request to implement the state machine replication. To gather a quorum, the gatherer tries to collect a larger quorum of $n-s$ replies, which can be seen as collecting replies from the fast but potentially faulty replicas. If a timeout occurs, the quorum is reduced to $n-u$ and this can be seen as collecting replies from correct but possibly slow replicas. This reduced quorum size is enough to ensure an intersection because since $x$ replicas didn't reply by the first timeout and only $s$ may be slow, then $x-s$ replicas must have crashed and won't participate in future quorums. The experimental evaluation confirms that VFT can tolerate uncorrelated arbitrary faults with resource-efficiency and performance that resembles that of CFT systems instead of BFT. \par
@@ -141,16 +155,200 @@ The Explicit Consistency model also strives to preserve as much concurrency as p
 
 \subsection{Coordination Systems} \label{Coordination Systems}
 Due to the importance of Paxos and state machine replication techniques in the implementation of large-scale Internet services, it's useful to survey their application in modern systems.\par
-Zookeeper is a replicated coordination service for distributed applications. It maintains a consistent image of state across all replicas and totally orders updates such that subsequent operations can implement high-level abstractions such as leader election, synchronization and configuration maintenance. Zookeeper uses a primary-backup scheme and an atomic broadcast algorithm called Zab that is tuned specifically for Zookeeper's setting \cite{Junqueira2011}. This protocol functions similarly to Paxos but guarantees that multiple outstanding operations are committed in FIFO order. The reason why this additional guarantee is necessary is because state changes are incremental with respect to the previous state, so there is an implicit dependence relation on the order of operations. In Paxos, even if operations are proposed in a batch, leader failures may cause proposals to be committed in an order different from what the client proposed. The Zab protocol functions in three phases: (1) Discovery, (2) Synchronization and (3) Broadcast. In the  first two phases, the leader obtains the longest history of the latest epoch and sends the new history to the followers. These two phases guarantee that outstanding proposals are committed in FIFO order. In the broadcast phase, the leader sends proposals to the followers, who write the proposals to stable storage and reply with an acknowledgment. After receiving a quorum of acknowledgments, the leader sends a commit message $\langle v,z \rangle$ to indicate that the followers should deliver all undelivered proposals that are causally related to $z$, $z' \prec z$. \par
+ZooKeeper is a replicated coordination service for distributed applications. It maintains a consistent image of state across all replicas and totally orders updates such that subsequent operations can implement high-level abstractions such as leader election, synchronization and configuration maintenance. ZooKeeper uses a primary-backup scheme and an atomic broadcast algorithm called Zab that is tuned specifically for ZooKeeper's setting \cite{Junqueira2011}. This protocol functions similarly to Paxos but guarantees that multiple outstanding operations are committed in FIFO order. The reason why this additional guarantee is necessary is because state changes are incremental with respect to the previous state, so there is an implicit dependence relation on the order of operations. Paxos doesn't guarantee that operations are learned in 	FIFO order since, even if multiple client operations are batched in a single proposal, a primary failure can cause the multiple outstanding requests to be reordered. If two primaries failed after sending phase 2a messages to a subset of the acceptors, the next primary would execute Paxos' phase 1, learn about the partially decided values and pick a new order for the operations that could possibly violate FIFO order. Zab was built specifically to guarantee that outstanding ZooKeeper operations are committed in FIFO order despite being submitted concurrently. The protocol functions in three phases: (1) Discovery, (2) Synchronization and (3) Broadcast. In the  first two phases, the leader obtains the longest history of the latest epoch and sends the new history to the followers. These two phases guarantee that outstanding proposals are committed in FIFO order. In the broadcast phase, the leader sends proposals to the followers, who write the proposals to stable storage and reply with an acknowledgment. After receiving a quorum of acknowledgments, the leader sends a commit message $\langle v,z \rangle$ to indicate that the followers should deliver all undelivered proposals that are causally related to $z$, $z' \prec z$. \par
 Chubby is a lock service that provides reliable, advisory locking functionality for loosely-coupled distributed systems. Chubby exposes both a namespace and an interface that resemble a distributed file system, through which clients acquire and release locks \cite{Burrows2006}. A Chubby cell consists of a small set of replicas where one of them functions as a master. The master is elected through a consensus protocol by obtaining a quorum of votes. The master must also obtain promises that the replicas won't elect a different master for a time period known as the \textit{master lease}. Clients send master location requests to the replicas listed in the DNS and non-master replicas respond with the master's identity. Once a client knows the master's location it will direct all requests to that location. Write requests are propagated to the replicas through Paxos and the leader sends an acknowledgment to the client when the write reaches a quorum. Read requests can be serviced by the master alone because, as long as the master lease has not expired, no other master can exist and issue write requests.
 
 \section{Architecture}
+
+The main contribution of this work is an adaptation of the Generalized Paxos protocol for Visigoth model that allows us to solve multiple instantiations of the generalized consensus problem with different assumptions. In this section, we discuss the advances we made in regarding this protocol and the problem it attempts to solve. We also discuss what future work remains to be done and how the final solution will be evaluated and compared to previous works. Additionally, a planning is also proposed on the required time necessary to complete these tasks.
+
 \subsection{Preliminary Results}
+
+\textcolor{red}{Problem formulation}\par
+The Visigoth model is a broad and parameterizable non-crash fault model that allows the system administrator to configure the amount of synchrony and faults that he wishes to allow. Given the initial task of solving the generalized consensus problem in the Visigoth model, we chose Generalized Paxos as a starting point. To make the task of solving generalized consensus in this model simpler, the protocol was first analyzed from the variable synchrony standpoint and the fault model was simplified to only support crash faults. This was part of a \textit{divide and conquer} approach that focused first on the synchrony assumptions and then on the fault model. \par
+To adapt the Generalized Paxos protocol for the synchrony assumptions of the Visigoth model, it's useful to look at VFT. In VFT, the synchrony assumptions are encoded in the Quorum Gathering Primitive (QGP). This primitive sets a timer and tries to gather a quorum of $n-s$ (fast but potentially faulty) replicas  and, if a timeout occurs before the quorum is complete, the quorum is decreased to $n-u$ (slow but correct) replicas and a second verification quorum must also be gathered. The verification quorum ensures that two concurrent quorums intersect even if $n-s$ replicas aren't available. To adapt the Generalized Paxos protocol to a model with broader synchrony assumptions, we use VFT's Quorum Gathering Primitive to gather quorums in fast ballots. It may seem that nothing is gained by using the QGP to gather a quorum since a Visigoth fast quorum of $n-s$ replicas is the same size as a fast quorum in Generalized Paxos, $N-E$ where $E= \lfloor \frac{N}{3}\rfloor$. This quorum size in Generalized Paxos means that fast quorums can only be used if $E$ or less acceptors haven't failed. However, VFT leverages the known number of slow processes to reduce the quorum size in case of timeout. If the first quorum of $n-s$ replicas isn't gathered successfully because $x$ replicas didn't respond, since at most $s$ may be slow, $x-s$ must be faulty and won't participate in further quorums. Therefore, by using VFT's Quorum Gathering Primitive, we increase the availability of fast ballots in the presence of failures, resulting in more proposals that are accepted while bypassing the leader.\todo{Change all of this since it's wrong} \par
+
+\begin{table}[h!]
+	\renewcommand{\arraystretch}{1.5}
+	\centering
+	\begin{tabular}{ |c|c|}
+		\hline
+		\multicolumn{2}{|c|}{Notation}\\
+		\hline
+		Symbol & Definition \\
+		\hline
+		$maxTried_l$  & \textit{c-struct} proposed by the leader $l$ \\
+		\hline
+		$\sqcup$ & least upper bound \\
+		\hline
+		$\bullet$ & \textit{c-struct} append operator \\
+		\hline
+	\end{tabular} 
+	\caption{Notation for the pseudocode} 
+	\label{table:1}
+\end{table}
+
+\begin{algorithm}
+	\caption{Generalized Paxos - Proposer p}
+	\begin{algorithmic}[1]
+		
+		\Function{Propose}{\textit{C}}
+		\If{fast\_ballot}
+		\State \textbf{run} \Call{send}{$fast, C$} to Acceptors;
+		\Else
+		\State \textbf{run} \Call{send}{\textit{propose, C}} to Leader;
+		\EndIf
+		\EndFunction
+		
+
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+	\caption{Generalized Paxos - Leader l}
+	\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot, messages = \bot$
+	\begin{algorithmic}[1]
+		\State \textbf{upon} \textit{receive(propose, C)} from proposer $p_i$ \textbf{do} 
+		\State \hspace{\algorithmicindent} $C_l = C$;
+		\State \hspace{\algorithmicindent}\textbf{run} \Call{phase\_1a}{};
+		\State
+		\State \textbf{upon} \textit{receive(statement)} from acceptor $a_i$ \textbf{do}
+		\State \hspace{\algorithmicindent}  $messages[ballot_l][a_i] = statement$;
+		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages) \geq \lfloor \frac{N}{2} \rfloor +1$ \textbf{then} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{run} \Call{phase\_2a}{$ballot_l, Q$};
+		\State
+		%\item[] % unnumbered empty line
+		\Function{Phase\_1a}{}
+		\State \textbf{run} \Call{send}{$p1a, ballot_l$} to Acceptors;
+		\EndFunction
+		
+		\State
+		\Function{Phase\_2a}{$bal, Q$}
+		\State $maxTried_l$ = \textbf{run} \Call{Proved\_Safe}{$Q, bal$};
+		\State $maxTried_l = maxTried_l \bullet C_l$;
+		\State \textbf{run} \Call{send}{$p2a,ballot_l, maxTried_l$} to Acceptors;
+		\EndFunction
+		
+		\State
+		\Function{Proved\_Safe}{Q, m}
+		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
+		\State $RS = \{R \in k$-$quorum\ |\ \forall a \in R \cap Q : val_a[k] \neq null\}$;
+		
+		\State
+		\If{$RS = \varnothing$}
+		\State \textbf{return} $\{val_a[k]\ |\ (a \in Q) \wedge (val_a[k] \neq null)\}$;
+		\Else
+		\State \textbf{return} \textbf{run} $\sqcup(val_a[k]\ |\ a \in Q \cap R$);
+		\EndIf
+		\EndFunction
+		
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+	\caption{Generalized Paxos - Acceptor a}
+	\textbf{Local variables: } $bal_a = 0,\ mbal_a = 0,\ val_a = \bot$ 
+	\begin{algorithmic}[1]
+		
+		\State \textbf{upon} \textit{receive(fast, val)} from proposer \textit{p} \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_fast}{$val$};
+		
+		\State
+		\State \textbf{upon} \textit{receive(p1a, ballot)} from leader \textit{l} \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_1b}{$ballot, l$};
+		
+		\State
+		\State \textbf{upon} \textit{receive(p2a, ballot, value)} from leader \textit{l} \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_classic}{$ballot, value$};
+		
+		\State
+		\Function{Phase\_1b}{$m, l$}
+		\If {$bal_a < m$}
+		\State $bal_a = m$;
+		\State \Call{send}{$p1b, m, mbal_a, val_a$} to leader l;
+		\EndIf
+		\EndFunction
+		
+		\State
+		\Function{Phase\_2b\_Classic}{$m, v$}
+		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
+		\If {$m \geq k$}
+		\State $val_a = v$;
+		\State \Call{send}{$p2b, bal_a, val_a$} to learners;
+		\EndIf
+		\EndFunction
+		
+		\State
+		\Function{Phase\_2b\_Fast}{$v$}
+		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
+		\If {$bal_a == k$}
+		\State $val_a = val_a \bullet v$;
+		\State \Call{send}{$p2b, bal_a, val_a$} to learners;
+		\EndIf
+		\EndFunction
+		
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+	\caption{Generalized Paxos - Learner l}
+	\textbf{Local variables: } $learned = \bot, messages = \bot$ 
+	\begin{algorithmic}[1]
+		\State \textbf{upon} \textit{receive($p2b, bal, val$)} from acceptor $a_i$ \textbf{do}
+		\State \hspace{\algorithmicindent} $messages[bal][a_i] = val$;
+		\State \hspace{\algorithmicindent} \textbf{if} {($fast\_ballot$ and $\#(messages) \geq \lceil \frac{3N}{4} \rceil$) or
+			\State \hspace{\algorithmicindent} \hspace{\algorithmicindent}	($classic\_ballot$ and $\#(messages) \geq \lfloor \frac{N}{2}\rfloor+1$)} \textbf{then}
+		\State \hspace{\algorithmicindent} \hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = learned \sqcup val$;
+	\end{algorithmic}
+\end{algorithm}
+
+We now turn to the task of adapting Generalized Paxos for a non-crash variable fault model. To understand what is required of the protocol, it's useful to consider the pessimistic end of the fault spectrum, Byzantine faults. A crash fault tolerance consensus-solving protocol can be adapted to support Byzantine fault tolerance by adding an additional broadcast round and by using Byzantine quorums \cite{Cachin2009}. The additional round ensures that not only two quorums intersect within a view but also that a view change quorum intersects with other quorums, so that a committed value can't be ignored by a view change.
+When considering Byzantine faults, it's not enough to ensure that quorums have a non-empty intersection, since the replicas in the intersection may be faulty. Therefore, it's necessary to ensure that any two Byzantine quorums intersect in at least $o+1$ replicas (or $f+1$ in the traditional notation). However, while this is a well known transformation of classic majority quorums, we need to apply a similar transformation to fast quorums since we wish to preserve fast ballots in the variable fault model. Generalized consensus' Approximate Theorem 3 states that the intersection between two fast quorums and a classic quorum must be non-empty \cite{Lamport2005}. This rule needs to be revised to ensure that the intersection is not only non-empty but also larger than $f$. We obtain the minimum quorum size by forcing the intersection between quorums to be larger than $f$ in the worst case scenario. In the worst case, given two fast quorums of size $Q_f$ and a classic quorum of size $Q_c$, $Q_c$ would intersect with all the replicas of the fast quorums that don't intersect with each other and with some replicas of the fast quorums that do intersect. We name $x$ as the intersection between the three quorums. To ensure agreement, we need to ensure that the intersection between the classic quorum and the two fast quorums, $x$, will have to be larger than $f$. Therefore, the following statements must always hold: \par
+
+\begin{gather*}
+	\begin{cases}
+		Q_c \geq N - Q_f + N-Q_f + x \\
+		x > f \\
+		Q_c = \lceil \frac{N+f}{2}\rceil
+	\end{cases} \\ 
+\end{gather*}
+
+The first equation states that the classic quorum is composed of the replicas of the fast quorums that don't intersect with each other plus some replicas that do intersect. The second equation forces the intersection to always be larger than $f$ and the third equation is the minimum quorum size for classic quorums. To solve the system, we can substitute the $Q_c$ in the first equation by $\lceil \frac{N+f}{2}\rceil$ and we obtain:
+\begin{gather*} \\
+	Q_c \geq N - Q_f + N-Q_f + x \label{eq_1} \tag{1} \\ 
+	\lceil\frac{N+f}{2}\rceil \geq 2N - 2Q_f + x \label{eq_2} \tag{2} \\
+	N+f \geq 4N - 4Q_f + 2x \label{eq_3} \tag{3} \\
+	Q_f \geq \frac{3N+2x-f}{4} \label{eq_4} \tag{4} \\ 
+	\text{Since $x > f$} \implies Q_f \geq \frac{3N+f+1}{4} \label{eq_5} \tag{5}  \\
+\end{gather*}
+
+Note that when transitioning from \eqref{eq_2} to \eqref{eq_3}, the ceiling operator was ignored. However, this is safe because, for any $x$, $y$ and $z$, if $\frac{x}{y} > z$ then $\lceil \frac{x}{y} \rceil > z$ holds.
+
 \subsection{Future Work}
+
+To develop a fully functional protocol to solve generalized consensus in the Visigoth model, we will develop our preliminary results with the same approach as before. To accomplish this, the basic protocol will have to be adapted to include a second broadcast round and the quorums will \textcolor{red}{CONTINUE}
+
+\subsection{Evaluation}
 \subsection{Planning}
+The development of the proposed work will follow the schedule seen in figure \ref{fig:proposal} (available in Appendix \ref{Schedule}). As can be seen in the figure, the development of the protocol will continue until March after which there will be a moment 
+
+
 
 \addcontentsline{toc}{section}{References}
 
 \bibliography{references}
+
+\newpage
+\appendix
+
+\section{Proposed Schedule} \label{Schedule}
+
+\begin{figure}[h]
+	\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{Proposal}
+	\caption{Gantt chart depicting proposed schedule}
+	\label{fig:proposal}
+	\centering
+\end{figure}
+
 
 \end{document}

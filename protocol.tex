@@ -14,5 +14,9 @@ eventually decides on a value previously proposed by a correct process (w.r.t $\
 %
 \end{definition}
 %
-\input{algo}
+\input{algo_cft}
 %
+\newpage
+We now present the adapted Generalized Paxos protocol for a Byzantine adversary. In this version, a multicast round was added to ensure that a Byzantine leader can't make acceptors accept different \textit{c-structs}. To preserve fast ballots, the quorum sizes were also updated to the previously stated formulas.
+
+\input{algo_bft}

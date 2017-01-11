@@ -1,5 +1,6 @@
 \section{Preliminaries}
 
+\subsection{Byzantine Fast Quorums}
 To adapt Generalized Paxos to the Byzantine setting, the fast quorums must be recalculated to ensure agreement. Generalized Consensus' Approximate Theorem 3 states that any two fast quorums, $Q_{f1}$ and $Q_{f2}$, and a classic quorum $Q_c$, must have a non-empty intersection. To adapt the protocol to the Byzantine scenario, this intersection can't only be non-empty, it also needs to be larger than $f$ replicas. We obtain the minimum quorum size by forcing the intersection between quorums to be larger than $f$ in the worst case scenario. In the worst case, given two fast quorums of size $Q_f$ and a classic quorum of size $Q_c$, $Q_c$ would intersect with all the replicas of the fast quorums that don't intersect with each other and with some replicas of the fast quorums that do intersect. We name $x$ as the intersection between the three quorums. To ensure agreement, we need to ensure that the intersection between the classic quorum and the two fast quorums, $x$, will have to be larger than $f$. Therefore, the following statements must always hold:
 
 \begin{gather*}
@@ -20,3 +21,11 @@ Q_f \geq \frac{3N+2x-f}{4} \label{eq_4} \tag{4} \\
 \end{gather*}
 
 Note that when transitioning from \eqref{eq_2} to \eqref{eq_3}, the ceiling operator was ignored. However, this is safe because, for any $x$, $y$ and $z$, if $\frac{x}{y} > z$ then $\lceil \frac{x}{y} \rceil > z$ holds.\par
+
+\subsection{Problem Statement}
+To reduce the complexity brought by generalized consensus' high level of abstraction, we specify this generic problem to one of agreeing on command histories. In this problem, each learner $l$ contains a monotonically increasing sequence of commands $learned_l$. We define these learned sequences of commands to be equivalent ($\thicksim$) if one can be transformed into the other by permuting the elements in a way such that the order of non-commutative pairs is preserved. We present the requirements for this consensus problem, stated in terms of learned sequences of commands for a learner $l$, $learned_l$:\par
+\textbf{Nontriviality} $learned_l$ can only contain proposed commands \par
+\textbf{Stability} If $learned_l = v$ then, at all later times, $v \sqsubseteq learned_l$\footnote{$a \sqsubseteq b$ means that $a$ is a prefix of $b$}, for any $l$ and $v$ \par
+\textbf{Consistency} $learned_{l_1}$ and $learned_{l_2}$ can always be extended to equivalent sequences, $learned_{l_1} \bullet \omega_1 \thicksim learned_{l_2} \bullet \omega_2$, provided that $\omega_1$ and $\omega_2$ are also equivalent \par
+\textbf{Liveness} For any proposed command $C$ and learner $l$, eventually $learned_l$ contains $C$ \par
+

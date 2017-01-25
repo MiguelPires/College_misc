@@ -26,6 +26,6 @@ Note that when transitioning from \eqref{eq_2} to \eqref{eq_3}, the ceiling oper
 To reduce the complexity brought by generalized consensus' high level of abstraction, we specify this generic problem to one of agreeing on command histories. In this problem, each learner $l$ contains a monotonically increasing sequence of commands $learned_l$. We define these learned sequences of commands to be equivalent ($\thicksim$) if one can be transformed into the other by permuting the elements in a way such that the order of non-commutative pairs is preserved. We present the requirements for this consensus problem, stated in terms of learned sequences of commands for a learner $l$, $learned_l$:\par
 \textbf{Nontriviality} $learned_l$ can only contain proposed commands \par
 \textbf{Stability} If $learned_l = v$ then, at all later times, $v \sqsubseteq learned_l$\footnote{$a \sqsubseteq b$ means that $a$ is a prefix of $b$}, for any $l$ and $v$ \par
-\textbf{Consistency} $learned_{l_1}$ and $learned_{l_2}$ can always be extended to equivalent sequences, $learned_{l_1} \bullet \omega_1 \thicksim learned_{l_2} \bullet \omega_2$, provided that $\omega_1$ and $\omega_2$ are also equivalent \par
+\textbf{Consistency} At any time and for any learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences\par
 \textbf{Liveness} For any proposed command $C$ and learner $l$, eventually $learned_l$ contains $C$ \par
 

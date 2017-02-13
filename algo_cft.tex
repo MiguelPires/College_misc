@@ -24,11 +24,11 @@
 	\caption{Generalized Paxos - Proposer p}
 	\begin{algorithmic}[1]
 		
-		\Function{Propose}{\textit{C}}
+		\Function{propose}{\textit{C}}
 		\If{fast\_ballot}
-		\State \textbf{run} \Call{send}{$fast, C$} to Acceptors;
+		\State \Call{send}{$fast, C$} to Acceptors;
 		\Else
-		\State \textbf{run} \Call{send}{\textit{propose, C}} to Leader;
+		\State \Call{send}{\textit{propose, C}} to Leader;
 		\EndIf
 		\EndFunction
 		
@@ -42,27 +42,27 @@
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive(propose, C)} from proposer $p_i$ \textbf{do} 
 		\State \hspace{\algorithmicindent} $C_l = C$;
-		\State \hspace{\algorithmicindent}\textbf{run} \Call{phase\_1a}{};
+		\State \hspace{\algorithmicindent} \Call{phase\_1a}{$ $};
 		\State
 		\State \textbf{upon} \textit{receive(statement)} from acceptor $a_i$ \textbf{do}
 		\State \hspace{\algorithmicindent}  $messages[ballot_l][a_i] = statement$;
 		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages) \geq \lfloor \frac{N}{2} \rfloor +1$ \textbf{then} 
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{run} \Call{phase\_2a}{$ballot_l, Q$};
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2a}{$ballot_l, Q$};
 		\State
 		%\item[] % unnumbered empty line
-		\Function{Phase\_1a}{}
-		\State \textbf{run} \Call{send}{$p1a, ballot_l$} to Acceptors;
+		\Function{phase\_1a}{}
+		\State \Call{send}{$p1a, ballot_l$} to Acceptors;
 		\EndFunction
 		
 		\State
-		\Function{Phase\_2a}{$bal, Q$}
-		\State $maxTried_l$ = \textbf{run} \Call{Proved\_Safe}{$Q, bal$};
+		\Function{phase\_2a}{$bal, Q$}
+		\State $maxTried_l$ = \Call{proved\_safe}{$Q, bal$};
 		\State $maxTried_l = maxTried_l \bullet C_l$;
-		\State \textbf{run} \Call{send}{$p2a,ballot_l, maxTried_l$} to Acceptors;
+		\State \Call{send}{$p2a,ballot_l, maxTried_l$} to Acceptors;
 		\EndFunction
 		
 		\State
-		\Function{Proved\_Safe}{Q, m}
+		\Function{proved\_safe}{Q, m}
 		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
 		\State $RS = \{R \in k$-$quorum\ |\ \forall a \in R \cap Q : val_a[k] \neq null\}$;
 		\State $\gamma(R) = \sqcap \{v_a[k]\ |\ a \in Q \cap R \}$;
@@ -71,7 +71,7 @@
 		\If{$RS = \varnothing$}
 		\State \textbf{return} $\{val_a[k]\ |\ (a \in Q) \wedge (val_a[k] \neq null)\}$;
 		\Else
-		\State \textbf{return} \textbf{run} $\sqcup \Gamma$;
+		\State \textbf{return} $\sqcup \Gamma$;
 		\EndIf
 		\EndFunction
 		
@@ -84,18 +84,18 @@
 	\begin{algorithmic}[1]
 		
 		\State \textbf{upon} \textit{receive(fast, val)} from proposer \textit{p} \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_fast}{$val$};
+		\State \hspace{\algorithmicindent} \Call{phase\_2b\_fast}{$val$};
 		
 		\State
 		\State \textbf{upon} \textit{receive(p1a, ballot)} from leader \textit{l} \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_1b}{$ballot, l$};
+		\State \hspace{\algorithmicindent} \Call{phase\_1b}{$ballot, l$};
 		
 		\State
 		\State \textbf{upon} \textit{receive(p2a, ballot, value)} from leader \textit{l} \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{run} \Call{phase\_2b\_classic}{$ballot, value$};
+		\State \hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value$};
 		
 		\State
-		\Function{Phase\_1b}{$m, l$}
+		\Function{phase\_1b}{$m, l$}
 		\If {$bal_a < m$}
 		\State \Call{send}{$p1b, m, bal_a, val_a$} to leader l;
 		\State $bal_a = m$;
@@ -103,7 +103,7 @@
 		\EndFunction
 		
 		\State
-		\Function{Phase\_2b\_Classic}{$m, v$}
+		\Function{phase\_2b\_classic}{$m, v$}
 		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
 		\If {$m \geq k$}
 		\State $val_a = v$;
@@ -112,7 +112,7 @@
 		\EndFunction
 		
 		\State
-		\Function{Phase\_2b\_Fast}{$v$}
+		\Function{phase\_2b\_fast}{$v$}
 		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
 		\If {$bal_a == k$}
 		\State $val_a = val_a \bullet v$;

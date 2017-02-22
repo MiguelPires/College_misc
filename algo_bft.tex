@@ -40,6 +40,28 @@
 
 		\State\hspace{\algorithmicindent} \textbf{if} $\#(new\_view) > 2f$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $leader = n\ mod\ new\_ballot$;
+		
+				\State
+		\Function{is\_prefix}{$new\_sequence, old\_sequence$}
+		\If {$\lVert old\_sequence \rVert > \lVert new\_sequence \rVert$}
+		\State \textbf{return} \textit{false};
+		\EndIf
+		
+		\State
+		\item[] outer:	
+		\State \textbf{for} $c_{old}$ in $old\_sequence$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{for} $c_{new}$ in $new\_sequence$ \textbf{do}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $c_{old} = c_{new}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{continue} \textit{outer};
+		
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{else if} !\Call{are\_commutative}{$c_{old}, c_{new}$} \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return} \textit{false};
+		\State \hspace{\algorithmicindent}\textbf{end for}
+		\State \hspace{\algorithmicindent}\textbf{return} \textit{false};
+		\State \textbf{end for}
+		\State
+		\State \textbf{return} \textit{true};
+		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
 
@@ -51,24 +73,38 @@
 		\State \hspace{\algorithmicindent} $C_l = C$;
 		\State \hspace{\algorithmicindent} \Call{phase\_1a}{$ $};
 		\State
-		\State \textbf{upon} \textit{receive(statement)} from acceptor $a_i$ \textbf{do}
-		\State \hspace{\algorithmicindent}  $messages[ballot_l][a_i] = statement$;
+		\State \textbf{upon} \textit{receive($p1b, m, bal_a, val_a, digest_{\sigma_p}$)} from acceptor $a_i$ \textbf{do}
+		\State\hspace{\algorithmicindent} $digest = hash(\langle bal_a, val_a \rangle)$;
+		\State \hspace{\algorithmicindent} \textbf{if} $m = ballot_l$ and $pubkey_p(digest_{\sigma_p}) = digest$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}  $messages[ballot_l][a_i] = val_a$;
 		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages) \geq \lceil \frac{N+f}{2}\rceil$ \textbf{then} 
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2a}{$ballot_l, Q$};
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2a}{$ $};
 		\State
 		%\item[] % unnumbered empty line
-		\Function{phase\_1a}{}
+		\Function{phase\_1a}{$ $}
+		\State $ballot_l \mathrel{+{=}} 1$;
 		\State \Call{send}{$p1a, ballot_l$} to Acceptors;
 		\EndFunction
 		
 		\State
-		\Function{phase\_2a}{$bal, Q$}
-		\State $maxTried_l$ = \Call{proved\_safe}{$Q, bal$};
+		\Function{phase\_2a}{$ $}
+		\State $maxTried_l$ = \Call{proved\_safe}{$ballot_l$};
 		\State $maxTried_l = maxTried_l \bullet C_l$;
-		\State \Call{send}{$p2a,ballot_l, maxTried_l$} to Acceptors;
+		\State $digest = hash(\langle ballot_l, maxTried_l \rangle)$;
+		\State \Call{send}{$p2a,ballot_l, maxTried_l, digest_{\sigma_l}$} to Acceptors;
 		\EndFunction
 		
 		\State
+		\Function{proved\_safe}{$ballot$}
+		\State $maxTried = \bot$;
+		\State \textbf{for} $val$ in $message[ballot]$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $maxTried = \bot$ or $\Call{is\_prefix}{val, maxTried}$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $maxTried = val$;
+		\State \textbf{end for}
+		\State \textbf{return} $maxTried$;
+		\EndFunction
+		
+		\iffalse \State
 		\Function{proved\_safe}{Q, m}
 		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
 		\State $RS = \{R \in k$-$quorum\ |\ \forall a \in R \cap Q : val_a[k] \neq null\}$;
@@ -81,13 +117,14 @@
 		\State \textbf{return} $\sqcup \Gamma$;
 		\EndIf
 		\EndFunction
+		\fi
 		
 	\end{algorithmic}
 \end{algorithm}
 
 \begin{algorithm}
 	\caption{Byzantine Generalized Paxos - Acceptor a}
-	\textbf{Local variables: } $bal_a = 0,\ val_a = \bot,\ verificationMessages = \bot$ 
+	\textbf{Local variables: } $bal_a = 0,\ val_a = \bot,\ proof = \bot$ 
 	\begin{algorithmic}[1]
 		
 		\State \textbf{upon} \textit{receive(fast, val)} from proposer \textit{p} \textbf{do}
@@ -98,23 +135,24 @@
 		\State \hspace{\algorithmicindent} \Call{phase\_1b}{$ballot, l$};
 		
 		\State
-		\State \textbf{upon} \textit{receive(p2a, ballot, value)} from leader \textit{l} \textbf{do}
-		\State \hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value$}; 
+		\State \textbf{upon} \textit{receive(p2a, ballot, value, $digest_{\sigma_l}$)} from leader \textit{l} \textbf{do}
+		\State \hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value, digest_{\sigma_l}$}; 
 		
 		\State
-		\Function{phase\_1b}{$m, l$}
-		\If {$bal_a < m$}
-		\State \Call{send}{$p1b, m, bal_a, val_a$} to leader l;
-		\State $bal_a = m$;
+		\Function{phase\_1b}{$ballot, l$}
+		\If {$bal_a < ballot$}
+		\State \Call{send}{$p1b, ballot, bal_a, val_a, proof$} to leader l;
+		\State $bal_a = ballot$;
 		\EndIf
 		\EndFunction
 		
 		\State
-		\Function{phase\_2b\_classic}{$m, v$}
-		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
-		\If {$m \geq k$ and $\Call{is\_prefix}{v, val_a}$}
-		\State $val_a = v$;
-		\State \Call{send}{$p2b, bal_a, val_a$} to learners;
+		\Function{phase\_2b\_classic}{$ballot, value, digest_{\sigma_l}$}
+		\State $k = max(i\ |\ (i < ballot) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
+		\If {$ballot \geq k$ and $\Call{is\_prefix}{v, val_a}$}
+		\State $val_a = value$;
+		\State $proof = digest_{\sigma_l}$;
+		\State \Call{send}{$p2b, bal_a, val_a, digest_{\sigma_l}$} to learners;
 		\EndIf
 		\EndFunction
 		
@@ -126,30 +164,6 @@
 		\State \Call{send}{$p2b, bal_a, val_a$} to learners;
 		\EndIf
 		\EndFunction
-		
-		\State
-		\Function{is\_prefix}{$new\_sequence, old\_sequence$}
-			\If {$\lVert old\_sequence \rVert > \lVert new\_sequence \rVert$}
-				\State \textbf{return} \textit{false};
-			\EndIf
-			
-			\State
-			\item[] outer:	
-			\State \textbf{for} $c_{old}$ in $old\_sequence$ \textbf{do}
-				\State \hspace{\algorithmicindent} \textbf{for} $c_{new}$ in $new\_sequence$ \textbf{do}
-					\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $c_{old} = c_{new}$ \textbf{then}
-						\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{continue} \textit{outer};
-					
-					\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{else if} !\Call{are\_commutative}{$c_{old}, c_{new}$} \textbf{then}
-						\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return} \textit{false};
-				\State \hspace{\algorithmicindent}\textbf{end for}
-				\State \hspace{\algorithmicindent}\textbf{return} \textit{false};
-			\State \textbf{end for}
-			\State
-			\State \textbf{return} \textit{true};
-		\EndFunction
-		
-		
 	\end{algorithmic}
 \end{algorithm}
 
@@ -157,7 +171,7 @@
 	\caption{Byzantine Generalized Paxos - Learner l}
 	\textbf{Local variables: } $learned = \bot, messages = \bot$ 
 	\begin{algorithmic}[1]
-		\State \textbf{upon} \textit{receive($p2b, bal, val$)} from acceptor $a_i$ \textbf{do}
+		\State \textbf{upon} \textit{receive($p2b, bal, val, [digest_{\sigma_l}]$)} from acceptor $a_i$ \textbf{do}
 		\State \hspace{\algorithmicindent} $messages[bal][a_i] = val$;
 		\State \hspace{\algorithmicindent} \textbf{if} {($fast\_ballot$ and $\#(messages[bal]) \geq \frac{3N+f+1}{4}$) or
 			\State \hspace{\algorithmicindent} \hspace{\algorithmicindent}	($classic\_ballot$ and $\#(messages[bal]) \geq \lceil \frac{N+f}{2}\rceil$)} \textbf{then}

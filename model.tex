@@ -1,0 +1,28 @@
+\section{Model}
+\label{sec:model}
+%
+We consider an \emph{asynchronous} system in which
+a set of $n \in \mathbb{N}$ processes communicate by 
+\emph{sending} and \emph{receiving} messages.
+% 
+
+Any operation $O_i$ begins with an \emph{invocation} by a process $p_i$ followed by a \emph{response
+function} $r_i$. 
+
+\vspace{1mm}\noindent\textbf{Executions, histories and configurations.}
+An \emph{step} of an operation $O_i$
+is an invocation or response of $O_i$ or a 
+primitive applied by $O_i$
+along with its response.
+
+A \emph{configuration} (of an implementation) specifies the state of each process.
+The \emph{initial configuration} is the configuration in which all 
+processes have their initial values.
+
+An \emph{execution fragment} is a (finite or infinite) sequence of steps.
+An \emph{execution} of an implementation $M$ is an execution
+fragment where, starting from the initial configuration, each step is
+issued according to the implementation $M$ and each response of a primitive matches the state of $b$ resulting from all
+preceding events.
+An execution $E\cdot E'$ denotes the concatenation of $E$ and execution fragment $E'$,
+and we say that $E'$ is an \emph{extension} of $E$ or $E'$ \emph{extends} $E$.

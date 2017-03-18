@@ -13,27 +13,40 @@ public class KeywordTranslator implements Translator {
 	public void onLoad(ClassPool pool, String className) throws NotFoundException, CannotCompileException {
 		CtClass cc = pool.get(className);
 		
-		for (CtConstructor method : cc.getConstructors()) {
+		for (CtConstructor constructor : cc.getConstructors()) {
 
 			Object[] annotations;
 
 			try {
-				annotations = method.getAnnotations();
+				annotations = constructor.getAnnotations();
 			} catch (ClassNotFoundException e) {
 				throw new NotFoundException(e.getMessage());
 			}
 
-			for (int e = 0; e < annotations.length; ++e) {
-				System.out.println(annotations[e]);
-			}
-
-			// TODO: what if a method has multiple annotations
+			// TODO: what if a constructor has multiple annotations
 			if (annotations.length == 1 && annotations[0] instanceof KeywordArgs) {
-				String[] arguments = ((KeywordArgs) annotations[0]).value();
+				String annotationValue = ((KeywordArgs) annotations[0]).value();
+
+				String[] arguments = annotationValue.split(",");
+
+				// the default initializations
+				String constructorCode = "";
 
 				for (int i = 0; i < arguments.length; ++i) {
-					System.out.println(arguments[i]);
+					if (arguments[i].contains("=")) {
+						constructorCode += arguments[i]+";";
+					}
 				}
+
+				// sets the fields to the values passed in the parameters
+				constructor.setBody("{"+
+					constructorCode +
+					"for (int i = 0; i < $1.length;) {" +
+					"	java.lang.reflect.Field field = $class.getDeclaredField((String) $1[i]);"+
+					"	field.set(this, $1[i+1]);"+
+					"	i += 2;"+
+					"}"+
+				"}");
 			}
 		}
 	}

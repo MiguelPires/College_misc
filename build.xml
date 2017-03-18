@@ -20,7 +20,7 @@
 	</target>
 
 	<target name="jar" depends="compile">
-		<jar destfile="./keyword.jar" basedir="classes">
+		<jar destfile="./keyConstructors.jar" basedir="classes">
 			<zipgroupfileset dir="lib" includes="*.jar"/>
 			<manifest>
     				<attribute name="Main-Class" value="ist.meic.pa.KeyConstructors"/>

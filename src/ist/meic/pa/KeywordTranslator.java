@@ -1,6 +1,7 @@
 package ist.meic.pa;
 
 import javassist.*;
+import java.util.*;
 
 public class KeywordTranslator implements Translator {
 
@@ -13,7 +14,22 @@ public class KeywordTranslator implements Translator {
 	public void onLoad(ClassPool pool, String className) throws NotFoundException, CannotCompileException {
 		CtClass cc = pool.get(className);
 		
-		for (CtConstructor constructor : cc.getConstructors()) {
+		List<CtConstructor> constructors = new ArrayList<CtConstructor>();
+		CtConstructor constr;
+
+		do {
+			try {
+				constructors.addAll(Arrays.asList(cc.getConstructors()));
+				cc = cc.getSuperclass();
+			} catch (NotFoundException e) {
+				System.out.println("Not found");
+				break;
+			}
+		} while (cc != null);
+
+
+		for (int i = 0; i < constructors.size(); ++i) {
+			CtConstructor constructor = constructors.get(i);
 
 			Object[] annotations;
 
@@ -30,22 +46,51 @@ public class KeywordTranslator implements Translator {
 				String[] arguments = annotationValue.split(",");
 
 				// the default initializations
-				String constructorCode = "";
+				String defaultValues = "";
 
-				for (int i = 0; i < arguments.length; ++i) {
-					if (arguments[i].contains("=")) {
-						constructorCode += arguments[i]+";";
+				for (int e = 0; e < arguments.length; ++e) {
+					if (arguments[e].contains("=")) {
+						defaultValues += arguments[e]+";";
 					}
 				}
 
 				// sets the fields to the values passed in the parameters
+				Object[] nextAnnotations;
+
+				try {
+					nextAnnotations = constructors.get(i+1).getAnnotations();
+				} catch (ClassNotFoundException e) {
+					throw new NotFoundException(e.getMessage());
+				}
+
+				String superclassCall;
+
+				if (nextAnnotations.length == 1 && nextAnnotations[0] instanceof KeywordArgs) {
+					superclassCall = "super(new Object[0]); ";
+				} else {
+					superclassCall = "super();";
+				}
+
 				constructor.setBody("{"+
-					constructorCode +
+					superclassCall +
+					defaultValues +
+					//"System.out.println(\"\");"+
 					"for (int i = 0; i < $1.length;) {" +
-					"	java.lang.reflect.Field field = $class.getDeclaredField((String) $1[i]);"+
-					"	field.set(this, $1[i+1]);"+
-					"	i += 2;"+
-					"}"+
+					"	java.lang.Class searchInClass = $class; " +
+					"	while (searchInClass != null) { " +
+					//"		System.out.println(\"Searching for \"+$1[i]+\" in \"+searchInClass);"+
+					"		try { " + 
+					"			java.lang.reflect.Field field = searchInClass.getDeclaredField((String) $1[i]);" +
+					"			field.set(this, $1[i+1]);" +
+					//"			System.out.println(\"Setting \"+$1[i]+\" to \"+$1[i+1]); "+
+					"			break;" +
+					" 		} catch (NoSuchFieldException e) { " +
+					//"			System.out.println(\"Didn't find \"+$1[i]+\" in \"+searchInClass.getName());"+
+					"			searchInClass = searchInClass.getSuperclass();" +
+					"		}" +
+					"	}" +
+					"	i += 2;" +
+					"}" +
 				"}");
 			}
 		}

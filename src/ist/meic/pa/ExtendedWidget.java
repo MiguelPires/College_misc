@@ -17,5 +17,6 @@ public class ExtendedWidget extends Widget {
 		System.out.println(new ExtendedWidget("height", 30));
 		System.out.println(new ExtendedWidget("height", 20, "width", 90));
 		System.out.println(new ExtendedWidget("height", 20, "width", 90, "name", "Nice"));
+		System.err.println(new ExtendedWidget("foo", 1, "bar", 2));
 	}
 }

@@ -23,7 +23,9 @@
 		<jar destfile="./keyConstructors.jar" basedir="classes">
 			<zipgroupfileset dir="lib" includes="*.jar"/>
 			<manifest>
-    				<attribute name="Main-Class" value="ist.meic.pa.KeyConstructors"/>
+    			<attribute name="Main-Class" value="ist.meic.pa.KeyConstructors"/>   
+    			<!--<attribute name="Main-Class" value="ist.meic.pa.KeyConstructorExtended.KeyConstructorsExtended"/>-->
+
   			</manifest>
 		</jar>
 	</target>
@@ -31,7 +33,7 @@
 	
 	
 	<target name="run" depends="compile">
-		<java classname="ist.meic.pa.KeyConstructors" fork="true">
+		<java classname="ist.meic.pa.KeyConstructorExtended.KeyConstructorsExtended" fork="true">
 			<classpath>
 				<pathelement location="classes"/>
 			</classpath>

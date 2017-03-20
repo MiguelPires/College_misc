@@ -9,7 +9,7 @@ public class TestMethod {
 		System.err.println(new MethodWidget("a", 3));
 
 		MethodWidget rw0 = new MethodWidget("a", 3);
-		rw0.someCall();
+		rw0.someCall("b", 33);
 		System.err.println(rw0);
 
 		System.err.println(new MethodWidget("a", 3, "b", 4));

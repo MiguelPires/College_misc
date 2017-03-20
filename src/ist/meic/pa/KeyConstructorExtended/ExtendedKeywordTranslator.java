@@ -14,15 +14,55 @@ public class ExtendedKeywordTranslator implements Translator {
 
 	@Override
 	public void onLoad(ClassPool pool, String className) throws NotFoundException, CannotCompileException {
+		translateConstructor(pool, className);
+		translateMethods(pool, className);
+	}
+
+	private void translateMethods(ClassPool pool, String className) throws NotFoundException, CannotCompileException {
+		CtClass cc;
+		try {
+			cc = pool.get(className);
+		} catch (NotFoundException e) {
+			return;
+		}
+
+		CtClass objectParam = pool.get("java.lang.Object[]");
+		List<Object[]> methodAnnotations = new ArrayList<Object[]>();
+		List<CtBehavior> objectParamMethods = new ArrayList<CtBehavior>();
+
+		do {
+			CtMethod[] methods = cc.getDeclaredMethods();
+
+			for (CtMethod method : methods) {
+				CtClass[] params = method.getParameterTypes();
+				if (params.length != 1 || !params[0].equals(objectParam)) {
+					continue;
+				} else {
+					try {
+						objectParamMethods.add(method);
+						methodAnnotations.add(method.getAnnotations());
+					} catch (ClassNotFoundException e) {
+						continue;
+					}
+				}
+			}
+
+			cc = cc.getSuperclass();
+		} while (cc != null);
+
+		setBehaviorBody(objectParamMethods, methodAnnotations, false);
+	}
+
+	private void translateConstructor(ClassPool pool, String className) throws NotFoundException, CannotCompileException {
 		CtClass cc = pool.get(className);
-		List<CtConstructor> constructors = new ArrayList<CtConstructor>();
+		List<CtBehavior> constructors = new ArrayList<CtBehavior>();
 		List<Object[]> constructorAnnotations = new ArrayList<Object[]>();
+		CtClass[] objectParams = new CtClass[1];
+		objectParams[0] = pool.get("java.lang.Object[]");
 
 		do {
 			try {
-				CtClass[] objectParams = new CtClass[1];
-				objectParams[0] = pool.get("java.lang.Object[]");
-				CtConstructor objectArrayConstr= cc.getDeclaredConstructor(objectParams);
+				CtConstructor objectArrayConstr = cc.getDeclaredConstructor(objectParams);
 				constructors.add(objectArrayConstr);
 				constructorAnnotations.add(objectArrayConstr.getAnnotations());
 				cc = cc.getSuperclass();
@@ -32,19 +72,24 @@ public class ExtendedKeywordTranslator implements Translator {
 			}
 		} while (cc != null);
 
-		if (constructors.isEmpty()) {
-			return;
-		}
+		setBehaviorBody(constructors, constructorAnnotations, true);
+	}
 
-		CtConstructor constructor = constructors.get(0);
-		Object[] annotations = constructorAnnotations.get(0);
+	private void setBehaviorBody(List<CtBehavior> behaviors, List<Object[]> behaviorAnnotations, boolean constructor) throws CannotCompileException{
+		if (behaviors.isEmpty()) {
+			return;
+		} 
+		
+		CtBehavior behavior = behaviors.get(0);
+		Object[] annotations = behaviorAnnotations.get(0);
 
 		// TODO: what if a constructor has multiple annotations
-		if (annotations.length == 1 && annotations[0] instanceof KeywordArgs) {
-			String[] defaultsAndKeywords = defaultsAndKeywords(constructorAnnotations);
+		if (annotations.length == 1 && annotations[0] instanceof KeywordArgsExtended) {
+			String[] defaultsAndKeywords = defaultsAndKeywords(behaviorAnnotations);
+			String 	superCall =	constructor ? buildSuperCall(behaviors) : "" ;
 
-			constructor.setBody("{"+
-				buildSuperCall(constructors) +
+			behavior.setBody("{"+
+				superCall +
 				defaultsAndKeywords[0] +
 				"for (int i = 0; i < $1.length; i+=2) {" +
 				"	String keyword = (String) $1[i]; " +
@@ -70,20 +115,20 @@ public class ExtendedKeywordTranslator implements Translator {
 	}
 
 	// builds the super() call depending if the superclass is annotated or not
-	private String buildSuperCall(List<CtConstructor> constructors) {
-		if (constructors.size() == 1) {
+	private String buildSuperCall(List<CtBehavior> behaviors) {
+		if (behaviors.size() == 1) {
 			return "super();";
 		}
 
 		Object[] nextAnnotations;
 
 		try {
-			nextAnnotations = constructors.get(1).getAnnotations();
+			nextAnnotations = behaviors.get(1).getAnnotations();
 		} catch (ClassNotFoundException e) {
 			return "super();";
 		}
 
-		if (nextAnnotations.length == 1 && nextAnnotations[0] instanceof KeywordArgs) {
+		if (nextAnnotations.length == 1 && nextAnnotations[0] instanceof KeywordArgsExtended) {
 			return "super(new Object[0]);";
 		} else {
 			return "super();";
@@ -92,14 +137,14 @@ public class ExtendedKeywordTranslator implements Translator {
 
 	// returns an array with 2 strings: one with the default values and 
 	// another with the respective keywords
-	private String[] defaultsAndKeywords(List<Object[]> constructorAnnotations) {
+	private String[] defaultsAndKeywords(List<Object[]> methodAnnotations) {
 
 		String defaultValues = "";
 		String argumentNames = "";
 
-		for (Object[] annotations : constructorAnnotations) {
-			if (annotations.length == 1 && annotations[0] instanceof KeywordArgs) {
-				String annotationValue = ((KeywordArgs) annotations[0]).value();
+		for (Object[] annotations : methodAnnotations) {
+			if (annotations.length == 1 && annotations[0] instanceof KeywordArgsExtended) {
+				String annotationValue = ((KeywordArgsExtended) annotations[0]).value();
 				String[] arguments = annotationValue.split(",");
 
 				for (int e = 0; e < arguments.length; ++e) {

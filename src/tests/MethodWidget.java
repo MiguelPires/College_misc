@@ -9,6 +9,7 @@ public class MethodWidget {
 
 	@KeywordArgsExtended("a=8,b=9")
 	public void someCall(Object... args){}
+	
 	public String toString() {
 		return String.format("a: %s, b: %s",
 				a, b);

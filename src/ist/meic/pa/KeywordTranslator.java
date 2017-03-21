@@ -16,6 +16,7 @@ public class KeywordTranslator implements Translator {
 		List<CtConstructor> constructors = new ArrayList<CtConstructor>();
 		List<Object[]> constructorAnnotations = new ArrayList<Object[]>();
 
+		// get constructors and corresponding annotations
 		do {
 			try {
 				CtClass[] objectParams = new CtClass[1];
@@ -34,6 +35,14 @@ public class KeywordTranslator implements Translator {
 			return;
 		}
 
+		setBody(constructors, constructorAnnotations);
+	}
+
+	private void setBody(List<CtConstructor> constructors, List<Object[]> constructorAnnotations) throws CannotCompileException{
+		if (constructors.isEmpty()) {
+			return;
+		} 
+		
 		CtConstructor constructor = constructors.get(0);
 		Object[] annotations = constructorAnnotations.get(0);
 
@@ -107,7 +116,7 @@ public class KeywordTranslator implements Translator {
 						String keywordName = arguments[e].split("=")[0];
 
 						// if a subclass hasn't already defined a default value
-						if (!defaultValues.contains(keywordName)) {
+						if (!defaultValues.contains(keywordName+"=")) {
 							defaultValues += arguments[e]+";";
 
 							if (!argumentNames.contains(keywordName)) {

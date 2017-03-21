@@ -116,13 +116,13 @@ public class KeywordTranslator implements Translator {
 						String keywordName = arguments[e].split("=")[0];
 
 						// if a subclass hasn't already defined a default value
-						if (!defaultValues.contains(keywordName+"=")) {
+						//if (!defaultValues.contains(keywordName+"=")) {
 							defaultValues += arguments[e]+";";
 
 							if (!argumentNames.contains(keywordName)) {
 								argumentNames += keywordName + " ";
 							}
-						}
+						//}
 					} else if (!argumentNames.contains(arguments[e])) {
 						argumentNames += arguments[e] + " ";
 					}

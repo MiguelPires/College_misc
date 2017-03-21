@@ -5,7 +5,7 @@ public class AssignWidget {
 	int b;
 	Integer ig;
 
-	@KeywordArgs("a=1,b=a,ig=new Integer(3)")
+	@KeywordArgs("a=1,b=a,a=2,ig=new Integer(3)")
 	public AssignWidget(Object... args) {}
 
 	public String toString() {

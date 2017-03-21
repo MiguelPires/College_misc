@@ -1,14 +1,14 @@
 import ist.meic.pa.KeyConstructorExtended.KeywordArgsExtended;
 
 public class RepeatedWidget {
-	int firstNum;
-	int secondNum;
+	int a;
+	int b;
 
-	@KeywordArgsExtended("firstNum=1,secondNum=firstNum,firstNum=2")
+	@KeywordArgsExtended("a=1,b=a,a=2")
 	public RepeatedWidget(Object... args) {}
 
 	public String toString() {
-		return String.format("firstNum: %s, secondNum: %s",
-				firstNum, secondNum);
+		return String.format("a: %s, b: %s",
+				a, b);
 	}
 }

@@ -3,6 +3,6 @@ public class TestRepeated {
 		System.err.println(new RepeatedWidget());
 		System.err.println(new RepeatedWidget("firstNum", 9));
 		System.err.println(new RepeatedWidget("firstNum", 9));
-		System.err.println(new RepeatedWidget("firstNum", 5, "second", 4));
+		System.err.println(new RepeatedWidget("firstNum", 5, "secondNum", 4));
 	}
 }

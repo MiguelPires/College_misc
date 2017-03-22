@@ -4,15 +4,13 @@
 We consider an \emph{asynchronous} system in which
 a set of $n \in \mathbb{N}$ processes communicate by 
 \emph{sending} and \emph{receiving} messages.
-% 
-
 Any operation $O_i$ begins with an \emph{invocation} by a process $p_i$ followed by a \emph{response
-function} $r_i$. 
+function} $r_i$.
 
 \vspace{1mm}\noindent\textbf{Executions, histories and configurations.}
-An \emph{step} of an operation $O_i$
+An \emph{step} of an operation $O_i$ invoked by process $p_i$
 is an invocation or response of $O_i$ or a 
-primitive applied by $O_i$
+\emph{primitive} applied by $O_i$
 along with its response.
 
 A \emph{configuration} (of an implementation) specifies the state of each process.

@@ -50,7 +50,33 @@ public class ExtendedKeywordTranslator implements Translator {
 			cc = cc.getSuperclass();
 		} while (cc != null);
 
-		setBehaviorBody(objectParamMethods, methodAnnotations, false);
+
+		setMethodBody(objectParamMethods, methodAnnotations);
+	}
+
+	private void setMethodBody(List<CtBehavior> behaviors, List<Object[]> behaviorAnnotations) throws CannotCompileException{
+		if (behaviors.isEmpty()) {
+			return;
+		} 
+		
+		CtBehavior behavior = behaviors.get(0);
+		Object[] annotations = behaviorAnnotations.get(0);
+
+		// TODO: what if a constructor has multiple annotations
+		if (annotations.length == 1 && annotations[0] instanceof KeywordArgsExtended) {
+			String[] defaultsAndKeywords = methodDefaultsAndKeywords(behaviorAnnotations);
+			System.out.println("M: "+defaultsAndKeywords[0]);
+
+			behavior.setBody("{"+
+				defaultsAndKeywords[0] +
+				"for (int i = 0; i < $1.length; i+=2) {" +
+				"	String keyword = (String) $1[i]; " +
+				"	if (!\""+defaultsAndKeywords[1]+"\".contains(keyword)) {" +
+				"		throw new java.lang.RuntimeException(\"Unrecognized keyword: \"+keyword); " +
+				"	}" +
+				"}" +
+			"}");
+		}
 	}
 
 	private void translateConstructor(ClassPool pool, String className) throws NotFoundException, CannotCompileException {
@@ -72,10 +98,10 @@ public class ExtendedKeywordTranslator implements Translator {
 			}
 		} while (cc != null);
 
-		setBehaviorBody(constructors, constructorAnnotations, true);
+		setConstructorBody(constructors, constructorAnnotations, true);
 	}
 
-	private void setBehaviorBody(List<CtBehavior> behaviors, List<Object[]> behaviorAnnotations, boolean constructor) throws CannotCompileException{
+	private void setConstructorBody(List<CtBehavior> behaviors, List<Object[]> behaviorAnnotations, boolean constructor) throws CannotCompileException{
 		if (behaviors.isEmpty()) {
 			return;
 		} 
@@ -142,7 +168,9 @@ public class ExtendedKeywordTranslator implements Translator {
 		String defaultValues = "";
 		String argumentNames = "";
 
-		for (Object[] annotations : methodAnnotations) {
+		for (int i = methodAnnotations.size()-1; i >= 0; --i) {
+			Object[] annotations = methodAnnotations.get(i);
+
 			if (annotations.length == 1 && annotations[0] instanceof KeywordArgsExtended) {
 				String annotationValue = ((KeywordArgsExtended) annotations[0]).value();
 				String[] arguments = annotationValue.split(",");
@@ -169,5 +197,45 @@ public class ExtendedKeywordTranslator implements Translator {
 		}
 
 		return new String[] {defaultValues, argumentNames};
+	}
+
+		// returns an array with 2 strings: one with the default values and 
+	// another with the respective keywords
+	private String[] methodDefaultsAndKeywords(List<Object[]> methodAnnotations) {
+
+		String defaultValues = "";
+		String argumentNames = "";
+		String declarations = "";
+
+		for (Object[] annotations : methodAnnotations) {
+			if (annotations.length == 1 && annotations[0] instanceof KeywordArgsExtended) {
+				String annotationValue = ((KeywordArgsExtended) annotations[0]).value();
+				String[] arguments = annotationValue.split(",");
+
+				for (int e = 0; e < arguments.length; ++e) {
+
+					// this keyword has a default value
+					if (arguments[e].contains("=")) {
+						String keywordName = arguments[e].split("=")[0];
+
+						// if a subclass hasn't already defined a default value
+						//if (!defaultValues.contains(keywordName+"=")) {
+							defaultValues += arguments[e]+";";
+
+							if (!argumentNames.contains(keywordName)) {
+								argumentNames += keywordName + " ";
+								declarations += "Object "+keywordName+";";
+							}
+						//}
+					} else if (!argumentNames.contains(arguments[e])) {
+						argumentNames += arguments[e] + " ";
+						declarations += "Object "+arguments[e]+";";
+					}
+				}
+			}
+		}
+
+		
+		return new String[] {declarations+defaultValues, argumentNames};
 	}
 }

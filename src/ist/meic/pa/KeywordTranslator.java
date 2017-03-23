@@ -100,7 +100,6 @@ public class KeywordTranslator implements Translator {
 	// returns an array with: a string with the default values and 
 	// a list of respective keywords
 	private Object[] defaultsAndKeywords(List<Object[]> constructorAnnotations) {
-
 		String defaultValues = "";
 		List<String> argumentNames = new ArrayList<String>();
 
@@ -172,6 +171,5 @@ public class KeywordTranslator implements Translator {
 
 		annotValues.add(value);
 		return annotValues;
-
 	}
 }

@@ -7,10 +7,12 @@ public class MethodWidget2 {
 	@KeywordArgsExtended("a=1,b=2")
 	public MethodWidget2(Object... args) {}
 
-	@KeywordArgsExtended("c=8,d=9")
+	@KeywordArgsExtended("c=new Integer(8),d=new Integer(9)")
 	public void someCall(Object... args){
-		Object c = null, d = null;
+		Object c = 0;
+		Object d = 0;
 		System.out.println("c: "+c+", d: "+d);
+		
 	}
 	
 	public String toString() {

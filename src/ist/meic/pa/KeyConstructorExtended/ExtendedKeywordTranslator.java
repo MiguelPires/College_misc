@@ -67,27 +67,29 @@ public class ExtendedKeywordTranslator implements Translator {
 
 		// TODO: what if a constructor has multiple annotations
 		if (annotations.length == 1 && annotations[0] instanceof KeywordArgsExtended) {
-			Object[] defaultsAndKeywords = methodDefaultsAndKeywords(behaviorAnnotations);		
+			List<String> keywords = getKeywords(behaviorAnnotations);
+			String defaults = getDefaults(behaviorAnnotations);
+
 			int startLineNo = method.getMethodInfo().getLineNumber(0);
+			
+//			(new InstructionPrinter(new java.io.PrintStream(System.out))).print(method);
 
 			method.instrument(new ExprEditor() {
 				private boolean instrumented = false;
 
 				public void edit(MethodCall e) throws CannotCompileException {
 
-				    if (!instrumented && e.getLineNumber() == startLineNo+2) {			    	
+				    if (!instrumented && e.getLineNumber() == startLineNo+keywords.size()+1) {			    	
 				    	String variableAssignement = ""; 
-						for (String keyword : (List<String>) defaultsAndKeywords[1]) {
+						for (String keyword : keywords) {
 							variableAssignement += 
 							"if (\""+keyword+"\".equals(keyword)) { " +
-							//"	System.out.println(\"AAA \"+instanceof(args[i+1]));"+
-							//"System.out.println(\"C: \"+((Object) args[i+1]).getClass().getName());"+
-							"	"+keyword +" = ((Object) args[i+1]);"+//.getClass().cast(args[i+1]); " +
+							"	"+keyword +" = ((Object) args[i+1]);" +
 							"} "+"\n";
 						}
 						
 						// build defaults
-						String[] defaults = ((String) defaultsAndKeywords[0]).split(";");
+						/*String[] defaults = ((String) defaultsAndKeywords[0]).split(";");
 						String declaredDefaults = "";
 
 						for (String def : defaults) {
@@ -108,18 +110,18 @@ public class ExtendedKeywordTranslator implements Translator {
 							"	case \"java.lang.Double\": "+
 							"		"+ defVar +" = new Double("+defValue+");" +
 							"		break;" +
-							";\n";*/
+							";\n";
 							//defaults += def.split("=")[0] + " = ("+
 						}
 						//	"	"+keyword +" = new  ((Object) args[i+1]).getClass().cast(args[i+1]); " +
 
-/*						System.out.println("ASD  "+variableAssignement);
-						System.out.println("ASD  "+declaredDefaults);*/
+						System.out.println("ASD  "+variableAssignement);
+						System.out.println("ASD  "+defaultsAndKeywords[0]);*/
 
-   					    e.replace(defaultsAndKeywords[0]+
+   					    e.replace(defaults+
 							"for (int i = 0; i < args.length; i+=2) {" +
 							"	String keyword = (String) args[i]; " +
-							"	if (!\""+defaultsAndKeywords[1]+"\".contains(keyword)) {" +
+							"	if (!\""+keywords+"\".contains(keyword)) {" +
 							"		throw new java.lang.RuntimeException(\"Unrecognized keyword: \"+keyword); " +
 							"	} else {" +
 							variableAssignement +
@@ -168,14 +170,15 @@ public class ExtendedKeywordTranslator implements Translator {
 
 		// TODO: what if a constructor has multiple annotations
 		if (annotations.length == 1 && annotations[0] instanceof KeywordArgsExtended) {
-			Object[] defaultsAndKeywords = defaultsAndKeywords(constructorAnnotations);
+			String defaults = getDefaults(constructorAnnotations);
+			List<String> keywords = getKeywords(constructorAnnotations);
 
 			constructor.setBody("{"+
 				buildSuperCall(constructors) +
-				defaultsAndKeywords[0] +
+				defaults +
 				"for (int i = 0; i < $1.length; i+=2) {" +
 				"	String keyword = (String) $1[i]; " +
-				"	if (!\""+defaultsAndKeywords[1]+"\".contains(keyword)) {" +
+				"	if (!\""+keywords+"\".contains(keyword)) {" +
 				"		throw new java.lang.RuntimeException(\"Unrecognized keyword: \"+keyword); " +
 				"	}" +
 				"	java.lang.Class searchInClass = $class; " +
@@ -217,79 +220,54 @@ public class ExtendedKeywordTranslator implements Translator {
 		}
 	}
 
-	// returns an array with 2 strings: one with the default values and 
-	// another with the respective keywords
-	private Object[] methodDefaultsAndKeywords(List<Object[]> methodAnnotations) {
+	// returns a string with the default values 
+	private String getDefaults(List<Object[]> behaviorAnnotations) {
 		String defaultValues = "";
 		List<String> argumentNames = new ArrayList<String>();
 
-		for (Object[] annotations : methodAnnotations) {
+		for (int i = behaviorAnnotations.size()-1; i >= 0; --i) {
+			Object[] annotations = behaviorAnnotations.get(i);
+
 			if (annotations.length == 1 && annotations[0] instanceof KeywordArgsExtended) {
 				String annotationValue = ((KeywordArgsExtended) annotations[0]).value();
-				List<String> arguments = splitAnnotation(annotationValue);
+				List<String> separateAnnotations = splitAnnotation(annotationValue);
 
-				for (int e = 0; e < arguments.size(); ++e) {
-					String annotPart = arguments.get(e);
-
+				for (String annotation : separateAnnotations) {
 					// this keyword has a default value
-					if (annotPart.contains("=")) {
-						String keywordName = annotPart.split("=")[0];
+					if (annotation.contains("=")) {
+						defaultValues += annotation+";";
+					} 
+				}
+			}
+		}
 
-						// if a subclass hasn't already defined a default value
-						//if (!defaultValues.contains(keywordName+"=")) {
-							defaultValues += annotPart+";";
+		return defaultValues;
+	}
 
-							if (!argumentNames.contains(keywordName)) {
-								argumentNames.add(keywordName);
-							}
-						//}
-					} else if (!argumentNames.contains(annotPart)) {
-						argumentNames.add(annotPart);
+	private List<String> getKeywords(List<Object[]> behaviorAnnotations) {
+		List<String> argumentNames = new ArrayList<String>();
+
+		for (Object[] annotations : behaviorAnnotations) {
+			if (annotations.length == 1 && annotations[0] instanceof KeywordArgsExtended) {
+				String annotationValue = ((KeywordArgsExtended) annotations[0]).value();
+				List<String> separateAnnotations = splitAnnotation(annotationValue);
+
+				for (String annotation : separateAnnotations) {
+					// this keyword has a default value
+					if (annotation.contains("=")) {
+						String keywordName = annotation.split("=")[0];
+
+						if (!argumentNames.contains(keywordName)) {
+							argumentNames.add(keywordName);
+						}
+					} else if (!argumentNames.contains(annotation)) {
+						argumentNames.add(annotation);
 					}
 				}
 			}
 		}
 		
-		return new Object[] {defaultValues, argumentNames};
-	}
-
-	// returns an array with: a string with the default values and 
-	// a list of respective keywords
-	private Object[] defaultsAndKeywords(List<Object[]> constructorAnnotations) {
-
-		String defaultValues = "";
-		List<String> argumentNames = new ArrayList<String>();
-
-		for (int i = constructorAnnotations.size()-1; i >= 0; --i) {
-			Object[] annotations = constructorAnnotations.get(i);
-
-			if (annotations.length == 1 && annotations[0] instanceof KeywordArgsExtended) {
-				String annotationValue = ((KeywordArgsExtended) annotations[0]).value();
-				List<String> arguments = splitAnnotation(annotationValue);
-
-				for (int e = 0; e < arguments.size(); ++e) {
-					String annotPart = arguments.get(e);
-
-					// this keyword has a default value
-					if (annotPart.contains("=")) {
-						String keywordName = annotPart.split("=")[0];
-
-						// if a subclass hasn't already defined a default value
-						//if (!defaultValues.contains(keywordName+"=")) {
-							defaultValues += annotPart+";";
-
-							if (!argumentNames.contains(keywordName)) {
-								argumentNames.add(keywordName);
-							}
-						//}
-					} else if (!argumentNames.contains(annotPart)) {
-						argumentNames.add(annotPart);
-					}
-				}
-			}
-		}
-
-		return new Object[] {defaultValues, argumentNames};
+		return argumentNames;
 	}
 
 	// TODO: adicionar suporte para caracteres especiais dentro de strings

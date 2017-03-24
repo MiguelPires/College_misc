@@ -1,17 +1,17 @@
 import ist.meic.pa.KeyConstructorExtended.KeywordArgsExtended;
 
-public class MethodWidget2 {
+public class PrimitiveMethodWidget {
 	int a;
 	int b;
 
 	@KeywordArgsExtended("a=1,b=2")
-	public MethodWidget2(Object... args) {}
+	public PrimitiveMethodWidget(Object... args) {}
 
-	@KeywordArgsExtended("c=new Integer(8),d=new Integer(9),e=new Float(3.3)")
+	@KeywordArgsExtended("c=8,d=9,e=-0.5,e=3.3")
 	public void someCall(Object... args){
-		Object c = 0;
-		Object d = 0;
-		Object e = 1;
+		Object c = 1;
+		Object d = 2;
+		Object e = 3;
 
 		System.out.println("c: "+c+", d: "+d +", e: "+e);		
 	}

@@ -5,6 +5,7 @@ import javassist.*;
 import javassist.expr.*;
 import java.util.*;
 import javassist.bytecode.*;
+import java.util.regex.Pattern;
 
 public class ExtendedKeywordTranslator implements Translator {
 
@@ -72,53 +73,43 @@ public class ExtendedKeywordTranslator implements Translator {
 
 			int startLineNo = method.getMethodInfo().getLineNumber(0);
 			
-//			(new InstructionPrinter(new java.io.PrintStream(System.out))).print(method);
+			//(new InstructionPrinter(new java.io.PrintStream(System.out))).print(method);
 
 			method.instrument(new ExprEditor() {
 				private boolean instrumented = false;
 
 				public void edit(MethodCall e) throws CannotCompileException {
-
 				    if (!instrumented && e.getLineNumber() == startLineNo+keywords.size()+1) {			    	
 				    	String variableAssignement = ""; 
 						for (String keyword : keywords) {
 							variableAssignement += 
 							"if (\""+keyword+"\".equals(keyword)) { " +
-							"	"+keyword +" = ((Object) args[i+1]);" +
+							"	"+keyword +" = args[i+1];" +
 							"} "+"\n";
 						}
 						
 						// build defaults
-						/*String[] defaults = ((String) defaultsAndKeywords[0]).split(";");
+						String[] separatedDefaults = defaults.split(";");
 						String declaredDefaults = "";
 
-						for (String def : defaults) {
+						for (String def : separatedDefaults) {
 							String[] defParts = def.split("=");
 							String defVar = defParts[0].trim();
 							String defValue = defParts[1].trim();
 
-							/*Float.parseFloat()
-							declaredDefaults += 
-							"String typeName = ((Object) "+defValue+").getClass().getName();" +
-							"switch(typeName) { " +
-							"	case \"java.lang.Integer\": " +
-							"		"+ defVar +" = new Integer("+defValue+");" +
-							"		break;" +
-							"	case \"java.lang.Float\": "+
-							"		"+ defVar +" = new Float("+defValue+");" +
-							"		break;" +
-							"	case \"java.lang.Double\": "+
-							"		"+ defVar +" = new Double("+defValue+");" +
-							"		break;" +
-							";\n";
-							//defaults += def.split("=")[0] + " = ("+
+							if (Pattern.matches("[+-]*[0-9]+.[0-9]+", defValue)) {
+								declaredDefaults += defVar +" = Double.valueOf(\""+defValue+"\");";
+							} else if (Pattern.matches("[+-]*[0-9]+", defValue)) {
+								declaredDefaults += defVar +" = Integer.valueOf(\""+defValue+"\");";
+							} else {
+								declaredDefaults += def+";";
+							}
 						}
-						//	"	"+keyword +" = new  ((Object) args[i+1]).getClass().cast(args[i+1]); " +
 
-						System.out.println("ASD  "+variableAssignement);
-						System.out.println("ASD  "+defaultsAndKeywords[0]);*/
+						//System.out.println("ASD  "+variableAssignement);
+						//System.out.println("ASD  "+declaredDefaults);
 
-   					    e.replace(defaults+
+   					    e.replace(declaredDefaults+
 							"for (int i = 0; i < args.length; i+=2) {" +
 							"	String keyword = (String) args[i]; " +
 							"	if (!\""+keywords+"\".contains(keyword)) {" +

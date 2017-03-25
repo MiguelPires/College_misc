@@ -80,9 +80,9 @@ public class ExtendedKeywordTranslator implements Translator {
 
 				public void edit(MethodCall e) throws CannotCompileException {
 				    if (!instrumented && e.getLineNumber() == startLineNo+keywords.size()+1) {			    	
-				    	String variableAssignement = ""; 
+				    	String variableAssignment = ""; 
 						for (String keyword : keywords) {
-							variableAssignement += 
+							variableAssignment += 
 							"if (\""+keyword+"\".equals(keyword)) { " +
 							"	"+keyword +" = args[i+1];" +
 							"} "+"\n";
@@ -106,7 +106,7 @@ public class ExtendedKeywordTranslator implements Translator {
 							}
 						}
 
-						//System.out.println("ASD  "+variableAssignement);
+						//System.out.println("ASD  "+variableAssignment);
 						//System.out.println("ASD  "+declaredDefaults);
 
    					    e.replace(declaredDefaults+
@@ -115,14 +115,30 @@ public class ExtendedKeywordTranslator implements Translator {
 							"	if (!\""+keywords+"\".contains(keyword)) {" +
 							"		throw new java.lang.RuntimeException(\"Unrecognized keyword: \"+keyword); " +
 							"	} else {" +
-							variableAssignement +
+							variableAssignment +
 							" 	}" +
 							"}" +
    					    	"$_ = $proceed($$);"
 						);
 
+						// Access the code attribute
+						CodeAttribute codeAttribute = method.getMethodInfo().getCodeAttribute();
+					    LineNumberAttribute lineNumberAttribute = (LineNumberAttribute) 
+					    codeAttribute.getAttribute(LineNumberAttribute.tag);
+
+					    // get the program counters for the source declarations
+					    int startPc = lineNumberAttribute.toStartPc(startLineNo);
+					    int endPc = lineNumberAttribute.toStartPc(startLineNo+keywords.size()+1);
+						
+						// ignore the previous declarations
+						byte[] code = codeAttribute.getCode();
+						for (int i = startPc; i < endPc; i++) {
+						   code[i] = CodeAttribute.NOP;
+						}
+
 						instrumented = true;
 				    }
+
 				}
 			});
 			//(new InstructionPrinter(new java.io.PrintStream(System.out))).print(method);

@@ -26,7 +26,6 @@ public class KeywordTranslator implements Translator {
 				constructorAnnotations.add(objectArrayConstr.getAnnotations());
 				cc = cc.getSuperclass();
 			} catch (ClassNotFoundException | NotFoundException e) {
-			//	System.out.println("Not found");
 				break;
 			}
 		} while (cc != null);
@@ -46,28 +45,25 @@ public class KeywordTranslator implements Translator {
 		CtConstructor constructor = constructors.get(0);
 		Object[] annotations = constructorAnnotations.get(0);
 
-		// TODO: what if a constructor has multiple annotations
 		if (annotations.length == 1 && annotations[0] instanceof KeywordArgs) {
-			Object[] defaultsAndKeywords = defaultsAndKeywords(constructorAnnotations);
+			String defaults = getDefaults(constructorAnnotations);
+			List<String> keywords = getKeywords(constructorAnnotations);
 
 			constructor.setBody("{"+
 				buildSuperCall(constructors) + 
-				defaultsAndKeywords[0] + 
+				defaults + 
 				"for (int i = 0; i < $1.length; i+=2) {" + 
 				"	String keyword = (String) $1[i]; " + 
-				"	if (!\""+defaultsAndKeywords[1]+"\".contains(keyword)) {" + 
+				"	if (!\""+keywords+"\".contains(keyword)) {" + 
 				"		throw new java.lang.RuntimeException(\"Unrecognized keyword: \"+keyword); " + 
 				"	}" + 
 				"	java.lang.Class searchInClass = $class; " + 
 				"	while (searchInClass != null) { " + 
-				//"		System.out.println(\"Searching for \"+$1[i]+\" in \"+searchInClass);"+
 				"		try { " + 
 				"			java.lang.reflect.Field field = searchInClass.getDeclaredField(keyword);" + 
 				"			field.set(this, $1[i+1]);" +
-				//"			System.out.println(\"Setting \"+$1[i]+\" to \"+$1[i+1]); "+
 				"			break;" + 
 				" 		} catch (NoSuchFieldException e) { " +
-				//"			System.out.println(\"Didn't find \"+$1[i]+\" in \"+searchInClass.getName());"+
 				"			searchInClass = searchInClass.getSuperclass();" + 
 				"		}" +
 				"	}" +
@@ -97,44 +93,61 @@ public class KeywordTranslator implements Translator {
 		}
 	}
 
-	// returns an array with: a string with the default values and 
-	// a list of respective keywords
-	private Object[] defaultsAndKeywords(List<Object[]> constructorAnnotations) {
+
+	// receives a list of annotations and returns a string with the default
+	// assignments contained in it
+	private String getDefaults(List<Object[]> behaviorAnnotations) {
 		String defaultValues = "";
 		List<String> argumentNames = new ArrayList<String>();
 
-		for (int i = constructorAnnotations.size()-1; i >= 0; --i) {
-			Object[] annotations = constructorAnnotations.get(i);
+		for (int i = behaviorAnnotations.size()-1; i >= 0; --i) {
+			Object[] annotations = behaviorAnnotations.get(i);
 
 			if (annotations.length == 1 && annotations[0] instanceof KeywordArgs) {
 				String annotationValue = ((KeywordArgs) annotations[0]).value();
-				List<String> arguments = splitAnnotation(annotationValue);
+				List<String> separateAnnotations = splitAnnotation(annotationValue);
 
-				for (int e = 0; e < arguments.size(); ++e) {
-					String annotPart = arguments.get(e);
-
+				for (String annotation : separateAnnotations) {
 					// this keyword has a default value
-					if (annotPart.contains("=")) {
-						String keywordName = annotPart.split("=")[0];
-
-						// if a subclass hasn't already defined a default value
-						//if (!defaultValues.contains(keywordName+"=")) {
-							defaultValues += annotPart+";";
-
-							if (!argumentNames.contains(keywordName)) {
-								argumentNames.add(keywordName);
-							}
-						//}
-					} else if (!argumentNames.contains(annotPart)) {
-						argumentNames.add(annotPart);
-					}
+					if (annotation.contains("=")) {
+						defaultValues += annotation+";";
+					} 
 				}
 			}
 		}
 
-		return new Object[] {defaultValues, argumentNames};
+		return defaultValues;
 	}
 
+	// receives a list of annotations and returns all keywords declared in it
+	private List<String> getKeywords(List<Object[]> behaviorAnnotations) {
+		List<String> argumentNames = new ArrayList<String>();
+
+		for (Object[] annotations : behaviorAnnotations) {
+			if (annotations.length == 1 && annotations[0] instanceof KeywordArgs) {
+				String annotationValue = ((KeywordArgs) annotations[0]).value();
+				List<String> separateAnnotations = splitAnnotation(annotationValue);
+
+				for (String annotation : separateAnnotations) {
+					// this keyword has a default value
+					if (annotation.contains("=")) {
+						String keywordName = annotation.split("=")[0];
+
+						if (!argumentNames.contains(keywordName)) {
+							argumentNames.add(keywordName);
+						}
+					} else if (!argumentNames.contains(annotation)) {
+						argumentNames.add(annotation);
+					}
+				}
+			}
+		}
+		
+		return argumentNames;
+	}
+
+	// splits the annotation value according to the "," separator
+	// if the "," doesn't belong a method call
 	private List<String> splitAnnotation(String annotation) {
 		List<String> annotValues = new ArrayList<String>();
 		String value = "";

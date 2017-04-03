@@ -1,3 +1,5 @@
+package test;
+
 import ist.meic.pa.KeywordArgs;
 
 class Widget {

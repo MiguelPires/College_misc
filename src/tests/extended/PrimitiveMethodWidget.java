@@ -1,3 +1,5 @@
+package test.extended;
+
 import ist.meic.pa.KeyConstructorExtended.KeywordArgsExtended;
 
 public class PrimitiveMethodWidget {

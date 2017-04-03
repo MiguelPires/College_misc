@@ -1,3 +1,4 @@
+package test;
 public class TestA {
 	public static void main(String[] args) {
 		System.err.println(new Widget());

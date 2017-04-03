@@ -1,3 +1,4 @@
+package test;
 public class TestE {
 	public static void main(String[] args) {
 		System.err.println(new MixKeys());

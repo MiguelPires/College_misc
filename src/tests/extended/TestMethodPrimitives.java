@@ -1,3 +1,4 @@
+package test.extended;
 public class TestMethodPrimitives {
 	public static void main(String[] args) {
 		System.err.println(new PrimitiveMethodWidget());

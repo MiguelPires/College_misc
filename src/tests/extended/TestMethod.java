@@ -1,3 +1,4 @@
+package test.extended;
 public class TestMethod {
 	public static void main(String[] args) {
 		System.err.println(new MethodWidget());

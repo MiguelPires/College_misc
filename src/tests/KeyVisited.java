@@ -1,3 +1,5 @@
+package test;
+
 import ist.meic.pa.KeywordArgs;
 
 public class KeyVisited extends KeyPlaces {

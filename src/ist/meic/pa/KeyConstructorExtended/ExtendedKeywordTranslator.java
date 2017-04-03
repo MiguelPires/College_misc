@@ -29,7 +29,6 @@ public class ExtendedKeywordTranslator implements Translator {
 			return;
 		}
 
-
 		CtClass objectParam = pool.get("java.lang.Object[]");
 		List<Object[]> methodAnnotations = new ArrayList<Object[]>();
 		List<CtMethod> objectParamMethods = new ArrayList<CtMethod>();
@@ -66,15 +65,12 @@ public class ExtendedKeywordTranslator implements Translator {
 		CtMethod method = methods.get(0);
 		Object[] annotations = behaviorAnnotations.get(0);
 
-		// TODO: what if a constructor has multiple annotations
 		if (annotations.length == 1 && annotations[0] instanceof KeywordArgsExtended) {
 			List<String> keywords = getKeywords(behaviorAnnotations);
 			String defaults = getDefaults(behaviorAnnotations);
 
 			int startLineNo = method.getMethodInfo().getLineNumber(0);
 			
-			//(new InstructionPrinter(new java.io.PrintStream(System.out))).print(method);
-
 			method.instrument(new ExprEditor() {
 				private boolean instrumented = false;
 
@@ -88,15 +84,16 @@ public class ExtendedKeywordTranslator implements Translator {
 							"} "+"\n";
 						}
 						
-						// build defaults
 						String[] separatedDefaults = defaults.split(";");
 						String declaredDefaults = "";
 
+						// aggregate default declarations
 						for (String def : separatedDefaults) {
 							String[] defParts = def.split("=");
 							String defVar = defParts[0].trim();
 							String defValue = defParts[1].trim();
 
+							// it may be necessary to perform boxing of primitive types
 							if (Pattern.matches("[+-]*[0-9]+.[0-9]+", defValue)) {
 								declaredDefaults += defVar +" = Double.valueOf(\""+defValue+"\");";
 							} else if (Pattern.matches("[+-]*[0-9]+", defValue)) {
@@ -105,9 +102,6 @@ public class ExtendedKeywordTranslator implements Translator {
 								declaredDefaults += def+";";
 							}
 						}
-
-						//System.out.println("ASD  "+variableAssignment);
-						//System.out.println("ASD  "+declaredDefaults);
 
    					    e.replace(declaredDefaults+
 							"for (int i = 0; i < args.length; i+=2) {" +
@@ -141,7 +135,6 @@ public class ExtendedKeywordTranslator implements Translator {
 
 				}
 			});
-			//(new InstructionPrinter(new java.io.PrintStream(System.out))).print(method);
 		}
 	}
 
@@ -159,7 +152,6 @@ public class ExtendedKeywordTranslator implements Translator {
 				constructorAnnotations.add(objectArrayConstr.getAnnotations());
 				cc = cc.getSuperclass();
 			} catch (ClassNotFoundException | NotFoundException e) {
-			//	System.out.println("Not found");
 				break;
 			}
 		} while (cc != null);
@@ -175,7 +167,6 @@ public class ExtendedKeywordTranslator implements Translator {
 		CtBehavior constructor = constructors.get(0);
 		Object[] annotations = constructorAnnotations.get(0);
 
-		// TODO: what if a constructor has multiple annotations
 		if (annotations.length == 1 && annotations[0] instanceof KeywordArgsExtended) {
 			String defaults = getDefaults(constructorAnnotations);
 			List<String> keywords = getKeywords(constructorAnnotations);
@@ -190,14 +181,11 @@ public class ExtendedKeywordTranslator implements Translator {
 				"	}" +
 				"	java.lang.Class searchInClass = $class; " +
 				"	while (searchInClass != null) { " +
-				//"		System.out.println(\"Searching for \"+$1[i]+\" in \"+searchInClass);"+
 				"		try { " + 
 				"			java.lang.reflect.Field field = searchInClass.getDeclaredField(keyword);" +
 				"			field.set(this, $1[i+1]);" +
-				//"			System.out.println(\"Setting \"+$1[i]+\" to \"+$1[i+1]); "+
 				"			break;" +
 				" 		} catch (NoSuchFieldException e) { " +
-				//"			System.out.println(\"Didn't find \"+$1[i]+\" in \"+searchInClass.getName());"+
 				"			searchInClass = searchInClass.getSuperclass();" +
 				"		}" +
 				"	}" +
@@ -227,7 +215,8 @@ public class ExtendedKeywordTranslator implements Translator {
 		}
 	}
 
-	// returns a string with the default values 
+	// receives a list of annotations and returns a string with the default
+	// assignments contained in it
 	private String getDefaults(List<Object[]> behaviorAnnotations) {
 		String defaultValues = "";
 		List<String> argumentNames = new ArrayList<String>();
@@ -251,6 +240,7 @@ public class ExtendedKeywordTranslator implements Translator {
 		return defaultValues;
 	}
 
+	// receives a list of annotations and returns all keywords declared in it
 	private List<String> getKeywords(List<Object[]> behaviorAnnotations) {
 		List<String> argumentNames = new ArrayList<String>();
 
@@ -277,7 +267,8 @@ public class ExtendedKeywordTranslator implements Translator {
 		return argumentNames;
 	}
 
-	// TODO: adicionar suporte para caracteres especiais dentro de strings
+	// splits the annotation value according to the "," separator
+	// if the "," doesn't belong a method call
 	private List<String> splitAnnotation(String annotation) {
 		List<String> annotValues = new ArrayList<String>();
 		String value = "";
@@ -314,6 +305,5 @@ public class ExtendedKeywordTranslator implements Translator {
 
 		annotValues.add(value);
 		return annotValues;
-
 	}
 }

@@ -5,7 +5,7 @@
 
 	<target name="clean">
 		<delete dir="classes" failonerror="false"/>
-		<delete file="keyword.jar" failonerror="false"/>
+		<delete file="keyConstructors.jar" failonerror="false"/>
 	</target>
 	
 	<target name="compile" depends="init">
@@ -20,12 +20,12 @@
 	</target>
 
 	<target name="jar" depends="compile">
-		<jar destfile="./keyConstructors.jar" basedir="classes">
-			<zipgroupfileset dir="lib" includes="*.jar"/>
+		<jar destfile="./keyConstructors.jar" basedir="classes" >
+			<zipgroupfileset dir="lib" includes="*.jar" excludes="classes/test/*"/>
 			<manifest>
-    			<!--<attribute name="Main-Class" value="ist.meic.pa.KeyConstructors"/>-->
-    			<attribute name="Main-Class" value="ist.meic.pa.KeyConstructorExtended.KeyConstructorsExtended"/>
-  			</manifest>
+				<attribute name="Main-Class" value="ist.meic.pa.KeyConstructors"/>
+				<!--<attribute name="Main-Class" value="ist.meic.pa.KeyConstructorExtended.KeyConstructorsExtended"/>-->
+			</manifest>
 		</jar>
 	</target>
 	

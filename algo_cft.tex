@@ -62,17 +62,35 @@
 		\EndFunction
 		
 		\State
-		\Function{proved\_safe}{Q, m}
-		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
-		\State $RS = \{R \in k$-$quorum\ |\ \forall a \in R \cap Q : val_a[k] \neq null\}$;
-		\State $\gamma(R) = \sqcap \{v_a[k]\ |\ a \in Q \cap R \}$;
-		\State $\Gamma = \{\gamma(R)\ |\ R \in RS \}$;
-		\State
-		\If{$RS = \varnothing$}
-		\State \textbf{return} $\{val_a[k]\ |\ (a \in Q) \wedge (val_a[k] \neq null)\}$;
-		\Else
-		\State \textbf{return} $\sqcup \Gamma$;
+		\Function{proved\_safe}{$ballot$}
+		\State $maxTried = \bot$;
+		\State \textbf{for} $val$ in $message[ballot]$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $maxTried = \bot$ or $\Call{is\_prefix}{val, maxTried}$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $maxTried = val$;
+		\State \textbf{end for}
+		\State \textbf{return} $maxTried$;
+		\EndFunction
+		
+			\State
+		\Function{is\_prefix}{$new\_sequence, old\_sequence$}
+		\If {$\lVert old\_sequence \rVert > \lVert new\_sequence \rVert$}
+		\State \textbf{return} \textit{false};
 		\EndIf
+		
+		\State
+		\item[] outer:	
+		\State \textbf{for} $c_{old}$ in $old\_sequence$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{for} $c_{new}$ in $new\_sequence$ \textbf{do}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $c_{old} = c_{new}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{continue} \textit{outer};
+		
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{else if} !\Call{are\_commutative}{$c_{old}, c_{new}$} \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return} \textit{false};
+		\State \hspace{\algorithmicindent}\textbf{end for}
+		\State \hspace{\algorithmicindent}\textbf{return} \textit{false};
+		\State \textbf{end for}
+		\State
+		\State \textbf{return} \textit{true};
 		\EndFunction
 		
 	\end{algorithmic}

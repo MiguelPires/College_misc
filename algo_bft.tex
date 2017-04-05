@@ -40,8 +40,9 @@
 
 		\State\hspace{\algorithmicindent} \textbf{if} $\#(new\_view) > 2f$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $leader = n\ mod\ new\_ballot$;
+
 		
-				\State
+		\State
 		\Function{is\_prefix}{$new\_sequence, old\_sequence$}
 		\If {$\lVert old\_sequence \rVert > \lVert new\_sequence \rVert$}
 		\State \textbf{return} \textit{false};

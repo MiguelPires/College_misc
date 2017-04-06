@@ -51,16 +51,16 @@
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view = \bot$;
 
 		
-		\State
-		\Function{is\_prefix}{$new\_sequence, old\_sequence$}
-		\If {$\lVert old\_sequence \rVert > \lVert new\_sequence \rVert$}
+		\iffalse\State
+		\Function{is\_prefix}{$extension, prefix$}
+		\If {$\lVert prefix \rVert > \lVert extension \rVert$}
 		\State \textbf{return} \textit{false};
 		\EndIf
 		
 		\State
 		\item[] outer:	
-		\State \textbf{for} $c_{old}$ in $old\_sequence$ \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{for} $c_{new}$ in $new\_sequence$ \textbf{do}
+		\State \textbf{for} $c_{old}$ in $prefix$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{for} $c_{new}$ in $extension$ \textbf{do}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $c_{old} = c_{new}$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{continue} \textit{outer};
 		
@@ -72,6 +72,7 @@
 		\State
 		\State \textbf{return} \textit{true};
 		\EndFunction
+		\fi
 	\end{algorithmic}
 \end{algorithm}
 
@@ -84,9 +85,9 @@
 		\State \hspace{\algorithmicindent} \Call{phase\_1a}{$ $};
 		\State
 		\State \textbf{upon} \textit{receive($p1b, m, bal_a, val_a, digest_{\sigma_p}$)} from acceptor $a_i$ \textbf{do}
-		\State\hspace{\algorithmicindent} $digest = hash(\langle bal_a, val_a \rangle)$;
+		\State \hspace{\algorithmicindent} $digest = hash(\langle bal_a, val_a \rangle)$;
 		\State \hspace{\algorithmicindent} \textbf{if} $m = ballot_l$ and $pubkey_p(digest_{\sigma_p}) = digest$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}  $messages[ballot_l][a_i] = val_a$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}  $messages[ballot_l][a_i] = val_a$;
 		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages) \geq \lceil \frac{N+f}{2}\rceil$ \textbf{then} 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2a}{$ $};
 		\State
@@ -106,12 +107,19 @@
 		
 		\State
 		\Function{proved\_safe}{$ballot$}
-		\State $maxTried = \bot$;
+		\State $last\_value = \bot$;
+		\State $value\_counter = \bot$;
 		\State \textbf{for} $val$ in $message[ballot]$ \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{if} $maxTried = \bot$ or $\Call{is\_prefix}{val, maxTried}$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $maxTried = val$;
+		\State \hspace{\algorithmicindent}\textbf{if} $value\_counter[val] = \bot$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}$value\_counter[val] = 1$;
+		\State \hspace{\algorithmicindent}\textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}$value\_counter[val] = value\_counter[val] + 1$; 
+		\State
+		\State \hspace{\algorithmicindent}\textbf{if} $value\_counter[val] > E$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}$last\_value = val$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{break};
 		\State \textbf{end for}
-		\State \textbf{return} $maxTried$;
+		\State \textbf{return} $last\_value$;
 		\EndFunction
 		
 		\iffalse \State
@@ -159,7 +167,7 @@
 		\State
 		\Function{phase\_2b\_classic}{$ballot, value, digest_{\sigma_l}$}
 		\State $k = max(i\ |\ (i < ballot) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
-		\If {$ballot \geq k$ and $\Call{is\_prefix}{v, val_a}$}
+		\If {$ballot \geq k$}
 		\State $val_a = value$;
 		\State $proof = digest_{\sigma_l}$;
 		\State \Call{send}{$p2b, bal_a, val_a, digest_{\sigma_l}$} to learners;
@@ -185,7 +193,8 @@
 		\State \hspace{\algorithmicindent} $messages[bal][a_i] = val$;
 		\State \hspace{\algorithmicindent} \textbf{if} $fast\_ballot$ and $\#(messages[bal]) \geq N-E$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$VERIFY, bal, val$} to learners;
-		\State \hspace{\algorithmicindent} \textbf{else if} $classic\_ballot$ and $\#(messages[bal]) \geq N-F$
+		\State \hspace{\algorithmicindent} \textbf{else if} $classic\_ballot$ and $\#(messages[bal]) \geq N-F$ and
+		\item[] \hspace{\algorithmicindent}\hspace{\algorithmicindent}$\Call{is\_prefix}{val, learned}$ \textbf{then}
 		\State \hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = learned \sqcup val$;
 		
 		\State 

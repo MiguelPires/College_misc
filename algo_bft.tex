@@ -179,28 +179,31 @@
 
 \begin{algorithm}
 	\caption{Byzantine Generalized Paxos - Learner l}
-	\textbf{Local variables: } $learned = \bot, messages = \bot,\ verificationMessages = \bot,\ ackMessages = \bot$ 
+	\textbf{Local variables: } $learned = \bot, messages = \bot,\ verificationRequests = \bot,\ ackMessages = \bot,\ ack\_values = \bot$ 
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive($p2b, bal, val, [digest_{\sigma_l}]$)} from acceptor $a_i$ \textbf{do}
 		\State \hspace{\algorithmicindent} $messages[bal][a_i] = val$;
-		\State \hspace{\algorithmicindent} \textbf{if} $fast\_ballot$ and $\#(messages[bal]) \geq \frac{3N+f+1}{4}$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$verification, bal, val$} to learners;
-		\State \hspace{\algorithmicindent} \textbf{else if} $classic\_ballot$ and $\#(messages[bal]) \geq \lceil \frac{N+f}{2}\rceil$
+		\State \hspace{\algorithmicindent} \textbf{if} $fast\_ballot$ and $\#(messages[bal]) \geq N-E$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$VERIFY, bal, val$} to learners;
+		\State \hspace{\algorithmicindent} \textbf{else if} $classic\_ballot$ and $\#(messages[bal]) \geq N-F$
 		\State \hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = learned \sqcup val$;
 		
 		\State 
-		\State \textbf{upon} \textit{receive(verification, ballot, value)} from learner \textit{l} \textbf{do}
-		\State \hspace{\algorithmicindent}\textbf{if} $ballot = bal_a$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $verificationMessages[bal_a][value][a] = true$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(verificationMessages[bal_a][value]) > 2f$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \hspace{\algorithmicindent} \Call{send}{$acknowledgment, bal_a, val_a$} to learners;
+		\State \textbf{upon} \textit{receive(VERIFY, ballot, value)} from learner \textit{l} \textbf{do}
+		\State \hspace{\algorithmicindent}\textbf{if} $\Call{conflict}{value, ack\_values}$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{return};
+		\State
+		\State\hspace{\algorithmicindent}$verificationRequests[ballot][value][a] = true$;
+		\State\hspace{\algorithmicindent}\textbf{if} $\#(verificationRequests[ballot][value]) > f$ \textbf{then}
+		\State\hspace{\algorithmicindent} \hspace{\algorithmicindent}	$ack\_values[ballot] = ack\_values[ballot] \bullet value$;
+		\State \hspace{\algorithmicindent} \hspace{\algorithmicindent} \Call{send}{$ACK, ballot, value$} to learners;
 		
 		\State 
-		\State \textbf{upon} \textit{receive(acknowledgment, ballot, value)} from learner \textit{l} \textbf{do}
+		\State \textbf{upon} \textit{receive(ACK, ballot, value)} from learner \textit{l} \textbf{do}
 		\State \hspace{\algorithmicindent}\textbf{if} $ballot = bal_a$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $ackMessages[bal_a][value][a] = true$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(ackMessages[bal_a][value]) > f$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = learned \bullet val$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(ackMessages[bal_a][value]) > 2f$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = learned \bullet val$;
 		
 	\end{algorithmic}
 \end{algorithm}

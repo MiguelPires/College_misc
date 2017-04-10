@@ -85,7 +85,6 @@
 		\State \hspace{\algorithmicindent} \Call{phase\_1a}{$ $};
 		\State
 		\State \textbf{upon} \textit{receive($p1b, m, bal_a, val_a, digest_{\sigma_p}$)} from acceptor $a_i$ \textbf{do}
-		\State \hspace{\algorithmicindent} $digest = hash(\langle bal_a, val_a \rangle)$;
 		\State \hspace{\algorithmicindent} \textbf{if} $m = ballot_l$ and \Call{verifySignatures}{$digest_{\sigma_p}$} \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}  $messages[ballot_l][a_i] = val_a$;
 		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages) \geq \lceil \frac{N+f}{2}\rceil$ \textbf{then} 

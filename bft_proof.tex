@@ -1,8 +1,45 @@
-This section argues for the correctness of the Byzantine Generalized Paxos protocol in terms of the specified consensus properties:\par
+\subsection{Correctness Proofs}
 
+This section argues for the correctness of the Byzantine Generalized Paxos protocol in terms of the specified consensus properties.\par
+
+\subsubsection{Notation}
+\begin{table}[h!]
+	\renewcommand{\arraystretch}{1.5}
+	\centering
+	\begin{tabularx}{\linewidth}{ |c|X|}
+		%\hline
+		%\multicolumn{2}{|c|}{Notation}\\
+		\hline
+		Invariant & Definition \\
+		\hline
+		$learned(l_i,b,s)$ & Learner $l_i$'s $learned$ sequence contains sequence $s$ in the end of ballot $b$  \\
+		\hline
+		$learned(b,s)$ & Every learner's $learned$ sequence contains sequence $s$ in the end of ballot $b$\\
+		\hline
+		$maj\_accepted(b,s)$ & At least $N-f$ acceptors broadcasted their acceptance votes to the learners\\
+		\hline
+		$verified(b,c)$ & At least $N-f$ learners have verified that command $c$ commutes with every other command learned in ballot $b$\\
+		\hline
+	\end{tabularx} 
+	\caption{Proof notation} 
+	\label{table:1}
+\end{table}
+
+\subsubsection{Consistency}
+\begin{theorem}
+At any time and for any two learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences 
+\end{theorem} \label{C-T1}
+\textbf{Proof:} By Lemma \ref{C-L2}, $learned(l_i,b,s)$ implies that $maj\_accepted(b,s)$ \textcolor{red}{CONTINUE}
+\par
+\begin{lemma}
+In a classic ballot, $learned(l_i,b,s) \implies maj\_accepted(b,s)$ \label{C-L2} \par
+\end{lemma} 
+
+\subsubsection{Non-Triviality}
 \textbf{Nontriviality} $learned_l$ can only contain proposed commands\par
 \textbf{Proof} for a learner to learn a non-proposed command, either $2f+1$ or $\frac{3N+f+1}{4}$ acceptors would have to vote for it, depending on the type of ballot. However, only $f$ acceptors can manufacture votes for non-proposed command, which is insufficient for it to be learned. At most, in a classic ballot the leader can send a proposal that wasn't sent by any proposer but, since the leader is also a proposer (albeit a \textit{distinguished} proposer), nontriviality is preserved.\par
 
+\subsubsection{Stability}
 \textbf{Stability} If $learned_l = v$ then, at all later times, $v \sqsubseteq learned_l$, for any $l$ and $v$\par
 \textbf{Proof} In a fast ballot, proposers can only propose increments to be appended to the learned command history and, therefore, learned sequences in fast ballots are always extensions of previous sequences. In classic ballots, for a learner to learn a sequence that isn't an extension of a previous learned sequence, at least $2f+1$ acceptors would have to vote for it and for that to happen the leader would have to propose it. The subsequent reasoning depends on whether the leader is faulty or not.\par
 If the leader is Byzantine it can propose an invalid sequence. However, since the acceptors check if the last accepted sequence is a prefix of the proposal, it wouldn't reach $2f+1$ votes. In the situation where the leader tries to ignore commands accepted in the last ballot, at most $f$ faulty acceptors would vote for it due to maliciousness and another $f$ would vote for it because they didn't participate in the latest ballot, which wouldn't be enough to learn the sequence. \par

@@ -1,9 +1,17 @@
+\subsection{Pseudocode}
+The following pseudocode implements the Byzatine Generalized Paxos protocol.% We assume that $N = 3f+1$ and therefore, $E = f$.
+
 \begin{algorithm}
 	\caption{Byzantine Generalized Paxos - Proposer p}
+	\textbf{Local variables:} $ballot\_type = \bot$
 	\begin{algorithmic}[1]
+			
+		\State \textbf{upon} \textit{receive(BALLOT, type)} \textbf{do} 
+		\State \hspace{\algorithmicindent} $ballot\_type = type$;
+		\State
 		
 		\Function{propose}{\textit{C}}
-		\If{fast\_ballot}
+		\If{$ballot\_type = fast\_ballot$}
 		\State \Call{send}{$fast, C$} to Acceptors;
 		\Else
 		\State \Call{send}{\textit{propose, C}} to Leader;
@@ -25,7 +33,7 @@
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\Call{send}{$suspicion, view, digest_{\sigma_p}$};	
 		\State
 		
-		\State \textbf{upon} \textit{receive($suspicion, view_i, digest_{\sigma_i}$)} from process $p_i$ \textbf{do} 
+		\State \textbf{upon} \textit{receive($SUSPICION, view_i, digest_{\sigma_i}$)} from process $p_i$ \textbf{do} 
 		\State \hspace{\algorithmicindent} \textbf{if} $view_i \neq view$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return};
 		\State
@@ -35,7 +43,8 @@
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}  \Call{send}{$view\_change, view+1, last\_bal, last\_val, suspicions$};
 		\State
 		
-		\State\textbf{upon} \textit{receive($view\_change, view_i, last\_bal_i, last\_val_i, suspicions$)} from process $p_i$ \textbf{do} 
+		\State\textbf{upon} \textit{receive($VIEW\_CHANGE, view_i, last\_bal_i, last\_val_i, suspicions$)} 
+		\item[] from process $p_i$ \textbf{do} 
 		\State\hspace{\algorithmicindent} \textbf{if} \Call{!verifySignatures}{$suspicions$} \textbf{or} $view_i \leq view$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{return};
 		\State
@@ -44,7 +53,7 @@
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view_i][p] = \langle last\_bal,\ last\_val \rangle$;
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}  \Call{send}{$view\_change, view_i, last\_bal, last\_val, suspicions_{\sigma_i}$};
 		\State
-		\State\hspace{\algorithmicindent} \textbf{if} $\#(new\_view[view_i]) > 2f$ \textbf{then}
+		\State\hspace{\algorithmicindent} \textbf{if} $\#(new\_view[view_i]) > N-f$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $view = view_i$;
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $leader = n\ mod\ view$;
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions = \bot$;
@@ -80,28 +89,28 @@
 	\caption{Byzantine Generalized Paxos - Leader l}
 	\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot,\ messages = \bot$
 	\begin{algorithmic}[1]
-		\State \textbf{upon} \textit{receive(propose, C)} from proposer $p_i$ \textbf{do} 
+		\State \textbf{upon} \textit{receive(PROPOSE, C)} from proposer $p_i$ \textbf{do} 
 		\State \hspace{\algorithmicindent} $C_l = C$;
 		\State \hspace{\algorithmicindent} \Call{phase\_1a}{$ $};
 		\State
-		\State \textbf{upon} \textit{receive($p1b, m, bal_a, val_a, digest_{\sigma_p}$)} from acceptor $a_i$ \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{if} $m = ballot_l$ and \Call{verifySignatures}{$digest_{\sigma_p}$} \textbf{then}
+		\State \textbf{upon} \textit{receive($P1B, m, bal_a, val_a, digest_{\sigma_p}$)} from acceptor $a_i$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $m = ballot_l$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}  $messages[ballot_l][a_i] = val_a$;
-		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages) \geq \lceil \frac{N+f}{2}\rceil$ \textbf{then} 
+		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages) > N-f$ \textbf{then} 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2a}{$ $};
+
 		\State
 		%\item[] % unnumbered empty line
 		\Function{phase\_1a}{$ $}
 		\State $ballot_l \mathrel{+{=}} 1$;
-		\State \Call{send}{$p1a, ballot_l$} to Acceptors;
+		\State \Call{send}{$P1A, ballot_l$} to Acceptors;
 		\EndFunction
 		
 		\State
 		\Function{phase\_2a}{$ $}
 		\State $maxTried_l$ = \Call{proved\_safe}{$ballot_l$};
 		\State $maxTried_l = maxTried_l \bullet C_l$;
-		\State $digest = hash(\langle ballot_l, maxTried_l \rangle)$;
-		\State \Call{send}{$p2a,ballot_l, maxTried_l, digest_{\sigma_l}$} to Acceptors;
+		\State \Call{send}{$P2A,ballot_l, maxTried_l$} to Acceptors;
 		\EndFunction
 		
 		\State
@@ -114,7 +123,7 @@
 		\State \hspace{\algorithmicindent}\textbf{else}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}$value\_counter[val] = value\_counter[val] + 1$; 
 		\State
-		\State \hspace{\algorithmicindent}\textbf{if} $value\_counter[val] > E$ \textbf{then}
+		\State \hspace{\algorithmicindent}\textbf{if} $value\_counter[val] > E+f$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}$last\_value = val$;
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{break};
 		\State \textbf{end for}
@@ -141,24 +150,24 @@
 
 \begin{algorithm}
 	\caption{Byzantine Generalized Paxos - Acceptor a}
-	\textbf{Local variables: } $bal_a = 0,\ val_a = \bot,\ proof = \bot$ 
+	\textbf{Local variables: } $bal_a = 0,\ val_a = \bot$ 
 	\begin{algorithmic}[1]
 		
-		\State \textbf{upon} \textit{receive(fast, val)} from proposer \textit{p} \textbf{do}
+		\State \textbf{upon} \textit{receive(FAST, val)} from proposer \textit{p} \textbf{do}
 		\State \hspace{\algorithmicindent} \Call{phase\_2b\_fast}{$val$};
 		
 		\State
-		\State \textbf{upon} \textit{receive(p1a, ballot)} from leader \textit{l} \textbf{do}
+		\State \textbf{upon} \textit{receive(P1A, ballot)} from leader \textit{l} \textbf{do}
 		\State \hspace{\algorithmicindent} \Call{phase\_1b}{$ballot, l$};
 		
 		\State
-		\State \textbf{upon} \textit{receive(p2a, ballot, value, $digest_{\sigma_l}$)} from leader \textit{l} \textbf{do}
-		\State \hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value, digest_{\sigma_l}$}; 
+		\State \textbf{upon} \textit{receive(P2A, ballot, value} from leader \textit{l} \textbf{do}
+		\State \hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value$}; 
 		
 		\State
 		\Function{phase\_1b}{$ballot, l$}
 		\If {$bal_a < ballot$}
-		\State \Call{send}{$p1b, ballot, bal_a, val_a, proof$} to leader l;
+		\State \Call{send}{$p1b, ballot, bal_a, val_a$} to leader l;
 		\State $bal_a = ballot$;
 		\EndIf
 		\EndFunction
@@ -166,10 +175,9 @@
 		\State
 		\Function{phase\_2b\_classic}{$ballot, value, digest_{\sigma_l}$}
 		\State $k = max(i\ |\ (i < ballot) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
-		\If {$ballot \geq k$ and \Call{verifySignatures}{$digest_{\sigma_l}$}}
+		\If {$ballot \geq k$}
 		\State $val_a = value$;
-		\State $proof = digest_{\sigma_l}$;
-		\State \Call{send}{$p2b, bal_a, val_a, digest_{\sigma_l}$} to learners;
+		\State \Call{send}{$p2b, bal_a, val_a$} to learners;
 		\EndIf
 		\EndFunction
 		
@@ -188,7 +196,7 @@
 	\caption{Byzantine Generalized Paxos - Learner l}
 	\textbf{Local variables: } $learned = \bot, messages = \bot,\ verificationRequests = \bot,\ ackMessages = \bot,\ ack\_values = \bot$ 
 	\begin{algorithmic}[1]
-		\State \textbf{upon} \textit{receive($p2b, bal, val, [digest_{\sigma_l}]$)} from acceptor $a_i$ \textbf{do}
+		\State \textbf{upon} \textit{receive($P2B, bal, val, [digest_{\sigma_l}]$)} from acceptor $a_i$ \textbf{do}
 		\State \hspace{\algorithmicindent} $messages[bal][a_i] = val$;
 		\State \hspace{\algorithmicindent} \textbf{if} $fast\_ballot$ and $\#(messages[bal]) \geq N-E$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$VERIFY, bal, val$} to learners;
@@ -210,7 +218,7 @@
 		\State \textbf{upon} \textit{receive(ACK, ballot, value)} from learner \textit{l} \textbf{do}
 		\State \hspace{\algorithmicindent}\textbf{if} $ballot = bal_a$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $ackMessages[bal_a][value][a] = true$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(ackMessages[bal_a][value]) > 2f$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(ackMessages[bal_a][value]) \geq N-f$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = learned \bullet val$;
 		
 	\end{algorithmic}

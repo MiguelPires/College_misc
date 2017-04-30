@@ -50,7 +50,24 @@ In a fast ballot, $learned(l_i,b,s) \implies verified(b,s)$ \label{C-L4} \par
 
 \textbf{Proof:} By Algorithm \ref{BFT-Learn} lines \{8-21\}, a learner only appends a command to his learned sequence after receiving $N-f$ acknowledgments for the command. 
 
+\subsubsection{Non-Triviality}
+\begin{theorem}
+$learned_l$ can only contain proposed commands \label{N-T1} \par
+\end{theorem} 
 
+\textbf{Proof:} By Lemma \ref{N-L1}, a learner only learns commands or sequences of commands for which a Byzantine quorum of acceptors have voted. By Lemma \ref{N-L2}, a Byzantine quorum of votes can only be reached if the value is proposed by some proposer.
+
+\begin{lemma}
+$learned(l_j,b,s) \implies maj\_accepted(b,s)$ \label{N-L1} \par
+\end{lemma}
+
+\textbf{Proof:} By Algorithm \ref{BFT-Learn} lines \{1-6\} and Algorithm \ref{BFT-Acc} lines \{16-21;23-28\}, a learner can only learn a command or sequence of commands if it has been accepted by a Byzantine quorum of acceptors.
+
+\begin{lemma}
+$maj\_accepted(b,s) \implies proposed(b,s)$ \label{N-L2} \par
+\end{lemma}
+
+\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{7-8;16-21\}, in a classic ballot, or by Algorithm \ref{BFT-Acc} lines \{1-2;23-28\}, in a fast ballot, a majority of accepting votes can only be reached if it was sent by a proposer (in the case of a classic ballot, a \textit{distinguished} proposer).
 
 \subsubsection{Stability}
 \textbf{Stability} If $learned_l = v$ then, at all later times, $v \sqsubseteq learned_l$, for any $l$ and $v$\par

@@ -1,8 +1,9 @@
 \subsection{Pseudocode}
 The following pseudocode implements the Byzatine Generalized Paxos protocol.% We assume that $N = 3f+1$ and therefore, $E = f$.
 
-\begin{algorithm}
+\begin{algorithm} 
 	\caption{Byzantine Generalized Paxos - Proposer p}
+	\label{BFT-Prop}
 	\textbf{Local variables:} $ballot\_type = \bot$
 	\begin{algorithmic}[1]
 			
@@ -21,8 +22,9 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 	\end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}
+\begin{algorithm} 
 	\caption{Byzantine Generalized Paxos - Process p}
+	\label{BFT-Proc}
 	\textbf{Local variables:} $suspicions = \bot,\ new\_view = \bot,\ leader = \bot,\ view = 0$
 	\begin{algorithmic}[1]
 		
@@ -59,7 +61,6 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions = \bot$;
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view = \bot$;
 
-		
 		\iffalse\State
 		\Function{is\_prefix}{$extension, prefix$}
 		\If {$\lVert prefix \rVert > \lVert extension \rVert$}
@@ -85,8 +86,9 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 	\end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}
+\begin{algorithm} 
 	\caption{Byzantine Generalized Paxos - Leader l}
+	\label{BFT-Lead}
 	\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot,\ messages = \bot$
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive(PROPOSE, C)} from proposer $p_i$ \textbf{do} 
@@ -148,8 +150,9 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 	\end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}
+\begin{algorithm} 
 	\caption{Byzantine Generalized Paxos - Acceptor a}
+	\label{BFT-Acc}
 	\textbf{Local variables: } $bal_a = 0,\ val_a = \bot$ 
 	\begin{algorithmic}[1]
 		
@@ -161,7 +164,7 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 		\State \hspace{\algorithmicindent} \Call{phase\_1b}{$ballot, l$};
 		
 		\State
-		\State \textbf{upon} \textit{receive(P2A, ballot, value} from leader \textit{l} \textbf{do}
+		\State \textbf{upon} \textit{receive(P2A, ballot, value)} from leader \textit{l} \textbf{do}
 		\State \hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value$}; 
 		
 		\State
@@ -194,6 +197,7 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 
 \begin{algorithm}
 	\caption{Byzantine Generalized Paxos - Learner l}
+	\label{BFT-Learn}
 	\textbf{Local variables: } $learned = \bot, messages = \bot,\ verificationRequests = \bot,\ ackMessages = \bot,\ ack\_values = \bot$ 
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive($P2B, bal, val, [digest_{\sigma_l}]$)} from acceptor $a_i$ \textbf{do}
@@ -220,6 +224,5 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $ackMessages[bal_a][value][a] = true$;
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(ackMessages[bal_a][value]) \geq N-f$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = learned \bullet val$;
-		
 	\end{algorithmic}
 \end{algorithm}

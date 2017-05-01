@@ -30,30 +30,36 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 		
 		\State \textbf{upon} \textit{suspect\_leader} \textbf{do} 
 		\State \hspace{\algorithmicindent} \textbf{if} $suspicions[p] \neq true$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}$suspicions[p] = true$;
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}$ digest = hash(\langle suspicion, view \rangle) $;
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\Call{send}{$suspicion, view, digest_{\sigma_p}$};	
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions[p] = true$;
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = \langle suspicion, view \rangle_{priv_p}$;
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$suspicion, view,proof$};	
 		\State
 		
-		\State \textbf{upon} \textit{receive($SUSPICION, view_i, digest_{\sigma_i}$)} from process $p_i$ \textbf{do} 
+		\State \textbf{upon} \textit{receive($SUSPICION, view_i, proof$)} from process $p_i$ \textbf{do} 
 		\State \hspace{\algorithmicindent} \textbf{if} $view_i \neq view$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return};
 		\State
-		\State \hspace{\algorithmicindent} $suspicions[p_i] = digest_{\sigma_i}$;
+		\State \hspace{\algorithmicindent} $suspicions[p_i] = proof$;
 		\State \hspace{\algorithmicindent} \textbf{if} $\#(suspicions) > f$ and $new\_view[p] = \bot$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[p] = \langle last\_bal,\ last\_val \rangle$;
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}  \Call{send}{$view\_change, view+1, last\_bal, last\_val, suspicions$};
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}  \Call{send}{$VIEW\_CHANGE, view+1, last\_bal, last\_val, suspicions$};
 		\State
 		
 		\State\textbf{upon} \textit{receive($VIEW\_CHANGE, view_i, last\_bal_i, last\_val_i, suspicions$)} 
 		\item[] from process $p_i$ \textbf{do} 
-		\State\hspace{\algorithmicindent} \textbf{if} \Call{!verifySignatures}{$suspicions$} \textbf{or} $view_i \leq view$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{return};
+		\State \hspace{\algorithmicindent} \textbf{if} $view_i \leq view$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{return};
+		\State
+		\State \hspace{\algorithmicindent} \textbf{for} $p$ \textbf{in} $processes$ \textbf{do} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = suspicions[p]$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof \neq \langle suspicion, view_i \rangle_{pub_{p_i}}$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return};
+		
 		\State
 		\State\hspace{\algorithmicindent} $new\_view[view_i][p_i] = \langle last\_bal_i,\ last\_val_i \rangle$;
 		\State\hspace{\algorithmicindent} \textbf{if} $new\_view[view_i][p] = \bot$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view_i][p] = \langle last\_bal,\ last\_val \rangle$;
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}  \Call{send}{$view\_change, view_i, last\_bal, last\_val, suspicions_{\sigma_i}$};
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}  \Call{send}{$VIEW\_CHANGE, view_i, last\_bal, last\_val, suspicions_{\sigma_i}$};
 		\State
 		\State\hspace{\algorithmicindent} \textbf{if} $\#(new\_view[view_i]) > N-f$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $view = view_i$;
@@ -89,16 +95,35 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 \begin{algorithm} 
 	\caption{Byzantine Generalized Paxos - Leader l}
 	\label{BFT-Lead}
-	\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot,\ messages = \bot$
+	\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot,\ accepted = \bot$
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive(PROPOSE, C)} from proposer $p_i$ \textbf{do} 
 		\State \hspace{\algorithmicindent} $C_l = C$;
 		\State \hspace{\algorithmicindent} \Call{phase\_1a}{$ $};
 		\State
-		\State \textbf{upon} \textit{receive($P1B, m, bal_a, val_a, digest_{\sigma_p}$)} from acceptor $a_i$ \textbf{do}
+		\State \textbf{upon} \textit{receive($P1B, m, bal_a,acc\_values, certificates$)} from acceptor $a$ \textbf{do}
 		\State \hspace{\algorithmicindent} \textbf{if} $m = ballot_l$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}  $messages[ballot_l][a_i] = val_a$;
-		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages) > N-f$ \textbf{then} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}
+		$sequence = \bot$;
+		
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
+		\textbf{for} $value$ \textbf{in} $acc\_values$ \textbf{do}
+		\State 
+		\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof\_counter = 0$;
+		\State 
+		\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
+		\textbf{for} $proof$ \textbf{in} $certificates[value]$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof_{pub_a} = \langle bal_a, value \rangle$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof\_counter \mathrel{+{=}} 1$;
+		\State
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof\_counter \geq N-f$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $sequence = sequence \bullet value$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{break};
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}  $accepted[ballot_l][a] = sequence$;
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages) \geq N-f$ \textbf{then} 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2a}{$ $};
 
 		\State
@@ -117,19 +142,12 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 		
 		\State
 		\Function{proved\_safe}{$ballot$}
-		\State $last\_value = \bot$;
-		\State $value\_counter = \bot$;
-		\State \textbf{for} $val$ in $message[ballot]$ \textbf{do}
-		\State \hspace{\algorithmicindent}\textbf{if} $value\_counter[val] = \bot$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}$value\_counter[val] = 1$;
-		\State \hspace{\algorithmicindent}\textbf{else}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}$value\_counter[val] = value\_counter[val] + 1$; 
-		\State
-		\State \hspace{\algorithmicindent}\textbf{if} $value\_counter[val] > E+f$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}$last\_value = val$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{break};
+		\State $longest\_seq = \bot$;
+		\State \textbf{for} $seq$ in $accepted[ballot]$ \textbf{do}
+		\State \hspace{\algorithmicindent}\textbf{if} $longest\_sequence = \bot$ or $|seq| > |longest\_seq|$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}$longest\_seq =  seq$;
 		\State \textbf{end for}
-		\State \textbf{return} $last\_value$;
+		\State \textbf{return} $longest\_seq$;
 		\EndFunction
 		
 		\iffalse \State
@@ -153,7 +171,7 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 \begin{algorithm} 
 	\caption{Byzantine Generalized Paxos - Acceptor a}
 	\label{BFT-Acc}
-	\textbf{Local variables: } $bal_a = 0,\ val_a = \bot$ 
+	\textbf{Local variables: } $bal_a = 0,\ val_a = \bot,\ certificates = \bot,\ acc\_values = \emptyset$ 
 	\begin{algorithmic}[1]
 		
 		\State \textbf{upon} \textit{receive(FAST, val)} from proposer \textit{p} \textbf{do}
@@ -167,29 +185,45 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 		\State \textbf{upon} \textit{receive(P2A, ballot, value)} from leader \textit{l} \textbf{do}
 		\State \hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value$}; 
 		
+		\State 
+		\State \textbf{upon} \textit{receive(VERIFY, ballot, value, proof)} from acceptor $a_i$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $\langle ballot, value \rangle = proof_{pub_{a_i}}$   \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} certificates[ballot][value][$a_i$] = $\langle value, proof \rangle$;
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $\#(certificates[ballot][value]) \geq N-f$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$P2B, ballot, value, certificates[ballot][value]$} to learners;
+			
 		\State
 		\Function{phase\_1b}{$ballot, l$}
 		\If {$bal_a < ballot$}
-		\State \Call{send}{$p1b, ballot, bal_a, val_a$} to leader l;
-		\State $bal_a = ballot$;
+		\State \Call{send}{$P1B, ballot, bal_a, acc\_values, certificates[bal_a]$} to leader l;
+		\State $bal_a = ballot$;	
+		\State $val_a = \bot$;	
+		\State $acc\_values = \emptyset$;		
 		\EndIf
 		\EndFunction
 	
 		\State
-		\Function{phase\_2b\_classic}{$ballot, value, digest_{\sigma_l}$}
+		\Function{phase\_2b\_classic}{$ballot, value$}
 		\State $k = max(i\ |\ (i < ballot) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
-		\If {$ballot \geq k$}
+		\If {$ballot \geq k$ and $val_a = \bot$}
 		\State $val_a = value$;
-		\State \Call{send}{$p2b, bal_a, val_a$} to learners;
+		\State $proof = \langle ballot, value \rangle_{priv_a}$;
+		\State $certificates[ballot][value][a] = proof$;
+		\State \Call{send}{$VERIFY, ballot, value, proof$} to acceptors;
 		\EndIf
 		\EndFunction
 		
 		\State
-		\Function{phase\_2b\_fast}{$v$}
+		\Function{phase\_2b\_fast}{$value$}
 		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
-		\If {$bal_a == k$}
-		\State $val_a = val_a \bullet v$;
-		\State \Call{send}{$p2b, bal_a, val_a$} to learners;
+		\If {$bal_a == k$ and \Call{no\_conflict?}{$value, val_a$}}
+		\State $val_a =  val_a \bullet value$;
+		\State $proof = \langle ballot, value \rangle_{priv_a}$;
+		\State $certificates[ballot][value][a] = proof$;
+		\State $acc\_values = acc\_values \cup  value$;
+		\State \Call{send}{$VERIFY, ballot, value, proof$} to acceptors;
+	%	\State \Call{send}{$p2b, bal_a, val_a$} to learners;
 		\EndIf
 		\EndFunction
 	\end{algorithmic}
@@ -200,29 +234,16 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 	\label{BFT-Learn}
 	\textbf{Local variables: } $learned = \bot, messages = \bot,\ verificationRequests = \bot,\ ackMessages = \bot,\ ack\_values = \bot$ 
 	\begin{algorithmic}[1]
-		\State \textbf{upon} \textit{receive($P2B, bal, val, [digest_{\sigma_l}]$)} from acceptor $a_i$ \textbf{do}
-		\State \hspace{\algorithmicindent} $messages[bal][a_i] = val$;
-		\State \hspace{\algorithmicindent} \textbf{if} $fast\_ballot$ and $\#(messages[bal]) \geq N-E$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$VERIFY, bal, val$} to learners;
-		\State \hspace{\algorithmicindent} \textbf{else if} $classic\_ballot$ and $\#(messages[bal]) \geq N-F$ and
-		\item[] \hspace{\algorithmicindent}\hspace{\algorithmicindent}$\Call{is\_prefix}{val, learned}$ \textbf{then}
+		\State \textbf{upon} \textit{receive($P2B, bal, val, certificates$)} from acceptor $a_i$ \textbf{do}
+		\State \hspace{\algorithmicindent}\textbf{for} $a$ in $acceptors$ \textbf{do} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = certificates[a]$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\langle ballot, value \rangle = proof_{pub_a}$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $messages[bal][a] = val$;
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $fast\_ballot$ and $\#(messages[bal]) \geq N-F$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = learned \bullet val$;
+		\State \hspace{\algorithmicindent} \textbf{else if} $classic\_ballot$ and $\#(messages[bal]) \geq N-F$ \textbf{then}
 		\State \hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = learned \sqcup val$;
 		
-		\State 
-		\State \textbf{upon} \textit{receive(VERIFY, ballot, value)} from learner \textit{l} \textbf{do}
-		\State \hspace{\algorithmicindent}\textbf{if} $\Call{conflict}{value, ack\_values}$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{return};
-		\State
-		\State\hspace{\algorithmicindent}$verificationRequests[ballot][value][a] = true$;
-		\State\hspace{\algorithmicindent}\textbf{if} $\#(verificationRequests[ballot][value]) > f$ \textbf{then}
-		\State\hspace{\algorithmicindent} \hspace{\algorithmicindent}	$ack\_values[ballot] = ack\_values[ballot] \bullet value$;
-		\State \hspace{\algorithmicindent} \hspace{\algorithmicindent} \Call{send}{$ACK, ballot, value$} to learners;
-		
-		\State 
-		\State \textbf{upon} \textit{receive(ACK, ballot, value)} from learner \textit{l} \textbf{do}
-		\State \hspace{\algorithmicindent}\textbf{if} $ballot = bal_a$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $ackMessages[bal_a][value][a] = true$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(ackMessages[bal_a][value]) \geq N-f$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = learned \bullet val$;
 	\end{algorithmic}
 \end{algorithm}

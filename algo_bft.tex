@@ -13,9 +13,9 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 		
 		\Function{propose}{\textit{C}}
 		\If{$ballot\_type = fast\_ballot$}
-		\State \Call{send}{$fast, C$} to Acceptors;
+		\State \Call{send}{$fast, C$} to acceptors;
 		\Else
-		\State \Call{send}{\textit{propose, C}} to Leader;
+		\State \Call{send}{\textit{propose, C}} to leader;
 		\EndIf
 		\EndFunction
 		
@@ -130,26 +130,26 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 		%\item[] % unnumbered empty line
 		\Function{phase\_1a}{$ $}
 		\State $ballot_l \mathrel{+{=}} 1$;
-		\State \Call{send}{$P1A, ballot_l$} to Acceptors;
+		\State \Call{send}{$P1A, ballot_l$} to acceptors;
 		\EndFunction
 		
 		\State
 		\Function{phase\_2a}{$ $}
 		\State $maxTried_l$ = \Call{proved\_safe}{$ballot_l$};
 		\State $maxTried_l = maxTried_l \bullet C_l$;
-		\State \Call{send}{$P2A,ballot_l, maxTried_l$} to Acceptors;
+		\State \Call{send}{$P2A,ballot_l, maxTried_l$} to acceptors;
 		\EndFunction
 		
 		\State
 		\Function{proved\_safe}{$ballot$}
-		\State $acc\_seq = \bot$;
+		\State $safe\_seq = \bot$;
 		\State \textbf{for} $seq$ in $accepted[ballot]$ \textbf{do}
 		\State \hspace{\algorithmicindent} \textbf{for} $c$ in $seq$ \textbf{do} 
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $!\Call{Contains}{c, seq}$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $acc\_seq =  acc\_seq \bullet c$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $!\Call{Contains}{safe\_seq,c}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $safe\_seq =  safe\_seq \bullet c$;
 		\State \hspace{\algorithmicindent} \textbf{end for}
 		\State \textbf{end for}
-		\State \textbf{return} $acc\_seq$;
+		\State \textbf{return} $safe\_seq$;
 		\EndFunction
 		
 		\iffalse \State
@@ -247,7 +247,7 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 		\State \hspace{\algorithmicindent} $\#(messages[bal]) \geq N-F$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $seq$ in $accepted[ballot]$ \textbf{do}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $c$ in $seq$ \textbf{do} 
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $!\Call{Contains}{c, learned}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $!\Call{Contains}{learned,c}$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned =  learned \bullet c$;
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}

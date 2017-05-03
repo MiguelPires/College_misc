@@ -24,10 +24,6 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 		\hline
 		$maj\_accepted(b,s)$ & At least $N-f$ acceptors broadcasted their acceptance votes to the learners\\
 		\hline
-		$verified(b,c)$ & At least $N-f$ learners have verified that command $c$ commutes with any other command learned in ballot $b$\\
-		\hline
-		$fast(b)$ & Ballot $b$ is a fast ballot\\
-		\hline
 	\end{tabularx} 
 	\caption{Proof notation} 
 	\label{table:1}
@@ -113,6 +109,9 @@ If $learned_l = v$ then, at all later times, $v \sqsubseteq learned_l$, for any 
 \end{theorem} 
 \textbf{Proof:} By Algorithm \ref{BFT-Learn} lines \{8-14\}, a learner can only append new commands to its $learned$ command sequence
 
-%\begin{lemma}
-%$fast(b+1) \implies learned_{l,b} \sqsubseteq learned_{l,b+1} ,\ %\forall\ l \in \mathcal{L}$ \label{S-L1} \par
-%\end{lemma} 
+\subsubsection{Liveness}
+\begin{theorem}
+For any proposed command $c$ and learner $l$, eventually $learned_l$ contains $c$ \label{key}\par
+\end{theorem} 
+
+Eventually $c \in learned_l, \forall c \in \mathcal{C}, \forall l \in \mathcal{L}$ \label{L-T1}\par

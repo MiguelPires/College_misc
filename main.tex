@@ -1,115 +1,57 @@
-%\documentclass[•]{•}10pt,conference,compsocconf,letterpaper]{IEEEtran}
-\documentclass[10pt,pdftex,a4paper]{article}%
-% \pdfoutput=1
-%\documentclass{sig-alternate-per}
-%\documentclass{llncs}
-%\usepackage{llncsdoc}
-\usepackage{verbatim}
-\usepackage{amssymb}
-\usepackage{lipsum}
+\documentclass[a4paper,UKenglish]{lipics-v2016}
+%This is a template for producing LIPIcs articles. 
+%See lipics-manual.pdf for further information.
+%for A4 paper format use option "a4paper", for US-letter use option "letterpaper"
+%for british hyphenation rules use option "UKenglish", for american hyphenation rules use option "USenglish"
+% for section-numbered lemmas etc., use "numberwithinsect"
+ \usepackage{enumitem}
+\setlist{nolistsep}
+%\setenumerate{itemsep=0pt}
+\usepackage{microtype}%if unwanted, comment out or use option "draft"
+
+%\graphicspath{{./graphics/}}%helpful if your graphic files are in another directory
+
+\bibliographystyle{plainurl}% the recommended bibstyle
 \usepackage{multicol}
 \usepackage{amsmath}
 \usepackage{framed}
+
 \usepackage{float}
 \floatstyle{boxed} 
 \restylefloat{figure}
-\usepackage{subfig}
-%\usepackage{mdframed}
-%\usepackage{amsthm}
+%\expandafter\def\csname ver@subfig.sty\endcsname{}
 \usepackage{tikz}
-\usepackage{hyperref}
-\usepackage{color}
-%\usepackage{fullpage}
-\usepackage{enumitem}
-\setlist{nolistsep}
-%\setenumerate{itemsep=0pt}
-\usepackage{tikz}
-%\usepackage[margin=0.92in]{geometry}
-\usepackage{cite}
-\usepackage[textsize=tiny]{todonotes}
-
-%\usepackage[dvips]{graphicx}
-%\ifx\pdftexversion\undefined
-%\usepackage[dvips]{graphicx}
-%\else
-%  \usepackage[pdftex]{graphicx}
-%  \DeclareGraphicsRule{*}{mps}{*}{}
-%\fi
-\newif\ifcode
-\codefalse
-%%%
-% comment this if you do not have
-% algpseudocode package for algorithms.
-\codetrue
-%%%
+\usepackage{cleveref}
+\crefname{section}{\S}{\S\S}
+%\usepackage{hyperref}
 \usepackage{macros}
-\ifcode
 \usepackage[ruled]{algorithm}
 \usepackage{algpseudocode}
 \usepackage{ioa_code}
-\usepackage[toc,page]{appendix}
+\usepackage[textsize=tiny]{todonotes}
+\usepackage{listings}
+\lstset{numbers=left,numberblanklines=false}
+\newcommand\Small{\fontsize{7.6}{7.6}\selectfont}
+\newcommand*\LSTfont{\Small\ttfamily\SetTracking{encoding=*}{-60}\lsstyle}
 
-\usepackage{xcolor,colortbl}
-\usepackage{tabularx}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%=
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-%pour avoir plus de place
-% \topmargin 0pt
-% \advance \topmargin by -\headheight
-% \advance \topmargin by -\headsep
-% \textheight 8.9in
-% \oddsidemargin 0pt
-% \evensidemargin \oddsidemargin
-% \marginparwidth 0.5in
-% \textwidth 6.5in
-% \setlength{\baselineskip}{13.2pt} % standard value is 13.75pt
-\def\algofont{\footnotesize} %fonte pour les algos
-%\interfootnotelinepenalty=10
-%fin de pour avoir plus de place
-%du coup il faut commenter la suite
-%\textwidth 130mm
-%\textheight 215mm
-%jusqu'ici
-%\renewcommand{\baselinestretch}{1.5}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Definitions
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\newtheorem{theorem}{Theorem}
-% %\newtheorem{reptheorem}[]{Theorem \ref{th:sl}}
-% %\newreptheorem{theorem}{Theorem}
-% \newtheorem{axiom}[theorem]{Axiom}
-% \newtheorem{case}[theorem]{Case}
-%\newtheorem{claim}[theorem]{Claim}
-% \newtheorem{proposition}{Proposition}
-% \newtheorem{explanation}[theorem]{Explanation}
-% \newtheorem{remark}[theorem]{Remark}
-% \newtheorem{fact}[theorem]{Fact}
-% % \newtheorem{conclusion}[theorem]{Conclusion}
-% % \newtheorem{condition}[theorem]{Condition}
-% \newtheorem{conjecture}[theorem]{Conjecture}
-% \newtheorem{corollary}[theorem]{Corollary}
-% % \newtheorem{criterion}[theorem]{Criterion}
- \newtheorem{definition}{Definition}
-% % \newtheorem{exercise}[theorem]{Exercise}
-\newtheorem{lemma}{Lemma}
-% % \newtheorem{notation}[theorem]{Notation}
-% % \newtheorem{problem}[theorem]{Problem}
-% %\newtheorem{proposition}[theorem]{Proposition}
-% % \newtheorem{remark}[theorem]{Remark}
-% % \newtheorem{solution}[theorem]{Solution}
-% % \newtheorem{summary}[theorem]{Summary}
-% \newtheorem{observation}[theorem]{Observation}
-% %\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\hfill $\Box$\\[2mm]} %\rule{0.5em}{0.5em}\\}
-% %\newenvironment{proofsketch}[1][Proof sketch]{\noindent\textbf{#1.} }{\hfill $\Box$\\[2mm]} %\rule{0.5em}{0.5em}\\}
-% 
-% \newenvironment{reptheorem}[1][Theorem]{\noindent\textbf{#1}}{}
-% \def\lf{\tiny}
-% \def\rrnnll{\setcounter{linenumber}{0}}
-% \def\nnll{\refstepcounter{linenumber}\lf\thelinenumber}
-% \newcounter{linenumber}
-% \newenvironment{algorithmfig}{\hrule\vskip 3mm}{ \vskip 3mm \hrule }
+\lstdefinestyle{customc}{
+    belowcaptionskip=1\baselineskip,
+    breaklines=true,
+    frame=L,	
+    xleftmargin=\parindent,
+    language=C,
+    showstringspaces=false,
+    escapeinside={//}{\^^M},
+    basicstyle=\LSTfont, %\scriptsize\ttfamily,
+    keywordstyle=\bfseries\color{green!40!black},
+    commentstyle=\itshape\color{gray!60!black},
+    identifierstyle=\color{blue!50!black},
+    stringstyle=\color{orange},
+    numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+    numbersep=5pt,                   % how far the line-numbers are from the code
+    numberstyle=\tiny\color{black},  % the style that is used for the line-numbers
+    otherkeywords={then,word,process_local,type,xbegin,xabort,xend}
+}
 
 \def\P{\ensuremath{\mathcal{P}}}
 \def\DP{\ensuremath{\Diamond\mathcal{P}}}
@@ -183,29 +125,27 @@
 \newcommand{\TryC}{\textit{tryC}}
 \newcommand{\TryA}{\textit{tryA}}
 \newcommand{\ok}{\textit{ok}}
-
-\newcommand{\trylock}{\textit{trylock}}
-\newcommand{\multitrylock}{\textit{multi-trylock}}
-\newcommand{\CAS}{\textit{CAS}}
-\newcommand{\mCAS}{\textit{mCAS}}
-
-\def\Nomega{\ensuremath{\neg\Omega}}
-\def\Vomega{\ensuremath{\overrightarrow{\Omega}}}
-
-\newcommand{\id}[1]{\mbox{\textit{#1}}}% for identifiers in code
-\newcommand{\res}[1]{\mbox{\textbf{#1}}}% reserved words
-
-\newcommand{\ignore}[1]{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newenvironment{proofsketch}[1][Proof sketch]{\noindent\textbf{#1.} }{\hfill $\Box$\\[2mm]}
+\newtheorem{claim}[theorem]{Claim}
+% Author macros::begin %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Generalized Paxos made Byzantine (and Less Complex)}
+%% Please provide for each author the \author and \affil macro, even when authors have the same affiliation, i.e. for each author there needs to be the  \author and \affil macros
+\author[1]{Miguel Pires}
+\author[2]{Srivatsan Ravi}
+\author[3]{Rodrigo Rodrigues}
+\affil[1]{INESC-ID\\
+  \texttt{miguel.pires@tecnico.ulisboa.pt}}
+\affil[2]{University of Southern California\\
+  \texttt{srivatsr@usc.edu}}
+\affil[3]{INESC-ID\\
+  \texttt{rodrigo.miragaia.rodrigues@tecnico.ulisboa.pt}}
 
 \begin{document}
-\bibliographystyle{abbrv}
+%\bibliographystyle{abbrv}
 
-\title{Generalized Paxos made Byzantine (and Less Complex)}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\date{}
 \maketitle
 %
-\pagenumbering{arabic}\setcounter{page}{1}
 %
 \begin{abstract}
 %
@@ -219,17 +159,20 @@ In this paper, we make two main contributions. First, we attempt to provide a si
 \end{abstract}
 %
 \input{intro}
-%
+% %
 \input{related}
-%
+% %
 \input{model}
 %
 \input{protocol}
 %
-\input{appendix}
-%
 
 \bibliography{references}
+\newpage
+\appendix
+% %
+\input{appendix}
+
 \end{document}
 %%% Local Variables:
 %%% mode: latex

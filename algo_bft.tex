@@ -235,16 +235,16 @@ The following pseudocode implements the Byzatine Generalized Paxos protocol.% We
 \begin{algorithm}
 	\caption{Byzantine Generalized Paxos - Learner l}
 	\label{BFT-Learn}
-	\textbf{Local variables: } $learned = \bot, messages = \bot$ 
+	\textbf{Local variables: } $learned = \bot,\ messages = \bot$ 
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive($P2B, bal, val, certificates$)} from acceptor $a_i$ \textbf{do}
 		\State \hspace{\algorithmicindent} \textbf{for} $a$ in $acceptors$ \textbf{do} 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = certificates[a]$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\langle ballot, value \rangle = proof_{pub_a}$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\langle ballot, value \rangle = proof_{pub_a}$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $messages[bal][a] = value$;
 		\State \hspace{\algorithmicindent} \textbf{end for}
 		\State
-		\State \hspace{\algorithmicindent} $\#(messages[bal]) \geq N-F$ \textbf{then}
+		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages[bal]) \geq N-F$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $seq$ in $accepted[ballot]$ \textbf{do}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $c$ in $seq$ \textbf{do} 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $!\Call{Contains}{learned,c}$ \textbf{then}

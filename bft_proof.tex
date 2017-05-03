@@ -2,7 +2,7 @@
 
 This section argues for the correctness of the Byzantine Generalized Paxos protocol in terms of the specified consensus properties.\par
 
-\subsubsection{Notation}
+
 \begin{table}[h!]
 	\renewcommand{\arraystretch}{1.5}
 	\centering
@@ -12,9 +12,15 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 		\hline
 		Invariant/Symbol & Definition \\
 		\hline
-		$learned_{l_i}$ & Learner $l_i$'s $learned$ sequence of commands\\
+		$\thicksim$ & Equivalence relation between sequences \\
 		\hline
-		$learned(l_i,b,s)$ & 	$learned_{l_i}$ contains sequence $s$ at the end of ballot $b$  \\
+		$\mathcal{L}$ & Set of learner processes \\
+		\hline
+		$X \overset{e}{\implies} Y$ & $X$ implies that $Y$ is eventually true \\
+		\hline
+		$learned_{l_i}$ & Learner $l_i$'s $learned$ sequence of commands \\
+		\hline
+		$learned(l_i,b,s)$ & $learned_{l_i}$ contains sequence $s$ at the end of ballot $b$  \\
 		\hline
 		$maj\_accepted(b,s)$ & At least $N-f$ acceptors broadcasted their acceptance votes to the learners\\
 		\hline
@@ -29,26 +35,55 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 \begin{theorem}
 At any time and for any two learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences \label{C-T1}
 \end{theorem} 
+\textbf{Proof:} \par
+1. At the end of a ballot, any two learned sequences are equivalent \par
+\indent\indent\textbf{Proof:} Lemma \ref{C-L4} \par
+2. At any moment of a ballot, $learned_{l_i}$ and $learned_{l_j}$ are extendable to equivalent sequences \par
+\indent\indent\textbf{Proof:} By 1, if any two learned sequences are equivalent at the end of a ballot then, by definition, they are extendable to equivalent sequences\par
+3. Q.E.D \par
+\indent\indent\textbf{Proof:} By 1 and 2\par
 
-\textbf{Proof:} By Lemma \ref{C-L2}, in a classic ballot, $learned(l_i,b,s)$ implies that {\allowbreak $maj\_accepted(b,s)$ }which implies $learned(l_j,b,s)$. Therefore, $learned(l_i,b,s)$ implies $learned(l_j,b,s)$, for any $l_i$ and $l_j$. For the theorem to hold, then the learned sequences must be extendable to equivalent sequences not only at the end of the ballot but also during its execution. However, since at the end of any ballot two sequences are extendable to equivalent sequences and during the next ballot some learner extends his sequence with the leader's proposal, then no proposed sequence would be a valid extension for one learner and not for another. \par
-By Lemma \ref{C-L3}, in a fast ballot, if two learners learn different sequences, they must be equivalent and, by definition, extendable to equivalent sequences. If, at any point in a ballot, a command is added to a learned sequence then the only way for the resulting sequence to not be extendable to a sequence equivalent to any other learned sequence would be if the command was non-commutative with any other command accepted in the same ballot. By Lemma \ref{C-L4}, if a command is learned then it was verified to commute with any other learned command or sequence of commands. 
 \begin{lemma}
-In a classic ballot, $learned(l_i,b,s) \Leftrightarrow  maj\_accepted(b,s)$ \label{C-L2} \par
+At the end of a ballot, $learned_{l_i} \thicksim learned_{l_j},\ \forall\ i,j \in \mathcal{L}$ \label{C-L4} \par
+\end{lemma}
+\textbf{Proof:} \par
+1.  $learned(l_j,b,s) \overset{e}{\implies} learned(l_i,b,s),\ \forall\ lj, l_i \in \mathcal{L}$\par
+\indent\indent\textbf{Proof:} Lemma \ref{C-L3} \par
+2. Eventually, $learned_{l_i} \thicksim learned_{l_j}$  \par
+\indent\indent\textbf{Proof:} If two learned sequences contain the same commands (1) and they are all commutative (Lemma \ref{C-L5}), they sequences are equivalent.\par
+3. Q.E.D \par
+\indent\indent\textbf{Proof:} By 1 and 2\par
+
+\begin{lemma}
+	$learned(l_j,b,s) \overset{e}{\implies} learned(l_i,b,s),\ \forall\ lj, l_i \in \mathcal{L}$ \label{C-L3} \par
+\end{lemma}
+\textbf{Proof:} \par
+1. $learned(l_j,b,s) \implies maj\_accepted(b,s)$\par
+\indent\indent\textbf{Proof:} Lemma \ref{C-L1} \par
+2. $maj\_accepted(b,s) \overset{e}{\implies} learned(l_i,b,s)$ \par
+\indent\indent\textbf{Proof:} Lemma \ref{C-L2} \par
+%3. $learned(l_j,b,s) \overset{e}{\implies} learned(l_i,b,s),\ \forall\ l_j,l_i \in \mathcal{L}$ \par
+4. Q.E.D \par
+\indent\indent\textbf{Proof:} By 1 and 2\par
+
+
+\begin{lemma}
+$learned(l_i,b,s) \land learned(l_j,b,s') \land \mathcal{S} = \mathcal{S'} \implies s \thicksim s'$ \todo{What I mean with this is that $s$ and $s'$ must have the same elements, just not necessarily in the same order} \label{C-L5} \par
+\end{lemma}
+\textbf{Proof:} By Algorithm 4 lines \{10-16, 35-42\}, two commands or sequences of commands are only learned in the same ballot if they commute.
+
+
+\begin{lemma}
+$learned(l_i,b,s) \implies maj\_accepted(b,s),\ \forall\ l_i \in \mathcal{L} $ \label{C-L1} \par
 \end{lemma} 
 
-\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{16-21\} and Algorithm \ref{BFT-Learn} lines \{5-6\}, if a learner learned a sequence $s$ in a ballot $b$ then a majority of acceptors must have executed phase $2b$ for $s$ in the same ballot. By the same algorithm, if a majority of acceptors executed phase $2b$ then \textit{eventually} every correct learner will learn $s$ in the same ballot $b$.
+\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{14-16\} and Algorithm \ref{BFT-Learn} lines \{8-14\}, if a learner learned a sequence $s$ in a ballot $b$ then a majority of acceptors must have executed phase $2b$ for $s$ in the same ballot.
 
 \begin{lemma}
-In a fast ballot, $learned(l_i,b,s) \land learned(l_j,b,s') \implies s \sim s'$ \label{C-L3} \par
+$maj\_accepted(b,s) \overset{e}{\implies} learned(l_i,b,s),\ \forall\ l_i \in \mathcal{L}$ \label{C-L2} \par
 \end{lemma}
+\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{10-16, 26-42\} and Algorithm \ref{BFT-Learn} lines \{8-14\}, when a quorum of $N-f$ acceptors accepts a sequence $s$ in ballot $b$, eventually s will be learned by any correct learner during ballot $b$.
 
-\textbf{Proof:} By Lemma \ref{C-L4}, no command is added to the learned sequence if it doesn't commute with a previously committed one. Therefore, since new commands are only learned if they commute with every other command learned in the same ballot, at any moment, learned sequences are either equivalent or can be extended to equivalent sequences. 
-
-\begin{lemma}
-In a fast ballot, $learned(l_i,b,s) \implies verified(b,s)$ \label{C-L4} \par
-\end{lemma}
-
-\textbf{Proof:} By Algorithm \ref{BFT-Learn} lines \{8-21\}, a learner only appends a command to his learned sequence after receiving $N-f$ acknowledgments for the command. 
 
 \subsubsection{Non-Triviality}
 \begin{theorem}
@@ -70,7 +105,9 @@ $maj\_accepted(b,s) \implies proposed(b,s)$ \label{N-L2} \par
 \textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{7-8;16-21\}, in a classic ballot, or by Algorithm \ref{BFT-Acc} lines \{1-2;23-28\}, in a fast ballot, a majority of accepting votes can only be reached if it was sent by a proposer (in the case of a classic ballot, a \textit{distinguished} proposer).
 
 \subsubsection{Stability}
-\textbf{Stability} If $learned_l = v$ then, at all later times, $v \sqsubseteq learned_l$, for any $l$ and $v$\par
-\textbf{Proof} In a fast ballot, proposers can only propose increments to be appended to the learned command history and, therefore, learned sequences in fast ballots are always extensions of previous sequences. In classic ballots, for a learner to learn a sequence that isn't an extension of a previous learned sequence, at least $2f+1$ acceptors would have to vote for it and for that to happen the leader would have to propose it. The subsequent reasoning depends on whether the leader is faulty or not.\par
+\begin{theorem}
+If $learned_l = v$ then, at all later times, $v \sqsubseteq learned_l$, for any $l$ and $v$ \par \label{S-T1}
+\end{theorem} 
+\textbf{Proof:} In a fast ballot, proposers can only propose increments to be appended to the learned command history and, therefore, learned sequences in fast ballots are always extensions of previous sequences. In classic ballots, for a learner to learn a sequence that isn't an extension of a previous learned sequence, at least $2f+1$ acceptors would have to vote for it and for that to happen the leader would have to propose it. The subsequent reasoning depends on whether the leader is faulty or not.\par
 If the leader is Byzantine it can propose an invalid sequence. However, since the acceptors check if the last accepted sequence is a prefix of the proposal, it wouldn't reach $2f+1$ votes. In the situation where the leader tries to ignore commands accepted in the last ballot, at most $f$ faulty acceptors would vote for it due to maliciousness and another $f$ would vote for it because they didn't participate in the latest ballot, which wouldn't be enough to learn the sequence. \par
 If the leader is not Byzantine, the acceptors could still report altered sequences when the leader attempts to read the state in \textit{phase 1/view-change}. For instance, $f$ faulty acceptors could maliciously report a sequence without the latest command and another $f$ could have not participated in the last ballot which only leaves a single acceptor that would report the latest correct sequence. This single correct value would be indistinguishable from an incorrect one. To prevent this, the leader signs proposals with his private key before sending them to acceptors. When a leader (possibly not the one that signed the last proposal) reds the state from the acceptors, he checks the signature to ensure that the sequence wasn't maliciously manufactured. At most, an acceptor could report an out-of-date but correct value. This means that $2f$ acceptors could report out-of-date sequence which still leaves one correct and updated sequence. Since the signatures assure us that this value isn't manufactured and the quorum intersection properties assure us that the acceptor participated in the latest ballot, the value must be correct and the leader can append his proposal to the value to which every other value is a prefix.

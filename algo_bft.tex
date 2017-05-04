@@ -11,14 +11,42 @@
 		\State \hspace{\algorithmicindent} $ballot\_type = type$;
 		\State
 		
-		\Function{propose}{\textit{C}}
-		\If{$ballot\_type = fast\_ballot$}
-		\State \Call{send}{$fast, C$} to acceptors;
-		\Else
-		\State \Call{send}{\textit{propose, C}} to leader;
-		\EndIf
-		\EndFunction
+		\State \textbf{upon} \textit{command\_request(c)} \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $ballot\_type = fast\_ballot$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$P2A\_FAST, c$} to acceptors;
+		\State \hspace{\algorithmicindent} \textbf{else} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{\textit{PROPOSE, c}} to leader;		
+	\end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm}
+	\caption{Byzantine Generalized Paxos - Learner l}
+	\label{BFT-Learn}
+	\textbf{Local variables: } $learned = \bot,\ messages = \bot$ 
+	\begin{algorithmic}[1]
+		\State \textbf{upon} \textit{receive($P2B, ballot, values, certificates$)} from acceptor $a_i$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{for} $bal$ \textbf{in} $0..ballot$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $a$ \textbf{in} $acceptors$ \textbf{do} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $val$ \textbf{in} $values[bal]$ \textbf{do} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = certificates[bal][a][val]$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\langle ballot, value \rangle = proof_{pub_a}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $messages[a][bal] =messages[a][bal] \bullet val$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}
 		
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}
+		\State \hspace{\algorithmicindent} \textbf{end for}
+		
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages) \geq N-F$ \textbf{then}
+		\State
+		\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $a$ \textbf{in} $acceptors$ \textbf{do} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $bal$ \textbf{in} $0..ballot$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $seq =  messages[a][bal]$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}
+		$learned = \Call{remove\_duplicates}{learned \bullet seq}$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}	
 	\end{algorithmic}
 \end{algorithm}
 
@@ -52,7 +80,7 @@
 		\State
 		\State \hspace{\algorithmicindent} \textbf{for} $p$ \textbf{in} $processes$ \textbf{do} 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = suspicions[p]$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof \neq \langle suspicion, view_i \rangle_{pub_{p_i}}$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof \neq \langle suspicion, view_i \rangle_{pub_{p_i}}$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return};
 		
 		\State
@@ -95,11 +123,16 @@
 \begin{algorithm} 
 	\caption{Byzantine Generalized Paxos - Leader l}
 	\label{BFT-Lead}
-	\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot,\ accepted = \bot$
+	\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ proposal = \bot,\ accepted = \bot$
 	\begin{algorithmic}[1]
-		\State \textbf{upon} \textit{receive(PROPOSE, C)} from proposer $p_i$ \textbf{do} 
-		\State \hspace{\algorithmicindent} $C_l = C$;
-		\State \hspace{\algorithmicindent} \Call{phase\_1a}{$ $};
+		\State \textbf{upon} \textit{trigger\_next\_ballot(type)} \textbf{do}
+		\State \hspace{\algorithmicindent} $ballot_l \mathrel{+{=}} 1$;
+		\State \hspace{\algorithmicindent} \Call{send}{$FAST,ballot_l, type}$ to acceptors;
+		\State \hspace{\algorithmicindent} \Call{send}{$BALLOT,type}$ to proposers;
+
+		\State
+		\State \textbf{upon} \textit{receive(PROPOSE, prop)} from proposer $p_i$ \textbf{do} 
+		\State \hspace{\algorithmicindent} \Call{phase\_1a}{$prop$};
 		\State
 		\State \textbf{upon} \textit{receive($P1B, m, bal_a,acc\_values, certificates$)} from acceptor $a$ \textbf{do}
 		\State \hspace{\algorithmicindent} \textbf{if} $m = ballot_l$ \textbf{then}
@@ -114,11 +147,11 @@
 		\State 
 		\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
 		$proof = certificates[a][value]$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof_{pub_a} = \langle bal_a, value \rangle$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof_{pub_a} = \langle bal_a, value \rangle$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof\_counter \mathrel{+{=}} 1$;
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}
 		\State
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof\_counter \geq N-f$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof\_counter \geq N-f$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $sequence = sequence \bullet value$;
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}  $accepted[ballot_l][a] = sequence$;
@@ -128,15 +161,15 @@
 
 		\State
 		%\item[] % unnumbered empty line
-		\Function{phase\_1a}{$ $}
-		\State $ballot_l \mathrel{+{=}} 1$;
+		\Function{phase\_1a}{$prop$}
+		\State $proposal = prop$;
 		\State \Call{send}{$P1A, ballot_l$} to acceptors;
 		\EndFunction
 		
 		\State
 		\Function{phase\_2a}{$ $}
-		\State $maxTried_l$ = \Call{proved\_safe}{$ballot_l$};
-		\State $maxTried_l = maxTried_l \bullet C_l$;
+		\State $maxTried_l = \Call{proved\_safe}{ballot_l}$;
+		\State $maxTried_l = maxTried_l \bullet proposal$;
 		\State \Call{send}{$P2A,ballot_l, maxTried_l$} to acceptors;
 		\EndFunction
 		
@@ -173,19 +206,23 @@
 \begin{algorithm} 
 	\caption{Byzantine Generalized Paxos - Acceptor a}
 	\label{BFT-Acc}
-	\textbf{Local variables: } $bal_a = 0,\ val_a = \bot,\ certificates = \bot,\ acc\_values = \emptyset,\ proof\_counter = \bot$ 
+	\textbf{Local variables:} $bal_a = 0,\ val_a = \bot,\ certificates = \bot,\ acc\_values = \emptyset,\ proof\_counter = \bot,\ fast\_bal = \bot$ 
 	\begin{algorithmic}[1]
-		
-		\State \textbf{upon} \textit{receive(FAST, val)} from proposer \textit{p} \textbf{do}
-		\State \hspace{\algorithmicindent} \Call{phase\_2b\_fast}{$val$};
-		
 		\State
 		\State \textbf{upon} \textit{receive(P1A, ballot)} from leader \textit{l} \textbf{do}
 		\State \hspace{\algorithmicindent} \Call{phase\_1b}{$ballot, l$};
 		
 		\State
-		\State \textbf{upon} \textit{receive(P2A, ballot, value)} from leader \textit{l} \textbf{do}
+		\State \textbf{upon} \textit{receive(FAST,ballot)}
+		\State \hspace{\algorithmicindent} $fast\_bal[ballot] = true$;
+		
+		\State
+		\State \textbf{upon} \textit{receive(P2A\_CLASSIC, ballot, value)} from leader \textit{l} \textbf{do}
 		\State \hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value$}; 
+
+		\State		
+		\State \textbf{upon} \textit{receive(P2A\_FAST, value)} from proposer \textit{p} \textbf{do}
+		\State \hspace{\algorithmicindent} \Call{phase\_2b\_fast}{$value$};
 		
 		\State 
 		\State \textbf{upon} \textit{receive(VERIFY, ballot, value, proof)} from acceptor $a_i$ \textbf{do}
@@ -209,9 +246,9 @@
 	
 		\State
 		\Function{phase\_2b\_classic}{$ballot, value$}
-		\State $k = max(i\ |\ (i < ballot) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
-		\If {$ballot \geq k$ and $val_a = \bot$}
-		\State $val_a[bal_a] = value$;
+		\If {$ballot \geq bal_a$ and $val_a = \bot$}
+		\State $bal_a = ballot$;
+		\State $val_a[ballot] = value$;
 		\State $proof = \langle ballot, value \rangle_{priv_a}$;
 		\State $certificates[ballot][a][value] = proof$;
 		\State \Call{send}{$VERIFY, ballot, value, proof$} to acceptors;
@@ -220,46 +257,14 @@
 		
 		\State
 		\Function{phase\_2b\_fast}{$value$}
-		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
-		\If {$bal_a == k$ and $!\Call{conflict}{value, val_a}$}
+		\If {$fast\_bal[]bal_a]$ and $!\Call{conflict}{value, val_a}$}
 		\State $val_a[bal_a] =  val_a[bal_a] \bullet value$;
-		\State $proof = \langle ballot, value \rangle_{priv_a}$;
+		\State $proof = \langle bal_a, value \rangle_{priv_a}$;
 		\State $certificates[ballot][a][value] = proof$;
 
 		\State \Call{send}{$VERIFY, ballot, value, proof$} to acceptors;
 	%	\State \Call{send}{$p2b, bal_a, val_a$} to learners;
 		\EndIf
 		\EndFunction
-	\end{algorithmic}
-\end{algorithm}
-
-\begin{algorithm}
-	\caption{Byzantine Generalized Paxos - Learner l}
-	\label{BFT-Learn}
-	\textbf{Local variables: } $learned = \bot,\ messages = \bot$ 
-	\begin{algorithmic}[1]
-		\State \textbf{upon} \textit{receive($P2B, ballot, values, certificates$)} from acceptor $a_i$ \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{for} $bal$ \textbf{in} $0..ballot$ \textbf{do}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $a$ \textbf{in} $acceptors$ \textbf{do} 
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $val$ \textbf{in} $values[bal]$ \textbf{do} 
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = certificates[bal][a][val]$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\langle ballot, value \rangle = proof_{pub_a}$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $messages[a][bal] =messages[a][bal] \bullet val$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}
-
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}
-		\State \hspace{\algorithmicindent} \textbf{end for}
-
-
-		\State
-		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages) \geq N-F$ \textbf{then}
-		\State
-		\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $a$ \textbf{in} $acceptors$ \textbf{do} 
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $bal$ \textbf{in} $0..ballot$ \textbf{do}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $seq =  messages[a][bal]$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}
-		 $learned = \Call{remove\_duplicates}{learned \bullet seq}$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{end for}	
 	\end{algorithmic}
 \end{algorithm}

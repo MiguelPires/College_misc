@@ -14,9 +14,11 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 		\hline
 		$\thicksim$ & Equivalence relation between sequences \\
 		\hline
+		$X \overset{e}{\implies} Y$ & $X$ implies that $Y$ is eventually true \\
+		\hline
 		$\mathcal{L}$ & Set of learner processes \\
 		\hline
-		$X \overset{e}{\implies} Y$ & $X$ implies that $Y$ is eventually true \\
+		$\mathcal{P}$ & Set of proposals (commands or sequences of commands) \\
 		\hline
 		$learned_{l_i}$ & Learner $l_i$'s $learned$ sequence of commands \\
 		\hline
@@ -24,6 +26,9 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 		\hline
 		$maj\_accepted(b,s)$ & At least $N-f$ acceptors broadcasted their acceptance votes to the learners\\
 		\hline
+		$proposed(b,s)$ & A proposer proposed $s$ in ballot $b$ \\
+		\hline
+		
 	\end{tabularx} 
 	\caption{Proof notation} 
 	\label{table:1}
@@ -74,7 +79,6 @@ $learned(l_i,b,s) \land learned(l_j,b,s') \land \mathcal{S} = \mathcal{S'} \impl
 \begin{lemma}
 $learned(l_i,b,s) \implies maj\_accepted(b,s),\ \forall\ l_i \in \mathcal{L}$ \label{C-L1} \par
 \end{lemma} 
-
 \textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{14-16\} and Algorithm \ref{BFT-Learn} lines \{8-14\}, if a learner learned a sequence $s$ in a ballot $b$ then a majority of acceptors must have executed phase $2b$ for $s$ in the same ballot.
 
 \begin{lemma}
@@ -82,12 +86,10 @@ $maj\_accepted(b,s) \overset{e}{\implies} learned(l_i,b,s),\ \forall\ l_i \in \m
 \end{lemma}
 \textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{10-16, 26-42\} and Algorithm \ref{BFT-Learn} lines \{8-14\}, when a quorum of $N-f$ acceptors accepts a sequence $s$ in ballot $b$, eventually s will be learned by any correct learner during ballot $b$.
 
-
 \subsubsection{Non-Triviality}
 \begin{theorem}
 $learned_l$ can only contain proposed commands \label{N-T1} \par
 \end{theorem} 
-
 \textbf{Proof:} \par
 1. $learned(l_i,b,s) \implies maj\_accepted(b,s),\ \forall\ l_i \in \mathcal{L}$ \par
 \indent\indent\textbf{Proof:} Lemma \ref{C-L1} \par
@@ -100,18 +102,26 @@ $learned_l$ can only contain proposed commands \label{N-T1} \par
 \begin{lemma}
 $maj\_accepted(b,s) \implies proposed(b,s)$ \label{N-L1} \par
 \end{lemma}
-
 \textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{14-16, 26-42\}, for $N-f$ acceptors to accept a proposal it must have been proposed by a proposer.
 
 \subsubsection{Stability}
 \begin{theorem}
 If $learned_l = v$ then, at all later times, $v \sqsubseteq learned_l$, for any $l$ and $v$ \par \label{S-T1}
 \end{theorem} 
-\textbf{Proof:} By Algorithm \ref{BFT-Learn} lines \{8-14\}, a learner can only append new commands to its $learned$ command sequence
+\textbf{Proof:} By Algorithm \ref{BFT-Learn} lines \{8-14\}, a learner can only append new commands to its $learned$ command sequence.
 
 \subsubsection{Liveness}
 \begin{theorem}
-For any proposed command $c$ and learner $l$, eventually $learned_l$ contains $c$ \label{key}\par
+For a proposal $s$ and any learner $l$, if $s$ commutes with any other proposal $s'$ proposed in the same ballot $b$, eventually $learned_l$ contains $s$ \label{L-T1} \par
 \end{theorem} 
+\textbf{Proof:} \par
+1. $proposed(b,s)\ \land\ proposed(b,s')\ \land\ s\bullet s' \thicksim  s' \bullet s  \overset{e}{\implies} maj\_accepted(b,s),\ \forall s' \in \mathcal{P}$ \par
+\indent\indent\textbf{Proof:} By Lemma \ref{L-L1}.\par
+2. $proposed(b,s)\ \land\ proposed(b,s')\ \land\ s\bullet s' \thicksim s' \bullet s \overset{e}{\implies} learned(l,b,s),\ \forall s' \in \mathcal{P}$ \par
+\indent\indent\textbf{Proof:} By 1 and Lemma \ref{C-L2}. \par
+3. Q.E.D
 
-Eventually $c \in learned_l, \forall c \in \mathcal{C}, \forall l \in \mathcal{L}$ \label{L-T1}\par
+\begin{lemma}
+$proposed(b,s)\ \land\ proposed(b,s')\ \land\ s\bullet s' \thicksim  s' \bullet s \overset{e}{\implies} maj\_accepted(b,s),\ \forall s' \in \mathcal{P}$ \label{L-L1}
+\end{lemma}
+\textbf{Proof:} By Algorithm \ref{BFT-Prop} lines \{4-8\}, Algorithm \ref{BFT-Lead} lines \{33-37\} and Algorithm \ref{BFT-Acc} lines \{30-45\}, if proposals $s$ commutes with any other proposal $s'$ proposed in the same ballot $b$ then \textit{eventually} a majority of acceptors will accept $s$. \par

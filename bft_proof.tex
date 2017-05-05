@@ -16,6 +16,8 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 		\hline
 		$X \overset{e}{\implies} Y$ & $X$ implies that $Y$ is eventually true \\
 		\hline
+		$X \sqsubseteq Y$ & The sequence $X$ is either equivalent or a strict prefix of sequence $Y$ according to the equivalence relation $\thicksim$ \\
+		\hline
 		$\mathcal{L}$ & Set of learner processes \\
 		\hline
 		$\mathcal{P}$ & Set of proposals (commands or sequences of commands) \\
@@ -29,62 +31,53 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 		$proposed(b,s)$ & A proposer proposed $s$ in ballot $b$ \\
 		\hline
 		
-	\end{tabularx} 
+  	\end{tabularx} 
 	\caption{Proof notation} 
 	\label{table:1}
 \end{table}
 
 \subsubsection{Consistency}
-\begin{theorem}
-At any time and for any two learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences \label{C-T1}
+\begin{theorem}At any time and for any two learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences
 \end{theorem} 
+\textbf{Proof:} By Lemma 
+\begin{lemma}
+$learned_i \sqsubseteq learned_j \lor learned_j \sqsubseteq  learned_i$ \label{C-L} \par
+\end{lemma}
 \textbf{Proof:} \par
-1. At the end of a ballot, $learned_{l_i} \thicksim learned_{l_j},\ \forall\ i,j \in \mathcal{L}$\par
-\indent\indent\textbf{Proof:} Lemma \ref{C-L4} \par
+1. $learned(l_i,b,learned_i) \land learned(l_j,b,learned_j),\ \forall i,j \in \mathcal{L}$ \par
+\indent\indent\textbf{Proof:} By definition, $learned(l_i,b,learned_i)$ \par
 2. At any moment of a ballot, $learned_{l_i}$ and $learned_{l_j}$ are extendable to equivalent sequences \par
-\indent\indent\textbf{Proof:} By 1, if any two learned sequences are equivalent at the end of a ballot then, by definition, they are extendable to equivalent sequences\par
+\indent\indent\textbf{Proof:} By 1, if any two learned sequences are equivalent at the end of a ballot then, by definition, at any moment they are extendable to equivalent sequences\par
 3. Q.E.D \par
-\indent\indent\textbf{Proof:} By 1 and 2\par
 
 \begin{lemma}
-At the end of a ballot, $learned_{l_i} \thicksim learned_{l_j},\ \forall\ i,j \in \mathcal{L}$ \label{C-L4} \par
+$learned(l_j,b,s) \land learned(l_i,b,s') \implies s \sqsubseteq s' \lor s' \sqsubseteq s$ \par
 \end{lemma}
 \textbf{Proof:} \par
-1.  $learned(l_j,b,s) \overset{e}{\implies} learned(l_i,b,s),\ \forall\ lj, l_i \in \mathcal{L}$\par
-\indent\indent\textbf{Proof:} Lemma \ref{C-L3} \par
-2. Eventually, $learned_{l_i} \thicksim learned_{l_j}$  \par
-\indent\indent\textbf{Proof:} If two learned sequences contain the same commands (1) and they are all commutative (Lemma \ref{C-L5}), they sequences are equivalent.\par
-3. Q.E.D \par
-\indent\indent\textbf{Proof:} By 1 and 2\par
+1. $learned(l_i,b,s) \land learned(l_j,b,s') \implies maj\_accepted(b,s) \land maj\_accepted(b,s')$ \par
+\indent\indent\textbf{Proof:} By Lemma \ref{C-L1}.\par
+2. $maj\_accepted(b,s)\ \land\ maj\_accepted(b,s') \implies s \sqsubseteq s' \lor s' \sqsubseteq s$ \par
+\indent\indent\textbf{Proof:} By Lemma \ref{C-L3}.\par
+3. $learned(l_i,b,s)\ \land\ learned(l_j,b,s') \implies s \sqsubseteq s' \lor s' \sqsubseteq s$ \par
+\indent\indent\textbf{Proof:} By 1 and 2.\par
+3. Q.E.D. \par
 
 \begin{lemma}
-	$learned(l_j,b,s) \overset{e}{\implies} learned(l_i,b,s),\ \forall\ lj, l_i \in \mathcal{L}$ \label{C-L3} \par
+$maj\_accepted(b,s) \land maj\_accepted(b,s') \implies s \sqsubseteq s' \lor s' \sqsubseteq s$ \label{C-L3} \par
 \end{lemma}
-\textbf{Proof:} \par
-1. $learned(l_j,b,s) \implies maj\_accepted(b,s)$\par
-\indent\indent\textbf{Proof:} Lemma \ref{C-L1} \par
-2. $maj\_accepted(b,s) \overset{e}{\implies} learned(l_i,b,s)$ \par
-\indent\indent\textbf{Proof:} Lemma \ref{C-L2} \par
-3. $learned(l_j,b,s) \overset{e}{\implies} learned(l_i,b,s),\ \forall\ l_j,l_i \in \mathcal{L}$ \par
-\indent\indent\textbf{Proof:} By 1 and 2\par
+\textbf{Proof:} Proved by contradiction.\par
+1. $maj\_accepted(b,s) \land maj\_accepted(b,s') \implies s \not\sqsubseteq s' \land s' \not\sqsubseteq s$ \par
+\indent\indent\textbf{Proof:} Contradiction assumption.\par
+2. $s$ e $s'$ are assembled concurrently \par
+\indent\indent\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{27-31\}, if $\not\sqsubseteq s' \land s' \not\sqsubseteq s$ then they must contain non-commutative commands and have been assembled concurrently. \par
+3. $maj\_accepted(b,s) \oplus maj\_accepted(b,s')$ \par
+\indent\indent\textbf{Proof:} By 2 and Algorithm \ref{BFT-Learn} lines \{1-4\}, only $s$ or $s'$ can gather $N-f$ votes  \par
 4. Q.E.D \par
-
-
-\begin{lemma}
-$learned(l_i,b,s) \land learned(l_j,b,s') \land \mathcal{S} = \mathcal{S'} \implies s \thicksim s'$ \todo{What I mean with this is that $s$ and $s'$ must have the same elements, just not necessarily in the same order} \label{C-L5} \par
-\end{lemma}
-\textbf{Proof:} By Algorithm 4 lines \{10-16, 35-42\}, two commands or sequences of commands are only learned in the same ballot if they commute.
-
 
 \begin{lemma}
 $learned(l_i,b,s) \implies maj\_accepted(b,s),\ \forall\ l_i \in \mathcal{L}$ \label{C-L1} \par
 \end{lemma} 
-\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{14-16\} and Algorithm \ref{BFT-Learn} lines \{8-14\}, if a learner learned a sequence $s$ in a ballot $b$ then a majority of acceptors must have executed phase $2b$ for $s$ in the same ballot.
-
-\begin{lemma}
-$maj\_accepted(b,s) \overset{e}{\implies} learned(l_i,b,s),\ \forall\ l_i \in \mathcal{L}$ \label{C-L2} \par
-\end{lemma}
-\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{10-16, 26-42\} and Algorithm \ref{BFT-Learn} lines \{8-14\}, when a quorum of $N-f$ acceptors accepts a sequence $s$ in ballot $b$, eventually s will be learned by any correct learner during ballot $b$.
+\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, if a learner learned a sequence $s$ in a ballot $b$ then a majority of acceptors must have executed phase $2b$ for $s$ in the same ballot.
 
 \subsubsection{Non-Triviality}
 \begin{theorem}
@@ -102,13 +95,13 @@ $learned_l$ can only contain proposed commands \label{N-T1} \par
 \begin{lemma}
 $maj\_accepted(b,s) \implies proposed(b,s)$ \label{N-L1} \par
 \end{lemma}
-\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{14-16, 26-42\}, for $N-f$ acceptors to accept a proposal it must have been proposed by a proposer.
+\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{7-11, 20-31\}, for $N-f$ acceptors to accept a proposal it must have been proposed by a proposer.
 
 \subsubsection{Stability}
 \begin{theorem}
 If $learned_l = v$ then, at all later times, $v \sqsubseteq learned_l$, for any $l$ and $v$ \par \label{S-T1}
 \end{theorem} 
-\textbf{Proof:} By Algorithm \ref{BFT-Learn} lines \{8-14\}, a learner can only append new commands to its $learned$ command sequence.
+\textbf{Proof:} By Algorithm \ref{BFT-Learn} lines \{1-4\}, a learner can only append new commands to its $learned$ command sequence.
 
 \subsubsection{Liveness}
 \begin{theorem}
@@ -120,6 +113,11 @@ For a proposal $s$ and any learner $l$, if $s$ commutes with any other proposal 
 2. $proposed(b,s)\ \land\ proposed(b,s')\ \land\ s\bullet s' \thicksim s' \bullet s \overset{e}{\implies} learned(l,b,s),\ \forall s' \in \mathcal{P}$ \par
 \indent\indent\textbf{Proof:} By 1 and Lemma \ref{C-L2}. \par
 3. Q.E.D
+
+\begin{lemma}
+	$maj\_accepted(b,s) \overset{e}{\implies} learned(l_i,b,s),\ \forall\ l_i \in \mathcal{L}$ \label{C-L2} \par
+\end{lemma}
+\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, when a quorum of $N-f$ acceptors accepts a sequence $s$ (or some equivalent sequence) in ballot $b$, eventually $s$ will be learned by any correct learner during ballot $b$.
 
 \begin{lemma}
 $proposed(b,s)\ \land\ proposed(b,s')\ \land\ s\bullet s' \thicksim  s' \bullet s \overset{e}{\implies} maj\_accepted(b,s),\ \forall s' \in \mathcal{P}$ \label{L-L1}

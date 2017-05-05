@@ -18,6 +18,8 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 		\hline
 		$X \sqsubseteq Y$ & The sequence $X$ is either equivalent or a strict prefix of sequence $Y$ according to the equivalence relation $\thicksim$ \\
 		\hline
+		$\oplus$ & Exclusive OR (XOR) logic operator \\
+		\hline
 		$\mathcal{L}$ & Set of learner processes \\
 		\hline
 		$\mathcal{P}$ & Set of proposals (commands or sequences of commands) \\
@@ -39,7 +41,7 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 \subsubsection{Consistency}
 \begin{theorem}At any time and for any two learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences
 \end{theorem} 
-\textbf{Proof:} By Lemma 
+\textbf{Proof:} By Lemma \ref{C-L}
 \begin{lemma}
 $learned_i \sqsubseteq learned_j \lor learned_j \sqsubseteq  learned_i$ \label{C-L} \par
 \end{lemma}
@@ -72,7 +74,7 @@ $maj\_accepted(b,s) \land maj\_accepted(b,s') \implies s \sqsubseteq s' \lor s' 
 \indent\indent\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{27-31\}, if $\not\sqsubseteq s' \land s' \not\sqsubseteq s$ then they must contain non-commutative commands and have been assembled concurrently. \par
 3. $maj\_accepted(b,s) \oplus maj\_accepted(b,s')$ \par
 \indent\indent\textbf{Proof:} By 2 and Algorithm \ref{BFT-Learn} lines \{1-4\}, only $s$ or $s'$ can gather $N-f$ votes.  \par
-4. Q.E.D. \par
+4. Q.E.D.
 
 \begin{lemma}
 $learned(l_i,b,s) \implies maj\_accepted(b,s),\ \forall\ l_i \in \mathcal{L}$ \label{C-L1} \par
@@ -119,9 +121,8 @@ $proposed(s) \overset{e}{\implies} learned(l_i,b,s),\ \forall l_i \in \mathcal{L
 3. Q.E.D.
 
 \begin{lemma}
-$proposed(s) \overset{e}{\implies} maj\_accepted(b,s)$ \label{L-L2}
+$proposed(s) \overset{e}{\implies} maj\_accepted(b,s)$ \label{L-L2} \par
 \end{lemma}
-
 \textbf{Proof:} A proposed sequence is either conflict-free when its incorporated into every acceptor's current sequence or it's creates conflicting sequences at different acceptors. In the first case, it's accepted by a quorum (Algorithm \ref{BFT-Acc} lines \{27-31\}) and, in the second case, it's sent in phase $1b$ messages to the in leader in the next ballot (Algorithm \ref{BFT-Acc} lines \{13-18\}) and incorporated in the next proposal (Algorithm \ref{BFT-Lead} lines \{8-14,27-36\}). 
 
 \begin{lemma}

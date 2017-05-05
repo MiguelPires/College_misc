@@ -71,8 +71,8 @@ $maj\_accepted(b,s) \land maj\_accepted(b,s') \implies s \sqsubseteq s' \lor s' 
 2. $s$ e $s'$ are assembled concurrently \par
 \indent\indent\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{27-31\}, if $\not\sqsubseteq s' \land s' \not\sqsubseteq s$ then they must contain non-commutative commands and have been assembled concurrently. \par
 3. $maj\_accepted(b,s) \oplus maj\_accepted(b,s')$ \par
-\indent\indent\textbf{Proof:} By 2 and Algorithm \ref{BFT-Learn} lines \{1-4\}, only $s$ or $s'$ can gather $N-f$ votes  \par
-4. Q.E.D \par
+\indent\indent\textbf{Proof:} By 2 and Algorithm \ref{BFT-Learn} lines \{1-4\}, only $s$ or $s'$ can gather $N-f$ votes.  \par
+4. Q.E.D. \par
 
 \begin{lemma}
 $learned(l_i,b,s) \implies maj\_accepted(b,s),\ \forall\ l_i \in \mathcal{L}$ \label{C-L1} \par
@@ -85,12 +85,12 @@ $learned_l$ can only contain proposed commands \label{N-T1} \par
 \end{theorem} 
 \textbf{Proof:} \par
 1. $learned(l_i,b,s) \implies maj\_accepted(b,s),\ \forall\ l_i \in \mathcal{L}$ \par
-\indent\indent\textbf{Proof:} Lemma \ref{C-L1} \par
+\indent\indent\textbf{Proof:} Lemma \ref{C-L1}. \par
 2. $maj\_accepted(b,s) \implies proposed(b,s)$ \par
-\indent\indent\textbf{Proof:} Lemma \ref{N-L1}\par
+\indent\indent\textbf{Proof:} Lemma \ref{N-L1}.\par
 3. $learned(l_i,b,s) \implies proposed(b,s)$ \par
-\indent\indent\textbf{Proof:} By 1 and 2 \par
-4. Q.E.D \par
+\indent\indent\textbf{Proof:} By 1 and 2. \par
+4. Q.E.D. \par
 
 \begin{lemma}
 $maj\_accepted(b,s) \implies proposed(b,s)$ \label{N-L1} \par
@@ -105,21 +105,26 @@ If $learned_l = v$ then, at all later times, $v \sqsubseteq learned_l$, for any 
 
 \subsubsection{Liveness}
 \begin{theorem}
-For a proposal $s$ and any learner $l$, if $s$ commutes with any other proposal $s'$ proposed in the same ballot $b$, eventually $learned_l$ contains $s$ \label{L-T1} \par
+For any proposal $s$ and learner $l$, eventually $learned_l$ contains $s$ \label{L-T1} \par
 \end{theorem} 
+\textbf{Proof:} By Lemma \ref{L-L1}.
+\begin{lemma}
+$proposed(s) \overset{e}{\implies} learned(l_i,b,s),\ \forall l_i \in \mathcal{L}$ \label{L-L1} \par
+\end{lemma}
 \textbf{Proof:} \par
-1. $proposed(b,s)\ \land\ proposed(b,s')\ \land\ s\bullet s' \thicksim  s' \bullet s  \overset{e}{\implies} maj\_accepted(b,s),\ \forall s' \in \mathcal{P}$ \par
-\indent\indent\textbf{Proof:} By Lemma \ref{L-L1}.\par
-2. $proposed(b,s)\ \land\ proposed(b,s')\ \land\ s\bullet s' \thicksim s' \bullet s \overset{e}{\implies} learned(l,b,s),\ \forall s' \in \mathcal{P}$ \par
-\indent\indent\textbf{Proof:} By 1 and Lemma \ref{C-L2}. \par
-3. Q.E.D
+1. $maj\_accepted(b,s) \overset{e}{\implies} learned(l_i,b,s),\ \forall\ l_i \in \mathcal{L}$ \par
+\indent\indent\textbf{Proof:} By Lemma \ref{L-L3}.\par
+2. $proposed(s) \overset{e}{\implies} maj\_accepted(b,s)$ \par
+\indent\indent\textbf{Proof:} By Lemma \ref{L-L2}. \par
+3. Q.E.D.
 
 \begin{lemma}
-	$maj\_accepted(b,s) \overset{e}{\implies} learned(l_i,b,s),\ \forall\ l_i \in \mathcal{L}$ \label{C-L2} \par
+$proposed(s) \overset{e}{\implies} maj\_accepted(b,s)$ \label{L-L2}
+\end{lemma}
+
+\textbf{Proof:} A proposed sequence is either conflict-free when its incorporated into every acceptor's current sequence or it's creates conflicting sequences at different acceptors. In the first case, it's accepted by a quorum (Algorithm \ref{BFT-Acc} lines \{27-31\}) and, in the second case, it's sent in phase $1b$ messages to the in leader in the next ballot (Algorithm \ref{BFT-Acc} lines \{13-18\}) and incorporated in the next proposal (Algorithm \ref{BFT-Lead} lines \{8-14,27-36\}). 
+
+\begin{lemma}
+$maj\_accepted(b,s) \overset{e}{\implies} learned(l_i,b,s),\ \forall\ l_i \in \mathcal{L}$ \label{L-L3} \par
 \end{lemma}
 \textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, when a quorum of $N-f$ acceptors accepts a sequence $s$ (or some equivalent sequence) in ballot $b$, eventually $s$ will be learned by any correct learner during ballot $b$.
-
-\begin{lemma}
-$proposed(b,s)\ \land\ proposed(b,s')\ \land\ s\bullet s' \thicksim  s' \bullet s \overset{e}{\implies} maj\_accepted(b,s),\ \forall s' \in \mathcal{P}$ \label{L-L1}
-\end{lemma}
-\textbf{Proof:} By Algorithm \ref{BFT-Prop} lines \{4-8\}, Algorithm \ref{BFT-Lead} lines \{33-37\} and Algorithm \ref{BFT-Acc} lines \{30-45\}, if proposals $s$ commutes with any other proposal $s'$ proposed in the same ballot $b$ then \textit{eventually} a majority of acceptors will accept $s$. \par

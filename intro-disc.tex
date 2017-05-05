@@ -3,13 +3,13 @@
 % called coordination. Such a transition took decades, arguably due
 % to a dense presentation and non-trivial transformation of certain
 % aspects of protocol
-The evolution of the Paxos~\cite{paxos:tocs} protocol is a unique
+The evolution of the Paxos~\cite{Lam98} protocol is a unique
 chapter in the history of Computer Science. It was first described in
 1989 through a technical report~\cite{paxos:tr}, and was only
-published a decade later~\cite{paxos:tocs}. Another long wait took
+published a decade later~\cite{Lam98}. Another long wait took
 place until the protocol started to be studied in depth and used by
 researchers in various fields, namely the distributed
-algorithms~\cite{deprisco} and the distributed systems~\cite{petal}
+algorithms~\cite{DPLL97} and the distributed systems~\cite{petal}
 research communities. And finally, another decade later, the protocol
 made its way to the core of the implementation of the services that
 are used by millions of people over the Internet, in particular since
@@ -19,7 +19,7 @@ project~\cite{zookeeper}, used by Yahoo!\ among others. Arguably, the
 complexity of the presentation may have stood in the way of a faster
 adoption of the protocol, and several attempts have been made at
 writing more concise explanations of
-it~\cite{paxos:simple,paxos:moderatelycomplex}.
+it~\cite{L01,Renesse2011}.
 
 
 % Recently, interesting developments came along in space of both Paxos
@@ -30,14 +30,14 @@ More recently, several variants of Paxos have been proposed and
 studied. Two important lines of research can be highlighted in this
 regard. First, a series of papers hardened the protocol against
 malicious adversaries by solving consensus in a Byzantine fault
-model~\cite{pbft, byz:paxos}. The importance of this line of
+model~\cite{CL99,Lamport2011}. The importance of this line of
 research is now being confirmed as these protocols are now in widespread
 use in the context of cryptocurrencies and distributed ledger
-schemes such as blockchain~\cite{blockchain}.
+schemes such as blockchain~\cite{bitcoin}.
 Second, many proposals target improving
-the Paxos protocol by eliminating communication costs~\cite{fastpaxos},
+the Paxos protocol by eliminating communication costs~\cite{L06},
 including an important evolution of the protocol called Generalized
-Paxos~\cite{generalized:paxos}, which has the noteworthy aspect of
+Paxos~\cite{Lamport2005}, which has the noteworthy aspect of
 having lower communication costs by leveraging a specification that is
 weaker than traditional consensus. In particular, instead of forcing all
 processes to agree on the same value, it allows processes to pick an
@@ -45,7 +45,7 @@ increasing sequence of commands that differs from process to process
 in that commutative commands may appear in a different order.
 The practical importance of such weaker specifications is underlined
 by a significant research activity on the corresponding weaker consistency
-models for replicated systems~\cite{weakconsistency}.
+models for replicated systems~\cite{LLS90,dynamo}.
 %(This evolution has a parallel to the recent trend in studying replicated
 %systems that offer consistency models that are weaker than
 

@@ -195,7 +195,7 @@
 		\State
 		\Function{phase\_2b\_fast}{$value$}
 		\If {$fast\_bal[bal_a]$}
-		\State $val_a[bal_a] =  val_a[bal_a] \bullet value$;
+		\State $val_a[bal_a] =  \Call{remove\_duplicates}{val_a[bal_a] \bullet value}$;
 
 		\State \Call{send}{$P2B, bal_a, value$} to learners;
 		\EndIf

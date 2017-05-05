@@ -105,7 +105,7 @@
 		\State
 		\State \textbf{upon} \textit{receive($P1B, m, bal_a,val_a$)} from acceptor $a$ \textbf{do}
 		\State \hspace{\algorithmicindent} \textbf{if} $m = ballot_l$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $accepted[ballot_l][a] = sequence$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $accepted[ballot_l][a] = val_a$;
 		\State
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(accepted[ballot_l]) \geq N-f$ \textbf{then} 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2a}{$ $};
@@ -177,7 +177,7 @@
 		\State
 		\Function{phase\_1b}{$ballot, l$}
 		\If {$bal_a < ballot$}
-		\State \Call{send}{$P1B, ballot, bal_a$} to leader l;
+		\State \Call{send}{$P1B, ballot, bal_a, val_a$} to leader l;
 		\State $bal_a = ballot$;	
 		\State $val_a[bal_a] = \bot$;	
 		\EndIf

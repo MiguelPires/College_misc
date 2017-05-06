@@ -16,7 +16,7 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 		\hline
 		$X \overset{e}{\implies} Y$ & $X$ implies that $Y$ is eventually true \\
 		\hline
-		$X \sqsubseteq Y$ & The sequence $X$ is either equivalent or a strict prefix of sequence $Y$ according to the equivalence relation $\thicksim$ \\
+		$X \sqsubseteq Y$ & The sequence $X$ is a prefix of sequence $Y$ $\thicksim$ \\
 		\hline
 		$\oplus$ & Exclusive OR (XOR) logic operator \\
 		\hline
@@ -44,9 +44,9 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 \begin{theorem}At any time and for any two correct learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences \par
 \end{theorem} 
 \textbf{Proof:} \par
-1. $learned(l_j,b,s) \land learned(l_i,b,s') \implies s \sqsubseteq s' \lor s' \sqsubseteq s, \forall b \in \mathcal{B}, \forall s,s' \in \mathcal{P}$ \par
+1. $learned(l_j,b,s) \land learned(l_i,b,s') \implies s \sqsubseteq s' \lor s' \sqsubseteq s, \forall b \in \mathcal{B}, \forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}$ \par
 \indent\indent\textbf{Proof:} \par
-\indent\indent\indent\parbox{\linewidth}{2.1. $learned(l_i,b,s) \land learned(l_j,b,s') \implies maj\_accepted(b,s) \land maj\_accepted(b,s'), \forall b \in \mathcal{B}, \forall s,s' \in \mathcal{P}$ } \par
+\indent\indent\indent\parbox{\linewidth}{2.1. $learned(l_i,b,s) \land learned(l_j,b,s') \implies maj\_accepted(b,s) \land maj\_accepted(b,s'), \forall b \in \mathcal{B}, \forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}$ } \par
 \indent\indent\indent\indent\parbox{\linewidth}{\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, if a correct learner learned a sequence $s$ in a ballot $b$ then a $N-f$ acceptors must have executed phase $2b$ for $s$ in the same ballot.}\par
 \indent\indent\indent\parbox{\linewidth}{2.2. $maj\_accepted(b,s)\ \land\ maj\_accepted(b,s') \implies s \sqsubseteq s' \lor s' \sqsubseteq s, \forall b \in \mathcal{B}, \forall s,s' \in \mathcal{P}$}\par
 \indent\indent\indent\indent\textbf{Proof:} Proved by contradiction.\par

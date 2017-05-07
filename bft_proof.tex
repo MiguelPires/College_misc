@@ -67,9 +67,9 @@ $learned_l$ can only contain proposed commands \label{N-T1} \par
 \end{theorem} 
 \textbf{Proof:} \par
 1. At any given instant, $learned(l_i,s) \implies maj\_accepted(s),\forall l_i \in \mathcal{L}, \forall s \in \mathcal{P}$ \par
-\indent\indent\parbox{\linewidth}{\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, if a correct learner learned a sequence $s$ at any given instant then $N-f$ acceptors must have executed phase $2b$ for $s$.}. \par
+\indent\indent\parbox{\linewidth}{\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, if a correct learner learned a sequence $s$ at any given instant then $N-f$ acceptors must have executed phase $2b$ for $s$.}\par
 2. At any given instant, $maj\_accepted(s) \implies proposed(s), \forall s \in \mathcal{P}$ \par
-\indent\indent\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{7-11, 20-31\}, for $N-f$ acceptors to accept a proposal it must have been proposed by a proposer.\par
+\indent\indent\parbox{\linewidth}{\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{7-11, 20-31\}, for $N-f$ acceptors to accept a proposal it must have been proposed by a proposer.}\par
 3. At any given instant, $learned(l_i,s) \implies proposed(s),\forall l_i \in \mathcal{L}, \forall s \in \mathcal{P}$ \par
 \indent\indent\textbf{Proof:} By 1 and 2. \par
 4. Q.E.D. \par
@@ -88,7 +88,7 @@ For any proposal $s$ and correct learner $l$, eventually $learned_l$ contains $s
 1. $maj\_accepted(s) \overset{e}{\implies} learned(l_i,s),\ \forall\ l_i \in \mathcal{L},\forall s \in \mathcal{P}$ \par
 \indent\indent\parbox{\linewidth}{\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, when $N-f$ acceptors accepts a sequence $s$ (or some equivalent sequence), eventually $s$ will be learned by any correct learner.}\par
 2. $proposed(s) \overset{e}{\implies} maj\_accepted(s), \forall s \in \mathcal{P}$ \par
-\indent\indent\parbox{\linewidth}{\textbf{Proof:} A proposed sequence is either conflict-free when its incorporated into every acceptor's current sequence or it's creates conflicting sequences at different acceptors. In the first case, it's accepted by a quorum (Algorithm \ref{BFT-Acc} lines \{27-31\}) and, in the second case, it's sent in phase $1b$ messages to the in leader in the next ballot (Algorithm \ref{BFT-Acc} lines \{13-18\}) and incorporated in the next proposal (Algorithm \ref{BFT-Lead} lines \{8-14,27-36\}).} \par
+\indent\indent\parbox{\linewidth}{\textbf{Proof:} A proposed sequence is either conflict-free when its incorporated into every acceptor's current sequence or it creates conflicting sequences at different acceptors. In the first case, it's accepted by a quorum (Algorithm \ref{BFT-Acc} lines \{27-31\}) and, in the second case, it's sent in phase $1b$ messages to the in leader in the next ballot (Algorithm \ref{BFT-Acc} lines \{13-18\}) and incorporated in the next proposal (Algorithm \ref{BFT-Lead} lines \{8-14,27-36\}).} \par
 3. $proposed(s) \overset{e}{\implies} learned(l_i,s),\ \forall l_i \in \mathcal{L}, \forall s \in \mathcal{P}$ \par
 \indent\indent\textbf{Proof:} By 1 and 2. \par
 4. Q.E.D.

@@ -7439,15 +7439,9 @@ fallback for best-effort hardware transactional memory.},
 	year = {2011}
 }
 
-@article{Lamport2005,
-	abstract = {The state-machine approach to implementing a fault-tolerant distributed system involves reaching agreement on the sequence of system commands by executing a sequence of separate instances of a consensus algorithm. It can be shown that any fault-tolerant asynchronous consensus algorithm re- quires at least two message delays between the issuing of a command and when it can be executed. But even in the absence of faults, no algorithm can guarantee this fast an execution if two different commands are issued concurrently. We generalize the state-machine approach to involve reach- ing agreement on a partially ordered set of commands. By generalizing the Paxos consensus algorithm, we can implement a system in which concur- rently issued commands can always be executed in two message delays if they are non-interfering, so it does not matter in which order those com- mands are executed. For many systems, concurrent commands are rarely interfering, so the generalized Paxos algorithm can be quite efficient. And command-structure sets are very simple.},
-	author = {Lamport, Leslie},
-	doi = {MSR-TR-2005-33}
-	issn = {{\textless}null{\textgreater}},
-	number = {April},
-	pages = {60},
-	title = {{Generalized Consensus and Paxos}},
-	url = {http://research.microsoft.com/apps/pubs/default.aspx?id=64631},
+@MISC{Lamport2005,
+	author = {Leslie Lamport},
+	title = {Generalized Consensus and Paxos },
 	year = {2005}
 }
 

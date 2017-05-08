@@ -1,5 +1,5 @@
 \section{Background and Related Work}
- 
+\label{sec:related} 
 \subsection{Paxos and its variants} \label{Paxos} 
 
 The Paxos protocol family solves consensus by finding an equilibrium in face of the well-known FLP impossibility result~\cite{FLP85}. It does this by always guaranteeing safety in an asynchronous system, but at the same time making the observation that most of the time systems have periods during which they can be considered synchronous, since long delays are often sporadic and temporary. Therefore, only foregoes progress during the temporary periods of asynchrony, or if more than $f$ faults occur for a system of $n=2f+1$ replicas~\cite{L01}. The classic form of Paxos employs a set of proposers, acceptors and learners, runs in a sequence of ballots, and employs two phases (numbered 1 and 2), with a similar message pattern: proposer to acceptors, acceptors to proposer (and, in phase 2, also acceptors to learners). To ensure progress during synchronous periods, proposals are serialized by a distinguished proposer, which is called the leader.\par

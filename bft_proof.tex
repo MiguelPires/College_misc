@@ -40,24 +40,23 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 \begin{theorem}At any time and for any two correct learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences \par
 \end{theorem} 
 \textbf{Proof:} \par
-
 \parbox{\linewidth}{1. At any given instant, $learned(l_j,s) \land learned(l_i,s') \implies s \thicksim s' \bullet \sigma_1 \lor s' \thicksim s \bullet \sigma_2, \forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}, \exists \sigma_1,\sigma_2 \in \mathcal{P}$}  \par
 \indent\indent\textbf{Proof:} \par
-\indent\indent\indent\parbox{\linewidth}{1.1. At any given instant, $learned(l_i,s) \land learned(l_j,s') \implies maj\_accepted(s) \land maj\_accepted(s'), \forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}$ } \par
-\indent\indent\indent\indent\parbox{\linewidth}{\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, if a correct learner learned a sequence $s$ at any given instant then a $N-f$ acceptors must have executed phase $2b$ for $s$.}\par
-\indent\indent\indent\parbox{\linewidth}{1.2. At any given instant, $maj\_accepted(s) \land maj\_accepted(s') \implies s \thicksim s' \bullet \sigma_1 \lor s' \thicksim s \bullet \sigma_2, \forall s,s' \in \mathcal{P}, \exists \sigma_1,\sigma_2 \in \mathcal{P}$}\par
+\indent\indent\indent\parbox{\linewidth-\algorithmicindent*3}{1.1. At any given instant, $learned(l_i,s) \land learned(l_j,s') \implies maj\_accepted(s) \land maj\_accepted(s'), \forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}$ } \par
+\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*4}{\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, if a correct learner learned a sequence $s$ at any given instant then a $N-f$ acceptors must have executed phase $2b$ for $s$.}\par
+\indent\indent\indent\parbox{\linewidth-\algorithmicindent*3}{1.2. At any given instant, $maj\_accepted(s) \land maj\_accepted(s') \implies s \thicksim s' \bullet \sigma_1 \lor s' \thicksim s \bullet \sigma_2, \forall s,s' \in \mathcal{P}, \exists \sigma_1,\sigma_2 \in \mathcal{P}$}\par
 \indent\indent\indent\indent\textbf{Proof:} Proved by contradiction.\par
-\indent\indent\indent\indent\indent\parbox{\linewidth}{1.2.1. At any given instant, $maj\_accepted(s) \land maj\_accepted(s') \wedge s \not\thicksim s' \bullet \sigma_1 \land s' \not\thicksim s \bullet \sigma_2, \forall s,s',\sigma_1,\sigma_2 \in \mathcal{P}$} \par
+\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*5}{1.2.1. At any given instant, $maj\_accepted(s) \land maj\_accepted(s') \wedge s \not\thicksim s' \bullet \sigma_1 \land s' \not\thicksim s \bullet \sigma_2, \forall s,s',\sigma_1,\sigma_2 \in \mathcal{P}$} \par
 \indent\indent\indent\indent\indent\indent\textbf{Proof:} Contradiction assumption.\par
 \indent\indent\indent\indent\indent 1.2.2. $s$ and $s'$ are non-commutative \par
-\indent\indent\indent\indent\indent\indent \parbox{\linewidth}{\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{27-31\}, if $s \not\thicksim s' \bullet \sigma_1 \land s' \not\thicksim s \bullet \sigma_2, \forall \sigma_1,\sigma_2 \in \mathcal{P}$ then $s$ and $s'$ must contain non-commutative commands differently ordered. Otherwise, they would be possible to extend to equivalent sequences.}\par
+\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{27-31\}, if $s \not\thicksim s' \bullet \sigma_1 \land s' \not\thicksim s \bullet \sigma_2, \forall \sigma_1,\sigma_2 \in \mathcal{P}$ then $s$ and $s'$ must contain non-commutative commands differently ordered. Otherwise, they would be possible to extend to equivalent sequences.}\par
 \indent\indent\indent\indent\indent 1.2.3. At any given instant, $\neg (maj\_accepted(s) \land maj\_accepted(s'))$ \par
-\indent\indent\indent\indent\indent\indent \parbox{\linewidth}{\textbf{Proof:} By 1.2.2 and Algorithm \ref{BFT-Learn} lines \{1-4\}, only $s$ or $s'$ can gather $N-f$ votes.}\par
+\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\textbf{Proof:} By 1.2.2 and Algorithm \ref{BFT-Learn} lines \{1-4\}, only $s$ or $s'$ can gather $N-f$ votes.}\par
 \indent\indent\indent\indent\indent 1.2.4. Q.E.D. \par
-\indent\indent\indent \parbox{\linewidth}{1.3. At any given instant, $learned(l_i,s)\ \land\ learned(l_j,s') \implies s \thicksim s' \bullet \sigma_1 \lor s' \thicksim s \bullet \sigma_2, \forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}, \exists \sigma_1,\sigma_2 \in \mathcal{P}$ }\par
+\indent\indent\indent \parbox{\linewidth-\algorithmicindent*3}{1.3. At any given instant, $learned(l_i,s)\ \land\ learned(l_j,s') \implies s \thicksim s' \bullet \sigma_1 \lor s' \thicksim s \bullet \sigma_2, \forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}, \exists \sigma_1,\sigma_2 \in \mathcal{P}$ }\par
 \indent\indent\indent\indent\textbf{Proof:} By 1.1 and 1.2.\par
 \indent\indent\indent 1.4. Q.E.D. \par
-\parbox{\linewidth}{2. At any given instant, $learned(l_j,learned_i) \land learned(l_i,learned_j) \implies learned_i \thicksim learned_j \bullet \sigma_1 \lor learned_j \thicksim learned_i \bullet \sigma_2, \forall l_i,l_j \in \mathcal{L}, \exists \sigma_1,\sigma_2 \in \mathcal{P}$}\par
+\parbox{\linewidth-\algorithmicindent*3}{2. At any given instant, $learned(l_j,learned_i) \land learned(l_i,learned_j) \implies learned_i \thicksim learned_j \bullet \sigma_1 \lor learned_j \thicksim learned_i \bullet \sigma_2, \forall l_i,l_j \in \mathcal{L}, \exists \sigma_1,\sigma_2 \in \mathcal{P}$}\par
 \indent\indent\textbf{Proof:} By 1.\par
 3. Q.E.D. \par
 

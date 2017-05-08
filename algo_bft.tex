@@ -89,7 +89,7 @@
 		
 		\State
 		\State \textbf{upon} \textit{receive(PROPOSE, prop)} from proposer $p_i$ \textbf{do} 
-		\State \hspace{\algorithmicindent} $proposals = prop$;
+		\State \hspace{\algorithmicindent} $proposals = proposals \bullet prop$;
 		\State
 		\State \textbf{upon} \textit{receive($P1B, m, bal_a,val_a$)} from acceptor $a$ \textbf{do}
 		\State \hspace{\algorithmicindent} \textbf{if} $m = ballot_l$ \textbf{then}

@@ -64,28 +64,15 @@
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions = \bot$;
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view = \bot$;
 
-		\iffalse\State
-		\Function{is\_prefix}{$extension, prefix$}
-		\If {$\lVert prefix \rVert > \lVert extension \rVert$}
-		\State \textbf{return} \textit{false};
-		\EndIf
-		
 		\State
-		\item[] outer:	
-		\State \textbf{for} $c_{old}$ in $prefix$ \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{for} $c_{new}$ in $extension$ \textbf{do}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $c_{old} = c_{new}$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{continue} \textit{outer};
-		
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{else if} !\Call{are\_commutative}{$c_{old}, c_{new}$} \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return} \textit{false};
-		\State \hspace{\algorithmicindent}\textbf{end for}
-		\State \hspace{\algorithmicindent}\textbf{return} \textit{false};
+		\Function{merge\_sequences}{$old\_seq, new\_seq$}
+		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $old\_seq =  old\_seq \bullet c$;
 		\State \textbf{end for}
-		\State
-		\State \textbf{return} \textit{true};
+		\State \textbf{return} $old\_seq$;
 		\EndFunction
-		\fi
+
 	\end{algorithmic}
 \end{algorithm}
 
@@ -128,29 +115,10 @@
 		\Function{proved\_safe}{$ballot$}
 		\State $safe\_seq = \bot$;
 		\State \textbf{for} $seq$ \textbf{in} $accepted[ballot]$ \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{for} $c$ \textbf{in} $seq$ \textbf{do} 
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $!\Call{Contains}{safe\_seq,c}$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $safe\_seq =  safe\_seq \bullet c$;
-		\State \hspace{\algorithmicindent} \textbf{end for}
+		\State \hspace{\algorithmicindent} $safe\_seq = \Call{merge\_sequences}{safe\_seq, seq}$;
 		\State \textbf{end for}
 		\State \textbf{return} $safe\_seq$;
 		\EndFunction
-		
-		\iffalse \State
-		\Function{proved\_safe}{Q, m}
-		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
-		\State $RS = \{R \in k$-$quorum\ |\ \forall a \in R \cap Q : val_a[k] \neq null\}$;
-		\State $\gamma(R) = \sqcap \{v_a[k]\ |\ a \in Q \cap R \}$;
-		\State $\Gamma = \{\gamma(R)\ |\ R \in RS \}$;
-		\State
-		\If{$RS = \varnothing$}
-		\State \textbf{return} $\{val_a[k]\ |\ (a \in Q) \wedge (val_a[k] \neq null)\}$;
-		\Else
-		\State \textbf{return} $\sqcup \Gamma$;
-		\EndIf
-		\EndFunction
-		\fi
-		
 	\end{algorithmic}
 \end{algorithm}
 
@@ -195,8 +163,7 @@
 		\State
 		\Function{phase\_2b\_fast}{$value$}
 		\If {$fast\_bal[bal_a]$}
-		\State $val_a[bal_a] =  \Call{remove\_duplicates}{val_a[bal_a] \bullet value}$;
-
+		\State $val_a[bal_a] =  \Call{merge\_sequences}{val_a[bal_a], value}$;
 		\State \Call{send}{$P2B, bal_a, value$} to learners;
 		\EndIf
 		\EndFunction
@@ -214,6 +181,6 @@
 		
 		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages[ballot][value]) \geq N-f$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}
-		$learned = \Call{remove\_duplicates}{learned \bullet value}$;
+		$learned = \Call{merge\_sequences}{learned, value}$;
 	\end{algorithmic}
 \end{algorithm}

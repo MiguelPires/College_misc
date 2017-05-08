@@ -2,10 +2,7 @@
 This section presents our Byzantine fault tolerant Generalized Paxos
 Protocol. Given our space constraints, we opted for merging in a
 single description a novel presentation of Generalized Paxos and its
-extension to the Byzantine model. Then, in Appendix~\ref{app:cft}, we
-present the crash-fault-tolerant version of Generalized Paxos,
-following the same notation and pseudo-code description we use here.
-
+extension to the Byzantine model.
 \subsection{Overview}
 
 We modularize our protocol explanation according to the following main components, which are also present in other protocols of the Paxos family:
@@ -27,9 +24,6 @@ The goal of the view change sub-protocol is to elect a leader that is able to ca
 To allow this, whenever a subset of correct processes perceive that liveness is not being upheld, this must be sufficient for triggering a view change. However, even if up to $f$ Byzantine processes produce false suspicions, this should not suffice to trigger a view change. Therefore, this mechanism must ensure that when $f+1$ processes suspect the leader to be faulty (and only then), all correct processes commit to a new view and stop participating in lower-numbered views. In particular, processes start broadcasting suspicion messages if they believe that the leader is faulty. Suspicions contain the current view number, and are signed by the sending process, to avoid being forged. Furthermore, to ensure that view changes succeed if they have enough support but cannot be triggered by Byzantine processes, if a correct process receives $f+1$ suspicions, it stops participating in the current view and multicasts a view-change message. View-change messages contain a ballot number, the previously committed ballot and value, and the $f+1$ signed suspicions. If a process receives a view-change message without previously receiving $f+1$ suspicions, it will verify the suspicions by validating they are signed by $f+1$ distinct processes, commit to the new view and multicast a view-change message. (As such, the signatures allow a process that receives this message to commit to the new view and multicast its own view-change messages without receiving $f+1$ suspicions itself.)  This guarantees that if one correct process receives the $f+1$ suspicions and broadcasts the view-change message, then all correct processes, upon receving this message, will be able to validate the proof of $f+1$ suspicions and switch to the new view. Processes start participating in the new view as soon as they broadcast their view-change messages, since the multicast of one correct view-change message is all it takes to ensure that all correct process will eventually switch to the new view. The only process that must wait for $2f+1$ view-change messages is the leader of the new view since, to send new sequences, it needs to know the values voted for in the last ballot for a quorum of acceptors, as described next.
 
 
-
-%\textbf{View Change Proof} We can prove that $f+1$ suspicions trigger a new view successfully since as soon as one process receives those suspicions it will broadcast a view-change message containing a proof that $f+1$ processes suspect the leader. When other processes receive either the $f+1$ suspicions or the view-change message, they will broadcast their own view-change messages and start participating in the new view. Faulty processes alone can't force a new view since $f+1$ suspicions are required for any correct process to commit to the new view.\par
-
 \subsection{Agreement protocol} 
 
 The consensus protocol allows processes to agree on equivalent sequences of commands (according to our previous definition of equivalence). In the original Paxos, each instance of consensus is called a ballot, which can be \textit{classic} or \textit{fast}. In this algorithm, a ballot is a very similar concept, with the exception that instead of being a separate instance of consensus, it corresponds to an extension to the sequence of learned commands of a common consensus instance.
@@ -40,7 +34,7 @@ A classic ballot in Generalized Paxos follows a protocol that is very similar to
 In fast ballots, multiple proposers can concurrently propose either single commands or sequences of commands (by sending them directly to the acceptors), and eventually a set of equivalent sequences must be learned by the learners. We use the term \textit{proposal} to denote either the command or sequence of commands that was proposed.
 Concurrency implies that acceptors may send votes in different orders but the protocol ensures that, as long as the resulting sequences are equivalent, the commands will be learned in two message delays. 
 
-\todo{Should we move this paragraph to the end of the section?} Note that there is a subtle interplay between the two types of ballots, since the leader must execute the first phase if he wishes to run a classic ballot after a fast ballot. This is because the acceptors may have used a fast round to vote for new sequences that are unknown to the leader, since they were proposed directly by the proposers.
+Note that there is a subtle interplay between the two types of ballots, since the leader must execute the first phase if he wishes to run a classic ballot after a fast ballot. This is because the acceptors may have used a fast round to vote for new sequences that are unknown to the leader, since they were proposed directly by the proposers.
 
 Next, we present the protocol for each type of ballot in detail.
 

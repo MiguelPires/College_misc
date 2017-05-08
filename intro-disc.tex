@@ -67,13 +67,9 @@ task, since it will contribute to the understanding
 and also open the possibility of adopting generalized Paxos in
 scenarios such as a Blockchain deployment.
 
-
-
 As such, the paper makes several contributions, which are listed next.
-
-
+%
 \begin{itemize}
-
 \item
 We present a simplified version of the specification of Generalized
 Consensus, which is focused on the most commonly used case of the
@@ -93,12 +89,12 @@ easier to implement;
 we prove the correctness of the Byzantine Generalize Paxos protocol;
 
 \item
-and we discuss several extensions to the protocol, namely ...
+and we discuss several extensions to the protocol in the context of relaxed consistency models and fault tolerance.
 
 
 \end{itemize}
 
 The remainder of the paper is organized as follows: Section~\ref{sec:model} introduces the model and specification of Generalized Paxos.
 Section~\ref{sec:related} is a detailed overview of Paxos and related protocols that inspired the algorithm in this paper.
-Section~\ref{sec:protocol} presents the Generalized Paxos protocol that is resilient against Byzantine failures while Appendix~\ref{app:cft} contains the corresponding
-crash (but not Byzantine) tolerant protocol. Section~\ref{sec:disc} discusses some optimizations and concludes the paper.
+Section~\ref{sec:protocol} presents the Generalized Paxos protocol that is resilient against Byzantine failures along with the corresponding proof sketches. 
+Section~\ref{sec:disc} discusses some optimizations and Section~\ref{sec:conc} concludes the paper.

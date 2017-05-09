@@ -8,7 +8,7 @@
 		\State \hspace{\algorithmicindent} $ballot\_type = type$;
 		\State
 		
-		\State \textbf{upon} \textit{command\_request(c)} \textbf{do} 
+		\State \textbf{upon} \textit{command\_request(c)} \textbf{do}   \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\# receive request from application
 		\State \hspace{\algorithmicindent} \textbf{if} $ballot\_type = fast\_ballot$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$P2A\_FAST, c$} to acceptors;
 		\State \hspace{\algorithmicindent} \textbf{else} 

@@ -26,7 +26,10 @@ To allow this, whenever a subset of correct processes perceive that liveness is 
 
 \subsection{Agreement protocol} 
 
-The consensus protocol allows processes to agree on equivalent sequences of commands (according to our previous definition of equivalence). In the original Paxos, each instance of consensus is called a ballot, which can be \textit{classic} or \textit{fast}. In this algorithm, a ballot is a very similar concept, with the exception that instead of being a separate instance of consensus, it corresponds to an extension to the sequence of learned commands of a common consensus instance.
+The consensus protocol allows processes to agree on equivalent sequences of commands (according to our previous definition of equivalence). 
+In the original Paxos, each instance of consensus is called a ballot, which can be \textit{classic} or \textit{fast}. 
+In this algorithm, ballots are a similar concept, with the exception that instead of being a separate instance of consensus, 
+it corresponds to an extension to the sequence of learned commands of a common consensus instance.
 
 In classic ballots, a leader proposes a single sequence of commands, which is learned by the learners. 
 A classic ballot in Generalized Paxos follows a protocol that is very similar to the one used by classic Paxos~\cite{Lam98}. This protocol comprises a first phase where the leader obtains a promise that the acceptors will not participate in lower-numbered ballots, and each acceptor conveys to the leader the sequence that the acceptor has already voted for. This first phase becomes unnecessary when a classic ballot is executed after a view change, since the view change protocol can include this first phase, i.e., it can gather the last committed sequences and extract that same promise from the acceptors. This promise is implicitly valid because, for the remainder of the current view, the leader is the only process that can start a new ballot. This is followed by a second phase where the leader picks an extension to the previous sequence and broadcasts it to the acceptors. The acceptors send their votes to the learners, who, after receiving $N-f$ votes for a proposal, learn the sequences. 

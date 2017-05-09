@@ -6,8 +6,11 @@ a set of $n \in \mathbb{N}$ processes communicate by
 \emph{sending} and \emph{receiving} messages.
 Each process executes an algorithm assigned to it, but may stop executing it by \emph{crashing}.
 If a process does not follow the algorithm assigned to it, then it is \emph{byzantine}.
-This paper considers the \emph{authenticated} Byzantine model: every process can produce cryptographic digital signatures~\cite{quorum}. Furthermore, for clarity of exposition, we assume authenticated perfect links~\cite{cgr:book}, where a message that is sent by a non-faulty sender is eventually received and messages cannot be forged. (Such links can be implemented trivially using retransmission, elimination of duplicates, and point-to-point message authentication codes~\cite{cgr:book}.)
-A process may be a \emph{learner}, \emph{proposer}, \emph{leader} or \emph{acceptor}.
+This paper considers the \emph{authenticated} Byzantine model: every process can produce cryptographic digital signatures~\cite{quorum}. 
+Furthermore, for clarity of exposition, we assume authenticated perfect links~\cite{cgr:book}, 
+where a message that is sent by a non-faulty sender is eventually received and messages cannot be forged 
+(such links can be implemented trivially using retransmission, elimination of duplicates, and point-to-point message authentication codes~\cite{cgr:book}.)
+A process may be a \emph{learner}, \emph{proposer} or \emph{acceptor}.
 Informally, proposers provide input values that must be agreed upon by learners and the acceptors help the learners \emph{agree} on a value.
 
 \paragraph{Problem Statement: Generalized Paxos}

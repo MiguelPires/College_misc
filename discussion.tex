@@ -79,7 +79,7 @@ total system size $N$ must uphold two conditions:
 	\item $N > 2f$
 	\item $N > 2e+f$
 \end{itemize} 
-Additionally, the fast and classic quorums are of size $N-e$ and $N-f$, respectively, which means there is a dependence relationship between these three concepts: number of tolerated faults, system size, and quorum size: if we not mind keeping $e$ small, then the fast ballot quorum will be a larger fraction of the total system size, which itself will be smaller. Conversely, if we wish to allow fast ballots to progress in the presence of the maximum number of faults, we can set $e=f$ which means that $N >3f$ and $N-e=N-f$. 
+Additionally, the fast and classic quorums are of size $N-e$ and $N-f$, respectively, which means there is a dependence relationship between these three concepts: number of tolerated faults, system size, and quorum size. If we don't mind keeping $e$ small, then the fast ballot quorum will be a larger fraction of the total system size, which itself will be smaller. Conversely, if we wish to allow fast ballots to progress in the presence of the maximum number of faults, we can set $e=f$ which means that $N >3f$ and $N-e=N-f$. 
 
 An interesting observation stemming from our results is that, since Byzantine fault tolerance also requires a total system size of $N>3f$ and a quorum size of $2f+1$, we are able to amortize the cost of both features, i.e., we are able to tolerate the maximum number of faults for fast execution while not increasing the overal replication factor.
 

@@ -1,5 +1,5 @@
-# Java-Named-Arguments
-This project implements keyword arguments, also known as named parameters. This feature allows a function call to specify the name of the parameter to which a given
+# Java Named Arguments
+This project implements optional keyword arguments, also known as named parameters, in Java. This feature allows a function call to specify the name of the parameter to which a given
 argument applies. It also simplifies the use of optional arguments, as it makes it easy to pass only a subset of the needed arguments.
 
 ## Compilation

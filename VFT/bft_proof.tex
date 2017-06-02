@@ -69,10 +69,10 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 $learned_l$ can only contain proposed commands \label{N-T1} \par
 \end{theorem} 
 \textbf{Proof:} \par
-\parbox{\linewidth}{\strut1. At any given instant, $\forall l_i \in \mathcal{L}, \forall s \in \mathcal{P}, learned(l_i,s) \implies maj\_accepted(s)$ }\par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, if a correct learner learned a sequence $s$ at any given instant then $N-f$ acceptors must have executed phase $2b$ for $s$.}\par
-\parbox{\linewidth}{\strut2. At any given instant, $\forall s \in \mathcal{P}, maj\_accepted(s) \implies proposed(s)$ }\par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{7-11, 20-31\}, for $N-f$ acceptors to accept a proposal it must have been proposed by a proposer.}\par
+\parbox{\linewidth}{\strut1. At any given instant, $\forall l_i \in \mathcal{L}, \forall s \in \mathcal{P}, learned(l_i,s) \implies \forall x \in \mathcal{P}, \exists \sigma \in \mathcal{P},  maj\_accepted(s) \lor (min\_accepted(s) \land  (s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma))$ }\par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, if a correct learner learned a sequence $s$ at any given instant then either $N-f$ or $f+1$ (if $s$ is universally commutative) acceptors must have executed phase $2b$ for $s$.}\par
+\parbox{\linewidth}{\strut2. At any given instant, $\forall s \in \mathcal{P}, maj\_accepted(s) \lor min\_accepted(s) \implies proposed(s)$ }\par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{7-11, 20-31\}, for either $N-f$ or $f+1$ acceptors to accept a proposal it must have been proposed by a proposer.}\par
 \parbox{\linewidth}{\strut3. At any given instant, $\forall s \in \mathcal{P}, learned(l_i,s) \implies proposed(s),\forall l_i \in \mathcal{L}$}\par
 \indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1 and 2.}\par
 \parbox{\linewidth}{\strut4. Q.E.D.}\par

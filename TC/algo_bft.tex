@@ -35,11 +35,11 @@
 		\State
 		\State \hspace{\algorithmicindent} $suspicions[p_i] = proof$;
 		\State \hspace{\algorithmicindent} \textbf{if} $\#(suspicions) > f$ and $new\_view[p] = \bot$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[p] = \langle last\_bal,\ last\_val \rangle$;
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$VIEW\_CHANGE, view+1, last\_bal, last\_val, suspicions$};
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[p] = \langle last\_bal,\ view\_vals \rangle$;
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$VIEW\_CHANGE, view+1, last\_bal, view\_vals, suspicions$};
 		\State
 		
-		\State\textbf{upon} \textit{receive($VIEW\_CHANGE, view_i, last\_bal_i, last\_val_i, suspicions$)} 
+		\State\textbf{upon} \textit{receive($VIEW\_CHANGE, view_i, last\_bal_i, view\_vals_i, suspicions$)} 
 		\item[] from process $p_i$ \textbf{do} 
 		\State \hspace{\algorithmicindent} \textbf{if} $view_i \leq view$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{return};
@@ -50,10 +50,10 @@
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return};
 		
 		\State
-		\State\hspace{\algorithmicindent} $new\_view[view_i][p_i] = \langle last\_bal_i,\ last\_val_i \rangle$;
+		\State\hspace{\algorithmicindent} $new\_view[view_i][p_i] = \langle last\_bal_i,\ view\_vals_i \rangle$;
 		\State\hspace{\algorithmicindent} \textbf{if} $new\_view[view_i][p] = \bot$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view_i][p] = \langle last\_bal,\ last\_val \rangle$;
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}  \Call{send}{$VIEW\_CHANGE, view_i, last\_bal, last\_val, suspicions_{\sigma_i}$};
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view_i][p] = \langle last\_bal,\ view\_vals \rangle$;
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}  \Call{send}{$VIEW\_CHANGE, view_i, last\_bal, view\_vals, suspicions_{\sigma_i}$};
 		\State
 		\State\hspace{\algorithmicindent} \textbf{if} $\#(new\_view[view_i]) > N-f$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $view = view_i$;
@@ -61,7 +61,15 @@
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions = \bot$;
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view = \bot$;
 
-		\State
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\caption{Byzantine Generalized Paxos - Process p (continued)}
+	\label{BFT-Proc}
+	\textbf{Local variables:} $suspicions = \bot,\ new\_view = \bot,\ leader = \bot,\ view = 0$	
+	
+	\begin{algorithmic}[1]
+
 		\Function{merge\_sequences}{$old\_seq, new\_seq$}
 		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
 		\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
@@ -69,7 +77,16 @@
 		\State \textbf{end for}
 		\State \textbf{return} $old\_seq$;
 		\EndFunction
-
+		
+		\State
+		\Function{signed\_commands}{$full\_seq$}
+		\State $signed\_seq = \bot$;
+		\State \textbf{for} $c$ \textbf{in} $full\_seq$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} \Call{$verify\_command$}{c} \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $signed\_seq = signed\_seq \bullet c$;
+		\State \textbf{end for}
+		\State \textbf{return} $signed\_seq$;
+		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
 
@@ -91,9 +108,9 @@
 		\State \textbf{upon} \textit{receive(PROPOSE, prop)} from proposer $p_i$ \textbf{do} 
 		\State \hspace{\algorithmicindent} $proposals = proposals \bullet prop$;
 		\State
-		\State \textbf{upon} \textit{receive($P1B, m, bal_a,val_a$)} from acceptor $a$ \textbf{do}
+		\State \textbf{upon} \textit{receive($P1B, m, bal_a,view\_vals_a$)} from acceptor $a$ \textbf{do}
 		\State \hspace{\algorithmicindent} \textbf{if} $m = ballot_l$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $accepted[ballot_l][a] = val_a$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $accepted[ballot_l][a] = \Call{signed\_commands}{view\_vals_a}$;
 		\State
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(accepted[ballot_l]) \geq N-f$ \textbf{then} 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2a}{$ $};
@@ -112,7 +129,7 @@
 		\State \hspace{\algorithmicindent} $safe\_seq = \Call{merge\_sequences}{safe\_seq, seq}$;
 		\State \textbf{end for}
 		\State \textbf{return} $safe\_seq$;
-		\EndFunction
+		\EndFunction		
 	\end{algorithmic}
 \end{algorithm}
 

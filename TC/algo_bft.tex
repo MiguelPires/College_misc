@@ -155,7 +155,7 @@
 		\State \hspace{\algorithmicindent} $checkpoint[ballot][a_i] = proof$;
 		\State \hspace{\algorithmicindent} \textbf{if} $\#(checkpoint[ballot]) \geq N-f$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B, ballot, value, checkpoint[ballot]}$ to learners;
-				
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a = \bot$;
 		\State
 		\State \textbf{upon} \textit{receive(P2A\_CLASSIC, ballot, value)} from leader \textit{l} \textbf{do}
 		\State \hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value$}; 

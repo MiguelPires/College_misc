@@ -1,8 +1,8 @@
 %\subsection{Description}
 This section presents our Byzantine fault tolerant Generalized Paxos
-Protocol. Given our space constraints, we opted for merging in a
-single description a novel presentation of Generalized Paxos and its
-extension to the Byzantine model.
+Protocol (or BGP, for short). Given our space constraints, we opted
+for merging in a single description a novel presentation of
+Generalized Paxos and its extension to the Byzantine model.
 \subsection{Overview}
 
 We modularize our protocol explanation according to the following main components, which are also present in other protocols of the Paxos family:
@@ -10,34 +10,42 @@ We modularize our protocol explanation according to the following main component
 \begin{itemize}
 
 \item
-{\bf View change} -- The protocol that continuously replaces leaders, until one is found that can ensure progress (i.e., commands are eventually executed).
+  {\bf View change} -- The goal of this subprotocol is to ensure that, at any given moment, one of the acceptors is chosen a distinguished leader, who runs an extended version of the agreement subprotocol. To achieve this, the view change subprotocol continuously replaces leaders, until one is found that can ensure progress (i.e., commands are eventually appended to the current sequence).
 
 \item
-{\bf Agreement} -- Given a fixed leader, this protocol extends the current sequence with a new command or set of commands. Analogously to Fast Paxos~\cite{L06} and Generalized Paxos~\cite{Lamport2005}, choosing this extension can be done using two different sub-protocols: using either {\bf classic ballots} or {\bf fast ballots}, with the characteristic that fast ballots complete in fewer communication steps, but may have to fall back to using a classic ballot when there is contention among concurrent requests.
+{\bf Agreement} -- Given a fixed leader, this subprotocol extends the current sequence with a new command or set of commands. Analogously to Fast Paxos~\cite{L06} and Generalized Paxos~\cite{Lamport2005}, choosing this extension can be done using two variants of the protocol: using either {\bf classic ballots} or {\bf fast ballots}, with the characteristic that fast ballots complete in fewer communication steps, but may have to fall back to using a classic ballot when there is contention among concurrent requests.
 
 \end{itemize}
 
 \subsection{View change} 
 
-The goal of the view change sub-protocol is to elect a leader that is able to carry through the agreement protocol, i.e., that enables proposed commands to eventually be learned by all the learners.
+The goal of the view change subprotocol is to elect a distinguished acceptor process, called the leader, who is responsible for carrying through the agreement protocol, i.e., who enables proposed commands to eventually be learned by all the learners. The overall design of this subprotocol is similar to the corresponding part of existing BFT state machine replication protocols~\cite{CL99}.
 
-To allow this, whenever a subset of correct processes perceive that liveness is not being upheld, this must be sufficient for triggering a view change. However, even if up to $f$ Byzantine processes produce false suspicions, this should not suffice to trigger a view change. Therefore, this mechanism must ensure that when $f+1$ processes suspect the leader to be faulty (and only then), all correct processes commit to a new view and stop participating in lower-numbered views. In particular, processes start broadcasting suspicion messages if they believe that the leader is faulty. Suspicions contain the current view number, and are signed by the sending process, to avoid being forged. Furthermore, to ensure that view changes succeed if they have enough support but cannot be triggered by Byzantine processes, if a correct process receives $f+1$ suspicions, it stops participating in the current view and multicasts a view-change message. View-change messages contain a ballot number, the previously committed ballot and value, and the $f+1$ signed suspicions. If a process receives a view-change message without previously receiving $f+1$ suspicions, it will verify the suspicions by validating they are signed by $f+1$ distinct processes, commit to the new view and multicast a view-change message. (As such, the signatures allow a process that receives this message to commit to the new view and multicast its own view-change messages without receiving $f+1$ suspicions itself.)  This guarantees that if one correct process receives the $f+1$ suspicions and broadcasts the view-change message, then all correct processes, upon receving this message, will be able to validate the proof of $f+1$ suspicions and switch to the new view. Processes start participating in the new view as soon as they broadcast their view-change messages, since the multicast of one correct view-change message is all it takes to ensure that all correct process will eventually switch to the new view. The only process that must wait for $2f+1$ view-change messages is the leader of the new view since, to send new sequences, it needs to know the values voted for in the last ballot for a quorum of acceptors, as described next.
+In this supprotocol, the system moves through sequentially numbered views, and the leader for each view is chosen in a rotating fashion using the simple equation $\textit{leader(view)}=\textit{view mod N}$. The basic idea of this subprotocol is that acceptor processes monitor whether progress is being made on adding commands to the current sequence, and, if not, they send a message to other acceptors suspecting the current leader. If enough suspicions are collected, processes can move to the subsequent view.
+
+In more detail, whenever an acceptor process individually perceives that liveness is not being upheld (i.e., there are pending commands that have not gathered enough support to conclude their execution, as detailed next), it starts suspecting the leader and multicasts a signed {\sc suspicion} message for the current view to all acceptors.
+
+To ensure that $f$ Byzantine processes cannot trigger view changes by producing  false suspicions, acceptor processes only send a view change message indicating their commitment to starting a new view after hearing that $f+1$ processes suspect the leader to be faulty. In particular, at this point, acceptor processes multicast a view-change message contain the new view number, the $f+1$ signed suspicions, and the information about the commands that were voted for in the previous view, as detailed in the next section. If a process receives a view-change message without previously receiving $f+1$ suspicions, it can also multicast a view-change message, after verifying that the suspicions are correctly signed by $f+1$ distinct processes.
+%As such, the signatures allow a process that receives this message to commit to the new view and multicast its own view-change message without receiving $f+1$ suspicions itself.
+This guarantees that if one correct process receives the $f+1$ suspicions and broadcasts the view-change message, then all correct processes, upon receving this message, will be able to validate the proof of $f+1$ suspicions and also multicast the view-change message.
+
+
+Finally, an acceptor process must wait for $N-f$ view-change messages to start participating in the new view, i.e., update its view number and the corresponding leader process. This is required to ensure that processes entering the new view know the commands voted for in the last ballot by a quorum of acceptors, as described next.
 
 
 \subsection{Agreement protocol} 
 
-The consensus protocol allows processes to agree on equivalent sequences of commands (according to our previous definition of equivalence). 
-In the original Paxos, each instance of consensus is called a ballot, which can be \textit{classic} or \textit{fast}. 
-In this algorithm, ballots are a similar concept, with the exception that instead of being a separate instance of consensus, 
-it corresponds to an extension to the sequence of learned commands of a common consensus instance.
+The consensus protocol allows learner processes to agree on equivalent sequences of commands (according to our previous definition of equivalence).
+An important conceptual distinction between the original Paxos protocol and BGP is that, in the original Paxos, each instance of consensus is called a ballot, whereas in BGP, instead of being a separate instance of consensus, 
+ballots correspond to an extension to the sequence of learned commands of a single ongoing consensus instance.
+In both protocols, ballots can either be \textit{classic} or \textit{fast}. 
 
-In classic ballots, a leader proposes a single sequence of commands, which is learned by the learners. 
-A classic ballot in Generalized Paxos follows a protocol that is very similar to the one used by classic Paxos~\cite{Lam98}. This protocol comprises a first phase where the leader obtains a promise that the acceptors will not participate in lower-numbered ballots, and each acceptor conveys to the leader the sequences that the acceptor has already voted for. This first phase becomes unnecessary when a classic ballot is executed after a view change, since the view change protocol can include this first phase, i.e., it can gather previously committed sequences and extract that same promise from the acceptors. In this case, the aforementioned promise is implicitly valid because, for the remainder of the current view, the leader is the only process that can start a new ballot. This is followed by a second phase where the leader picks an extension to the sequence of previously proposed commands and broadcasts it to the acceptors. The acceptors send their votes to the learners, who, after receiving $N-f$ votes for a proposal, learn the sequences by appending the new commands to their own sequences of learned commands.
 
-In fast ballots, multiple proposers can concurrently propose either single commands or sequences of commands (by sending them directly to the acceptors), and eventually a set of equivalent sequences must be learned by the learners. We use the term \textit{proposal} to denote either the command or sequence of commands that was proposed.
-Concurrency implies that acceptors may send votes in different orders but the protocol ensures that, as long as the resulting sequences are equivalent, the commands will be learned in two message delays. 
+In classic ballots, a leader proposes a single sequence of commands, such that is can be appended to the commands learned by the learners. 
+A classic ballot in Generalized Paxos follows a protocol that is very similar to the one used by classic Paxos~\cite{Lam98}. This protocol comprises a first phase where the leader obtains a promise that the acceptors will not participate in lower-numbered ballots, and each acceptor conveys to the leader the sequences that the acceptor has already voted for (so that the leader knows which commands may have been learned already). This is followed by a second phase where the leader picks an extension to the sequence of previously proposed commands and broadcasts it to the acceptors. The acceptors send their votes to the learners, who, after gathering enough support for a given extension to the current sequence, append the new commands to their own sequences of learned commands.
 
-Note that there is a subtle interplay between the two types of ballots, since the leader must execute the first phase if he wishes to run a classic ballot after a fast ballot. This is because the acceptors may have used a fast round to vote for new sequences that are unknown to the leader, since they were proposed directly by the proposers.
+In fast ballots, multiple proposers can concurrently propose either single commands or sequences of commands by sending them directly to the acceptors. (We use the term \textit{proposal} to denote either the command or sequence of commands that was proposed.)
+In this case, concurrency implies that acceptors may receive proposals in a different order. If the resulting sequences are equivalent, then the fast ballots are successfully learned in two message delays. If not, the protocol must fall back to using a classic ballot.
 
 Next, we present the protocol for each type of ballot in detail.
 
@@ -48,3 +56,11 @@ In a classic ballot, proposers send their proposed commands to the leader who se
 \subsection{Fast ballots} 
 To initiate a fast ballot, the leader informs both proposers and acceptors that the proposals may be sent directly to the acceptors. Unlike classic ballots, where the sequence proposed by the leader consists of the commands received from the proposers appended to previously proposed commands, in a fast ballot, proposals can be sent to the acceptors in the form of either a single command or a sequence to be appended to the command history. These proposals are sent directly from the proposers to the acceptors, who then append them to the proposals they have previously accepted in the current ballot and broadcast the result to the learners. Like in the classic ballot, the phase $2b$ message sent to the learners contains the current ballot number and the command sequence. To learn a sequence, the learner must gather $N-f$ votes for equivalent sequences. That is, sequences don't necessarily have to be equal to be learned since commutative commands may be reordered. Recall that a sequence is equivalent to another if it can be transformed into the second one by reordering its elements without changing the order of any pair of non-commutative commands. (Note that, in the pseudocode, equivalent sequences are being treated as belonging to the same index of the \emph{messages} variable, to simplify the presentation.) \par
 \textbf{Leader Value Picking.} Sequences sent by the acceptors in phase $1b$ messages may contain commands that were not learned. This is likely if, in a fast ballot, non-commutative commands are  concurrently proposed by proposers. In this situation, these commands may be incorporated into the sequences of various acceptors in different orders, and therefore the sequences sent by the acceptors in phase $2b$ messages will not be equivalent and will not be learned. However, after the leader gathers these unlearned sequences in phase $1b$, it will assemble a single serialization for every previously proposed command, which it will then send to the acceptors. Therefore, if non-commutative commands are concurrently proposed in a fast ballot, they will be included in the subsequent classic ballot and the learners will learn them in a total order, preserving consistency.
+
+\subsection{Optimization: Integration with view changes}
+
+{\bf [Just a paste of two previous paragraphs -- need to organize this subsection]}
+
+ This first phase becomes unnecessary when a classic ballot is executed after a view change, since the view change protocol can include this first phase, i.e., it can gather previously committed sequences and extract that same promise from the acceptors. In this case, the aforementioned promise is implicitly valid because, for the remainder of the current view, the leader is the only process that can start a new ballot.
+
+ Note that there is a subtle interplay between the two types of ballots, since the leader must execute the first phase if he wishes to run a classic ballot after a fast ballot. This is because the acceptors may have used a fast round to vote for new sequences that are unknown to the leader, since they were proposed directly by the proposers.

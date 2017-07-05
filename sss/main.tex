@@ -169,18 +169,27 @@
 % \newenvironment{proofsketch}[1][Proof sketch]{\noindent\textbf{#1.} }{\hfill $\Box$\\[2mm]}
 % \newtheorem{claim}[theorem]{Claim}
 % Author macros::begin %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\title{Generalized Paxos made Byzantine (and Less Complex)}
+\title{Generalized Paxos made Byzantine (and Less Complex)\thanks{This paper is a regular submission and is eligible for the best student paper award.}}
 
 %% Please provide for each author the \author and \affil macro, even when authors have the same affiliation, i.e. for each author there needs to be the  \author and \affil macros
+\usepackage{url}
+
 \author{Miguel Pires\inst{1} \and Srivatsan Ravi\inst{2} \and Rodrigo Rodrigues\inst{1}}
 
-\institute{INESC-ID and Instituto Superior T\'{e}cnico (U.\ Lisboa) \and University of Southern California}
+\institute{INESC-ID and Instituto Superior T\'{e}cnico (U.\ Lisboa) \\
+\email{miguel.pires@tecnico.ulisboa.pt} 	\email{rodrigo.miragaia.rodrigues@tecnico.ulisboa.pt} 
+\and 
+University of Southern California \\
+\email{srivatsan@srivatsan.in}}
 \authorrunning{M. Pires, S. Ravi and R. Rodrigues}
 
+
 \begin{document}
+%\thanks{This paper is a regular submission and is eligible for the best student paper award}
 %\bibliographystyle{abbrv}
 
 \maketitle
+
 %
 %
 \begin{abstract}
@@ -194,6 +203,7 @@ In this paper, we make two main contributions. First, we attempt to provide a si
 %, and we propose a variant of the protocol that leverage the weaker specification to allow for a more efficient protocol in wide area settings.
 \end{abstract}
 %
+
 \input{intro}
 % %
 \input{related}

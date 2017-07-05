@@ -105,13 +105,12 @@
 		\State\hspace{\algorithmicindent} \textbf{if} $proof_{pub_i} = \langle suspicion, view \rangle$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions[i] = proof$;
 		\State
-		\State\hspace{\algorithmicindent} \textbf{if} $\#(suspicions) > f$ and $new\_view[p] = \bot$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[p] = \langle bal_a,\ val_a \rangle$;
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$VIEW\_CHANGE, view+1, bal_a, val_a, suspicions$};
+		\State\hspace{\algorithmicindent} \textbf{if} $\#(suspicions) > f$ and $new\_view[view+1][p] = \bot$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view+1][p] = true$;
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$VIEW\_CHANGE, view+1, suspicions$};
 		\State
 		
-		\State\textbf{upon} \textit{receive($VIEW\_CHANGE, new\_view_i, ba_i, val_i, suspicions$)} 
-		\item[] from process $i$ \textbf{do} 
+		\State\textbf{upon} \textit{receive($VIEW\_CHANGE, new\_view_i, suspicions$)} from acceptor $i$ \textbf{do} 
 		\State\hspace{\algorithmicindent} \textbf{if} $new\_view_i \leq view$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{return};
 		\State
@@ -126,16 +125,15 @@
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return};
 		
 		\State
-		\State\hspace{\algorithmicindent} $new\_view[new\_view_i][i] = \langle bal_i,\ val_i \rangle$;
+		\State\hspace{\algorithmicindent} $new\_view[new\_view_i][i] = true$;
 		\State\hspace{\algorithmicindent} \textbf{if} $new\_view[view_i][a] = \bot$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view_i][a] = \langle bal_,\ val_a \rangle$;
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}  \Call{send}{$VIEW\_CHANGE, view_i, bal_a, val_a, suspicions$};
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view_i][a] = true$;
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}  \Call{send}{$VIEW\_CHANGE, view_i, suspicions$};
 		\State
 		\State\hspace{\algorithmicindent} \textbf{if} $\#(new\_view[view_i]) \geq N-f$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $view = view_i$;
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $leader = view\ mod\ N$;
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions = \bot$;
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view = \bot$;
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{LEADER}$ to leader;
 	\end{algorithmic}
 \end{algorithm}

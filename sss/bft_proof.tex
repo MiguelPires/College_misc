@@ -1,4 +1,4 @@
-\subsection{Correctness Proofs}
+\section{Correctness Proofs}
 
 This section argues for the correctness of the Byzantine Generalized Paxos protocol in terms of the specified consensus properties.\par
 
@@ -53,7 +53,7 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 \indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*5}{\strut1.2.2. Take $s$ and $s'$ which are certain to exist by 1.2.1, $s$ and $s'$ are non-commutative }\par
 \indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut\textbf{Proof:} If $\forall \sigma_1,\sigma_2 \in \mathcal{P}, s \not\thicksim s' \bullet \sigma_1 \land s' \not\thicksim s \bullet \sigma_2$ then $s$ and $s'$ must contain non-commutative commands differently ordered. Otherwise, they would be possible to extend to equivalent sequences.}\par
 \indent\indent\indent\indent\indent\parbox{\linewidth}{\strut1.2.3. At any given instant, $\neg (maj\_accepted(s) \land maj\_accepted(s'))$ } \par
-\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut\textbf{Proof:} Since $s$ and $s'$ are non-commutative, therefore not equivalent, and each correct acceptor only votes once for a new proposal (Algorithm \ref{BFT-Acc}, lines \{27-31\}), any learner will only obtain $N-f$ votes for one of the sequences (Algorithm \ref{BFT-Learn}, lines \{1-5\}).}\par
+\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut\textbf{Proof:} Since $s$ and $s'$ are non-commutative, therefore not equivalent, and each correct acceptor only votes once for a new proposal (Algorithm \ref{BFT-Acc}, lines \{28-43\}), any learner will only obtain $N-f$ votes for one of the sequences (Algorithm \ref{BFT-Learn}, lines \{1-4\}).}\par
 \indent\indent\indent\indent\indent\parbox{\linewidth}{\strut1.2.4. Q.E.D. }\par
 \indent\indent\indent\parbox{\linewidth-\algorithmicindent*3}{\strut1.3. Take $s$ and $s'$, at any given instant, $\forall x \in \mathcal{P}, \exists \sigma_1,\sigma_2 \in \mathcal{P}, (maj\_accepted(s) \lor (min\_accepted(s) \land (s \thicksim x \bullet \sigma_1 \lor x \thicksim s \bullet \sigma_2))) \land (maj\_accepted(s') \lor (min\_accepted(s') \land (s' \thicksim x \bullet \sigma_1 \lor x \thicksim s' \bullet \sigma_2))) \implies s \thicksim x \bullet \sigma$}\par
 \indent\indent\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1.2 and by definition of $(s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma)$.}\par
@@ -70,9 +70,9 @@ If all proposers are correct, $learned_l$ can only contain proposed commands. \l
 \end{theorem} 
 \textbf{Proof:} \par
 \parbox{\linewidth}{\strut1. At any given instant, $\forall l_i \in \mathcal{L}, \forall s \in \mathcal{P}, learned(l_i,s) \implies \forall x \in \mathcal{P}, \exists \sigma \in \mathcal{P},  maj\_accepted(s) \lor (min\_accepted(s) \land  (s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma))$ }\par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, if a correct learner learned a sequence $s$ at any given instant then either $N-f$ or $f+1$ (if $s$ is universally commutative) acceptors must have executed phase $2b$ for $s$.}\par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{28-43\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, if a correct learner learned a sequence $s$ at any given instant then either $N-f$ or $f+1$ (if $s$ is universally commutative) acceptors must have executed phase $2b$ for $s$.}\par
 \parbox{\linewidth}{\strut2. At any given instant, $\forall s \in \mathcal{P}, maj\_accepted(s) \lor min\_accepted(s) \implies proposed(s)$ }\par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{7-11, 20-31\}, for either $N-f$ or $f+1$ acceptors to accept a proposal it must have been proposed by a proposer.}\par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{15-19, 28-43\}, for either $N-f$ or $f+1$ acceptors to accept a proposal it must have been proposed by a proposer.}\par
 \parbox{\linewidth}{\strut3. At any given instant, $\forall s \in \mathcal{P}, learned(l_i,s) \implies proposed(s),\forall l_i \in \mathcal{L}$}\par
 \indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1 and 2.}\par
 \parbox{\linewidth}{\strut4. Q.E.D.}\par
@@ -89,9 +89,9 @@ For any proposal $s$ and correct learner $l$, eventually $learned_l$ contains $s
 \end{theorem} 
 \parbox{\linewidth}{\textbf{Proof:}} \par
 \parbox{\linewidth}{\strut1. $\forall\ l_i \in \mathcal{L},\forall s,x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, maj\_accepted(s) \lor (min\_accepted(s) \land  (s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma))\overset{e}{\implies} learned(l_i,s)$}\par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, when either $N-f$ or $f+1$ (if $s$ is universally commutative) acceptors accepts a sequence $s$ (or some equivalent sequence), eventually $s$ will be learned by any correct learner.}\par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{28-43\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, when either $N-f$ or $f+1$ (if $s$ is universally commutative) acceptors accepts a sequence $s$ (or some equivalent sequence), eventually $s$ will be learned by any correct learner.}\par
 \parbox{\linewidth}{\strut2. $\forall s \in \mathcal{P}, proposed(s) \overset{e}{\implies} \forall x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, maj\_accepted(s) \lor (min\_accepted(s) \land  (s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma))$} \par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} A proposed sequence is either conflict-free when its incorporated into every acceptor's current sequence or it creates conflicting sequences at different acceptors. In the first case, it's accepted by a quorum (Algorithm \ref{BFT-Acc} lines \{27-31\}) and, in the second case, it's sent in phase $1b$ messages to the in leader in the next ballot (Algorithm \ref{BFT-Acc} lines \{13-18\}) and incorporated in the next proposal (Algorithm \ref{BFT-Lead} lines \{13-18,20-32\}).} \par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} A proposed sequence is either conflict-free when its incorporated into every acceptor's current sequence or it creates conflicting sequences at different acceptors. In the first case, it's accepted by a quorum (Algorithm \ref{BFT-Acc} lines \{38-43\}) and, in the second case, it's sent in phase $1b$ messages to the in leader in the next ballot (Algorithm \ref{BFT-Acc} lines \{20-26\}) and incorporated in the next proposal (Algorithm \ref{BFT-Lead} lines \{13-18,20-32\}).} \par
 \parbox{\linewidth}{\strut3. $\forall l_i \in \mathcal{L}, \forall s \in \mathcal{P}, proposed(s) \overset{e}{\implies} learned(l_i,s)$} \par
 \indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1 and 2.} \par
 \parbox{\linewidth}{\strut4. Q.E.D.}

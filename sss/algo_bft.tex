@@ -72,7 +72,8 @@ This section presents the pseudocode for the Byzantine Generalized Paxos protoco
 		\State $maxTried_l = maxTried_l \bullet proposals$;
 		\State \textbf{if} $\Call{clean\_state?}{ }$ \textbf{then}
 		\State \hspace{\algorithmicindent} $maxTried_l = maxTried_l \bullet C^*$;
-		\State \Call{send}{$P2A\_FAST,ballot_l, maxTried_l$} to acceptors;
+		\State \Call{send}{$P2A\_CLASSIC,ballot_l, maxTried_l$} to acceptors;
+		\State $proposals = \bot$;
 		\EndFunction
 		
 		\State

@@ -30,7 +30,7 @@ More recently, several variants of Paxos have been proposed and
 studied. Two important lines of research can be highlighted in this
 regard. First, a series of papers hardened the protocol against
 malicious adversaries by solving consensus in a Byzantine fault
-model~\cite{CL99,Lamport2011}. The importance of this line of
+model~\cite{Martin2006,Lamport2011}. The importance of this line of
 research is now being confirmed as these protocols are now in widespread
 use in the context of cryptocurrencies and distributed ledger
 schemes such as blockchain~\cite{bitcoin}.
@@ -98,4 +98,4 @@ The remainder of the paper is organized as follows:
 Section~\ref{sec:related} is a detailed overview of Paxos and related protocols that inspired the algorithm in this paper.
 Section~\ref{sec:model} introduces the model and specification of Generalized Paxos.
 Section~\ref{sec:protocol} presents the Generalized Paxos protocol that is resilient against Byzantine failures along with the corresponding proof sketches. 
-Section~\ref{sec:disc} discusses some optimizations and Section~\ref{sec:conc} concludes the paper.
+Section~\ref{sec:disc} discusses some optimizations and Section~\ref{sec:conc} concludes the paper. Appendix~\ref{bft_code} presents the pseudocode for the protocol and appendix~\ref{proof} presents the respective correctness proofs.

@@ -1,4 +1,6 @@
-\begin{algorithm}[!t] 
+\section{Byzantine Generalized Paxos Pseudocode}
+This section presents the pseudocode for the Byzantine Generalized Paxos protocol. 
+\begin{algorithm}[h] 
 	\caption{Byzantine Generalized Paxos - Proposer p}
 	\label{BFT-Prop}
 	\textbf{Local variables:} $ballot\_type = \bot$
@@ -15,7 +17,29 @@
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{\textit{PROPOSE, c}} to leader;		
 	\end{algorithmic}
 \end{algorithm}
-
+\begin{algorithm}
+	\caption{Byzantine Generalized Paxos - Process p}
+	\begin{algorithmic}[1]
+		
+		\Function{merge\_sequences}{$old\_seq, new\_seq$}
+		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $old\_seq =  old\_seq \bullet c$;
+		\State \textbf{end for}
+		\State \textbf{return} $old\_seq$;
+		\EndFunction
+		
+		\State
+		\Function{signed\_commands}{$full\_seq$}
+		\State $signed\_seq = \bot$;
+		\State \textbf{for} $c$ \textbf{in} $full\_seq$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} \Call{$verify\_command$}{c} \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $signed\_seq = signed\_seq \bullet c$;
+		\State \textbf{end for}
+		\State \textbf{return} $signed\_seq$;
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
 
 \begin{algorithm} 
 	\caption{Byzantine Generalized Paxos - Leader l}
@@ -61,32 +85,10 @@
 		\EndFunction		
 	\end{algorithmic}
 \end{algorithm}
-\begin{algorithm}
-	\caption{Byzantine Generalized Paxos - Process p}
-	\begin{algorithmic}[1]
-		
-		\Function{merge\_sequences}{$old\_seq, new\_seq$}
-		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
-		\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $old\_seq =  old\_seq \bullet c$;
-		\State \textbf{end for}
-		\State \textbf{return} $old\_seq$;
-		\EndFunction
-		
-		\State
-		\Function{signed\_commands}{$full\_seq$}
-		\State $signed\_seq = \bot$;
-		\State \textbf{for} $c$ \textbf{in} $full\_seq$ \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{if} \Call{$verify\_command$}{c} \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $signed\_seq = signed\_seq \bullet c$;
-		\State \textbf{end for}
-		\State \textbf{return} $signed\_seq$;
-		\EndFunction
-	\end{algorithmic}
-\end{algorithm}
+
 
 \begin{algorithm} 
-	\caption{Byzantine Generalized Paxos - Acceptor a}
+	\caption{Byzantine Generalized Paxos - Acceptor a (view-change)}
 	\label{BFT-Proc}
 	\textbf{Local variables:} $suspicions = \bot,\ new\_view = \bot,\ leader = \bot,\ view = 0, bal_a = 0,\ val_a = \bot,\ fast\_bal = \bot,\ checkpoint=\bot$
 	\begin{algorithmic}[1]
@@ -94,7 +96,7 @@
 		\State \textbf{upon} \textit{suspect\_leader} \textbf{do} 
 		\State \hspace{\algorithmicindent} \textbf{if} $suspicions[p] \neq true$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions[p] = true$;
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = \langle suspicion, view \rangle_{priv_p}$;
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = \langle suspicion, view \rangle_{priv_a}$;
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$SUSPICION, view,proof$};	
 		\State
 		
@@ -106,11 +108,12 @@
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions[i] = proof$;
 		\State
 		\State\hspace{\algorithmicindent} \textbf{if} $\#(suspicions) > f$ and $new\_view[view+1][p] = \bot$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view+1][p] = true$;
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$VIEW\_CHANGE, view+1, suspicions$};
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $change\_proof = \langle view\_change, view +1 \rangle_{priv_a}$;
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view+1][p] = change\_proof$;
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$VIEW\_CHANGE, view+1, suspicions,change\_proof$};
 		\State
 		
-		\State\textbf{upon} \textit{receive($VIEW\_CHANGE, new\_view_i, suspicions$)} from acceptor $i$ \textbf{do} 
+		\State\textbf{upon} \textit{receive($VIEW\_CHANGE, new\_view_i, suspicions, change\_proof_i$)} from acceptor $i$ \textbf{do} 
 		\State\hspace{\algorithmicindent} \textbf{if} $new\_view_i \leq view$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{return};
 		\State
@@ -125,21 +128,21 @@
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return};
 		
 		\State
-		\State\hspace{\algorithmicindent} $new\_view[new\_view_i][i] = true$;
-		\State\hspace{\algorithmicindent} \textbf{if} $new\_view[view_i][a] = \bot$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view_i][a] = true$;
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}  \Call{send}{$VIEW\_CHANGE, view_i, suspicions$};
+		\State\hspace{\algorithmicindent} $new\_view[new\_view_i][i] = change\_proof_i$;
+		\State\hspace{\algorithmicindent} \textbf{if} $new\_view[view_i][a] = \bot$ \textbf{then}				\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $change\_proof = \langle view\_change, new\_view_i \rangle_{priv_a}$;
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view_i][a] = change\_proof$;
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}  \Call{send}{$VIEW\_CHANGE, view_i, suspicions, change\_proof$};
 		\State
-		\State\hspace{\algorithmicindent} \textbf{if} $\#(new\_view[view_i]) \geq N-f$ \textbf{then}
+		\State\hspace{\algorithmicindent} \textbf{if} $\#(new\_view[new\_view_i]) \geq N-f$ \textbf{then}
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $view = view_i$;
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $leader = view\ mod\ N$;
 		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions = \bot$;
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{LEADER}$ to leader;
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{LEADER, view, new\_view[view_i]}$ to leader;
 	\end{algorithmic}
 \end{algorithm}
 
 \begin{algorithm} 
-	\caption{Byzantine Generalized Paxos - Acceptor a}
+	\caption{Byzantine Generalized Paxos - Acceptor a (agreement)}
 	\label{BFT-Acc}
 	\textbf{Local variables:} $suspicions = \bot,\ new\_view = \bot,\ leader = \bot,\ view = 0, bal_a = 0,\ val_a = \bot,\ fast\_bal = \bot,\ checkpoint=\bot$
 	\begin{algorithmic}[1]

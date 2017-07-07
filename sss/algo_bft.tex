@@ -196,7 +196,7 @@ This section presents the pseudocode for the Byzantine Generalized Paxos protoco
 		\Function{phase\_2b\_fast}{$value$}
 		\If {$fast\_bal[bal_a]$}
 		\State $val_a[bal_a] =  \Call{merge\_sequences}{val_a[bal_a], value}$;
-		\State \Call{send}{$P2B, bal_a, value$} to learners;
+		\State \Call{send}{$P2B, bal_a, val_a[bal_a]$} to learners;
 		\EndIf
 		\EndFunction
 	\end{algorithmic}

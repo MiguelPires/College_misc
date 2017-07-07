@@ -11,7 +11,7 @@ Furthermore, for clarity of exposition, we assume authenticated perfect links~\c
 where a message that is sent by a non-faulty sender is eventually received and messages cannot be forged 
 (such links can be implemented trivially using retransmission, elimination of duplicates, and point-to-point message authentication codes~\cite{cgr:book}.)
 A process may be a \emph{learner}, \emph{proposer} or \emph{acceptor}.
-Informally, proposers provide input values that must be agreed upon by learners and the acceptors help the learners \emph{agree} on a value.
+Informally, proposers provide input values that must be agreed upon by learners, the acceptors help the learners \emph{agree} on a value and learners learn commands by appending them to a local sequence of commands to be executed, $learned_l$ .
 Our protocols require a minimum number of acceptor processes ($N$) that is a function of the maximum number of tolerated Byzantine faults ($f$), namely $N \ge 3f+1$. We assume that acceptor processes have identifiers in the set $\{0,...,N-1\}$. In contrast, the number of proposer and learner processes can be set arbitrarily.
 
 \paragraph*{Problem Statement: Generalized Paxos}

@@ -31,8 +31,7 @@ definition, these sequences are guaranteed to never produce conflicts,
 the $N-f$ quorum is not required to prevent learners from learning
 conflicting sequences. Instead, a quorum of $f+1$ is sufficient for
 the learner to be sure that the proposed sequence was proposed by a
-correct proposer. (Furthermore, for read-only commands that do not
-change the state of the state machine, it is possible to run these
+correct proposer. (Furthermore, for ``read-only'' commands, it is possible to run these
 against one single learner in the crash model, since there is no
 requirement to withstand $f$ faults for these commands.)
 This optimization is particularly useful in the context of 

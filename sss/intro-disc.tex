@@ -38,8 +38,7 @@ Second, many proposals target improving
 the Paxos protocol by eliminating communication costs~\cite{L06},
 including an important evolution of the protocol called Generalized
 Paxos~\cite{Lamport2005}, which has the noteworthy aspect of
-having lower communication costs by leveraging a specification that is
-weaker than traditional consensus. In particular, instead of forcing all
+having lower communication costs by leveraging a more general specification than traditional consensus that can lead to a weaker requirement in terms of ordering of commands across replicas. In particular, instead of forcing all
 processes to agree on the same value, it allows processes to pick an
 increasing sequence of commands that differs from process to process
 in that commutative commands may appear in a different order.

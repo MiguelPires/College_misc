@@ -2,8 +2,7 @@
 % and Concluding remarks}
 \label{sec:disc}
 
-\paragraph{\textbf{Extending the protocol to universally commutative commands}.}
-
+\noindent \textbf{Extending the protocol to universally commutative commands}.
 % Generalized Paxos vs Paxos spec.
 The Generalized Paxos specification dictates that the only commands
 whose relative order can be reversed at different learners are those
@@ -16,8 +15,8 @@ top of the original Paxos protocol.
 % Extension to ops that commute with all
 However, the downside of this use of commutative operations in the
 context of Generalized Paxos is that this commutativity check is done
-at runtime, and, if two non-commutative operations are issued
-concurrently in the same ballot, then we must fall back to the slower
+at runtime, and, if non-commutative operations are issued
+concurrently, then we must fall back to the slower
 classic Paxos protocol.
 
 This raises the possibility of extending the protocol to handle
@@ -40,9 +39,7 @@ to wait for the $f+1$st message instead of the $N-f$th one.
 
 % Weakly consistent replication - also diff order but ok to have different v
 
-\paragraph{\textbf{Generalized Paxos and weak consistency}.}
-
-
+\noindent \textbf{Generalized Paxos and weak consistency}.
 %The Byzantine Generalized Paxos protocol tackles two challenges in two different avenues of research, fault tolerance and relaxed consistency models. By specifying the generalized consensus problem,
 The key distinguishing feature of the specification of Generalized
 Paxos~\cite{Lamport2005} is allowing learners to learn concurrent
@@ -53,8 +50,8 @@ strong and weak consistency levels like RedBlue~\cite{Li2012}, which attempt
 to decrease the cost of executing operations by reducing coordination
 requirements between replicas. 
 
-The link between the two models becomes clearer after we introduce the
-notion of universally commutative commands from the previous subsection.
+The link between the two models becomes clearer with the introduction of 
+universally commutative commands in the previous subsection.
 In the case of weakly consistent replication (or multi-level replication),
 weakly consistent requests can be executed as if they were universally
 commutative, even if in practice that may not be the case. E.g., checking 
@@ -62,7 +59,7 @@ the balance of a bank account and making a deposit do not commute since
 the output of the former depends on their relative order. However,
 some systems prefer to run both as weakly consistent operations, even
 though it may cause executions that are not explained by a sequential
-execution of all commands, since the semantics are still acceptable given
+execution, since the semantics are still acceptable given
 that the final state that is reached is the same and no invariants 
 of the application are violated~\cite{Li2012}.
 
@@ -71,8 +68,7 @@ of the application are violated~\cite{Li2012}.
 % Extension to diff replica grps
 
 
-\paragraph{\textbf{Handling faults in the fast case}.}
-
+\noindent \textbf{Handling faults in the fast case}.
 A result that was stated in the original Generalized Paxos
 paper~\cite{Lamport2005} is that to tolerate $f$ crash faults and
 allow for fast ballots whenever there are up to $e$ crash faults, the
@@ -89,4 +85,4 @@ An interesting observation stemming from our results is that, since Byzantine fa
 
 \section{Conclusion}
 \label{sec:conc}
-In this paper, we presented a simplified description of the Generalized Paxos protocol and specification, which is meant to pave the way for new avenues of research in this area. In addition, we present a Byzantine fault tolerant version of the protocol, and we prove the correctness of this protocol. In the future, we would like to implement this protocol and fully evaluate it, in addition to gaining a better understanding of its practical applicability.
+In this paper, we presented a simplified description of the Generalized Paxos protocol and specification, which is meant to pave the way for new avenues of research in the area. In addition, we modify the protocol to tolerate Byzantine faults, and we prove the correctness of this protocol. In the future, we would like to implement and evaluate the protocol, in addition to gaining a better understanding of its practical applicability.

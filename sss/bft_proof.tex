@@ -85,7 +85,7 @@ If $learned_l = s$ then, at all later times, $s \sqsubseteq learned_l$, for any 
 
 \subsubsection{Liveness}
 \begin{theorem}
-For any proposal $s$ and correct learner $l$, eventually $learned_l$ contains $s$ \label{L-T1} \par
+For any proposal $s$ from a correct proposer, and correct learner $l$, eventually $learned_l$ contains $s$ \label{L-T1} \par
 \end{theorem} 
 \parbox{\linewidth}{\textbf{Proof:}} \par
 \parbox{\linewidth}{\strut1. $\forall\ l_i \in \mathcal{L},\forall s,x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, maj\_accepted(s) \lor (min\_accepted(s) \land  (s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma))\overset{e}{\implies} learned(l_i,s)$}\par

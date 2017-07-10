@@ -23,7 +23,7 @@ To simplify the original specification, instead of using c-structs (as explained
 \begin{enumerate}
 \item \textbf{Nontriviality.} If all proposers are correct, $learned_l$ can only contain proposed commands.
 \item \textbf{Stability.} If $learned_l = s$ then, at all later times, $s \sqsubseteq learned_l$, for any sequence $s$ and correct learner $l$.
-\item \textbf{Consistency.} At any time and for any two correct learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ 
+\item \textbf{Consistency.} At any time and for any two correct learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$.
 can subsequently be extended to equivalent sequences.
 \item \textbf{Liveness.} For any proposal $s$ from a correct proposer, and correct learner $l$, eventually $learned_l$ contains $s$.
 \end{enumerate}

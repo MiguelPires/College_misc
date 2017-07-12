@@ -1,5 +1,6 @@
 \section{Byzantine Generalized Paxos Pseudocode} \label{bft_code}
-This section presents the pseudocode for the Byzantine Generalized Paxos protocol. 
+This section presents the pseudocode for the Byzantine Generalized Paxos protocol. Note that the pseudocode includes a checkpointing feature that allows the leader to propose a special command $C^*$ that causes both the acceptors and learners to discard previously stored commands. This feature can be used to prevent commands from being stored indefinitely. However, since commands are kept at the acceptors to ensure that they will eventually be committed, special care has to be taken before discarding them.
+
 \begin{algorithm}[h] 
 	\caption{Byzantine Generalized Paxos - Proposer p}
 	\label{BFT-Prop}

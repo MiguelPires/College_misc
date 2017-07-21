@@ -219,7 +219,7 @@
 		\State \hspace{\algorithmicindent}  $messages[ballot][value][a] = true$;
 		\State \hspace{\algorithmicindent} \textbf{if} $quorumSize[ballot][value] = \bot$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $quorumSize[ballot][value] = N-s$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{startTimer}{$2T, \textproc{timerEnded}, ballot, value$};
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{startTimer}{$3T, \textproc{timerEnded}, ballot, value$};
 		\State
 		\State \hspace{\algorithmicindent} \parbox[t]{\dimexpr\linewidth-\marginparwidth}{ \textbf{if} $\#(messages[ballot][value]) \geq quorumSize[ballot][value]$  or ($\#(messages[ballot][value]) > f$ and \textproc{isUniversallyCommutative}($value$)) \textbf{then}} \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;

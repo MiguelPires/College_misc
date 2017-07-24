@@ -11,7 +11,7 @@
 		$ballot\_type = type$;
 		\State
 		
-		\State \textbf{upon} \textit{command\_request(c)} \textbf{do}   \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\# receive request from application
+		\State \textbf{upon} \textit{command\_request(c)} \textbf{do}   \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\# receive request from application
 		\State \hspace{\algorithmicindent} \textbf{if} $ballot\_type = fast\_ballot$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = \langle ballot, c \rangle_{priv_p}$;
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$P2A\_FAST, ballot, c, proof$} to acceptors;
@@ -176,7 +176,8 @@
 		
 		\State
 		\State \textbf{upon} \textit{receive(P2A\_REPLAY, ballot, view, value, proof)} from acc. \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{if} $view_l = view$ and ($\langle view, ballot, value \rangle = proof_{pub_{leader}}$ or $\langle ballot, value \rangle = proof_{pub_{prop}}$) \textbf{then}
+		\State \hspace{\algorithmicindent} 
+		\parbox[t]{\dimexpr\linewidth-\marginparwidth}{ \textbf{if} $view_l = view$ and ($\langle view, ballot, value \rangle = proof_{pub_{leader}}$ or $\langle ballot, value \rangle = proof_{pub_{prop}}$) \textbf{then}}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value, proof$}; 
 
 		\State		
@@ -185,8 +186,8 @@
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2b\_fast}{$ballot, value, proof$};
 
 		\State		
-		\State \textbf{upon} \textit{receive(VERIFICATION,ballot)} from learner l \textbf{do}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$VERIFICATION,ballot, val_a[ballot]$};	
+		\State \textbf{upon} \textit{receive(VERIFICATION,ballot,value)} from learner l \textbf{do}
+		\State \hspace{\algorithmicindent} \Call{send}{$VERIFICATION,ballot, value$};	
 		
 		\State
 		\Function{phase\_1b}{$ballot$}

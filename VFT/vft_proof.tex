@@ -86,12 +86,12 @@ Since we already assume that $u>s$, the condition holds.}
 
 \subsubsection{Non-Triviality}
 \begin{theorem}
-$learned_l$ can only contain proposed commands \label{N-T1} \par
+If all proposers are correct, $learned_l$ can only contain proposed commands \label{N-T1} \par
 \end{theorem} 
 \textbf{Proof:} \par
-\parbox{\linewidth}{\strut1. At any given instant, $\forall l_i \in \mathcal{L}, \forall seq \in \mathcal{P}, learned(l_i,seq) \implies \forall x \in \mathcal{P}, \exists \sigma \in \mathcal{P},  (acc\_send(N-s, seq) \lor (acc\_send(N-u, seq) \land wait\_learn(3T,l_i,seq)) \lor (min\_accepted(seq) \land (seq \thicksim x \bullet \sigma \lor x \thicksim seq \bullet \sigma)))$ }\par
+\parbox{\linewidth}{\strut1. At any given instant, $\forall l_i \in \mathcal{L}, \forall seq \in \mathcal{P}, learned(l_i,seq) \implies \forall x \in \mathcal{P}, \exists \sigma \in \mathcal{P},  acc\_send(N-s, seq) \lor (acc\_send(N-u, seq) \land wait\_learn(3T,l_i,seq)) \lor (min\_accepted(seq) \land (seq \thicksim x \bullet \sigma \lor x \thicksim seq \bullet \sigma))$ }\par
 \indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{VFT-Acc} lines \{31-44\} and Algorithm \ref{VFT-Learn} lines \{1-8\}, if a correct learner learned a sequence $s$ at any given instant then either a quorum was gathered or $f+1$ (if $seq$ is universally commutative) acceptors must have executed phase $2b$ for $seq$.}\par
-\parbox{\linewidth}{\strut2. At any given instant, $\forall seq,x \in \mathcal{P}, \exists \sigma \in \mathcal{P},(acc\_send(N-s, seq) \lor (acc\_send(N-u, seq) \land wait\_learn(3T,l_i,seq)) \lor (min\_accepted(seq) \land (seq \thicksim x \bullet \sigma \lor x \thicksim seq \bullet \sigma)))\implies proposed(seq)$ }\par
+\parbox{\linewidth}{\strut2. At any given instant, $\forall seq,x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, acc\_send(N-s, seq) \lor (acc\_send(N-u, seq) \land wait\_learn(3T,l_i,seq)) \lor (min\_accepted(seq) \land (seq \thicksim x \bullet \sigma \lor x \thicksim seq \bullet \sigma)) \implies proposed(seq)$ }\par
 \indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{VFT-Acc} lines \{9-11, 17-19\}, for either a quorum to be gathered or $f+1$ acceptors to accept a proposal, it must have been proposed by a proposer.}\par
 \parbox{\linewidth}{\strut3. At any given instant, $\forall seq \in \mathcal{P}, learned(l_i,seq) \implies proposed(seq),\forall l_i \in \mathcal{L}$}\par
 \indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1 and 2.}\par
@@ -99,19 +99,19 @@ $learned_l$ can only contain proposed commands \label{N-T1} \par
 
 \subsubsection{Stability}
 \begin{theorem}
-If $learned_l = v$ then, at all later times, $v \sqsubseteq learned_l$, for any $l$ and $v$ \par \label{S-T1}
+If $learned_l = seq$ then, at all later times, $seq \sqsubseteq learned_l$, for any sequence $seq$ and correct learner $l$ \par \label{S-T1}
 \end{theorem} 
-\textbf{Proof:} By Algorithm \ref{BFT-Learn} lines \{1-4\}, a correct learner can only append new commands to its $learned$ command sequence.
+\textbf{Proof:} By Algorithm \ref{VFT-Learn} lines \{8,18\}, a correct learner can only append new commands to its $learned$ command sequence.
 
 \subsubsection{Liveness}
 \begin{theorem}
-For any proposal $s$ and correct learner $l$, eventually $learned_l$ contains $s$ \label{L-T1} \par
+For any correct learner $l$ and any proposal $seq$ from a correct proposer, eventually $learned_l$ contains $seq$ \label{L-T1} \par
 \end{theorem} 
 \parbox{\linewidth}{\textbf{Proof:}} \par
-\parbox{\linewidth}{\strut1. $\forall\ l_i \in \mathcal{L},\forall s,x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, maj\_accepted(s) \lor (min\_accepted(s) \land  (s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma))\overset{e}{\implies} learned(l_i,s)$}\par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, when either $N-f$ or $f+1$ (if $s$ is universally commutative) acceptors accepts a sequence $s$ (or some equivalent sequence), eventually $s$ will be learned by any correct learner.}\par
-\parbox{\linewidth}{\strut2. $\forall s \in \mathcal{P}, proposed(s) \overset{e}{\implies} \forall x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, maj\_accepted(s) \lor (min\_accepted(s) \land  (s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma))$} \par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} A proposed sequence is either conflict-free when its incorporated into every acceptor's current sequence or it creates conflicting sequences at different acceptors. In the first case, it's accepted by a quorum (Algorithm \ref{BFT-Acc} lines \{27-31\}) and, in the second case, it's sent in phase $1b$ messages to the in leader in the next ballot (Algorithm \ref{BFT-Acc} lines \{13-18\}) and incorporated in the next proposal (Algorithm \ref{BFT-Lead} lines \{13-18,20-32\}).} \par
-\parbox{\linewidth}{\strut3. $\forall l_i \in \mathcal{L}, \forall s \in \mathcal{P}, proposed(s) \overset{e}{\implies} learned(l_i,s)$} \par
+\parbox{\linewidth}{\strut1. $\forall\ l_i \in \mathcal{L},\forall seq,x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, acc\_send(N-s, seq) \lor (acc\_send(N-u, seq) \land wait\_learn(3T,l_i,seq)) \lor (min\_accepted(seq) \land (seq \thicksim x \bullet \sigma \lor x \thicksim seq \bullet \sigma)) \overset{e}{\implies} learned(l_i,seq)$}\par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{VFT-Acc} lines \{31-44\} and Algorithm \ref{VFT-Learn} lines \{7-8,17-18\}, if either a quorum is gathered or $f+1$ (if $seq$ is universally commutative) acceptors accept a sequence $seq$ (or some equivalent sequence), eventually $seq$ will be learned by any correct learner.}\par
+\parbox{\linewidth}{\strut2. $\forall seq \in \mathcal{P}, proposed(seq) \overset{e}{\implies} \forall x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, acc\_send(N-s, seq) \lor (acc\_send(N-u, seq) \land wait\_learn(3T,l_i,seq)) \lor (min\_accepted(seq) \land (seq \thicksim x \bullet \sigma \lor x \thicksim seq \bullet \sigma))$} \par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} A proposed sequence is either conflict-free when it's incorporated into every acceptor's current sequence or it creates conflicting sequences at different acceptors. In the first case, it's accepted by a quorum (Algorithm \ref{VFT-Acc} lines \{27-31\}) and learned after the votes reach the learners. In the second case, eventually the next ballot is initiated and the sequence is sent in phase $1b$ messages to the leader (Algorithm \ref{VFT-Acc} lines \{24-29\}). After being sent to the leader, the sequence is incorporated in the next proposal and sent to the acceptors a long with others proposed commands (Algorithm \ref{VFT-Lead} lines \{23-27,29-35\}).} \par
+\parbox{\linewidth}{\strut3. $\forall l_i \in \mathcal{L}, \forall seq \in \mathcal{P}, proposed(s) \overset{e}{\implies} learned(l_i,seq)$} \par
 \indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1 and 2.} \par
 \parbox{\linewidth}{\strut4. Q.E.D.}

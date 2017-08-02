@@ -18,124 +18,129 @@
 	\label{table:1}
 \end{table}
 
-\begin{algorithm}
+\begin{algorithm}[h] 
 	\caption{Generalized Paxos - Proposer p}
+	\textbf{Local variables:} $ballot\_type = \bot, ballot = 0 $
 	\begin{algorithmic}[1]
 		
-		\Function{propose}{\textit{C}}
-		\If{fast\_ballot}
-		\State \Call{send}{$fast, C$} to Acceptors;
-		\Else
-		\State \Call{send}{\textit{propose, C}} to Leader;
-		\EndIf
-		\EndFunction
+		\State \textbf{upon} \textit{receive(BALLOT, bal, type)} \textbf{do} 
+		\State \hspace{\algorithmicindent} 
+		$ballot = bal$;
+		\State \hspace{\algorithmicindent} 
+		$ballot\_type = type$;
+		\State
 		
-		
+		\State \textbf{upon} \textit{command\_request(c)} \textbf{do}   \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\# receive request from application
+		\State \hspace{\algorithmicindent} \textbf{if} $ballot\_type = fast\_ballot$ \textbf{then}
+
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$P2A\_FAST, ballot, c$} to acceptors;
+		\State \hspace{\algorithmicindent} \textbf{else} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{\textit{PROPOSE, c}} to leader;		
 	\end{algorithmic}
 \end{algorithm}
 
 \begin{algorithm}
-	\caption{Generalized Paxos - Leader l}
-	\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ C_l = \bot, messages = \bot$
-	\begin{algorithmic}[1]
-		\State \textbf{upon} \textit{receive(propose, C)} from proposer $p_i$ \textbf{do} 
-		\State \hspace{\algorithmicindent} $C_l = C$;
-		\State \hspace{\algorithmicindent} \Call{phase\_1a}{$ $};
-		\State
-		\State \textbf{upon} \textit{receive(statement)} from acceptor $a_i$ \textbf{do}
-		\State \hspace{\algorithmicindent}  $messages[ballot_l][a_i] = statement$;
-		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages) \geq \lfloor \frac{N}{2} \rfloor +1$ \textbf{then} 
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2a}{$ballot_l, Q$};
-		\State
-		%\item[] % unnumbered empty line
-		\Function{phase\_1a}{}
-		\State \Call{send}{$p1a, ballot_l$} to Acceptors;
-		\EndFunction
-		
-		\State
-		\Function{phase\_2a}{$bal, Q$}
-		\State $maxTried_l$ = \Call{proved\_safe}{$Q, bal$};
-		\State $maxTried_l = maxTried_l \bullet C_l$;
-		\State \Call{send}{$p2a,ballot_l, maxTried_l$} to Acceptors;
-		\EndFunction
-		
-		\State
-		\Function{proved\_safe}{$ballot$}
-		\State $maxTried = \bot$;
-		\State \textbf{for} $val$ in $message[ballot]$ \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{if} $maxTried = \bot$ or $\Call{is\_prefix}{val, maxTried}$ \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $maxTried = val$;
-		\State \textbf{end for}
-		\State \textbf{return} $maxTried$;
-		\EndFunction
-		
-			\State
-		\Function{is\_prefix}{$new\_sequence, old\_sequence$}
-		\If {$\lVert old\_sequence \rVert > \lVert new\_sequence \rVert$}
-		\State \textbf{return} \textit{false};
-		\EndIf
-		
-		\State
-		\item[] outer:	
-		\State \textbf{for} $c_{old}$ in $old\_sequence$ \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{for} $c_{new}$ in $new\_sequence$ \textbf{do}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $c_{old} = c_{new}$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{continue} \textit{outer};
-		
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{else if} !\Call{are\_commutative}{$c_{old}, c_{new}$} \textbf{then}
-		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return} \textit{false};
-		\State \hspace{\algorithmicindent}\textbf{end for}
-		\State \hspace{\algorithmicindent}\textbf{return} \textit{false};
-		\State \textbf{end for}
-		\State
-		\State \textbf{return} \textit{true};
-		\EndFunction
-		
-	\end{algorithmic}
+\caption{Visigoth Generalized Paxos - Process p}
+\begin{algorithmic}[1]
+	
+	\Function{merge\_sequences}{$old\_seq, new\_seq$}
+	\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
+	\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
+	\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $old\_seq =  old\_seq \bullet c$;
+	\State \textbf{end for}
+	\State \textbf{return} $old\_seq$;
+	\EndFunction
+\end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}
-	\caption{Generalized Paxos - Acceptor a}
-	\textbf{Local variables: } $bal_a = 0,\ val_a = \bot$ 
+\begin{algorithm} 
+\caption{Visigoth Generalized Paxos - Leader l}
+\textbf{Local variables:} $ballot_l = 0,maxTried_l = \bot,proposals = \bot, accepted = \bot$
+\begin{algorithmic}[1]
+	\State \textbf{upon} \textit{trigger\_next\_ballot(type)} \textbf{do}
+	\State \hspace{\algorithmicindent} $ballot_l \mathrel{+{=}} 1$;
+	\State \hspace{\algorithmicindent} \Call{send}{$BALLOT,ballot_l,type}$ to proposers;
+	\State
+	\State \hspace{\algorithmicindent} \textbf{if} $type = fast$ \textbf{then}
+	\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$FAST,ballot_l,view}$ to acceptors;
+	\State \hspace{\algorithmicindent} \textbf{else}
+	\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$P1A, ballot_l, view$} to acceptors;
+	
+	\State
+	\State \textbf{upon} \textit{receive(PROPOSE, prop)} from proposer $p_i$ \textbf{do} 
+	\State \hspace{\algorithmicindent} $proposals = proposals \bullet prop$;
+	\State
+	\State \textbf{upon} \textit{receive($P1B, bal_a,vals_a$)} from acceptor $a$ \textbf{do}
+	\State \hspace{\algorithmicindent} \textbf{if} $bal_a = ballot_l$ \textbf{then}
+	\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $accepted[ballot_l][a] = vals_a$;
+	\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(accepted[ballot_l]) \geq N-f$ \textbf{then} 
+	\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2a}{$ $};
+	
+	\State
+	\Function{phase\_2a}{$ $}
+	\State $maxTried_l = \Call{proved\_safe}{ballot_l}$;
+	\State $maxTried_l = maxTried_l \bullet proposals$;
+	\State \Call{send}{$P2A\_CLASSIC,view,ballot_l, maxTried_l$} to acceptors;
+	\State $proposals = \bot$;
+	\EndFunction
+	
+	\State
+	\Function{proved\_safe}{$ballot$}
+	\State $safe\_seq = \bot$;
+	\State \textbf{for} $seq$ \textbf{in} $accepted[ballot]$ \textbf{do}
+	\State \hspace{\algorithmicindent} $safe\_seq = \Call{merge\_sequences}{safe\_seq, seq}$;
+	\State \textbf{end for}
+	\State \textbf{return} $safe\_seq$;
+	\EndFunction	
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm} 
+	\caption{Visigoth Generalized Paxos - Acceptor a}
+	\label{VFT-Acc}
+	\textbf{Local variables:} $leader = \bot, bal_a = 0,val_a = \bot,fast\_bal = \bot$
 	\begin{algorithmic}[1]
-		
-		\State \textbf{upon} \textit{receive(fast, val)} from proposer \textit{p} \textbf{do}
-		\State \hspace{\algorithmicindent} \Call{phase\_2b\_fast}{$val$};
-		
-		\State
-		\State \textbf{upon} \textit{receive(p1a, ballot)} from leader \textit{l} \textbf{do}
-		\State \hspace{\algorithmicindent} \Call{phase\_1b}{$ballot, l$};
+		\State \textbf{upon} \textit{receive(P1A, ballot)} from leader \textbf{do}
+		\State \hspace{\algorithmicindent} \Call{phase\_1b}{$ballot$};
 		
 		\State
-		\State \textbf{upon} \textit{receive(p2a, ballot, value)} from leader \textit{l} \textbf{do}
-		\State \hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value$};
+		\State \textbf{upon} \textit{receive($FAST,ballot$)} from leader \textbf{do}
+		\State \hspace{\algorithmicindent} $fast\_bal[ballot] = true$;
 		
 		\State
-		\Function{phase\_1b}{$m, l$}
-		\If {$bal_a < m$}
-		\State \Call{send}{$p1b, m, bal_a, val_a$} to leader l;
-		\State $bal_a = m$;
+		\State \textbf{upon} \textit{receive(P2A\_CLASSIC, ballot, value)} from leader \textbf{do}
+		\State \hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value$}; 
+		
+		\State		
+		\State \textbf{upon} \textit{receive(P2A\_FAST,ballot,value,proof)} from proposer p \textbf{do}
+		\State \hspace{\algorithmicindent} \Call{phase\_2b\_fast}{$ballot, value$};
+
+		\State
+		\Function{phase\_1b}{$ballot$}
+		\If {$bal_a < ballot$}
+		\State \Call{send}{$P1B, ballot, val_a$} to leader;
+		\State $bal_a = ballot$;	
+		\State $val_a[bal_a] = \bot$;	
 		\EndIf
 		\EndFunction
 		
 		\State
-		\Function{phase\_2b\_classic}{$m, v$}
-		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
-		\If {$m \geq k$}
-		\State $val_a = v$;
-		\State \Call{send}{$p2b, bal_a, val_a$} to learners;
+		\Function{phase\_2b\_classic}{$ballot, value$}
+		\If {$ballot \geq bal_a$ and $val_a = \bot$}
+		\State $bal_a = ballot$;
+		\State $val_a[ballot] = value$;
+		\State \Call{send}{$P2B, ballot, value$} to learners;
+
 		\EndIf
 		\EndFunction
 		
 		\State
-		\Function{phase\_2b\_fast}{$v$}
-		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
-		\If {$bal_a == k$}
-		\State $val_a = val_a \bullet v$;
-		\State \Call{send}{$p2b, bal_a, val_a$} to learners;
+		\Function{phase\_2b\_fast}{$ballot, value$}
+		\If {$ballot = bal_a$ and $fast\_bal[bal_a]$}
+		\State $val_a[bal_a] =  \Call{merge\_sequences}{val_a[bal_a], value}$;
+		\State \Call{send}{$P2B, bal_a, val_a[bal_a]$} to learners;
 		\EndIf
 		\EndFunction
-		
 	\end{algorithmic}
 \end{algorithm}
 
@@ -144,9 +149,8 @@
 	\textbf{Local variables: } $learned = \bot, messages = \bot$ 
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive($p2b, bal, val$)} from acceptor $a_i$ \textbf{do}
-		\State \hspace{\algorithmicindent} $messages[bal][a_i] = val$;
-		\State \hspace{\algorithmicindent} \textbf{if} {($fast\_ballot$ and $\#(messages[bal]) \geq \lceil \frac{3N}{4} \rceil$) or
-			\State \hspace{\algorithmicindent} \hspace{\algorithmicindent}	($classic\_ballot$ and $\#(messages[bal]) \geq \lfloor \frac{N}{2}\rfloor+1$)} \textbf{then}
-		\State \hspace{\algorithmicindent} \hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = learned \sqcup val$;
+		\State \hspace{\algorithmicindent} $messages[bal][val][a_i] = true$;
+		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages[bal][val]) \geq N-f$ \textbf{then}
+		\State \hspace{\algorithmicindent} \hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, val}$;
 	\end{algorithmic}
 \end{algorithm}

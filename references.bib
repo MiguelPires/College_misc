@@ -1,0 +1,591 @@
+@article{Renesse2011,
+abstract = {This article explains the full reconfigurable multidecree Paxos (or multi-Paxos) protocol. Paxos is by no means a simple protocol, even though it is based on relatively simple invariants. We provide pseudocode and explain it guided by invariants. We initially avoid optimizations that complicate comprehension. Next we discuss liveness, list various optimizations that make the protocol practical, and present variants of the protocol.},
+author = {van Renesse, Robbert},
+doi = {10.1145/2673577},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/paxos.pdf:pdf},
+issn = {15577341},
+journal = {ACM Computing Surveys},
+number = {3},
+pages = {1--36},
+title = {{Paxos Made Moderately Complex}},
+volume = {47},
+year = {2011}
+}
+
+@article{Lamport2006,
+abstract = {As used in practice, traditional consensus algorithms require three message delays before any process can learn the chosen value. Fast Paxos is an extension of the classic Paxos algorithm that allows the value to be learned in two message delays. How and why the algorithm works are explained informally, and a TLA+ specification of the algorithm appears as an appendix.},
+author = {Lamport, Leslie},
+doi = {10.1007/s00446-006-0005-x},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/Fast Paxos.pdf:pdf},
+isbn = {0178-2770},
+issn = {01782770},
+journal = {Distributed Computing},
+keywords = {Consensus,Distributed algorithms,Fault tolerance,Paxos},
+number = {2},
+pages = {79--103},
+title = {{Fast Paxos}},
+volume = {19},
+year = {2006}
+}
+
+@article{Lamport2005,
+abstract = {The state-machine approach to implementing a fault-tolerant distributed system involves reaching agreement on the sequence of system commands by executing a sequence of separate instances of a consensus algorithm. It can be shown that any fault-tolerant asynchronous consensus algorithm re- quires at least two message delays between the issuing of a command and when it can be executed. But even in the absence of faults, no algorithm can guarantee this fast an execution if two different commands are issued concurrently. We generalize the state-machine approach to involve reach- ing agreement on a partially ordered set of commands. By generalizing the Paxos consensus algorithm, we can implement a system in which concur- rently issued commands can always be executed in two message delays if they are non-interfering, so it does not matter in which order those com- mands are executed. For many systems, concurrent commands are rarely interfering, so the generalized Paxos algorithm can be quite efficient. And command-structure sets are very simple.},
+author = {Lamport, Leslie},
+doi = {MSR-TR-2005-33},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/Generalized Paxos.pdf:pdf},
+issn = {{\textless}null{\textgreater}},
+number = {April},
+pages = {60},
+title = {{Generalized Consensus and Paxos}},
+url = {http://research.microsoft.com/apps/pubs/default.aspx?id=64631},
+year = {2005}
+}
+
+@article{Mao2008,
+abstract = {We present a protocol for general state machine replication – a method that provides strong consistency – that has high performance in a wide-area network. In particular, our protocol Mencius has high throughput under high client load and lowlatency under lowclient load even under changing wide-area network environment and client load. We develop our protocol as a derivation from the well-known protocol Paxos. Such a development can be changed or further refined to take advantage of specific network or application requirements.},
+author = {Mao, Yanhua and Junqueira, Flavio P. and Marzullo, Keith},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/mencius.pdf:pdf},
+journal = {Proceedings of the Symposium on Operating System Design and Implementation},
+pages = {369--384},
+title = {{Mencius: Building Efficient Replicated State Machines for WANs}},
+url = {https://www.usenix.org/legacy/events/osdi08/tech/full_papers/mao/mao.pdf},
+year = {2008}
+}
+
+@article{Fischer1985,
+abstract = {The consensus problem involves an asynchronous system of processes, some of which may be unreliable. The problem is for the reliable processes to agree on a binary value. In this paper, it is shown that every protocol for this problem has the possibility of nontermination, even with only one faulty process. By way of contrast, solutions are known for the synchronous case, the “Byzantine Generals” problem.},
+author = {Fischer, Michael J. and Lynch, Nancy A. and Paterson, Michael S.},
+doi = {10.1145/3149.214121},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/jacm85.pdf:pdf},
+isbn = {3-540-50840-6},
+issn = {00045411},
+journal = {Journal of the ACM},
+number = {2},
+pages = {374--382},
+title = {{Impossibility of Distributed Consensus with One Faulty Process}},
+url = {http://portal.acm.org/citation.cfm?doid=3149.214121},
+volume = {32},
+year = {1985}
+}
+
+@article{Lamport2001,
+abstract = {The Paxos algorithm, when presented in plain English, is very simple.},
+author = {Lamport, Leslie},
+doi = {10.1145/568425.568433},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/paxos-simple.pdf:pdf},
+isbn = {2-912590-26-4},
+issn = {01635700},
+journal = {ACM SIGACT news distributed computing column 5},
+number = {4},
+pages = {51--58},
+title = {{Paxos Made Simple}},
+url = {http://portal.acm.org/citation.cfm?doid=568425.568433},
+volume = {32},
+year = {2001}
+}
+
+@article{Lamport1982,
+abstract = {Reliable computer systems must handle malfunctioning components that give conflicting information to different parts of the system. This situation can be expressed abstractly in terms of a group of generals of the Byzantine army camped with their troops around an enemy city. Communicating only by messenger, the generals must agree upon a common battle plan. However, one of more of them may be traitors who will try to confuse the others. The problem is to find an algorithm to ensure that the loyal generals will reach agreement. It is shown that, using only oral messages, this problem is solvable if and only if more than two-thirds of the generals are loyal; so a single traitor can confound two loyal generals. With unforgeable written messages, the problem is solvable for any number of generals and possible traitors. Applications of the solutions to reliable computer systems are then discussed.},
+author = {Lamport, Leslie and Shostak, Robert and Pease, Marshall},
+doi = {10.1145/357172.357176},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/byz.pdf:pdf},
+isbn = {0164-0925},
+issn = {01640925},
+journal = {ACM Transactions on Programming Languages and Systems},
+number = {3},
+pages = {382--401},
+title = {{The Byzantine Generals Problem}},
+volume = {4},
+year = {1982}
+}
+@article{Castro1999,
+abstract = {This paper describes a new replication algorithm that is able to tolerate Byzantine faults. We believe that Byzantine- fault-tolerant algorithms will be increasingly important in the future because malicious attacks and software errors are increasingly common and can cause faulty nodes to exhibit arbitrary behavior. Whereas previous algorithms assumed a synchronous system or were too slow to be used in practice, the algorithm described in this paper is practical: it works in asynchronous environments like the Internet and incorporates several important optimizations that improve the response time of previous algorithms by more than an order of magnitude. We implemented a Byzantine-fault-tolerant NFS service using our algorithm and measured its performance. The results show that our service is only3{\%}slower than a standard unreplicated NFS.},
+author = {Castro, Miguel and Liskov, Barbara},
+doi = {10.1145/571637.571640},
+file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/PBFT.pdf:pdf},
+isbn = {1-880446-39-1},
+issn = {07342071},
+journal = {Proceedings of the Symposium on Operating System Design and Implementation},
+number = {February},
+pages = {1--14},
+pmid = {380302},
+title = {{Practical Byzantine Fault Tolerance}},
+url = {http://www.itu.dk/stud/speciale/bepjea/xwebtex/litt/practical-byzantine-fault-tolerant.pdf},
+year = {1999}
+}
+
+@article{Liu2015,
+	archivePrefix = {arXiv},
+	arxivId = {arXiv:1502.05831v1},
+	author = {Liu, Shengyun and Cachin, Christian and Quema, Vivien and Vukolic, Marko},
+	eprint = {arXiv:1502.05831v1},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/XFT.pdf:pdf},
+	pages = {1--32},
+	title = {{XFT: Practical fault tolerance beyond crashes}},
+	url = {http://arxiv.org/pdf/1502.05831v1.pdf},
+	year = {2015}
+}
+@article{Ladin1992,
+	abstract = {To provide high availability for services such as mail or bulletin boards, data must be replicated. One way to guarantee consistency of replicated data is to force service operations to occur in the same order at all sites, but this approach is expensive. ...},
+	author = {Ladin, Rivka and Liskov, Barbara and Shrira, Liuba and Ghemawat, Sanjay},
+	doi = {10.1145/138873.138877},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/gossip.pdf:pdf},
+	issn = {07342071},
+	journal = {ACM Transactions on Computer Systems},
+	number = {4},
+	pages = {360--391},
+	title = {{Providing high availability using lazy replication}},
+	volume = {10},
+	year = {1992}
+}
+
+@article{Porto2015,
+	abstract = {We present a new technique for designing distributed protocols for building reliable stateful services called Visigoth Fault Tolerance (VFT). VFT introduces the Visigoth model, which makes it possible to calibrate the timing assumptions of a system using a threshold of slow processes or messages, and also to distinguish between non-malicious arbitrary faults and correlated attack scenarios. This enables solutions that leverage the characteristics of data center systems, namely their secure environment and predictable performance, in order to allow replicated systems to be more efficient with respect to the utilization of resources than those designed under asynchrony and Byzantine assumptions, while avoiding the need to make a system synchronous, or to restrict failure modes to silent crashes. We implemented a VFT protocol for a state machine replication library, and ran several benchmarks. Our evaluation shows that VFT has comparable performance to existing schemes and brings significant benefits in terms of the throughput per dollar, i.e., the server cost for sustaining a certain level of request execution.},
+	author = {Porto, Daniel and Leit{\~{a}}o, Jo{\~{a}}o and Li, Cheng and Clement, Allen and Kate, Aniket and Junqueira, Fl{\'{a}}vio and Rodrigues, Rodrigo},
+	doi = {10.1145/2741948.2741979},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/vft{\_}eurosys15.pdf:pdf},
+	isbn = {978-1-4503-3238-5},
+	journal = {Proceedings of the Tenth European Conference on Computer Systems},
+	pages = {8:1----8:14},
+	title = {{Visigoth Fault Tolerance}},
+	url = {http://doi.acm.org/10.1145/2741948.2741979},
+	year = {2015}
+}
+
+@article{DeepakChandra1996,
+	abstract = {We introduce the concept of unreliable failure detectors and study how they can be used to solve Consensus in asynchronous systems with crash failures. We characterise unreliable failure detectors in terms of two properties—completeness and accuracy. We show that Consensus can be solved even with unreliable failure detectors that make an infinite number of mistakes, and determine which ones can be used to solve Consensus despite any number of crashes, and which ones require a majority of correct processes. We prove that Consensus and Atomic Broadcast are redueible to each other in asynchronous systems with crash failures; thus, the above results also apply to Atomic Broadcast. A companion paper shows that one of the failure detectors introduced here is the weakest failure detector for solving Consensus.},
+	archivePrefix = {arXiv},
+	arxivId = {arXiv:1011.1669v3},
+	author = {{Deepak Chandra}, Tushar and Thomas, tf J and Toueg, Sam and Chandra, Tushar Deepak and Toueg, Sam},
+	doi = {10.1145/226643.226647},
+	eprint = {arXiv:1011.1669v3},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/p225-chandra.pdf:pdf},
+	isbn = {0897914392},
+	issn = {00045411},
+	journal = {Journal of the ACM},
+	keywords = {3 [Programming Techniques],4 IDatabase Management],4 [Performance of Systems],Agreement problem,Algorithms,Byzantine Generals' problem,C,C24 [Computer-Communication Networks],Categories and Subject Descriptors,D1,Distributed Sys-tems—disoifsured applications,F 12 [Computation by Abstract Devices],F1l [Computation by Abstract Devices],H2,Models of Computation—automata,Modes of Computation—purallefism and concurrency,Reliability,Reliability+auft-f olerance,Systems—concurrency,Theory Additional Key Words and Phrases,and serviceability,asynchronous systems,atomic broadcast,availability,commit problem,consensus problem,crash failures,distributed databases,distributed systems,failure detection,fault-tolerance,message passing,network operating {\~{}}s(ems,partial synchrony,processor failures,rekzrions among models,reliability,transaction processing General Terms},
+	number = {2},
+	pages = {225--267},
+	pmid = {25246403},
+	title = {{Unreliable failure detectors for reliable distributed systems}},
+	volume = {43},
+	year = {1996}
+}
+
+@MISC{Guerraoui96gammaaccurate,
+	author = {Rachid Guerraoui and Andre Schiper},
+	title = {Gamma Accurate Failure Detectors},
+	year = {1996}
+}
+
+@article{Chandra1996,
+	abstract = {We determine what information about failures is necessary and sufficient to solve Consensus in asynchronous distributed systems subject to crash failures. Previously, we proved that W, a failure detector that provides surprisingly little information about which processes have crashed, is sufficient to solve Consensus in asynchronous systems with a majority of correct processes. In this paper, we prove that to solve Consensus, any failure detector has to provide at least as much information as W. Thus, W is indeed the weakest failure detector for solving Consensus in asynchronous systems with a majority of correct processes.},
+	author = {Chandra, Tushar Deepak and Hadzilacos, Vassos and Toueg, Sam},
+	doi = {10.1145/234533.234549},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/weakestFD.pdf:pdf},
+	isbn = {0-89791-495-3},
+	issn = {00045411},
+	journal = {Journal of the ACM},
+	keywords = {Byzantine Generals' problem,agreement problem,asynchronous systems,atomic broadcast,commit problem,consensus problem,crash failures,failure detection,fault-tolerance,message passing,partial synchrony,processor failures},
+	number = {4},
+	pages = {685----722},
+	title = {{The Weakest Failure Detector for Solving Consensus}},
+	url = {http://doi.acm.org/10.1145/234533.234549},
+	volume = {43},
+	year = {1996}
+}
+
+@article{Dijkstra1974,
+	abstract = {Three studies examined the effect of primed psychological distance on level of perceptual construal, using Navon's paradigm of composite letters (global letters that are made of local letters). Relative to a control group, thinking of the more distant future (Study 1), about more distant spatial locations (Study 2), and about more distant social relations (Study 3) facilitated perception of global letters relative to local letters. Proximal times, spatial locations, and social relations had the opposite effect. The results are discussed within the framework of Construal Level Theory of psychological distance (Liberman {\&} Trope, 2008; Trope {\&} Liberman, 2003).},
+	author = {Dijkstra, Edsger W},
+	doi = {10.1145/361179.361202},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/self-stabilizing.pdf:pdf},
+	isbn = {0001-0782},
+	issn = {00010782},
+	journal = {Communications of the ACM},
+	keywords = {and phrases,distributed control,error recovery,harmonious cooperation,multiprocessing,mutual exclusion,networks,robustness,self-repair,self-stabilization,sharing,synchronization},
+	number = {11},
+	pages = {643--644},
+	title = {{Self-stabilizing systems in spite of distributed control}},
+	volume = {17},
+	year = {1974}
+}
+
+@article{Kalbarczyk2003,
+	abstract = {Not Available},
+	author = {Kalbarczyk, Z. and Iyer, K.},
+	doi = {10.1109/DSN.2003.1209956},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/e9ae8f1de1a2d7057fb7bf26a5b0567c67de.pdf:pdf},
+	isbn = {0-7695-1952-0},
+	journal = {2003 International Conference on Dependable Systems and Networks, 2003. Proceedings.},
+	keywords = {Computer crashes,Delay,Failure analysis,File systems,Hardware,Kernel,Linux,Operating systems,Protection,Registers},
+	number = {ii},
+	pages = {459--468},
+	title = {{Characterization of linux kernel behavior under errors}},
+	url = {http://ieeexplore.ieee.org/lpdocs/epic03/wrapper.htm?arnumber=1209956},
+	volume = {00},
+	year = {2003}
+}
+@article{Correia2012,
+	abstract = {Recent failures of production systems have highlighted the importance of tolerating faults beyond crashes. The industry has so far addressed this problem by hardening crash-tolerant systems with ad hoc error detection checks, potentially overlooking critical fault scenarios. We propose a generic and principled hardening technique for Arbitrary State Corruption (ASC) faults, which specifically model the effects of realistic data corruptions on distributed processes. Hardening does not require the use of trusted components or the replication of the process over multiple physical servers. We implemented a wrapper library to transparently harden distributed processes. To exercise our library and evaluate our technique, we obtained ASC-tolerant versions of Paxos, of a subset of the ZooKeeper API, and of an eventually consistent storage by implementing crash-tolerant protocols and automatically hardening them using our library. Our evaluation shows that the throughput of our ASC-hardened state machine replication outperforms its Byzantine-tolerant counterpart by up to 70{\%}.},
+	author = {Correia, Miguel and Ferro, Daniel G{\'{o}}mez and Junqueira, Flavio P and Serafini, Marco},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/atc12-final190.pdf:pdf},
+	isbn = {978-931971-93-5},
+	journal = {Proceedings of the 2012 USENIX conference on Annual Technical Conference},
+	pages = {41},
+	title = {{Practical hardening of crash-tolerant systems}},
+	url = {http://dl.acm.org/citation.cfm?id=2342821.2342862},
+	year = {2012}
+}
+
+@article{Dwork1988,
+	abstract = {The concept of partial synchrony in a distributed system is introduced. Partial synchrony lies between the cases of a synchronous system and an asynchronous system. In a synchronous system, there is a known fixed upper bound {\&}Dgr; on the time required for a message to be sent from one processor to another and a known fixed upper bound {\&}PHgr; on the relative speeds of different processors. In an asynchronous system no fixed upper bounds {\&}Dgr; and {\&}PHgr; exist. In one version of partial synchrony, fixed bounds {\&}Dgr; and {\&}PHgr; exist, but they are not known a priori. The problem is to design protocols that work correctly in the partially synchronous system regardless of the actual values of the bounds {\&}Dgr; and {\&}PHgr;. In another version of partial synchrony, the bounds are known, but are only guaranteed to hold starting at some unknown time T , and protocols must be designed to work correctly regardless of when time T occurs. Fault-tolerant consensus protocols are given for various cases of partial synchrony and various fault models. Lower bounds that show in most cases that our protocols are optimal with respect to the number of faults tolerated are also given. Our consensus protocols for partially synchronous processors use new protocols for fault-tolerant “distributed clocks” that allow partially synchronous processors to reach some approximately common notion of time.},
+	author = {Dwork, Cynthia and Lynch, Nancy and Stockmeyer, Larry},
+	doi = {10.1145/42282.42283},
+	file = {:C$\backslash$:/Users/Miguel/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/Jose - 1988 - Consensus in the Presence of Partial Synchrony.pdf:pdf},
+	isbn = {0897911431},
+	issn = {00045411},
+	journal = {Journal of the ACM},
+	number = {2},
+	pages = {288----323},
+	title = {{Consensus in the Presence of Partial Synchrony}},
+	url = {http://doi.acm.org/10.1145/42282.42283},
+	volume = {35},
+	year = {1988}
+}
+
+@article{Dolev1983,
+	abstract = {Reaching agreement is a primitive of distributed computing. While this poses no problem in an ideal, failure-free environment, it imposes certain constraints on the capabilities of an actual system: a system is viable only if it permits the existence of consensus protocols tolerant to some number of failures. Fischer, Lynch and Paterson [FLP] have shown that in a completely asynchronous model, even one failure cannot be tolerated. In this paper we extend their work, identifying several critical system parameters, including various synchronicity conditions, and examine how varying these affects the number of faults which can be tolerated. Our proofs expose general heuristic principles that explain why consensus is possible in certain models but not possible in others.},
+	author = {Dolev, Danny and Dwork, Cynthia and Stockmeyer, Larry},
+	doi = {10.1109/SFCS.1983.41},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/minimal{\_}synchronism.pdf:pdf},
+	isbn = {0-8186-0508-1},
+	issn = {0272-5428},
+	journal = {24th Annual Symposium on Foundations of Computer Science (sfcs 1983)},
+	number = {I},
+	pages = {77--97},
+	title = {{On the minimal synchronism needed for distributed consensus}},
+	volume = {34},
+	year = {1983}
+}
+
+@article{Aguilera2012,
+	abstract = {We introduce a new model of partial synchrony for read-write shared$\backslash$nmemory systems. This model is based on the simple notion of set$\backslash$ntimeliness-a natural generalization of the seminal concept of timeliness$\backslash$nin the partially synchrony model of Dwork et al. (J. ACM 35(2):288-323,$\backslash$n1988). Despite its simplicity, the concept of set timeliness is powerful$\backslash$nenough to define a family of partially synchronous systems that closely$\backslash$nmatch individual instances of the t-resilient k-set agreement problem$\backslash$namong n processes, henceforth denoted (t, k, n)-agreement. In$\backslash$nparticular, we use it to give a partially synchronous system that is$\backslash$nsynchronous enough for solving (t, k, n)-agreement, but not enough for$\backslash$nsolving two incrementally stronger problems, namely, (t + 1, k,$\backslash$nn)-agreement, which has a slightly stronger resiliency requirement, and$\backslash$n(t, k - 1, n)-agreement, which has a slightly stronger agreement$\backslash$nrequirement. This is the first partially synchronous system that$\backslash$nseparates these sub-consensus problems. The above results show that set$\backslash$ntimeliness can be used to study and compare the partial synchrony$\backslash$nrequirements of problems that are strictly weaker than consensus.},
+	author = {Aguilera, Marcos K. and Delporte-Gallet, Carole and Fauconnier, Hugues and Toueg, Sam},
+	doi = {10.1007/s00446-012-0158-8},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/partial{\_}synch{\_}set.pdf:pdf},
+	isbn = {9781605583969},
+	issn = {01782770},
+	journal = {Distributed Computing},
+	keywords = {algorithms,bivalency,consensus,failure detectors,impossibility,partial synchrony,set agreement,timeliness},
+	number = {3},
+	pages = {249--260},
+	title = {{Partial synchrony based on set timeliness}},
+	volume = {25},
+	year = {2012}
+}
+@article{Lamport2001,
+	abstract = {The Paxos algorithm, when presented in plain English, is very simple.},
+	author = {Lamport, Leslie},
+	doi = {10.1145/568425.568433},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/paxos-simple.pdf:pdf},
+	isbn = {2-912590-26-4},
+	issn = {01635700},
+	journal = {ACM SIGACT news distributed computing column 5},
+	number = {4},
+	pages = {51--58},
+	title = {{Paxos Made Simple}},
+	url = {http://portal.acm.org/citation.cfm?doid=568425.568433},
+	volume = {32},
+	year = {2001}
+}
+
+@misc{Chaudhuri1993,
+	abstract = {We define the k-set consensus problem as an extension of the consensus problem, where each processor decides on a single value such that the set of decided values in any run is of size at most k. We require the agreement condition that all values decided upon are initial values of some processor. We show that the problem has a simple (k - 1)-resilient protocol in a totally asynchronous system. In an attempt to come up with a matching lower bound on the number of failures, we study the uncertainty condition, which requires that there must be some initial configuration from which all possible input values can be decided. We prove using a combinatorial argument that any k-resilient protocol for the k-set agreement problem would satisfy the uncertainty condition, while this is not true for any (k - 1)-resilient protocol.},
+	author = {Chaudhuri, S.},
+	booktitle = {Information and Computation},
+	doi = {10.1006/inco.1993.1043},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/Chaudhuri.pdf:pdf},
+	isbn = {089791404X},
+	issn = {08905401},
+	number = {1},
+	pages = {132--158},
+	title = {{More Choices Allow More Faults: Set Consensus Problems in Totally Asynchronous Systems}},
+	url = {http://linkinghub.elsevier.com/retrieve/pii/S0890540183710436},
+	volume = {105},
+	year = {1993}
+}
+
+@article{Zielinski2010,
+	abstract = {In the set agreement problem, n processes have to decide on at most n-1 of the proposed values. This paper shows that the anti-Omega failure detector is both sufficient and necessary to solve set agreement in an asynchronous shared-memory system. Each query to anti-Omega returns a single process id; the specification ensures that there is a correct process whose id is returned only finitely many times.},
+	author = {Ziel{\'{i}}nski, Piotr},
+	doi = {10.1007/s00446-010-0101-9},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/anti-omega.pdf:pdf},
+	isbn = {9781595939890},
+	issn = {01782770},
+	journal = {Distributed Computing},
+	keywords = {Failure detectors,Set agreement,Wait-free impossibilities,Weakest failure detector ever},
+	number = {5-6},
+	pages = {335--348},
+	pmid = {21158571},
+	title = {{Anti$\omega$O: The weakest failure detector for set agreement}},
+	volume = {22},
+	year = {2010}
+}
+
+@article{Ahamad1995,
+	abstract = {The abstraction of a shared memory is of growing importance in distributed computing systems. Traditional memory consistency ensures that all processes agree on a common order of all operations on memory. Unfortunately, providing these guarantees entails access latencies that prevent scaling to large systems. This paper weakens such guarantees by definingcausal memory, an abstraction that ensures that processes in a system agree on the relative ordering of operations that arecausally related. Because causal memory isweakly consistent, it admits more executions, and hence more concurrency, than either atomic or sequentially consistent memories. This paper provides a formal definition of causal memory and gives an implementation for message-passing systems. In addition, it describes a practical class of programs that, if developed for a strongly consistent memory, run correctly with causal memory.},
+	author = {Ahamad, Mustaque and Neiger, Gil and Burns, James E. and Kohli, Prince and Hutto, Phillip W.},
+	doi = {10.1007/BF01784241},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/causal{\_}mem.pdf:pdf},
+	isbn = {0-8186-2144-3},
+	issn = {01782770},
+	journal = {Distributed Computing},
+	keywords = {Causal memory,Distributed shared memory,Memory consistency,Sequential consistency},
+	number = {1},
+	pages = {37--49},
+	title = {{Causal memory: definitions, implementation, and programming}},
+	volume = {9},
+	year = {1995}
+}
+
+@article{Herlihy1990,
+	author = {Herlihy, Maurice P. and Wing, Jeannette M.},
+	title = {Linearizability: A Correctness Condition for Concurrent Objects},
+	journal = {ACM Trans. Program. Lang. Syst.},
+	issue_date = {July 1990},
+	volume = {12},
+	number = {3},
+	month = jul,
+	year = {1990},
+	issn = {0164-0925},
+	pages = {463--492},
+	numpages = {30},
+	url = {http://doi.acm.org/10.1145/78969.78972},
+	doi = {10.1145/78969.78972},
+	acmid = {78972},
+	publisher = {ACM},
+	address = {New York, NY, USA},
+} 
+
+@article{Li2012,
+	abstract = {Online services distribute and replicate state across geographically diverse data centers and direct user requests to the closest or least loaded site. While ef- fectively ensuring low latency responses, this approach is at odds with maintaining cross-site consistency. We make three contributions to address this tension. First, we propose RedBlue consistency, which enables blue operations to be fast (and eventually consistent) whi- le the remaining red operations are strongly consistent (and slow). Second, to make use of fast operation when- ever possible and only resort to strong consistency when needed, we identify conditions delineating when opera- tions can be blue and must be red. Third, we introduce a method that increases the space of potential blue op- erations by breaking them into separate generator and shadow phases. We built a coordination infrastructure called Gemini that offers RedBlue consistency, and we report on our experience modifying the TPC-W and RU- BiS benchmarks and an online social network to use Gemini. Our experimental results show that RedBlue consistency provides substantial performance gains with- out sacrificing consistency.},
+	author = {Li, Cheng and Porto, Daniel and Clement, Allen and Gehrke, Johannes and Rodrigues, Rodrigo and Pregui{\c{c}}a, Nuno},
+	file = {:C$\backslash$:/Users/Miguel/AppData/Local/Mendeley Ltd./Mendeley Desktop/Downloaded/Singh et al. - 2009 - Multicoordinated paxos(2).pdf:pdf},
+	isbn = {978-1-931971-96-6},
+	journal = {OSDI'12 Proceedings of the 10th USENIX conference on Operating Systems Design and Implementation},
+	pages = {265--278},
+	title = {{Making Geo-Replicated Systems Fast as Possible, Consistent when Necessary}},
+	url = {http://dl.acm.org/citation.cfm?id=2387880.2387906},
+	year = {2012}
+}
+
+@article{Moraru2013,
+	abstract = {... EPaxos has similarities to generic broadcast algorithms [1, 26, 29], that require a consistent message delivery order only for conflicting messages. Thrifty generic broadcast [1] has the same liveness condition as ( E ) Paxos , but requires $\Theta$(N2) mes- sages for every broadcast ... $\backslash$n},
+	author = {Moraru, Iulian and Andersen, David G and Kaminsky, Michael},
+	doi = {10.1145/2517349.2517350},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/epaxos-sosp2013.pdf:pdf},
+	isbn = {9781450323888},
+	journal = {Sosp '13},
+	keywords = {Put your keywords here},
+	pages = {358--372},
+	title = {{There is more consensus in Egalitarian parliaments}},
+	url = {http://dl.acm.org/citation.cfm?doid=2517349.2517350},
+	year = {2013}
+}
+
+@article{Balegas2015,
+	abstract = {Geo-replicated storage systems are at the core of current Internet services. The designers of the replication protocols used by these systems must choose between either supporting low-latency, eventually-consistent operations, or ensuring strong consistency to ease application correctness. We propose an alternative consistency model, Explicit Consistency, that strengthens eventual consistency with a guarantee to preserve specific invariants defined by the applications. Given these application-specific invariants, a system that supports Explicit Consistency identifies which operations would be unsafe under concurrent execution, and allows programmers to select either violation-avoidance or invariant-repair techniques. We show how to achieve the former, while allowing operations to complete locally in the common case, by relying on a reservation system that moves coordination off the critical path of operation execution. The latter, in turn, allows operations to execute without restriction, and restore invariants by applying a repair operation to the database state. We present the design and evaluation of Indigo, a middleware that provides Explicit Consistency on top of a causally-consistent data store. Indigo guarantees strong application invariants while providing similar latency to an eventually-consistent system in the common case.},
+	author = {Balegas, Valter and Duarte, S{\'{e}}rgio and Ferreira, Carla and Rodrigues, Rodrigo and Pregui{\c{c}}a, Nuno and Najafzadeh, Mahsa and Shapiro, Marc},
+	doi = {10.1145/2741948.2741972},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/indigo{\_}eurosys15.pdf:pdf},
+	isbn = {9781450332385},
+	journal = {Proceedings of the Tenth European Conference on Computer Systems - EuroSys '15},
+	pages = {1--16},
+	title = {{Putting consistency back into eventual consistency}},
+	url = {http://doi.acm.org/10.1145/2741948.2741972},
+	year = {2015}
+}
+
+@article{Silberstein2008,
+	abstract = {We describe PNUTS, a massively parallel and geographically distributed database system for Yahoo!'s web applications. PNUTS provides data storage organized as hashed or ordered tables, low latency for large numbers of concurrent requests including updates and queries, and novel per-record consistency guarantees. It is a hosted, centrally managed, and geographically distributed service, and utilizes automated load-balancing and failover to reduce operational complexity. The first version of the system is currently serving in production. We describe the motivation for PNUTS and the design and implementation of its table storage and replication layers, and then present experimental results.},
+	author = {Silberstein, Adam and Silberstein, Adam and Cooper, Brian F. and Cooper, Brian F. and Srivastava, Utkarsh and Srivastava, Utkarsh and Vee, Erik and Vee, Erik and Yerneni, Ramana and Yerneni, Ramana and Ramakrishnan, Raghu and Ramakrishnan, Raghu},
+	doi = {10.1145/1376616.1376693},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/PNUTS.pdf:pdf},
+	isbn = {9781605581026},
+	issn = {21508097},
+	journal = {Proceedings of PVLDB 2008},
+	keywords = {Management of data,SIGMOD '08},
+	number = {2},
+	pages = {765},
+	title = {{PNUTS: Yahoo!'s Hosted Data Serving Platform}},
+	url = {http://portal.acm.org/citation.cfm?doid=1376616.1376693},
+	volume = {1},
+	year = {2008}
+}
+
+@misc{AmazonS31,
+	title = {Amazon S3 Availability Event: July 20, 2008},
+	howpublished = {\url{http://status.aws.amazon.com/s3-20080720.html}},
+	note = {Accessed: 2016-12-22}
+}
+
+@misc{AmazonS32,
+	title = {S3 data corruption?: June 22, 2008},
+	howpublished = {\url{https://forums.aws.amazon.com/thread.jspa?threadID=22709}},
+	note = {Accessed: 2016-12-22}
+}
+
+@article{Junqueira2011,
+	abstract = {Zab is a crash-recovery atomic broadcast algorithm we designed for the ZooKeeper coordination service. ZooKeeper implements a primary-backup scheme in which a primary process executes clients operations and uses Zab to propagate the corresponding incremental state changes to backup processes1. Due the dependence of an incremental state change on the sequence of changes previously generated, Zab must guarantee that if it delivers a given state change, then all other changes it depends upon must be delivered first. Since primaries may crash, Zab must satisfy this requirement despite crashes of primaries.},
+	author = {Junqueira, Flavio P. and Reed, Benjamin C. and Serafini, Marco},
+	doi = {10.1109/DSN.2011.5958223},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/zab.pdf:pdf},
+	isbn = {9781424492336},
+	issn = {1530-0889},
+	journal = {Proceedings of the International Conference on Dependable Systems and Networks},
+	keywords = {Asynchronous consensus,Atomic broadcast,Distributed algorithms,Fault tolerance,Primary backup},
+	pages = {245--256},
+	title = {{Zab: High-performance broadcast for primary-backup systems}},
+	year = {2011}
+}
+
+@article{Burrows2006,
+	abstract = {We describe our experiences with the Chubby lock service, which is intended to provide coarse-grained locking as well as reliable (though low-volume) storage for a loosely-coupled distributed system. Chubby provides an interface much like a distributed file system with advisory locks, but the design emphasis is on availability and reliability, as opposed to high performance. Many instances of the service have been used for over a year, with several of them each handling a few tens of thousands of clients concurrently. The paper describes the initial design and expected use, compares it with actual use, and explains how the design had to be modified to accommodate the differences.},
+	author = {Burrows, Mike},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/chubby-osdi06.pdf:pdf},
+	isbn = {1-931971-47-1},
+	issn = {{\textless}null{\textgreater}},
+	journal = {OSDI '06: Proceedings of the 7th symposium on Operating systems design and implementation SE - OSDI '06},
+	keywords = {consensus,distributed-systems,fault-tolerance},
+	pages = {335--350},
+	title = {{The Chubby lock service for loosely-coupled distributed systems}},
+	url = {http://dl.acm.org/citation.cfm?id=1298455.1298487},
+	year = {2006}
+}
+
+@article{Singh2009,
+	author = {Singh, Atul and Fonseca, Pedro and Kuznetsov, Petr},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/singh.pdf:pdf},
+	journal = {Nsdi},
+	pages = {169--184},
+	title = {{Zeno: Eventually Consistent Byzantine-Fault Tolerance.}},
+	url = {https://www.usenix.org/legacy/event/nsdi09/tech/full_papers/singh/singh.pdf},
+	year = {2009}
+}
+
+@article{Cachin2009,
+	author = {Cachin, Christian},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/pax.pdf:pdf},
+	journal = {IBM Research, Zurich, Switzerland, Tech. Rep. RZ3754},
+	pages = {1--14},
+	title = {{Yet another visit to Paxos}},
+	url = {https://www.zurich.ibm.com/~cca/papers/pax.pdf},
+	year = {2009}
+}
+
+@article{Saito2005,
+	abstract = {Data replication is a key technology in distributed systems that enables higher availability and performance. This article surveys optimistic replication algorithms. They allow replica contents to diverge in the short term to support concurrent work practices and tolerate failures in low-quality communication links. The importance of such techniques is increasing as collaboration through wide-area and mobile networks becomes popular. Optimistic replication deploys algorithms not seen in traditional “pessimistic” systems. Instead of synchronous replica coordination, an optimistic algorithm propagates changes in the background, discovers conflicts after they happen, and reaches agreement on the final contents incrementally. We explore the solution space for optimistic replication algorithms. This article identifies key challenges facing optimistic replication systems—ordering operations, detecting and resolving conflicts, propagating changes efficiently, and bounding replica divergence—and provides a comprehensive survey of techniques developed for addressing these challenges. Categories},
+	author = {Saito, Yasushi and Shapiro, Marc},
+	doi = {10.1145/1057977.1057980},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/Optimistic{\_}Replication{\_}Computing{\_}Surveys{\_}2005-03{\_}cameraready.pdf:pdf},
+	isbn = {0360-0300},
+	issn = {03600300},
+	journal = {ACM Computing Surveys},
+	keywords = {Replication,disconnected operation,distributed systems,large scale systems,optimistic techniques},
+	number = {1},
+	pages = {42--81},
+	title = {{Optimistic replication}},
+	url = {http://doi.acm.org/10.1145/1057977.1057980},
+	volume = {37},
+	year = {2005}
+}
+
+@article{Corbett2012,
+	abstract = {Spanner is Google's scalable, multi-version, globally- distributed, and synchronously-replicated database. It is the first system to distribute data at global scale and sup- port externally-consistent distributed transactions. This paper describes howSpanner is structured, its feature set, the rationale underlying various design decisions, and a novel time API that exposes clock uncertainty. This API and its implementation are critical to supporting exter- nal consistency and a variety of powerful features: non- blocking reads in the past, lock-free read-only transac- tions, and atomic schema changes, across all of Spanner},
+	archivePrefix = {arXiv},
+	arxivId = {arXiv:1011.1669v3},
+	author = {Corbett, James C and Dean, Jeffrey and Epstein, Michael and Fikes, Andrew and Frost, Christopher and Furman, J J and Ghemawat, Sanjay and Gubarev, Andrey and Heiser, Christopher and Hochschild, Peter and Hsieh, Wilson and Kanthak, Sebastian and Kogan, Eugene and Li, Hongyi and Lloyd, Alexander and Melnik, Sergey and Mwaura, David and Nagle, David and Quinlan, Sean and Rao, Rajesh and Rolig, Lindsay and Saito, Yasushi and Szymaniak, Michal and Taylor, Christopher and Wang, Ruth and Woodford, Dale},
+	doi = {10.1145/2491245},
+	eprint = {arXiv:1011.1669v3},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/spanner-osdi2012.pdf:pdf},
+	isbn = {978-931971-96-6},
+	issn = {07342071},
+	journal = {Proceedings of OSDI'12: Tenth Symposium on Operating System Design and Implementation},
+	pages = {251--264},
+	pmid = {191},
+	title = {{Spanner : Google's Globally-Distributed Database}},
+	url = {papers3://publication/uuid/5F75593B-DCBB-466E-A964-B13CC0875E9D},
+	year = {2012}
+}
+@article{Kraska2013,
+	abstract = {Replicating data across multiple data centers allows using data closer to the client, reducing latency for applications, and increases the availability in the event of a data center failure. MDCC (Multi-Data Center Consistency) is an optimistic commit protocol for geo-replicated transactions, that does not require a master or static partitioning, and is strongly consistent at a cost similar to eventually consistent protocols. MDCC takes advantage of Generalized Paxos for transaction processing and exploits commutative updates with value constraints in a quorum-based system. Our experiments show that MDCC outperforms existing synchronous transactional replication protocols, such as Megastore, by requiring only a single message round-trip in the normal operational case independent of the master-location and by scaling linearly with the number of machines as long as transaction conflict rates permit.},
+	archivePrefix = {arXiv},
+	arxivId = {arXiv:1203.6049v1},
+	author = {Kraska, Tim and Pang, G and Franklin, Mj},
+	doi = {10.1145/2465351.2465363},
+	eprint = {arXiv:1203.6049v1},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/mdcc.pdf:pdf},
+	isbn = {9781450319942},
+	issn = {9781450319942},
+	journal = {Proceedings of the 8th {\ldots}},
+	pages = {113--126},
+	title = {{Mdcc: Multi-data center consistency}},
+	url = {http://dl.acm.org/citation.cfm?id=2465363},
+	year = {2013}
+}
+@article{Herlihy1991,
+	abstract = {A wait-free implementation of a concurrent data object is one that guarantees that any process can complete any operation in a finite number of steps, regardless of the execution speeds of the other processes. The problem of constructing a wait-free implementation of one data object from another lies at the heart of much recent work in concurrent algorithms, concurrent data structures, and multiprocessor architectures. First, we introduce a simple and general technique, based on reduction to a concensus protocol, for proving statements of the form, there is no wait-free implementation of X by Y. We derive a hierarchy of objects such that no object at one level has a wait-free implementation in terms of objects at lower levels. In particular, we show that atomic read/write registers, which have been the focus of much recent attention, are at the bottom of the hierarchy: thay cannot be used to construct wait-free implementations of many simple and familiar data types. Moreover, classical synchronization primitives such astest{\&}set and fetch{\&}add, while more powerful than read and write, are also computationally weak, as are the standard message-passing primitives. Second, nevertheless, we show that there do exist simple universal objects from which one can construct a wait-free implementation of any sequential object.},
+	author = {Herlihy, Maurice},
+	doi = {10.1145/114005.102808},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/p124-herlihy.pdf:pdf},
+	isbn = {9780123705914},
+	issn = {01640925},
+	journal = {ACM Transactions on Programming Languages and Systems},
+	keywords = {linearization,wait-free synchronization},
+	number = {1},
+	pages = {124--149},
+	title = {{Wait-free synchronization}},
+	url = {http://dl.acm.org/citation.cfm?id=114005.102808},
+	volume = {13},
+	year = {1991}
+}
+@article{vukolic2012quorum,
+	title={Quorum systems: With applications to storage and consensus},
+	author={Vukoli{\'c}, Marko},
+	journal={Synthesis Lectures on Distributed Computing Theory},
+	volume={3},
+	number={1},
+	pages={1--146},
+	year={2012},
+	publisher={Morgan \& Claypool Publishers}
+}
+
+@article{Sousa2016,
+	author = {Sousa, Joao and Bessani, Alysson},
+	doi = {10.1109/SRDS.2015.40},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/srds15-wheat.pdf:pdf},
+	isbn = {9781467393027},
+	issn = {10609857},
+	journal = {Proceedings of the IEEE Symposium on Reliable Distributed Systems},
+	keywords = {Byzantine fault tolerance,measurements,quorum systems,state machine replication},
+	pages = {146--155},
+	title = {{Separating the WHEAT from the Chaff: An Empirical Design for Geo-Replicated State Machines}},
+	volume = {2016-Janua},
+	year = {2016}
+}
+
+@article{Hunt2010,
+	abstract = {In this paper, we describe ZooKeeper, a service for coordinating processes of distributed applications. Since ZooKeeper is part of critical infrastructure, ZooKeeper aims to provide a simple and high performance kernel for building more complex coordination primitives at the client. It incorporates elements from group messaging, shared registers, and distributed lock services in a replicated, centralized service. The interface exposed by ZooKeeper has the wait-free aspects of shared registers with an event-driven mechanism similar to cache invalidations of distributed file systems to provide a simple, yet powerful coordination service. The ZooKeeper interface enables a high-performance service implementation. In addition to the wait-free property, ZooKeeper provides a per client guarantee of FIFO execution of requests and linearizability for all requests that change the ZooKeeper state. These design decisions enable the implementation of a high performance processing pipeline with read requests being satisfied by local servers. We show for the target workloads, 2:1 to 100:1 read to write ratio, that ZooKeeper can handle tens to hundreds of thousands of transactions per second. This performance allows ZooKeeper to be used extensively by client applications.},
+	author = {Hunt, Patrick and Konar, Mahadev and Junqueira, Flavio P. and Reed, Benjamin},
+	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/hunt.pdf:pdf},
+	isbn = {9781450325530},
+	issn = {0210945x},
+	journal = {USENIX Annual Technical Conference},
+	pages = {11--11},
+	title = {{ZooKeeper: Wait-free Coordination for Internet-scale Systems}},
+	url = {http://portal.acm.org/citation.cfm?id=1855851{\%}5Cnhttps://www.usenix.org/event/usenix10/tech/full{\_}papers/Hunt.pdf},
+	volume = {8},
+	year = {2010}
+}
+

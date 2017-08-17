@@ -1,0 +1,16 @@
+\chapter{Architecture}
+
+One of the  main contributions of this work is an adaptation of the Generalized Paxos protocol for the Visigoth model that allows us to solve the command history problem with different fault assumptions. In the interest of clarity, the protocol will be presented in the same way it was built, that is, incrementally. First, we will start by presenting a slightly modified version of Byzantine Paxos for the crash fault model. Even though the original protocol was developed for this fault model, it solves the generalized consensus problem. However, since the generality of this problem greatly complicates the protocol itself, we specialize the problem to its original motivating form, the command history problem. Therefore, subsection \ref{Crash Fault Model} presents a protocol that solves this simplified problem in the crash fault model. In subsection \ref{Byzatine Fault Model}, we present the Byzantine Generalized Paxos (BGP) protocol. This protocol solves the command history consensus problem for in an environment where replicas can behave arbitrarily. In addition to a description of the protocol, this section also contains both pseudocode algorithms, detailing the protocol's execution, and correctness proofs for each property. In subsection \ref{Visigoth Fault Model}, the Generalized Paxos protocol is broadened from the Byzantine to the Visigoth fault model. As with the Byzantine version, the description of the protocol is accompanied by pseudocode algorithms and correctness proofs. Subsection \ref{Optimizations} presents optimizations that can be applied to any of the versions in order to gain performance at no additional cost.
+
+\input{cft_desc}
+\input{algo_cft}
+\clearpage
+\input{bft_desc}
+\input{algo_bft}
+\clearpage
+\input{vft_desc}
+\input{algo_vft}
+\clearpage
+\input{discussion}
+
+%\input{old_stuff}

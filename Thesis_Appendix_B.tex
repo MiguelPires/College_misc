@@ -1,6 +1,6 @@
-%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                      %
-%     File: Thesis_Appendix_A.tex                                      %
+%     File: Thesis_Appendix_B.tex                                      %
 %     Tex Master: Thesis.tex                                           %
 %                                                                      %
 %     Author: Andre C. Marta                                           %
@@ -8,24 +8,16 @@
 %                                                                      %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\chapter{Vector calculus}
-\label{chapter:appendixVectors}
+\chapter{Technical Datasheets}
+\label{chapter:appendixDatasheets}
 
-In case an appendix if deemed necessary, the document cannot exceed a total of 100 pages...
-
-Some definitions and vector identities are listed in the section below.
+It is possible to add PDF files to the document, such as technical sheets of some equipment used in the work.
 
 % ----------------------------------------------------------------------
-\section{Vector identities}
-\label{section:vectorIdentities}
+\section{Some Datasheet}
+\label{section:datasheet}
 
-\begin{equation}
-	\nabla \times \left( \nabla \phi \right) = 0
-	\label{eq:cross_nnp}
-\end{equation}
-
-\begin{equation}
-	\nabla \cdot \left( \nabla \times {\bf u} \right) = 0
-	\label{eq:dotCross_nnu}
-\end{equation}
+% See more options to include PDF files in
+% http://mirror.unl.edu/ctan/macros/latex/contrib/pdfpages/pdfpages.pdf
+\includepdf[pages={1-2},nup=1x2,landscape=true]{Figures/SolarCell_Sunpower_C60.pdf}
 

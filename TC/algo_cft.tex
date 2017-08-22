@@ -40,7 +40,7 @@
 \end{algorithm}
 
 \begin{algorithm}
-\caption{Visigoth Generalized Paxos - Process p}
+\caption{Generalized Paxos - Process p}
 \begin{algorithmic}[1]
 	
 	\Function{merge\_sequences}{$old\_seq, new\_seq$}
@@ -54,7 +54,7 @@
 \end{algorithm}
 
 \begin{algorithm} 
-\caption{Visigoth Generalized Paxos - Leader l}
+\caption{Generalized Paxos - Leader l}
 \textbf{Local variables:} $ballot_l = 0,maxTried_l = \bot,proposals = \bot, accepted = \bot$
 \begin{algorithmic}[1]
 	\State \textbf{upon} \textit{trigger\_next\_ballot(type)} \textbf{do}
@@ -96,7 +96,7 @@
 \end{algorithm}
 
 \begin{algorithm} 
-	\caption{Visigoth Generalized Paxos - Acceptor a}
+	\caption{Generalized Paxos - Acceptor a}
 	\label{VFT-Acc}
 	\textbf{Local variables:} $leader = \bot, bal_a = 0,val_a = \bot,fast\_bal = \bot$
 	\begin{algorithmic}[1]

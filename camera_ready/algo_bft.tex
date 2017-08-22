@@ -1,0 +1,245 @@
+\section{Byzantine Generalized Paxos Pseudocode} \label{bft_code}
+This section presents the pseudocode for the Byzantine Generalized Paxos protocol. \par
+\noindent \textbf{Checkpointing} The pseudocode includes a checkpointing feature that allows the leader to propose a special command $C^*$ that causes both the acceptors and learners to discard previously stored commands. This feature can be used to prevent commands from being stored indefinitely. However, since commands are kept at the acceptors to ensure that they will eventually be committed, special care has to be taken before discarding them. To prevent unlearned commands from being discarded, the checkpointing command must be sent within a sequence in a classic ballot. In phase 1 of that classic ballot, acceptors send every command they have to the leader, who waits for $N-f$ phase 1b messages. The leader can be sure that the commands were originated from proposers by verifying the signatures they contain. Since, when proposing to acceptors in fast ballots, proposers wait for acknowledgments from $N-f$ proposers, there's at least one correct acceptor in the intersection of a quorum that received a proposal and a quorum that sends commands to the leader. This means that any proposed value will be sent by some acceptor to the leader and included in the leader's sequence, along with the checkpointing command. Since acceptors must be certain that it's safe to discard previously stored commands, before sending phase 2b messages to learners, they first broadcast these messages among themselves. This round between acceptors is necessary because a Byzantine leader could send a checkpointing command to some acceptors but not others. After waiting for $N-f$ such messages, acceptors send phase 2b messages to the learners along with the cryptographic proofs exchanged in the acceptor-to-acceptor broadcast. After receiving just one message, the leader may simply validate the $N-f$ acceptor proofs contained in it and learn the commands. The learners discard previously stored state when they execute the checkpointing command.
+
+\begin{algorithm}[h] 
+	\caption{Byzantine Generalized Paxos - Proposer p}
+	\label{BFT-Prop}
+	\textbf{Local variables:} $ballot\_type = \bot$
+	\begin{algorithmic}[1]
+			
+		\State \textbf{upon} \textit{receive(BALLOT, type)} \textbf{do} 
+		\State \hspace{\algorithmicindent} $ballot\_type = type$;
+		\State
+		
+		\State \textbf{upon} \textit{command\_request(c)} \textbf{do}   \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\# receive request from application
+		\State \hspace{\algorithmicindent} \textbf{if} $ballot\_type = fast\_ballot$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$P2A\_FAST, c$} to acceptors;
+		\State \hspace{\algorithmicindent} \textbf{else} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{\textit{PROPOSE, c}} to leader;		
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\caption{Byzantine Generalized Paxos - Process p}
+	\begin{algorithmic}[1]
+		
+		\Function{merge\_sequences}{$old\_seq, new\_seq$}
+		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $old\_seq =  old\_seq \bullet c$;
+		\State \textbf{end for}
+		\State \textbf{return} $old\_seq$;
+		\EndFunction
+		
+		\State
+		\Function{signed\_commands}{$full\_seq$}
+		\State $signed\_seq = \bot$;
+		\State \textbf{for} $c$ \textbf{in} $full\_seq$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} \Call{$verify\_command$}{c} \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $signed\_seq = signed\_seq \bullet c$;
+		\State \textbf{end for}
+		\State \textbf{return} $signed\_seq$;
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm} 
+	\caption{Byzantine Generalized Paxos - Leader l}
+	\label{BFT-Lead}
+	\textbf{Local variables:} $ballot_l = 0,maxTried_l = \bot,proposals = \bot, accepted = \bot, view = 0$
+	\begin{algorithmic}[1]
+		\State \textbf{upon} \textit{receive($LEADER,view_a,proofs$)} from acceptor \textit{a} \textbf{do}
+		\State \hspace{\algorithmicindent} $valid\_proofs = 0$;
+		\State \hspace{\algorithmicindent} \textbf{for} $p$ \textbf{in} $acceptors$ \textbf{do} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $view\_proof = proofs[p]$;
+
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $view\_proof_{pub_p} = \langle view\_change, view_a \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}  $valid\_proofs \mathrel{+{=}} 1$;
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $valid\_proofs > f$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $view = view_a$;
+		
+		\State
+		\State \textbf{upon} \textit{trigger\_next\_ballot(type)} \textbf{do}
+		\State \hspace{\algorithmicindent} $ballot_l \mathrel{+{=}} 1$;
+		\State \hspace{\algorithmicindent} \Call{send}{$BALLOT,type}$ to proposers;
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $type = fast$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$FAST,ballot_l,view}$ to acceptors;
+		\State \hspace{\algorithmicindent} \textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$P1A, ballot_l, view$} to acceptors;
+		
+		\State
+		\State \textbf{upon} \textit{receive(PROPOSE, prop)} from proposer $p_i$ \textbf{do} 
+		\State \hspace{\algorithmicindent} $proposals = proposals \bullet prop$;
+		\State
+		\State \textbf{upon} \textit{receive($P1B, bal_a,view\_vals_a$)} from acceptor $a$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $bal_a = ballot_l$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $accepted[ballot_l][a] = \Call{signed\_commands}{view\_vals_a}$;
+		\State
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(accepted[ballot_l]) \geq N-f$ \textbf{then} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2a}{$ $};
+		
+		\State
+		\Function{phase\_2a}{$ $}
+		\State $maxTried_l = \Call{proved\_safe}{ballot_l}$;
+		\State $maxTried_l = maxTried_l \bullet proposals$;
+		\State \textbf{if} $\Call{clean\_state?}{ }$ \textbf{then}
+		\State \hspace{\algorithmicindent} $maxTried_l = maxTried_l \bullet C^*$;
+		\State \Call{send}{$P2A\_CLASSIC,ballot_l,view, maxTried_l$} to acceptors;
+		\State $proposals = \bot$;
+		\EndFunction
+		
+		\State
+		\Function{proved\_safe}{$ballot$}
+		\State $safe\_seq = \bot$;
+		\State \textbf{for} $seq$ \textbf{in} $accepted[ballot]$ \textbf{do}
+		\State \hspace{\algorithmicindent} $safe\_seq = \Call{merge\_sequences}{safe\_seq, seq}$;
+		\State \textbf{end for}
+		\State \textbf{return} $safe\_seq$;
+		\EndFunction		
+	\end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm} 
+	\caption{Byzantine Generalized Paxos - Acceptor a (view-change)}
+	\label{BFT-Proc}
+	\textbf{Local variables:} $suspicions = \bot,\ new\_view = \bot,\ leader = \bot,\ view = 0, bal_a = 0,\ val_a = \bot,\ fast\_bal = \bot,\ checkpoint=\bot$
+	\begin{algorithmic}[1]
+		
+		\State \textbf{upon} \textit{suspect\_leader} \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $suspicions[p] \neq true$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions[p] = true$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = \langle suspicion, view \rangle_{priv_a}$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$SUSPICION, view,proof$};	
+		\State
+		
+		\State \textbf{upon} \textit{receive($SUSPICION, view_i, proof$)} from acceptor $i$ \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $view_i \neq view$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return};
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $proof_{pub_i} = \langle suspicion, view \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions[i] = proof$;
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $\#(suspicions) > f$ and $new\_view[view+1][p] = \bot$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $change\_proof = \langle view\_change, view +1 \rangle_{priv_a}$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view+1][p] = change\_proof$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$VIEW\_CHANGE, view+1, suspicions,change\_proof$};
+		\State
+		
+		\State\textbf{upon} \textit{receive($VIEW\_CHANGE, new\_view_i, suspicions, change\_proof_i$)} from acceptor $i$ \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $new\_view_i \leq view$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{return};
+		\State
+		\State \hspace{\algorithmicindent} $valid\_proofs = 0$;
+		\State \hspace{\algorithmicindent} \textbf{for} $p$ \textbf{in} $acceptors$ \textbf{do} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = suspicions[p]$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $last\_view = new\_view_i-1$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof_{pub_p} = \langle suspicion, last\_view \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $valid\_proofs \mathrel{+{=}} 1$;
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $valid\_proofs \leq f$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return};
+		
+		\State
+		\State \hspace{\algorithmicindent} $new\_view[new\_view_i][i] = change\_proof_i$;
+		\State \hspace{\algorithmicindent} \textbf{if} $new\_view[view_i][a] = \bot$ \textbf{then}				
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $change\_proof = \langle view\_change, new\_view_i \rangle_{priv_a}$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view_i][a] = change\_proof$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}  \Call{send}{$VIEW\_CHANGE, view_i, suspicions, change\_proof$};
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $\#(new\_view[new\_view_i]) \geq N-f$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $view = view_i$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $leader = view\ mod\ N$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions = \bot$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{LEADER, view, new\_view[view_i]}$ to leader;
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm} 
+	\caption{Byzantine Generalized Paxos - Acceptor a (agreement)}
+	\label{BFT-Acc}
+	\textbf{Local variables:} $suspicions = \bot,\ new\_view = \bot,\ leader = \bot,\ view = 0, bal_a = 0,\ val_a = \bot,\ fast\_bal = \bot,\ checkpoint=\bot$
+	\begin{algorithmic}[1]
+		\State \textbf{upon} \textit{receive(P1A, ballot, $view_l$)} from leader $l$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $view_l = view$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_1b}{$ballot$};
+		
+		\State
+		\State \textbf{upon} \textit{receive($FAST,ballot,view_l$)} from leader \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $view_l = view$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $fast\_bal[ballot] = true$;
+		
+		\State
+		\State \textbf{upon} \textit{receive(P2B,ballot,value,proof)} from acceptor $i$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $proof_{pub_i} \neq \langle ballot, value \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return};
+		\State \hspace{\algorithmicindent} $checkpoint[ballot][i] = proof$;
+		\State \hspace{\algorithmicindent} \textbf{if} $\#(checkpoint[ballot]) \geq N-f$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B, ballot, value, checkpoint[ballot]}$ to learners;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a = \bot$;
+		\State
+		\State \textbf{upon} \textit{receive(P2A\_CLASSIC, ballot, view, value)} from leader \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $view_l = view$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value$}; 
+
+		\State		
+		\State \textbf{upon} \textit{receive(P2A\_FAST, value)} from proposer \textbf{do}
+		\State \hspace{\algorithmicindent} \Call{phase\_2b\_fast}{$value$};
+				
+		\State
+		\Function{phase\_1b}{$ballot$}
+		\If {$bal_a < ballot$}
+		\State \Call{send}{$P1B, ballot, val_a$} to leader;
+		\State $bal_a = ballot$;	
+		\State $val_a[bal_a] = \bot$;	
+		\EndIf
+		\EndFunction
+	
+		\State
+		\Function{phase\_2b\_classic}{$ballot, value$}
+		\If {$ballot \geq bal_a$ and $val_a = \bot$}
+		\State $bal_a = ballot$;
+		\State $val_a[ballot] = value$;
+		\State \textbf{if} $\Call{contains}{value, C^*}$ \textbf{then}
+		\State \hspace{\algorithmicindent} $proof = \langle suspicion, view \rangle_{priv_a}$;
+		\State \hspace{\algorithmicindent} \Call{send}{$P2B, ballot, value, proof$} to acceptors;
+		\State \textbf{else}
+		\State \hspace{\algorithmicindent}\Call{send}{$P2B, ballot, value$} to learners;
+		\EndIf
+		\EndFunction
+		
+		\State
+		\Function{phase\_2b\_fast}{$value$}
+		\If {$fast\_bal[bal_a]$}
+		\State $val_a[bal_a] =  \Call{merge\_sequences}{val_a[bal_a], value}$;
+		\State \Call{send}{$P2B, bal_a, val_a[bal_a]$} to learners;
+		\EndIf
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+	\caption{Byzantine Generalized Paxos - Learner l}
+	\label{BFT-Learn}
+	\textbf{Local variables:} $learned = \bot,\ messages = \bot$ 
+	\begin{algorithmic}[1]
+		\State \textbf{upon} \textit{receive($P2B, ballot, value$)} from acceptor $a$ \textbf{do}
+		\State \hspace{\algorithmicindent} $messages[ballot][value][a] = true$;
+		\State \hspace{\algorithmicindent} \parbox{\linewidth}{\textbf{if} $\#(messages[ballot][value]) \geq N-f$ or ($\#(messages[ballot][value]) > f$ and $\Call{isUniversallyCommutative}{value}$) \textbf{then}}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;
+		
+		\State
+		\State \textbf{upon} \textit{receive($P2B, ballot, value, proofs$)} from acceptor $a$ \textbf{do}
+		\State \hspace{\algorithmicindent} $valid\_proofs = 0$;
+		\State \hspace{\algorithmicindent} \textbf{for} $i$ \textbf{in} $acceptors$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = proofs[i]$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof_{pub_i} = \langle ballot, value \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
+		$valid\_proofs \mathrel{+{=}} 1$;
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $valid\_proofs > f$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;
+	\end{algorithmic}
+\end{algorithm}

@@ -2,27 +2,39 @@
 This section presents the pseudocode for the Byzantine Generalized Paxos protocol. \par
 \noindent \textbf{Checkpointing} The pseudocode includes a checkpointing feature that allows the leader to propose a special command $C^*$ that causes both the acceptors and learners to discard previously stored commands. This feature can be used to prevent commands from being stored indefinitely. However, since commands are kept at the acceptors to ensure that they will eventually be committed, special care has to be taken before discarding them. To prevent unlearned commands from being discarded, the checkpointing command must be sent within a sequence in a classic ballot. In phase 1 of that classic ballot, acceptors send every command they have to the leader, who waits for $N-f$ phase 1b messages. The leader can be sure that the commands were originated from proposers by verifying the signatures they contain. Since, when proposing to acceptors in fast ballots, proposers wait for acknowledgments from $N-f$ proposers, there's at least one correct acceptor in the intersection of a quorum that received a proposal and a quorum that sends commands to the leader. This means that any proposed value will be sent by some acceptor to the leader and included in the leader's sequence, along with the checkpointing command. Since acceptors must be certain that it's safe to discard previously stored commands, before sending phase 2b messages to learners, they first broadcast these messages among themselves. This round between acceptors is necessary because a Byzantine leader could send a checkpointing command to some acceptors but not others. After waiting for $N-f$ such messages, acceptors send phase 2b messages to the learners along with the cryptographic proofs exchanged in the acceptor-to-acceptor broadcast. After receiving just one message, the leader may simply validate the $N-f$ acceptor proofs contained in it and learn the commands. The learners discard previously stored state when they execute the checkpointing command.
 
+\makeatletter
+\algrenewcommand\ALG@beginalgorithmic{\tiny}
+\makeatother
+
+\captionsetup[algorithm]{font=footnotesize}
+
 \begin{algorithm}[h] 
 	\caption{Byzantine Generalized Paxos - Proposer p}
 	\label{BFT-Prop}
 	\textbf{Local variables:} $ballot\_type = \bot$
-	\begin{algorithmic}[1]
-			
+	\vspace*{-.4cm}
+	\begin{multicols}{2}
+	\begin{algorithmic}[1]	
+		
 		\State \textbf{upon} \textit{receive(BALLOT, type)} \textbf{do} 
 		\State \hspace{\algorithmicindent} $ballot\_type = type$;
 		\State
 		
-		\State \textbf{upon} \textit{command\_request(c)} \textbf{do}   \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\# receive request from application
+		\State \textbf{upon} \textit{command\_request(c)} \textbf{do}   \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}
 		\State \hspace{\algorithmicindent} \textbf{if} $ballot\_type = fast\_ballot$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$P2A\_FAST, c$} to acceptors;
 		\State \hspace{\algorithmicindent} \textbf{else} 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{\textit{PROPOSE, c}} to leader;		
 	\end{algorithmic}
+	\end{multicols}
+\vspace*{-.4cm}
 \end{algorithm}
+
 \begin{algorithm}
 	\caption{Byzantine Generalized Paxos - Process p}
-	\begin{algorithmic}[1]
-		
+	\vspace*{-.4cm}
+	\begin{multicols}{2}
+	\begin{algorithmic}[1]		
 		\Function{merge\_sequences}{$old\_seq, new\_seq$}
 		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
 		\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
@@ -41,12 +53,16 @@ This section presents the pseudocode for the Byzantine Generalized Paxos protoco
 		\State \textbf{return} $signed\_seq$;
 		\EndFunction
 	\end{algorithmic}
+	\end{multicols}
+	\vspace*{-.4cm}
 \end{algorithm}
 
 \begin{algorithm} 
 	\caption{Byzantine Generalized Paxos - Leader l}
 	\label{BFT-Lead}
 	\textbf{Local variables:} $ballot_l = 0,maxTried_l = \bot,proposals = \bot, accepted = \bot, view = 0$
+	\vspace*{-.8cm}
+	\begin{multicols}{2}
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive($LEADER,view_a,proofs$)} from acceptor \textit{a} \textbf{do}
 		\State \hspace{\algorithmicindent} $valid\_proofs = 0$;
@@ -99,6 +115,8 @@ This section presents the pseudocode for the Byzantine Generalized Paxos protoco
 		\State \textbf{return} $safe\_seq$;
 		\EndFunction		
 	\end{algorithmic}
+	\end{multicols}
+	\vspace*{-.4cm}
 \end{algorithm}
 
 
@@ -106,6 +124,8 @@ This section presents the pseudocode for the Byzantine Generalized Paxos protoco
 	\caption{Byzantine Generalized Paxos - Acceptor a (view-change)}
 	\label{BFT-Proc}
 	\textbf{Local variables:} $suspicions = \bot,\ new\_view = \bot,\ leader = \bot,\ view = 0, bal_a = 0,\ val_a = \bot,\ fast\_bal = \bot,\ checkpoint=\bot$
+	\vspace*{-.4cm}
+	\begin{multicols}{2}
 	\begin{algorithmic}[1]
 		
 		\State \textbf{upon} \textit{suspect\_leader} \textbf{do} 
@@ -128,7 +148,8 @@ This section presents the pseudocode for the Byzantine Generalized Paxos protoco
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$VIEW\_CHANGE, view+1, suspicions,change\_proof$};
 		\State
 		
-		\State\textbf{upon} \textit{receive($VIEW\_CHANGE, new\_view_i, suspicions, change\_proof_i$)} from acceptor $i$ \textbf{do} 
+		\State\textbf{upon} \textit{receive($VIEW\_CHANGE, new\_view_i,$
+		\item[] $suspicions, change\_proof_i$)} from acceptor $i$ \textbf{do} 
 		\State \hspace{\algorithmicindent} \textbf{if} $new\_view_i \leq view$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{return};
 		\State
@@ -155,12 +176,16 @@ This section presents the pseudocode for the Byzantine Generalized Paxos protoco
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions = \bot$;
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{LEADER, view, new\_view[view_i]}$ to leader;
 	\end{algorithmic}
+	\end{multicols}
+	\vspace*{-.4cm}
 \end{algorithm}
 
 \begin{algorithm} 
 	\caption{Byzantine Generalized Paxos - Acceptor a (agreement)}
 	\label{BFT-Acc}
 	\textbf{Local variables:} $suspicions = \bot,\ new\_view = \bot,\ leader = \bot,\ view = 0, bal_a = 0,\ val_a = \bot,\ fast\_bal = \bot,\ checkpoint=\bot$
+	\vspace*{-.4cm}
+	\begin{multicols}{2}
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive(P1A, ballot, $view_l$)} from leader $l$ \textbf{do}
 		\State \hspace{\algorithmicindent} \textbf{if} $view_l = view$ \textbf{then}
@@ -218,12 +243,16 @@ This section presents the pseudocode for the Byzantine Generalized Paxos protoco
 		\EndIf
 		\EndFunction
 	\end{algorithmic}
+	\end{multicols}
+	\vspace*{-.4cm}
 \end{algorithm}
 
 \begin{algorithm}
 	\caption{Byzantine Generalized Paxos - Learner l}
 	\label{BFT-Learn}
 	\textbf{Local variables:} $learned = \bot,\ messages = \bot$ 
+	\vspace*{-.4cm}
+	\begin{multicols}{2}
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive($P2B, ballot, value$)} from acceptor $a$ \textbf{do}
 		\State \hspace{\algorithmicindent} $messages[ballot][value][a] = true$;
@@ -242,4 +271,6 @@ This section presents the pseudocode for the Byzantine Generalized Paxos protoco
 		\State \hspace{\algorithmicindent} \textbf{if} $valid\_proofs > f$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;
 	\end{algorithmic}
+	\end{multicols}
+	\vspace*{-.4cm}
 \end{algorithm}

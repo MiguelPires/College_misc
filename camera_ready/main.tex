@@ -183,7 +183,7 @@
 \author{Miguel Pires\inst{1} \and Srivatsan Ravi\inst{2} \and Rodrigo Rodrigues\inst{1}}
 
 \institute{INESC-ID and Instituto Superior T\'{e}cnico (U.\ Lisboa) \\
-\email{miguel.pires@tecnico.ulisboa.pt} 	\email{rodrigo.miragaia.rodrigues@tecnico.ulisboa.pt} 
+\email{miguel.pires@tecnico.ulisboa.pt} 	\email{rodrigo.rodrigues@inesc-id.pt} 
 \and 
 University of Southern California \\
 \email{srivatsr@usc.edu}}
@@ -205,14 +205,14 @@ This variant of Paxos has the characteristic that it departs from the original s
 allowing for a weaker safety condition where different processes can have a different views on a sequence being agreed upon. 
 However, much like the original Paxos counterpart, Generalized Paxos does not have a simple implementation.
 Furthermore, with the recent practical adoption of Byzantine fault tolerant protocols in the context of blockchain protocols, it is timely and important to understand how Generalized Paxos can be implemented in the Byzantine model.
-In this paper, we make two main contributions. First, we provide a simplified description of Generalized Paxos 
+In this paper, we make two main contributions. First, we provide a description of Generalized Paxos that is easier to understand,
 based on a simpler specification and the pseudocode for a solution that can be readily implemented. Second, we extend the protocol to the Byzantine fault model, and provide the respective correctness proof.
 %, and we propose a variant of the protocol that leverage the weaker specification to allow for a more efficient protocol in wide area settings.
 \end{abstract}
 %
-\begin{center}
-\textbf{Regular and student paper}
-\end{center}
+%\begin{center}
+%\textbf{Regular and student paper}
+%\end{center}
 %
 \input{intro}
 % %

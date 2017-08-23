@@ -173,7 +173,7 @@
 % \newenvironment{proofsketch}[1][Proof sketch]{\noindent\textbf{#1.} }{\hfill $\Box$\\[2mm]}
 % \newtheorem{claim}[theorem]{Claim}
 % Author macros::begin %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\title{Generalized Paxos made Byzantine (and Less Complex)}
+\title{Generalized Paxos Made Byzantine\\ (and Less Complex)}
 
 % \thanks{This paper is a regular submission and is eligible for the best student paper award (Miguel Pires is a full-time student).}
 
@@ -183,7 +183,7 @@
 \author{Miguel Pires\inst{1} \and Srivatsan Ravi\inst{2} \and Rodrigo Rodrigues\inst{1}}
 
 \institute{INESC-ID and Instituto Superior T\'{e}cnico (U.\ Lisboa) \\
-\email{miguel.pires@tecnico.ulisboa.pt} 	\email{rodrigo.rodrigues@inesc-id.pt} 
+\email{miguel.pires@tecnico.ulisboa, rodrigo.rodrigues@inesc-id.pt} 
 \and 
 University of Southern California \\
 \email{srivatsr@usc.edu}}
@@ -204,7 +204,7 @@ One of the most recent members of the \emph{Paxos} family of protocols is \emph{
 This variant of Paxos has the characteristic that it departs from the original specification of consensus, 
 allowing for a weaker safety condition where different processes can have a different views on a sequence being agreed upon. 
 However, much like the original Paxos counterpart, Generalized Paxos does not have a simple implementation.
-Furthermore, with the recent practical adoption of Byzantine fault tolerant protocols in the context of blockchain protocols, it is timely and important to understand how Generalized Paxos can be implemented in the Byzantine model.
+Furthermore, with the recent practical adoption of Byzantine fault tolerant protocols, it is timely and important to understand how Generalized Paxos can be implemented in the Byzantine model.
 In this paper, we make two main contributions. First, we provide a description of Generalized Paxos that is easier to understand,
 based on a simpler specification and the pseudocode for a solution that can be readily implemented. Second, we extend the protocol to the Byzantine fault model, and provide the respective correctness proof.
 %, and we propose a variant of the protocol that leverage the weaker specification to allow for a more efficient protocol in wide area settings.

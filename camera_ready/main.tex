@@ -42,6 +42,8 @@
 \newcommand\Small{\fontsize{7.6}{7.6}\selectfont}
 \newcommand*\LSTfont{\Small\ttfamily\SetTracking{encoding=*}{-60}\lsstyle}
 
+\newcommand\shortnegspace{\vspace{-.75em}}
+
 \lstdefinestyle{customc}{
     belowcaptionskip=1\baselineskip,
     breaklines=true,
@@ -228,10 +230,11 @@ based on a simpler specification and the pseudocode for a solution that can be r
 \input{protocol}
 %
 
-\section*{Acknowledgements}
+\vspace{1em}
 
-This work was supported by the European Research Council (ERC-2012-StG-307732) and FCT (UID/CEC/50021/2013).
-
+\begin{normalsize}
+\noindent {\bf Acknowledgements.} This work was supported by the European Research Council (ERC-2012-StG-307732) and FCT (UID/CEC/50021/2013).
+\end{normalsize}
 
 \bibliographystyle{splncs03}
 \bibliography{references}

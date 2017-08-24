@@ -5,7 +5,7 @@ We consider an \emph{asynchronous} system in which
 a set of $n \in \mathbb{N}$ processes communicate by 
 \emph{sending} and \emph{receiving} messages.
 Each process executes an algorithm assigned to it, but may fail in two different ways. First, it may stop executing it by \emph{crashing}.
-Second it may stop following the algorithm assigned to it, in which case it is considered \emph{Byzantine}. We say that a non-Byzantine process is \emph{correct}.
+Second, it may stop following the algorithm assigned to it, in which case it is considered \emph{Byzantine}. We say that a non-Byzantine process is \emph{correct}.
 This paper considers the \emph{authenticated} Byzantine model: every process can produce cryptographic digital signatures~\cite{quorum}. 
 Furthermore, for clarity of exposition, we assume authenticated perfect links~\cite{cgr:book}, 
 where a message that is sent by a non-faulty sender is eventually received and messages cannot be forged 

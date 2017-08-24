@@ -1,8 +1,13 @@
 \section{Discussion}
 % and Concluding remarks}
 \label{sec:disc}
+%
+We presented a simplified description of the Generalized Paxos protocol and specification, 
+and an implementation of Generalized Paxos that is resilient against Byzantine faults.
+We now outline some extensions and optimizations to our protocol that present interesting directions for future work and hopefully
+a better understanding of its practical applicability.
 
-\noindent \textbf{Extending the protocol to universally commutative commands}.
+\paragraph{Extending the protocol to universally commutative commands}.
 % Generalized Paxos vs Paxos spec.
 The Generalized Paxos specification dictates that the only commands
 whose relative order can be reversed at different learners are those
@@ -39,7 +44,7 @@ to wait for the $f+1$st message instead of the $N-f$th one.
 
 % Weakly consistent replication - also diff order but ok to have different v
 
-\noindent \textbf{Generalized Paxos and weak consistency}.
+\paragraph{Generalized Paxos and weak consistency}.
 %The Byzantine Generalized Paxos protocol tackles two challenges in two different avenues of research, fault tolerance and relaxed consistency models. By specifying the generalized consensus problem,
 The key distinguishing feature of the specification of Generalized
 Paxos~\cite{Lamport2005} is allowing learners to learn concurrent
@@ -68,7 +73,7 @@ of the application are violated~\cite{Li2012}.
 % Extension to diff replica grps
 
 
-\noindent \textbf{Handling faults in the fast case}.
+\paragraph{Handling faults in the fast case}.
 A result that was stated in the original Generalized Paxos
 paper~\cite{Lamport2005} is that to tolerate $f$ crash faults and
 allow for fast ballots whenever there are up to $e$ crash faults, the
@@ -83,6 +88,9 @@ An interesting observation stemming from our results is that, since Byzantine fa
 %\textbf{Optimizations} One possible optimization of the Byzantine Generalized Paxos protocol leverages universally commutative commands or sequences of commands, which we define as sequences which commute with any other. Universally commutative sequences allows us to reduce latency by decreasing the number of phase $2b$ messages required to learn to a smaller $f+1$ quorum. Since, by definition, these sequences are guaranteed to never produce conflicts, the $N-f$ quorum isn't required to prevent learners from learning conflicting sequences. Instead, a $f+1$ quorum is sufficient for the learner to be sure that the proposed sequence was proposed by a correct proposer. 
 
 
-\section{Conclusion}
-\label{sec:conc}
-In this paper, we presented a simplified description of the Generalized Paxos protocol and specification, which is meant to pave the way for new avenues of research in the area. In addition, we modify the protocol to tolerate Byzantine faults, and we prove the correctness of this protocol. In the future, we would like to implement and evaluate the protocol, in addition to gaining a better understanding of its practical applicability.
+% \section{Conclusion}
+% \label{sec:conc}
+% In this paper, we presented a simplified description of the Generalized Paxos protocol and specification, 
+% which is meant to pave the way for new avenues of research in the area. 
+% In addition, we modify the protocol to tolerate Byzantine faults, and we prove the correctness of this protocol. 
+% In the future, we would like to implement and evaluate the protocol, in addition to gaining a better understanding of its practical applicability.

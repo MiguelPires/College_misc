@@ -1,6 +1,6 @@
-\section{Correctness Proofs} \label{proof}
-
-This section argues for the correctness of the Byzantine Generalized Paxos protocol.\par
+\subsection{Correctness}
+We now prove the correctness of the presented Byzantine Generalized Paxos protocol. Due to space constraints, we only discuss the proof of consistency, but the
+remaining proofs are available in the tech report.
 
 \begin{table}[h!]
 	\renewcommand{\arraystretch}{1.5}
@@ -31,9 +31,9 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 	\caption{Proof notation} 
 	\label{table:1}
 \end{table}
-
-\subsubsection{Consistency}
-\begin{theorem}At any time and for any two correct learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences \par
+%
+\begin{theorem}
+At any time and for any two correct learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences \par
 \end{theorem} 
 \textbf{Proof:} \par
 \parbox{\linewidth}{\strut1. At any given instant, $\forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}, learned(l_j,s) \land learned(l_i,s') \implies \exists \sigma_1,\sigma_2 \in \mathcal{P}, s \thicksim s' \bullet \sigma_1 \lor s' \thicksim s \bullet \sigma_2$}  \par

@@ -66,7 +66,8 @@ task, since it will contribute to the understanding
 and also open the possibility of adopting Generalized Paxos in
 scenarios such as a Blockchain deployment.
 
-As such, the paper makes several contributions, which are listed next.
+\paragraph{Contributions}.
+Concretely, this paper makes the following contributions to the Paxos family of protocols.
 %
 \begin{itemize}
 \item
@@ -76,9 +77,7 @@ solutions to this problem, which is to agree on a sequence of
 commands;
 
 \item
-we extend the Generalized Paxos protocol to the Byzantine model; 
-
-\item
+we extend the Generalized Paxos protocol to the Byzantine model;
 we present a description of the Byzantine Generalized Paxos protocol
 that is more accessible than the original description, namely including the
 respective pseudocode, in order to to make it 
@@ -91,9 +90,13 @@ we prove the correctness of the Byzantine Generalize Paxos protocol;
 and we discuss several extensions to the protocol in the context of relaxed consistency models and fault tolerance.
 \end{itemize}
 %
+\paragraph{Roadmap}.
 The remainder of the paper is organized as follows:
 Section~\ref{sec:related} gives an overview of Paxos and its family of related protocols.
 Section~\ref{sec:model} introduces the model and simplified specification of Generalized Paxos.
-Section~\ref{sec:protocol} presents the Generalized Paxos protocol that is resilient against Byzantine failures. Section~\ref{proof} presents a proof that the Byzantine Generalized Paxos protocol guarantees \textit{consistency}, while the correctness proofs for the remaining properties are included in a tech report. Section~\ref{sec:disc} concludes the paper with a discussion of several optimizations and practical considerations. The complete tech report with the formal proofs
+Section~\ref{sec:protocol} presents the Generalized Paxos protocol that is resilient against Byzantine failures. 
+This section also presents a proof that the Byzantine Generalized Paxos protocol guarantees \textit{consistency}, 
+while the correctness proofs for the remaining properties are included in a tech report. 
+Section~\ref{sec:disc} concludes the paper with a discussion of several optimizations and practical considerations. The complete tech report with the formal proofs
 is available on the ArXiv repository.
 %

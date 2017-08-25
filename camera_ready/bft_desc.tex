@@ -13,8 +13,8 @@ each represents an independent contribution in its own right.
 	\caption{Byzantine Generalized Paxos - Proposer p}
 	\label{BFT-Prop}
 	\textbf{Local variables:} $ballot\_type = \bot$
-	\vspace*{-.5cm}
-	\begin{multicols}{2}
+
+%	\begin{multicols}{2}
 		\begin{algorithmic}[1]	
 			
 			\State \textbf{upon} \textit{receive(BALLOT, type)} \textbf{do} 
@@ -27,8 +27,8 @@ each represents an independent contribution in its own right.
 			\State \hspace{\algorithmicindent} \textbf{else} 
 			\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{\textit{PROPOSE, c}} to leader;		
 		\end{algorithmic}
-	\end{multicols}
-	\vspace*{-.4cm}
+%	\end{multicols}
+
 \end{algorithm}
 \vspace*{-1.0cm}
 

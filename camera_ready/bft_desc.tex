@@ -48,7 +48,7 @@ We modularize our protocol explanation according to the following main component
 \subsection{View change} 
 
 The goal of the view change subprotocol is to elect a distinguished acceptor process, called the leader, that carries through the agreement protocol, i.e., enables proposed commands to eventually be learned by all the learners. The overall design of this subprotocol is similar to the corresponding part of existing BFT state machine replication protocols~\cite{CL99}.\par
-
+\vspace{-0.4cm}
 \begin{algorithm}
 	\caption{Byzantine Generalized Paxos - Process p}
 	\vspace*{-.6cm}
@@ -75,11 +75,11 @@ The goal of the view change subprotocol is to elect a distinguished acceptor pro
 	\end{multicols}
 	\vspace*{-.4cm}
 \end{algorithm}
-
+\vspace{-0.4cm}
 In this subprotocol, the system moves through sequentially numbered views, and the leader for each view is chosen in a rotating fashion using the simple equation $\textit{leader(view)}=\textit{view mod N}$. The protocol works continuously by having acceptor processes monitor whether progress is being made on adding commands to the current sequence, and, if not, they multicasting a signed {\sc suspicion} message for the current view to all acceptors suspecting the current leader. Then, if enough suspicions are collected, processes can move to the subsequent view. 
 However, the required number of suspicions must be chosen in a way that prevents Byzantine processes from triggering view changes spuriously. 
 To this end, acceptor processes will multicast a view change message indicating their commitment to starting a new view only after hearing that $f+1$ processes 
-suspect the leader to be faulty. This message contains the new view number, the $f+1$ signed suspicions, and is signed by the acceptor that sends it. 
+suspect the leader to be faulty. This message contains the new view number, the $f+1$ signed suspicions, and is signed by the acceptor that sends it. In the pseudocode, signatures are created by signing data with a process' private key (e.g., $data_{priv_p}$) and validated by decrypting the data with its public key (e.g., $data_{pub_p}$).
 This way, if a process receives a view-change message without previously receiving $f+1$ suspicions, 
 it can also multicast a view-change message, after verifying that the suspicions are correctly signed by $f+1$ distinct processes.
 %As such, the signatures allow a process that receives this message to commit to the new view and multicast its own view-change message without receiving $f+1$ suspicions itself.

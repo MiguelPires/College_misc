@@ -1,7 +1,8 @@
+\vspace{-0.2cm}
 \subsection{Correctness}
 We now prove the correctness of the presented Byzantine Generalized Paxos protocol. Due to space constraints, we only discuss the proof of consistency, but the
 remaining proofs are available in the tech report.
-\vspace{-0.6cm}
+\vspace{-0.5cm}
 \begin{table}[h!]
 	\renewcommand{\arraystretch}{1.5}
 	\centering
@@ -34,7 +35,7 @@ remaining proofs are available in the tech report.
 	\label{table:1}
 \end{table}
 %
-\vspace{-1.2cm}
+\vspace{-1.1cm}
 \begin{theorem}
 At any time and for any two correct learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences \par
 \end{theorem} 
@@ -50,7 +51,7 @@ At any time and for any two correct learners $l_i$ and $l_j$, $learned_{l_i}$ an
 \indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*5}{\strut1.2.1.~At any given instant, $\exists s,s' \in \mathcal{P}, \forall \sigma_1,\sigma_2 \in \mathcal{P} \cup \{\bot \}, maj\_accepted(s) \land maj\_accepted(s') \wedge s \bullet \sigma_1 \not\thicksim s' \bullet \sigma_2$} \par
 \indent\indent\indent\indent\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} Contradiction assumption.}\par
 \indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*5}{\strut1.2.2. Take a pair proposals $s$ and $s'$ that meet the conditions of 1.2.1 (and are certain to exist by the previous point), then $s$ and $s'$ are non-commutative }\par
-\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut\textbf{Proof:} If $s \bullet \sigma_1 \not\thicksim s' \bullet \sigma_2$ for any $\sigma_1$ and $\sigma_2$ in $\mathcal{P} \cup \{\bot\}$, then $s$ and $s'$ must contain non-commutative commands differently ordered. Otherwise, some combination of $\sigma_1$ and $\sigma_2$ would be commutative and the previous expression wouldn't be true. If $s \bullet \sigma_1 \not\thicksim s' \bullet \sigma_2$ even for commutative $\sigma_1$ and $\sigma_2$ then $s$ and $s'$ must contain non-commutative commands in different relative orders.}\par
+\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut\textbf{Proof:} If $\forall \sigma_1,\sigma_2 \in \mathcal{P} \cup \{\bot\}, s \bullet \sigma_1 \not\thicksim s' \bullet \sigma_2$, then $s$ and $s'$ must contain non-commutative commands differently ordered. Otherwise, some combination of $\sigma_1$ and $\sigma_2$ would be commutative. If $s \bullet \sigma_1 \not\thicksim s' \bullet \sigma_2$ even for commutative $\sigma_1$ and $\sigma_2$ then $s$ and $s'$ must contain non-commutative commands in different relative orders.}\par
 \indent\indent\indent\indent\indent\parbox{\linewidth}{\strut1.2.3. At any given instant, $\neg (maj\_accepted(s) \land maj\_accepted(s'))$ } \par
 \indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut\textbf{Proof:} Since $s$ and $s'$ are non-commutative, therefore not equivalent, and each correct acceptor only votes once for a new proposal (Algorithm \ref{BFT-Acc}, lines \{31-46\}), any learner will only obtain $N-f$ votes for one of the sequences (Algorithm \ref{BFT-Learn}, lines \{1-4\}).}\par
 \indent\indent\indent\indent\indent\parbox{\linewidth}{\strut1.2.4. A contradiction is found, Q.E.D. }\par

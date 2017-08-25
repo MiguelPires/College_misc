@@ -1,19 +1,15 @@
 \section{Correctness Proofs} \label{proof}
 
-This section argues for the correctness of the Byzantine Generalized Paxos protocol in terms of the specified consensus properties.\par
+This section argues for the correctness of the Byzantine Generalized Paxos protocol.\par
 
 \begin{table}[h!]
 	\renewcommand{\arraystretch}{1.5}
 	\centering
 	\begin{tabularx}{\linewidth}{ |c|X|}
-		%\hline
-		%\multicolumn{2}{|c|}{Notation}\\
 		\hline
 		Invariant/Symbol & Definition \\
 		\hline
 		$\thicksim$ & Equivalence relation between sequences \\
-		\hline
-		$X \overset{e}{\implies} Y$ & $X$ implies that $Y$ is eventually true \\
 		\hline
 		$X \sqsubseteq Y$ & The sequence $X$ is a prefix of sequence $Y$ \\
 		\hline
@@ -28,8 +24,6 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 		$maj\_accepted(s)$ & $N-f$ acceptors sent phase 2b messages to the learners for sequence $s$ \\
 		\hline
 		$min\_accepted(s)$ & $f+1$ acceptors sent phase 2b messages to the learners for sequence $s$ \\
-		\hline
-		$proposed(s)$ & A proposer proposed $s$ \\
 		\hline
 		
 	\end{tabularx} 
@@ -63,35 +57,3 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 \parbox{\linewidth-\algorithmicindent*3}{\strut2. At any given instant, $\forall l_i,l_j \in \mathcal{L}, learned(l_j,learned_j) \land learned(l_i,learned_i) \implies \exists \sigma_1,\sigma_2 \in \mathcal{P}, learned_i \thicksim learned_j \bullet \sigma_1 \lor learned_j \thicksim learned_i \bullet \sigma_2$}\par
 \indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1.}\par
 \parbox{\linewidth}{\strut3. Q.E.D.} \par
-
-\subsubsection{Non-Triviality}
-\begin{theorem}
-If all proposers are correct, $learned_l$ can only contain proposed commands. \label{N-T1} \par
-\end{theorem} 
-\textbf{Proof:} \par
-\parbox{\linewidth}{\strut1. At any given instant, $\forall l_i \in \mathcal{L}, \forall s \in \mathcal{P}, learned(l_i,s) \implies \forall x \in \mathcal{P}, \exists \sigma \in \mathcal{P},  maj\_accepted(s) \lor (min\_accepted(s) \land  (s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma))$ }\par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{28-43\} and Algorithm \ref{BFT-Learn} lines \{1-4,6-11\}, if a correct learner learned a sequence $s$ at any given instant then either $N-f$ or $f+1$ (if $s$ is universally commutative) acceptors must have executed phase $2b$ for $s$.}\par
-\parbox{\linewidth}{\strut2. At any given instant, $\forall s \in \mathcal{P}, maj\_accepted(s) \lor min\_accepted(s) \implies proposed(s)$ }\par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{15-19, 28-43\}, for either $N-f$ or $f+1$ acceptors to accept a proposal it must have been proposed by a proposer.}\par
-\parbox{\linewidth}{\strut3. At any given instant, $\forall s \in \mathcal{P}, learned(l_i,s) \implies proposed(s),\forall l_i \in \mathcal{L}$}\par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1 and 2.}\par
-\parbox{\linewidth}{\strut4. Q.E.D.}\par
-
-\subsubsection{Stability}
-\begin{theorem}
-If $learned_l = s$ then, at all later times, $s \sqsubseteq learned_l$, for any sequence $s$ and correct learner $l$ \par \label{S-T1}
-\end{theorem} 
-\textbf{Proof:} By Algorithm \ref{BFT-Learn} lines \{1-4,6-11\}, a correct learner can only append new commands to its $learned$ command sequence.
-
-\subsubsection{Liveness}
-\begin{theorem}
-For any proposal $s$ from a correct proposer, and correct learner $l$, eventually $learned_l$ contains $s$ \label{L-T1} \par
-\end{theorem} 
-\parbox{\linewidth}{\textbf{Proof:}} \par
-\parbox{\linewidth}{\strut1. $\forall\ l_i \in \mathcal{L},\forall s,x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, maj\_accepted(s) \lor (min\_accepted(s) \land  (s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma))\overset{e}{\implies} learned(l_i,s)$}\par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{28-43\} and Algorithm \ref{BFT-Learn} lines \{1-4,6-11\}, when either $N-f$ or $f+1$ (if $s$ is universally commutative) acceptors accepts a sequence $s$ (or some equivalent sequence), eventually $s$ will be learned by any correct learner.}\par
-\parbox{\linewidth}{\strut2. $\forall s \in \mathcal{P}, proposed(s) \overset{e}{\implies} \forall x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, maj\_accepted(s) \lor (min\_accepted(s) \land  (s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma))$} \par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} A proposed sequence is either conflict-free when its incorporated into every acceptor's current sequence or it creates conflicting sequences at different acceptors. In the first case, it's accepted by a quorum (Algorithm \ref{BFT-Acc} lines \{38-43\}) and, in the second case, it's sent in phase $1b$ messages to the in leader in the next ballot (Algorithm \ref{BFT-Acc} lines \{20-26\}) and incorporated in the next proposal (Algorithm \ref{BFT-Lead} lines \{13-18,20-32\}).} \par
-\parbox{\linewidth}{\strut3. $\forall l_i \in \mathcal{L}, \forall s \in \mathcal{P}, proposed(s) \overset{e}{\implies} learned(l_i,s)$} \par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1 and 2.} \par
-\parbox{\linewidth}{\strut4. Q.E.D.}

@@ -37,8 +37,7 @@ definition, these sequences are guaranteed to never produce conflicts,
 the $N-f$ quorum is not required to prevent learners from learning
 conflicting sequences. Instead, a quorum of $f+1$ is sufficient to
 ensure that a correct acceptor saw the command and will eventually
-propagate it to a quorum of $N-f$ acceptors. 
-This optimization is particularly useful in the context of 
+propagate it to a quorum of $N-f$ acceptors. This optimization is particularly useful in the context of 
 geo-replicated systems, since it can be significantly faster
 to wait for the $f+1$st message instead of the $N-f$th one.
 

@@ -3,7 +3,10 @@
 % called coordination. Such a transition took decades, arguably due
 % to a dense presentation and non-trivial transformation of certain
 % aspects of protocol
-The evolution of the Paxos~\cite{Lam98} protocol is an unique
+One of the fundamental challenges for processes participating in a distributed computation is achieving \emph{consensus}: processes initially propose a value and must 
+\emph{eventually agree} on one of the proposed values~\cite{FLP85}.
+Paxos~\cite{Lam98}, arguably, is one of the most popular protocols for solving the consensus problem among a set of fault-prone processes.
+The evolution of the Paxos protocol represents an unique
 chapter in the history of Computer Science. It was first described in
 1989 through a technical report~\cite{paxos:tr}, and was only
 published a decade later~\cite{Lam98}. Another long wait took
@@ -38,8 +41,9 @@ Second, many proposals target improving
 the Paxos protocol by eliminating communication costs~\cite{L06},
 including an important evolution of the protocol called Generalized
 Paxos~\cite{Lamport2005}, which has the noteworthy aspect of
-having lower communication costs by leveraging a more general specification than traditional consensus that can lead to a weaker requirement in terms of ordering of commands across replicas. In particular, instead of forcing all
-processes to agree on the same value, it allows processes to pick an
+having lower communication costs by leveraging a more general specification than traditional consensus 
+that can lead to a weaker requirement in terms of ordering of commands across replicas. In particular, instead of forcing all
+processes to agree on the same value (as with traditional consensus), it allows processes to pick an
 increasing sequence of commands that differs from process to process
 in that commutative commands may appear in a different order.
 The practical importance of such weaker specifications is underlined
@@ -64,10 +68,10 @@ to simplify the description of Generalized Paxos. Furthermore, we believe
 that evolving this protocol to the Byzantine model is an important
 task, since it will contribute to the understanding
 and also open the possibility of adopting Generalized Paxos in
-scenarios such as a Blockchain deployment.
+scenarios such as a blockchain deployment.
 
-\paragraph{Contributions}.
-Concretely, this paper makes the following contributions to the Paxos family of protocols.
+%\paragraph{Contributions}.
+Concretely, this paper makes the following contributions to the Paxos family:
 %
 \begin{itemize}
 \item
@@ -90,7 +94,7 @@ we prove the correctness of the Byzantine Generalize Paxos protocol;
 and we discuss several extensions to the protocol in the context of relaxed consistency models and fault tolerance.
 \end{itemize}
 %
-\paragraph{Roadmap}.
+%\paragraph{Roadmap}.
 The remainder of the paper is organized as follows:
 Section~\ref{sec:related} gives an overview of Paxos and its family of related protocols.
 Section~\ref{sec:model} introduces the model and simplified specification of Generalized Paxos.

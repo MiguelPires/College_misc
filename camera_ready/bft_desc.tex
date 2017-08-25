@@ -113,7 +113,7 @@ This guarantees that if one correct process receives the $f+1$ suspicions and mu
 			\State
 			\State \textbf{upon} \textit{receive(PROPOSE, prop)} from proposer $p_i$ \textbf{do} 
 			\State \hspace{\algorithmicindent} $proposals = proposals \bullet prop$;
-
+			\item[]
 			\State \textbf{upon} \textit{receive($P1B, bal_a,view\_vals_a$)} from acceptor $a$ \textbf{do}
 			\State \hspace{\algorithmicindent} \textbf{if} $bal_a = ballot_l$ \textbf{then}
 			\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $accepted[ballot_l][a] = \Call{signed\_commands}{view\_vals_a};$
@@ -291,7 +291,7 @@ The acceptors reply to phase $2a$ messages by sending phase $2b$ messages to the
 
 \subsection{Fast ballots} 
 
-In contrast to classic ballots, fast ballots leverage the weaker specification of generalized consensus (compared to classic consensus) in terms of command ordering at different replicas, to allow for the faster execution of commands in some cases.\par
+In contrast to classic ballots, fast ballots leverage the weaker specification of generalized consensus (compared to classic consensus) in terms of command ordering at different replicas, to allow for the faster execution of commands in some cases.\looseness=-1\par
 The basic idea of fast ballots is that proposers contact the acceptors directly, bypassing the leader, and then the acceptors send directly to the learners their vote for the current sequence, where this
 sequence now incorporates the proposed value. Learners then analyze whether conflicts exist, and, if so, revert to using a classic ballot. This is where generalized consensus allows for avoiding falling back to this slow path, namely in the case that the commands that are sequenced in a different order at different acceptors commute.\par
 Next, we explain each of these steps in more detail.

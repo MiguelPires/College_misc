@@ -6,7 +6,7 @@
 One of the fundamental challenges for processes participating in a distributed computation is achieving \emph{consensus}: processes initially propose a value and must 
 \emph{eventually agree} on one of the proposed values~\cite{FLP85}.
 Paxos~\cite{Lam98}, arguably, is one of the most popular protocols for solving the consensus problem among fault-prone processes.
-The evolution of the Paxos protocol represents an unique
+The evolution of the Paxos protocol represents a unique
 chapter in the history of Computer Science. It was first described in
 1989 through a technical report~\cite{paxos:tr}, and was only
 published a decade later~\cite{Lam98}. Another long wait took
@@ -47,7 +47,7 @@ processes to agree on the same value (as with traditional consensus), it allows 
 increasing sequence of commands that differs from process to process
 in that commutative commands may appear in a different order.
 The practical importance of such weaker specifications is underlined
-by a significant research activity on the corresponding weaker consistency
+by significant research activity on the corresponding weaker consistency
 models for replicated systems~\cite{LLS90,dynamo}.
 %(This evolution has a parallel to the recent trend in studying replicated
 %systems that offer consistency models that are weaker than
@@ -82,6 +82,7 @@ commands;
 
 \item
 we extend the Generalized Paxos protocol to the Byzantine model;
+\item 
 we present a description of the Byzantine Generalized Paxos protocol
 that is more accessible than the original description, namely including the
 respective pseudocode, in order to to make it 

@@ -10,9 +10,9 @@ and an implementation of Generalized Paxos that is resilient against Byzantine f
 We now draw some lessons and outline some extensions to our protocol that present interesting directions for future work and hopefully
 a better understanding of its practical applicability.
 
-\shortnegspace
+%\shortnegspace
 
-\paragraph{Handling faults in the fast case.}
+\noindent \textbf{Handling faults in the fast case.}
 A result that was stated in the original Generalized Paxos
 paper~\cite{Lamport2005} is that to tolerate $f$ crash faults and
 allow for fast ballots whenever there are up to $e$ crash faults, the
@@ -21,9 +21,9 @@ $N > 2f$ and $N > 2e+f$.
 Additionally, the fast and classic quorums must be of size $N-e$ and $N-f$, respectively. This implies that there is a price to pay in terms of number of replicas and quorum size for being able to run fast operations during faulty periods.
 An interesting observation from our work is that, since Byzantine fault tolerance already requires a total system size of $3f+1$ and a quorum size of $2f+1$, we are able to amortize the cost of both features, i.e., we are able to tolerate the maximum number of faults for fast execution without paying a price in terms of the replication factor and quorum size.
 
-\shortnegspace
+%\shortnegspace
 
-\paragraph{Extending the protocol to universally commutative commands.}
+\noindent \textbf{Extending the protocol to universally commutative commands.}
 % Generalized Paxos vs Paxos spec.
 A downside of the use of commutative commands in the
 context of Generalized Paxos is that the commutativity check is done
@@ -46,9 +46,7 @@ to wait for the $f+1$st message instead of the $N-f$th one.
 
 % Weakly consistent replication - also diff order but ok to have different v
 
-\shortnegspace
-
-\paragraph{Generalized Paxos and weak consistency.}
+\noindent \textbf{Generalized Paxos and weak consistency.}
 %The Byzantine Generalized Paxos protocol tackles two challenges in two different avenues of research, fault tolerance and relaxed consistency models. By specifying the generalized consensus problem,
 The key distinguishing feature of the specification of Generalized
 Paxos~\cite{Lamport2005} is allowing learners to learn concurrent

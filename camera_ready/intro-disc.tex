@@ -3,7 +3,10 @@
 % called coordination. Such a transition took decades, arguably due
 % to a dense presentation and non-trivial transformation of certain
 % aspects of protocol
-The evolution of the Paxos~\cite{Lam98} protocol is an unique
+One of the fundamental challenges for processes participating in a distributed computation is achieving \emph{consensus}: processes initially propose a value and must 
+\emph{eventually agree} on one of the proposed values~\cite{FLP85}.
+Paxos~\cite{Lam98}, arguably, is one of the most popular protocols for solving the consensus problem among fault-prone processes.
+The evolution of the Paxos protocol represents a unique
 chapter in the history of Computer Science. It was first described in
 1989 through a technical report~\cite{paxos:tr}, and was only
 published a decade later~\cite{Lam98}. Another long wait took
@@ -38,12 +41,13 @@ Second, many proposals target improving
 the Paxos protocol by eliminating communication costs~\cite{L06},
 including an important evolution of the protocol called Generalized
 Paxos~\cite{Lamport2005}, which has the noteworthy aspect of
-having lower communication costs by leveraging a more general specification than traditional consensus that can lead to a weaker requirement in terms of ordering of commands across replicas. In particular, instead of forcing all
-processes to agree on the same value, it allows processes to pick an
+having lower communication costs by leveraging a more general specification than traditional consensus 
+that can lead to a weaker requirement in terms of ordering of commands across replicas. In particular, instead of forcing all
+processes to agree on the same value (as with traditional consensus), it allows processes to pick an
 increasing sequence of commands that differs from process to process
 in that commutative commands may appear in a different order.
 The practical importance of such weaker specifications is underlined
-by a significant research activity on the corresponding weaker consistency
+by significant research activity on the corresponding weaker consistency
 models for replicated systems~\cite{LLS90,dynamo}.
 %(This evolution has a parallel to the recent trend in studying replicated
 %systems that offer consistency models that are weaker than
@@ -64,9 +68,10 @@ to simplify the description of Generalized Paxos. Furthermore, we believe
 that evolving this protocol to the Byzantine model is an important
 task, since it will contribute to the understanding
 and also open the possibility of adopting Generalized Paxos in
-scenarios such as a Blockchain deployment.
+scenarios such as a blockchain deployment.
 
-As such, the paper makes several contributions, which are listed next.
+%\paragraph{Contributions}.
+Concretely, this paper makes the following contributions to the Paxos family:
 %
 \begin{itemize}
 \item
@@ -76,9 +81,8 @@ solutions to this problem, which is to agree on a sequence of
 commands;
 
 \item
-we extend the Generalized Paxos protocol to the Byzantine model; 
-
-\item
+we extend the Generalized Paxos protocol to the Byzantine model;
+\item 
 we present a description of the Byzantine Generalized Paxos protocol
 that is more accessible than the original description, namely including the
 respective pseudocode, in order to to make it 
@@ -91,9 +95,13 @@ we prove the correctness of the Byzantine Generalize Paxos protocol;
 and we discuss several extensions to the protocol in the context of relaxed consistency models and fault tolerance.
 \end{itemize}
 %
+%\paragraph{Roadmap}.
 The remainder of the paper is organized as follows:
 Section~\ref{sec:related} gives an overview of Paxos and its family of related protocols.
 Section~\ref{sec:model} introduces the model and simplified specification of Generalized Paxos.
-Section~\ref{sec:protocol} presents the Generalized Paxos protocol that is resilient against Byzantine failures. Section~\ref{proof} presents a proof that the Byzantine Generalized Paxos protocol guarantees \textit{consistency}, while the correctness proofs for the remaining properties are included in a tech report. Section~\ref{sec:disc} concludes the paper with a discussion of several optimizations and practical considerations. The complete tech report with the formal proofs
+Section~\ref{sec:protocol} presents the Generalized Paxos protocol that is resilient against Byzantine failures. 
+This section also presents a proof that the Byzantine Generalized Paxos protocol guarantees \textit{consistency}, 
+while the correctness proofs for the remaining properties are included in a tech report. 
+Section~\ref{sec:disc} concludes the paper with a discussion of several optimizations and practical considerations. The complete tech report with the formal proofs
 is available on the ArXiv repository.
 %

@@ -38,16 +38,16 @@ We modularize our protocol explanation according to the following main component
 \begin{itemize}
 
 \item
-  {\bf View change} -- The goal of this subprotocol is to ensure that, at any given moment, one of the proposers is chosen as a distinguished leader, who runs a specific version of the agreement subprotocol. To achieve this, the view change subprotocol continuously replaces leaders, until one is found that can ensure progress (i.e., commands are eventually appended to the current sequence).
+  {\bf View-change} -- The goal of this subprotocol is to ensure that, at any given moment, one of the proposers is chosen as a distinguished leader, who runs a specific version of the agreement subprotocol. To achieve this, the view-change subprotocol continuously replaces leaders, until one is found that can ensure progress (i.e., commands are eventually appended to the current sequence).
 
 \item
 {\bf Agreement} -- Given a fixed leader, this subprotocol extends the current sequence with a new command or set of commands. Analogously to Fast Paxos~\cite{L06} and Generalized Paxos~\cite{Lamport2005}, choosing this extension can be done through two variants of the protocol: using either {\bf classic ballots} or {\bf fast ballots}, with the characteristic that fast ballots complete in fewer communication steps, but may have to fall back to using a classic ballot when there is contention among concurrent requests.
 
 \end{itemize}
 
-\subsection{View change} 
+\subsection{View-change} 
 
-The goal of the view change subprotocol is to elect a distinguished acceptor process, called the leader, that carries through the agreement protocol, i.e., enables proposed commands to eventually be learned by all the learners. The overall design of this subprotocol is similar to the corresponding part of existing BFT state machine replication protocols~\cite{CL99}.\par
+The goal of the view-change subprotocol is to elect a distinguished acceptor process, called the leader, that carries through the agreement protocol, i.e., enables proposed commands to eventually be learned by all the learners. The overall design of this subprotocol is similar to the corresponding part of existing BFT state machine replication protocols~\cite{CL99}.\par
 \vspace{-0.4cm}
 \begin{algorithm}
 	\caption{Byzantine Generalized Paxos - Process p}
@@ -76,9 +76,9 @@ The goal of the view change subprotocol is to elect a distinguished acceptor pro
 	\vspace*{-.4cm}
 \end{algorithm}
 \vspace{-0.4cm}
-In this subprotocol, the system moves through sequentially numbered views, and the leader for each view is chosen in a rotating fashion using the simple equation $\textit{leader(view)}=\textit{view mod N}$. The protocol works continuously by having acceptor processes monitor whether progress is being made on adding commands to the current sequence, and, if not, they multicasting a signed {\sc suspicion} message for the current view to all acceptors suspecting the current leader. Then, if enough suspicions are collected, processes can move to the subsequent view. 
+In this subprotocol, the system moves through sequentially numbered views, and the leader for each view is chosen in a rotating fashion using the simple equation $\textit{leader(view)}=\textit{view mod N}$. The protocol works continuously by having acceptor processes monitor whether progress is being made on adding commands to the current sequence, and, if not, they multicast a signed {\sc suspicion} message for the current view to all acceptors suspecting the current leader. Then, if enough suspicions are collected, processes can move to the subsequent view. 
 However, the required number of suspicions must be chosen in a way that prevents Byzantine processes from triggering view changes spuriously. 
-To this end, acceptor processes will multicast a view change message indicating their commitment to starting a new view only after hearing that $f+1$ processes 
+To this end, acceptor processes will multicast a view-change message indicating their commitment to starting a new view only after hearing that $f+1$ processes 
 suspect the leader to be faulty. This message contains the new view number, the $f+1$ signed suspicions, and is signed by the acceptor that sends it. In the pseudocode, signatures are created by signing data with a process' private key (e.g., $data_{priv_p}$) and validated by decrypting the data with its public key (e.g., $data_{pub_p}$).
 This way, if a process receives a view-change message without previously receiving $f+1$ suspicions, 
 it can also multicast a view-change message, after verifying that the suspicions are correctly signed by $f+1$ distinct processes.
@@ -293,11 +293,11 @@ The acceptors reply to phase $2a$ messages by sending phase $2b$ messages to the
 
 In contrast to classic ballots, fast ballots leverage the weaker specification of generalized consensus (compared to classic consensus) in terms of command ordering at different replicas, to allow for the faster execution of commands in some cases.\looseness=-1\par
 The basic idea of fast ballots is that proposers contact the acceptors directly, bypassing the leader, and then the acceptors send directly to the learners their vote for the current sequence, where this
-sequence now incorporates the proposed value. Learners then analyze whether conflicts exist, and, if so, revert to using a classic ballot. This is where generalized consensus allows for avoiding falling back to this slow path, namely in the case that the commands that are sequenced in a different order at different acceptors commute.\par
+sequence now incorporates the proposed value. If a learner can gather $N-f$ votes for a sequence (or an equivalent one), then it is learned. If, however, a conflict exists between sequences then they will not be considered equivalent and at most one of them will gather enough votes to be learned. Conflicts are dealt with by maintaining the proposals at the acceptors so they can be sent to the leader and learned in the next classic ballot. This differs from Fast Paxos where recovery is performed through an additional round-trip. \looseness=-1 \par
 Next, we explain each of these steps in more detail.
 
 \noindent {\bf Step 1: Proposer to acceptors.}
-To initiate a fast ballot, the leader informs both proposers and acceptors that the proposals may be sent directly to the acceptors. Unlike classic ballots, where the sequence proposed by the leader consists of the commands received from the proposers appended to previously proposed commands, in a fast ballot, proposals can be sent to the acceptors in the form of either a single command or a sequence to be appended to the command history. These proposals are sent directly from the proposers to the acceptors.\par
+To initiate a fast ballot, the leader informs both proposers and acceptors that the proposals may be sent directly to the acceptors. Unlike classic ballots, where the sequence proposed by the leader consists of the commands received from the proposers appended to previously proposed commands, in a fast ballot, proposals can be sent to the acceptors in the form of either a single command or a sequence to be appended to the command history.\looseness=-1\par
 \vspace*{-.4cm}
 \begin{algorithm}
 	\caption{Byzantine Generalized Paxos - Learner l}

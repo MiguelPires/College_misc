@@ -1,4 +1,4 @@
-\chapter{Consensus Problem}
+\chapter{Consensus}
 
 As previously mentioned, one of our most important contributions is the revised consensus problem. In Lamport's original specification, the consensus problem is generalized from agreeing on a single value to agreeing on an increasing set of values~\cite{Lamport2005}. The consensus problem is defined in terms of \textit{c-structs} and includes four properties, where $learned[l]$ is the sequence of commands for a learner $l$, $propCmd$ is the set of all proposed commands and $Str(propCmd)$ is the set of all \textit{c-structs} that can be constructed from the elements in $propCmd$:
 \begin{itemize}
@@ -14,10 +14,60 @@ The reason why the generalized consensus problem and its solution, the Generaliz
 \section{Operations on \textit{c-structs}} \label{Operations}
 The consistency property stated above defines what a consensus-solving protocol must guarantee to be considered \textit{safe}. In generalized consensus, consistency relies on a notion of \textit{compatibility} between \textit{c-structs}. As Lamport states, two \textit{c-structs}, $v$ and $w$ are compatible if and only if they have a common upper bound, that is, if there exists a \textit{c-struct} $z$ to which they are both prefixes, $v \sqsubseteq z \land w \sqsubseteq z$. Intuitively, this means that if two learned \textit{c-structs} can be extended to the same \textit{c-struct}, then they it is safe to learn them. However, if two \textit{c-structs} contain conflicting commands in different relative orders, then there is no \textit{c-struct} that extends both and the \textit{c-structs} are cannot be safely learned.\par
 Upper and lower bounds are mostly used in the Generalized Paxos protocol in the form of least upper bounds ($\sqcup$) and greater lower bounds ($\sqcap$). A least upper bound $\sqcup$ of a set of \textit{c-structs} $T$  is an upper bound $v$ of $T$ such that $v \sqsubseteq w$ for any upper bound $w$ in $T$. One could define the $\sqcup T$, as the upper bound of $T$ that is a lower bound of every upper bound in $T$. Note that if $v = w$ then $v\sqsubseteq w$ and $w\sqsubseteq v$. Analogously, a greater lower bound $\sqcap$ of a set of \textit{c-structs} $T$ is a lower bound $v$ of $T$ such that $w \sqsubseteq v$ for any lower bound $w$ in $T$. \par
-Let $T$ be the set of \textit{c-structs} $\{A ; A \bullet B ; A \bullet B \bullet C\}$ and let the set of all \textit{c-structs} be any combination of the commands $A$, $B$, $C$, $D$ and $E$, as long as they appear in the alphabetical order. If an upper bound of $T$ is a \textit{c-struct} $v$ such that $w \sqsubseteq v, \forall w \in T$, then there are three possible upper bounds, namely $A \bullet B \bullet C$, $A \bullet B \bullet C \bullet D$ and $A \bullet B \bullet C \bullet D \bullet E$. Of these three upper bounds, we can compute $\sqcup T$ by noting that only $A \bullet B \bullet C$ is a lower bound of all three upper bounds. As previously mentioned, the consistency property requires learned \textit{c-structs} to be compatible (i.e., to have a common upper bound). Any set of compatible \textit{c-structs} is guaranteed to have a lower upper bound. \par 
+Let $T$ be the set of \textit{c-structs} $\{A ; A \bullet B ; A \bullet B \bullet C\}$ and let the set of all \textit{c-structs} be any combination of the commands $A$, $B$, $C$, $D$ and $E$, as long as they appear in the alphabetical order. If an upper bound of $T$ is a \textit{c-struct} $v$ such that $w \sqsubseteq v, \forall w \in T$, then there are three possible upper bounds, namely $A \bullet B \bullet C$, $A \bullet B \bullet C \bullet D$ and $A \bullet B \bullet C \bullet D \bullet E$. Of these three upper bounds, we can compute $\sqcup T$ by noting that only $A \bullet B \bullet C$ is a lower bound of all three upper bounds. As previously mentioned, the consistency property requires learned \textit{c-structs} to be compatible (i.e., to have a common upper bound). Any set of compatible \textit{c-structs} is guaranteed to have a least upper bound. \par 
 Let's redefine the set $T$ to contain the following \textit{c-structs} $\{A ; A \bullet C ; A \bullet B \bullet C\}$. This may seem like an innocuous modification but it's enough to make the computation of $\sqcup T$ impossible. Taking into account the same upper bound, there is no upper bound that to which every \textit{c-struct} in $T$ is a prefix. No upper bound of $A \bullet B \bullet C$ will also be an upper bound of $A \bullet C$. In other words, $A \bullet B \bullet C$ and $A \bullet C$ are not compatible.\par 
 These concepts can be applied to any set of \textit{c-structs}. However, the generalized consensus problem gets its name from the fact that it allows for the definition of any set of rules on what can is a valid \textit{c-struct}. We already gave one example of this since when we defined a valid \textit{c-struct} to be one where the commands are alphabetically ordered. {\color{red} This generality carries some complications since the way (...) RETHINK}
 
 \section{\textit{C-structs} in Generalized Paxos}
-The operations defined in section \ref{Operations} are significant 
+The operations defined in section \ref{Operations} are mostly employed in Generalized Paxos when the leader picks a value to commit. In phase $2a$, before sending new proposed commands to the acceptors, the leader must first pick a value to which the proposal will be appended. To ensure that the consistency requirements are met, acceptors must only vote for safe values. In this context, a \textit{c-struct} is \textit{safe} if it's the extension of a choosable value at a lower ballot. In other words, if at a previous ballot was possible for a \textit{c-struct} $w$ to be chosen to be learned and $w \sqsubseteq v$, then $v$ is safe. Therefore, to guarantee correctness, the leader must append new proposals to a safe \textit{c-struct}. The procedure that picks a safe \textit{c-struct} is depicted in Algorithm \ref{leader_excerpt}.\par
+\begin{algorithm}
+	\caption{Excerpt from the leader's code}
+	\label{leader_excerpt}
+	\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot$
+	\begin{algorithmic}[1]
+		\Function{Phase\_2a}{$bal, Q$}
+		\State $maxTried_l$ = \textbf{run} \Call{Proved\_Safe}{$Q, bal$};
+		\State $maxTried_l = maxTried_l \bullet new\_proposals$;
+		\State \textbf{run} \Call{send}{$p2a,ballot_l, maxTried_l$} to Acceptors;
+		\EndFunction
+		
+		\State
+		\Function{Proved\_Safe}{Q, m}
+		\State $k = max(i\ |\ (i < m) \wedge (\exists a \in Q :\ val_a[i]\ \neq null))$;
+		\State $RS = \{R \in k$-$quorum\ |\ \forall a \in R \cap Q : val_a[k] \neq null\}$;
+		\State $\gamma(R) = \sqcap \{v_a[k]\ |\ a \in Q \cap R \}$;
+		\State $\Gamma = \{\gamma(R)\ |\ R \in RS \}$;
+		\State
+		\If{$RS = \varnothing$}
+		\State \textbf{return} $\{val_a[k]\ |\ (a \in Q) \wedge (val_a[k] \neq null)\}$;
+		\Else
+		\State \textbf{return} \textbf{run} $\sqcup \Gamma$;
+		\EndIf
+		\EndFunction
+		
+	\end{algorithmic}
+\end{algorithm}
 
+\begin{algorithm}
+	\caption{Informal explanation of the Proved\_Safe procedure}
+	\label{translation}
+	\begin{algorithmic}[1]
+		\Function{Proved\_Safe}{Q, m}
+		\State $Q$ is the quorum gathered to vote for the current ballot $m$
+		\State $k$ is the largest ballot number (but smaller than $m$) in which some acceptor in $Q$ voted for 
+		\State $RS$ is the set of k-quorums (quorums possibly gathered at k) in which every acceptor also in $Q$ voted at $k$
+		\State $\gamma(R)$ is the set of greater lower bounds of the votes sent by acceptors in both $R$ and $Q$
+		\State $\Gamma$ is the set of greater lower bounds of the votes sent by acceptors in both $Q$ and a set where every acceptor also $Q$ voted at $k$
+		\If{$RS$ is empty (there is no k-quorum $R$ for which every acceptor in $R$ and $Q$ have voted)}
+		\State \textbf{return} Any value reported in phase $1b$ messages;
+		\Else
+		\State \textbf{return} The least upper bound of $\Gamma$ (greater lower bounds of votes);
+		\EndIf
+		\EndFunction
+		
+	\end{algorithmic}
+\end{algorithm}
+
+Algorithm \ref{translation} provide an explanation of what each line of code in the $Proved\_Safe$ procedure does. The complex notation of this procedure makes it difficult to translate into a practical implementation even though the motivating scenario for generalized consensus is one with great practical utility. 
+
+\section{Specializing Generalized Consensus}

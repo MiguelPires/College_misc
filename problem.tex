@@ -59,9 +59,9 @@ The operations defined in section \ref{Operations} are mostly employed in Genera
 		\State $\gamma(R)$ is the set of greater lower bounds of the votes sent by acceptors in both $R$ and $Q$
 		\State $\Gamma$ is the set of greater lower bounds of the votes sent by acceptors in both $Q$ and a set where every acceptor also $Q$ voted at $k$
 		\If{$RS$ is empty (there is no k-quorum $R$ for which every acceptor in $R$ and $Q$ have voted)}
-		\State \textbf{return} Any value reported in phase $1b$ messages;
+		\State \textbf{return} Any value reported in phase $1b$ messages
 		\Else
-		\State \textbf{return} The least upper bound of $\Gamma$ (greater lower bounds of votes);
+		\State \textbf{return} The least upper bound of $\Gamma$ (greater lower bounds of votes)
 		\EndIf
 		\EndFunction
 		

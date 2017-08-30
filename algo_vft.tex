@@ -227,10 +227,10 @@
 	\textbf{Local variables:} $learned = \bot,\ messages = \bot, quorumSize = \bot$ 
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive($P2B, ballot, value$)} from acceptor $a$ \textbf{do}
-		\State \hspace{\algorithmicindent}  $messages[ballot][value][a] = true$;
 		\State \hspace{\algorithmicindent} \textbf{if} $quorumSize[ballot][value] = \bot$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $quorumSize[ballot][value] = N-s$;
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{startTimer}{$3T, \textproc{timerEnded}, ballot, value$};
+		\State \hspace{\algorithmicindent}  $messages[ballot][value][a] = true$;
 		\State
 		\State \hspace{\algorithmicindent} \parbox[t]{\dimexpr\linewidth-\marginparwidth}{ \textbf{if} $(\#(messages[ballot][value]) \geq quorumSize[ballot][value]$ and $(quorumSize[ballot][value] = N-s$ or $verificationMessages[ballot][value] \geq N-u)$  or ($\#(messages[ballot][value]) > u$ and \textproc{isUniversallyCommutative}($value$)) \textbf{then}}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;

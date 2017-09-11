@@ -21,7 +21,7 @@ Next, we present the protocol for each type of ballot in detail.
 
 Classic ballots work in a way that is very similar to the original Paxos protocol~\cite{Lam98}. Therefore, throughout our description, we will highlight the points where Generalized Paxos departs from the original protocol, in particular where it's due to behaviors caused by our simplified specification of Generalized Paxos.
 
-In this part of the protocol, the leader continuously collect proposals by assembling commands that received from the proposers in a sequence. This sequence is built by appending arriving proposals to a sequence containing every proposal received since the previous ballot. (This differs from classic Paxos, where it suffices to keep a single proposed value that the leader attempts to reach agreement on.)
+In this part of the protocol, the leader continuously collects proposals by assembling commands received from the proposers in a sequence. This sequence is built by appending arriving proposals to a sequence containing every proposal received since the previous ballot. (This differs from classic Paxos, where it suffices to keep a single proposed value that the leader attempts to reach agreement on.)
 
 When the next ballot is triggered, the leader starts the first phase by sending phase $1a$ messages to all acceptors containing just the ballot number. Similarly to classic Paxos, acceptors reply with a phase $1b$ message to the leader, which reports all sequences of commands they voted for. This message also carries a promise not to participate in lower-numbered ballots, in order to prevent safety violations~\cite{Lam98}.
 

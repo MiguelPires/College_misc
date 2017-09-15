@@ -8171,3 +8171,49 @@ title = {{Separating the WHEAT from the Chaff: An Empirical Design for Geo-Repli
 volume = {2016-January},
 year = {2016}
 }
+
+@article{time-clocks,
+author = {Lamport, Leslie},
+title = {Time, Clocks and the Ordering of Events in a Distributed System},
+booktitle = {},
+year = {1978},
+month = {July},
+abstract = {Jim Gray once told me that he had heard two different opinions of this paper: that it's trivial and that it's brilliant. I can't argue with the former, and I am disinclined to argue with the latter.
+
+The origin of this paper was the note The Maintenance of Duplicate Databases by Paul Johnson and Bob Thomas. I believe their note introduced the idea of using message timestamps in a distributed algorithm. I happen to have a solid, visceral understanding of special relativity (see [5]). This enabled me to grasp immediately the essence of what they were trying to do. Special relativity teaches us that there is no invariant total ordering of events in space-time; different observers can disagree about which of two events happened first. There is only a partial order in which an event e1 precedes an event e2 iff e1 can causally affect e2. I realized that the essence of Johnson and Thomas's algorithm was the use of timestamps to provide a total ordering of events that was consistent with the causal order. This realization may have been brilliant. Having realized it, everything else was trivial. Because Thomas and Johnson didn't understand exactly what they were doing, they didn't get the algorithm quite right; their algorithm permitted anomalous behavior that essentially violated causality. I quickly wrote a short note pointing this out and correcting the algorithm.
+
+It didn't take me long to realize that an algorithm for totally ordering events could be used to implement any distributed system. A distributed system can be described as a particular sequential state machine that is implemented with a network of processors. The ability to totally order the input requests leads immediately to an algorithm to implement an arbitrary state machine by a network of processors, and hence to implement any distributed system. So, I wrote this paper, which is about how to implement an arbitrary distributed state machine. As an illustration, I used the simplest example of a distributed system I could think of--a distributed mutual exclusion algorithm.
+
+This is my most often cited paper. Many computer scientists claim to have read it. But I have rarely encountered anyone who was aware that the paper said anything about state machines. People seem to think that it is about either the causality relation on events in a distributed system, or the distributed mutual exclusion problem. People have insisted that there is nothing about state machines in the paper. I've even had to go back and reread it to convince myself that I really did remember what I had written.
+
+The paper describes the synchronization of logical clocks. As something of an afterthought, I decided to see what kind of synchronization it provided for real-time clocks. So, I included a theorem about real-time synchronization. I was rather surprised by how difficult the proof turned out to be. This was an indication of what lay ahead in [62].
+
+This paper won the 2000 PODC Influential Paper Award (later renamed the Edsger W. Dijkstra Prize in Distributed Computing). It won an ACM SIGOPS Hall of Fame Award in 2007.},
+publisher = {},
+url = {https://www.microsoft.com/en-us/research/publication/time-clocks-ordering-events-distributed-system/},
+address = {},
+pages = {558-565},
+journal = {},
+volume = {},
+chapter = {},
+isbn = {},
+}
+
+@article{Schneider1990,
+ author = {Schneider, Fred B.},
+ title = {Implementing Fault-tolerant Services Using the State Machine Approach: A Tutorial},
+ journal = {ACM Comput. Surv.},
+ issue_date = {Dec. 1990},
+ volume = {22},
+ number = {4},
+ month = dec,
+ year = {1990},
+ issn = {0360-0300},
+ pages = {299--319},
+ numpages = {21},
+ url = {http://doi.acm.org/10.1145/98163.98167},
+ doi = {10.1145/98163.98167},
+ acmid = {98167},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+} 

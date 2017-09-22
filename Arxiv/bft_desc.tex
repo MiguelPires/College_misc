@@ -41,29 +41,6 @@ We modularize our protocol explanation according to the following main component
 
 The goal of the view change subprotocol is to elect a distinguished acceptor process, called the leader, that carries through the agreement protocol, i.e., enables proposed commands to eventually be learned by all the learners. The overall design of this subprotocol is similar to the corresponding part of existing BFT state machine replication protocols~\cite{CL99}.\par
 
-\begin{algorithm}
-	\caption{Byzantine Generalized Paxos - Process p}
-	\begin{algorithmic}[1]		
-		\Function{merge\_sequences}{$old\_seq, new\_seq$}
-		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
-		\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $old\_seq =  old\_seq \bullet c$;
-		\State \textbf{end for}
-		\State \textbf{return} $old\_seq$;
-		\EndFunction
-		
-		\State
-		\Function{signed\_commands}{$full\_seq$}
-		\State $signed\_seq = \bot$;
-		\State \textbf{for} $c$ \textbf{in} $full\_seq$ \textbf{do}
-		\State \hspace{\algorithmicindent} \textbf{if} \Call{$verify\_command$}{c} \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $signed\_seq = signed\_seq \bullet c$;
-		\State \textbf{end for}
-		\State \textbf{return} $signed\_seq$;
-		\EndFunction
-	\end{algorithmic}
-\end{algorithm}
-
 In this subprotocol, the system moves through sequentially numbered views, and the leader for each view is chosen in a rotating fashion using the simple equation $\textit{leader(view)}=\textit{view mod N}$. The protocol works continuously by having acceptor processes monitor whether progress is being made on adding commands to the current sequence, and, if not, they multicasting a signed {\sc suspicion} message for the current view to all acceptors suspecting the current leader. Then, if enough suspicions are collected, processes can move to the subsequent view. However, the required number of suspicions must be chosen in a way that prevents Byzantine processes from triggering view changes spuriously. To this end, acceptor processes will multicast a view change message indicating their commitment to starting a new view only after hearing that $f+1$ processes suspect the leader to be faulty. This message contains the new view number, the $f+1$ signed suspicions, and is signed by the acceptor that sends it. This way, if a process receives a view-change message without previously receiving $f+1$ suspicions, it can also multicast a view-change message, after verifying that the suspicions are correctly signed by $f+1$ distinct processes.
 %As such, the signatures allow a process that receives this message to commit to the new view and multicast its own view-change message without receiving $f+1$ suspicions itself.
 This guarantees that if one correct process receives the $f+1$ suspicions and multicasts the view-change message, then all correct processes, upon receiving this message, will be able to validate the proof of $f+1$ suspicions and also multicast the view-change message.\par
@@ -317,6 +294,14 @@ The third part consists simply of commands sent by proposers to the leader with 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}
 		\parbox{\linewidth}{\textbf{if} $\#(messages[ballot][value]) \geq N-f$ or ($\#(messages[ballot][value]) > f$ and \Call{isUniversallyCommutative}{value}) \textbf{then}}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;
+		\State		
+		\Function{merge\_sequences}{$old\_seq, new\_seq$}
+		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $old\_seq =  old\_seq \bullet c$;
+		\State \textbf{end for}
+		\State \textbf{return} $old\_seq$;
+		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
 

@@ -185,6 +185,18 @@ Acceptors append the proposals they receive to the proposals they have previousl
 Note that the leader may assemble gathered sequences in an order that is non-commutative to some sequence that has previously gathered enough votes to be learned. Since the leader can only wait $N-f$ phase $1b$ messages from acceptors, there is no way guarantee which sequence may have been learned. However, this is not a problem because, by making learners process phase $2b$ messages in order, if some sequence gathered enough votes to be learned then its commands will be learned before the new non-commutative sequence is and the new-sequence's repeated commands will be discarded.\par
 
 \subsection{Discussion}
+
+\subsubsection{Extending the protocol to universally commutative commands}
+% Generalized Paxos vs Paxos spec.
+The Generalized Paxos specification dictates that the only commands whose relative order can be reversed at different learners are those that commute with each other. This restriction has the advantage of allowing for running a replicated state machine on top of the Generalized Paxos protocol, while still ensuring that the state machine behaves in a way that is indistinguishable from running it on top of the original Paxos protocol. However, the downside of this use of commutative operations in the context of Generalized Paxos is that this commutativity check is done at runtime, and, if non-commutative operations are issued
+concurrently, then we must fall back to the slower classic Paxos protocol.\par
+This downside raises the possibility of extending the protocol to handle commands that are universally commutative, i.e., commute with every
+other command. For these commands, it is known before executing them that they will not generate any conflicts, and therefore it is not
+necessary to check them against concurrently executing commands. This allows us to optimize the protocol by decreasing the number of phase
+$2b$ messages required to learn to a smaller $f+1$ quorum. Since, by definition, these sequences are guaranteed to never produce conflicts,
+the $N-f$ quorum is not required to prevent learners from learning conflicting sequences. Instead, a quorum of $f+1$ is sufficient for
+the learner to be sure that the proposed sequence was proposed by a correct proposer. (Furthermore, for ``read-only'' commands, it is possible to run these against one single learner in the crash model, since there is no requirement to withstand $f$ faults for these commands.) This optimization is particularly useful in the context of geo-replicated systems, since it can be significantly faster to wait for the $f+1$st message instead of the $N-f$th one.
+
 \subsubsection{Generalized Paxos and weak consistency}
 %The Byzantine Generalized Paxos protocol tackles two challenges in two different avenues of research, fault tolerance and relaxed consistency models. By specifying the generalized consensus problem,
 The key distinguishing feature of the specification of Generalized
@@ -210,29 +222,6 @@ that the final state that is reached is the same and no invariants
 of the application are violated~\cite{Li2012}.
 
 \iffalse 
-\subsubsection{Fastness in simplified Generalized Paxos} 
-The relaxation of the generalized consensus problem can yield several interesting results, one of which is enabling learning proposals in two message steps while using traditional majority quorums. To understand how this is possible we must first understand why both Fast and Generalized Paxos require the total system size and the quorums to increase with the number of faults one wishes to tolerate while still allowing for fast executions. \par
-The increased quorum requirements arise from the necessity of defining a rule for the leader to pick a value to be sent in its phase $2a$ messages~\cite{Lamport2006}. After executing phase $1$, the leader has gathered a quorum $Q$ of phase $1b$ messages from the acceptors relaying their votes regarding the latest ballot. In the common case, no value has been picked by the acceptors for the current ballot, but this is not necessarily the case since, in the case of a leader failure, new leaders are not guaranteed to be aware of the latest round. To further complicate the problem, since fast ballots allow multiple values to be concurrently proposed, the acceptors can relay different values voted for in the previous ballot. Intuitively, if for a ballot $k$ some value $v$ has already been sent by a previous leader to the acceptors such that a majority voted for it, no other value will be accepted. Lamport states that:\par
 
-\begin{displayquote}
-	\textbf{Observation 4.} (...) a value $v$ has been or might yet be chosen in round $k$ only if there exists a $k$-quorum $R$ such that $vr(a)=k$ and $vv(a)=v$ for every acceptor in $R \cap Q$.
-\end{displayquote}
-
-To determine the leader's behavior, it's useful to think what actions are available when the leader has gathered $Q$:
-\begin{itemize}
-	\item If no value satisfies Obs. 4 and no value is guaranteed to have been picked, then the leader can choose any value present in the phase $1b$ messages.
-	\item If one value $v$ satisfies Obs. 4 then that value is the only value that has been or might yet be picked in round $k$ and the leader can only pick $v$ in phase $2a$.
-	\item If there is more than one value that satisfies Obs. 4, then the leader has no way of choosing a value.
-\end{itemize} 
-
-Lamport solves this problem by making the third case impossible. He does this by noticing that this case requires Obs. 4 to be true for two distinct values $v$ and $w$, which implies that there are $k$-quorums $R_v$ and $R_w$ such that every acceptor in $R_v \cap Q$ has voted for $v$ and every acceptor in $R_w \cap Q$ has voted for $w$. This becomes impossible if we force $R_v \cap R_w \cap Q \neq \emptyset$. This rule is formalized as:
-
-\begin{displayquote}
-	\textbf{Quorum Requirement} For any round numbers $j$ and $i$:\par
-	(a) Any $i$-quorum and any $j$-quorum have a non-empty intersection.\par
-	(b) If $j$ is a fast round number, then any $i$-quorum and any two $j$-quorums have non-empty intersection. 	
-\end{displayquote}
-
-The system and quorums sizes can then be defined with respect to parameters $f$ and $e$, respectively, the maximum number of faults the system can tolerate while still being able to function correctly and the maximum number of faults the system can tolerate while still being able to support two step executions. The system size $N$ must take into account the following restrictions: $N > 2f$ and $N < 2e+f$. If we wish to always allow fast executions then $e=f$ and the minimum value of $N$ becomes $3f+1$. Similarly, the fast and classic quorums both become $N-e=N-f= 2f+1$. This is the cost imposed on the system in order to allow the safe learning of values in two message steps. \par
 As previously mentioned, this cost stems from the necessity of picking a single value to be sent from the leader to the acceptors. However, notice that the leader in the analogous protocol for our simplified generalized consensus problem isn't constrained by the same requirement. This is due to the fact that, to ensure liveness, the leader picks a serialization composed of every value sent to the acceptor in the previous fast ballot. Since the leader doesn't have to pick a single value present in the acceptors' phase $1b$ messages, Fast and Generalized Paxos' quorum requirements are unnecessary and it is sufficient to ensure the standard quorum assumption that any two quorums have a non-empty intersection. Therefore, our simplified problem statement allows us to do away with the previous cost of learning values in two message steps.
 \fi

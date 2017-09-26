@@ -220,8 +220,3 @@ though it may cause executions that are not explained by a sequential
 execution, since the semantics are still acceptable given
 that the final state that is reached is the same and no invariants 
 of the application are violated~\cite{Li2012}.
-
-\iffalse 
-
-As previously mentioned, this cost stems from the necessity of picking a single value to be sent from the leader to the acceptors. However, notice that the leader in the analogous protocol for our simplified generalized consensus problem isn't constrained by the same requirement. This is due to the fact that, to ensure liveness, the leader picks a serialization composed of every value sent to the acceptor in the previous fast ballot. Since the leader doesn't have to pick a single value present in the acceptors' phase $1b$ messages, Fast and Generalized Paxos' quorum requirements are unnecessary and it is sufficient to ensure the standard quorum assumption that any two quorums have a non-empty intersection. Therefore, our simplified problem statement allows us to do away with the previous cost of learning values in two message steps.
-\fi

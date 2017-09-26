@@ -136,14 +136,14 @@
 % Nomenclature
 %
 % entries of nomenclature list
-\input{Thesis_Nomenclature} % file "Thesis_Nomenclature.tex"
+%\input{Thesis_Nomenclature} % file "Thesis_Nomenclature.tex"
 %
 % Add entry in the table of contents as section
-\phantomsection
-\addcontentsline{toc}{section}{\nomname}
+%\phantomsection
+%\addcontentsline{toc}{section}{\nomname}
 % Insert glossary/nomenclature section produced by MakeIndex
-\printnomenclature
-\cleardoublepage
+%\printnomenclature
+%\cleardoublepage
 
 % entries of glossary list
 \input{Thesis_Glossary} % file "Thesis_Glossary.tex"
@@ -152,7 +152,8 @@
 \phantomsection
 \addcontentsline{toc}{section}{\glossaryname}
 % Insert glossary section produced by MakeIndex
-\printglossary
+\printglossary[type=\acronymtype]
+
 \cleardoublepage
 
 % Set arabic numbering (1,2,...) after preface
@@ -166,30 +167,16 @@
 
 \input{intro} % file "Thesis_Introduction.tex"
 \cleardoublepage
-
 \input{related} % file "Thesis_Background.tex"
 \cleardoublepage
-
 \input{problem}
-
-\input{cft}
-\input{bft}
-\input{vft}
-%\input{architecture} % file "Thesis_Implementation.tex"
 \cleardoublepage
-
-%\input{Thesis_new_file} % add new .tex files for new chapters
-% \cleardoublepage
-
-%\input{Thesis_new_file} % add new .tex files for new chapters
-% \cleardoublepage
-
-%\input{Thesis_new_file} % add new .tex files for new chapters
-% \cleardoublepage
-
-%\input{Thesis_Results} % file "Thesis_Results.tex"
-%\cleardoublepage
-
+\input{cft}
+\cleardoublepage
+\input{bft}
+\cleardoublepage
+\input{vft}
+\cleardoublepage
 \input{conclusion} % file "Thesis_Conclusions.tex"
 \cleardoublepage
 
@@ -247,11 +234,6 @@
 %  CAUTION: 1) the main document (up to the conclusions) shall not exceed 80 pages
 %           2) the document shall not exceed a total of 100 pages (per IST regulations)
 % ----------------------------------------------------------------------
-%\appendix
-%\input{bft_proof}
-%\clearpage
-%\input{vft_proof}
-
 
 % add page number prefix according to apendix chapter (optional)
 %\renewcommand{\thepage}{\thechapter.\arabic{page}}

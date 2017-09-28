@@ -225,7 +225,7 @@ To initiate a fast ballot, the leader informs both proposers and acceptors that 
 		\If {$bal_a < ballot$}
 		\State \Call{send}{$P1B, ballot,bal_a,proven, val_a[bal_a], proofs[bal_a]$} to leader;
 		\State $bal_a = ballot$;	
-		\State $val_a[bal_a] = \bot$;	
+		\State $val_a = \bot$;	
 		\EndIf
 		\EndFunction
 		
@@ -233,20 +233,20 @@ To initiate a fast ballot, the leader informs both proposers and acceptors that 
 		\Function{phase\_2b\_classic}{$ballot, value$}
 		\If {$ballot \geq bal_a$ and $val_a = \bot$}
 		\State $bal_a = ballot$;
-		\State $val_a[bal_a] = value$;
+		\State $val_a = value$;
 		\State $proof = \langle ballot, val_a \rangle_{priv_a}$;
 		\State $proofs[ballot][val_a][a] = proof$;
-		\State \Call{send}{\textit{VERIFY, view, ballot, $val_a$, proof}} to acceptors;
+		\State \Call{send}{\textit{$VERIFY, view, ballot, val_a, proof$}} to acceptors;
 		\EndIf
 		\EndFunction
 		
 		\State
 		\Function{phase\_2b\_fast}{$ballot, value$}
 		\If {$ballot = bal_a$ and $fast\_bal[bal_a]$}
-		\State $val_a[bal_a] = val_a[bal_a] \bullet value$;
+		\State $val_a = val_a \bullet value$;
 		\State $proof = \langle ballot, val_a \rangle_{priv_a}$;
 		\State $proofs[ballot][val_a][a] = proof$;
-		\State \Call{send}{\textit{VERIFY, view, ballot, $val_a$, proof}} to acceptors;
+		\State \Call{send}{\textit{$VERIFY, view, ballot, val_a, proof$}} to acceptors;
 		\EndIf
 		\EndFunction
 	\end{algorithmic}
@@ -306,7 +306,8 @@ The third part consists simply of commands sent by proposers to the leader with 
 
 
 \subsection{Discussion}
-\subsubsection{Checkpointing} \acrshort{bgp} includes an additional feature that allows the leader to propose a special command $C^*$ that causes both the acceptors and learners to safely discard previously stored commands. This feature can be used to prevent commands from being stored indefinitely. However, since commands are kept at the acceptors to ensure that they will eventually be committed, special care has to be taken before discarding them. To prevent unlearned commands from being discarded, the checkpointing command must be sent within a sequence in a classic ballot. In phase 1 of that classic ballot, acceptors send every command they have to the leader, who waits for $N-f$ phase 1b messages. The leader can be sure that the commands were originated from proposers by verifying the signatures they contain. Since, when proposing to acceptors in fast ballots, proposers wait for acknowledgments from $N-f$ proposers, there's at least one correct acceptor in the intersection of a quorum that received a proposal and a quorum that sends commands to the leader. This means that any proposed value will be sent by some acceptor to the leader and included in the leader's sequence, along with the checkpointing command. Since acceptors must be certain that it's safe to discard previously stored commands, before sending phase 2b messages to learners, they first broadcast these messages among themselves. This round between acceptors is necessary because a Byzantine leader could send a checkpointing command to some acceptors but not others. After waiting for $N-f$ such messages, acceptors send phase 2b messages to the learners along with the cryptographic proofs exchanged in the acceptor-to-acceptor broadcast. After receiving just one message, the leader may simply validate the $N-f$ acceptor proofs contained in it and learn the commands. The learners discard previously stored state when they execute the checkpointing command.\par
+{\color{red} Mention universally commutative commands here as well}
+\subsubsection{Checkpointing} {\color{red} No longer makes sense. Only the learner benefits from checkpointing} \acrshort{bgp} includes an additional feature that allows the leader to propose a special command $C^*$ that causes both the acceptors and learners to safely discard previously stored commands. This feature can be used to prevent commands from being stored indefinitely. However, since commands are kept at the acceptors to ensure that they will eventually be committed, special care has to be taken before discarding them. To prevent unlearned commands from being discarded, the checkpointing command must be sent within a sequence in a classic ballot. In phase 1 of that classic ballot, acceptors send every command they have to the leader, who waits for $N-f$ phase 1b messages. The leader can be sure that the commands were originated from proposers by verifying the signatures they contain. Since, when proposing to acceptors in fast ballots, proposers wait for acknowledgments from $N-f$ proposers, there's at least one correct acceptor in the intersection of a quorum that received a proposal and a quorum that sends commands to the leader. This means that any proposed value will be sent by some acceptor to the leader and included in the leader's sequence, along with the checkpointing command. Since acceptors must be certain that it's safe to discard previously stored commands, before sending phase 2b messages to learners, they first broadcast these messages among themselves. This round between acceptors is necessary because a Byzantine leader could send a checkpointing command to some acceptors but not others. After waiting for $N-f$ such messages, acceptors send phase 2b messages to the learners along with the cryptographic proofs exchanged in the acceptor-to-acceptor broadcast. After receiving just one message, the leader may simply validate the $N-f$ acceptor proofs contained in it and learn the commands. The learners discard previously stored state when they execute the checkpointing command.\par
 
 \subsubsection{Fast Byzantine Paxos Comparison}
-In comparison to \acrshort{fab} Paxos, our \acrlong{bgp} protocol, requires a lower number of acceptors than what is stipulated by FaB's lower bound. However, this does not constitute a violation of the result since BGP does not guarantee a 2-step execution in the Byzantine scenario. Instead, \acrshort{bgp} only provides a two communication step latency when proposed sequences are commutative with any other concurrently proposed sequence. In other words, Byzantine Generalized Paxos leverages a weaker performance guarantee to decrease the requirements regarding the minimum number of processes. In particular, a proposed sequence may not gather enough votes to be learned in the ballot in which it is proposed, either due to Byzantine behaviour or contention between non-commutative commands. However, any sequence is guaranteed to eventually be learned in a way such that non-commutative commands are totally ordered at any correct learner.
+{\color{red} We no longer have 2-step executions so the comparison doesn't make sense. Replace it with something else? } In comparison to \acrshort{fab} Paxos, our \acrlong{bgp} protocol, requires a lower number of acceptors than what is stipulated by FaB's lower bound. However, this does not constitute a violation of the result since BGP does not guarantee a 2-step execution in the Byzantine scenario. Instead, \acrshort{bgp} only provides a two communication step latency when proposed sequences are commutative with any other concurrently proposed sequence. In other words, Byzantine Generalized Paxos leverages a weaker performance guarantee to decrease the requirements regarding the minimum number of processes. In particular, a proposed sequence may not gather enough votes to be learned in the ballot in which it is proposed, either due to Byzantine behaviour or contention between non-commutative commands. However, any sequence is guaranteed to eventually be learned in a way such that non-commutative commands are totally ordered at any correct learner.

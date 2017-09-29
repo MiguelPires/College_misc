@@ -223,7 +223,7 @@ To initiate a fast ballot, the leader informs both proposers and acceptors that 
 		\State
 		\Function{phase\_1b}{$ballot$}
 		\If {$bal_a < ballot$}
-		\State \Call{send}{$P1B, ballot,bal_a,proven, val_a[bal_a], proofs[bal_a]$} to leader;
+		\State \Call{send}{$P1B, ballot,bal_a,proven, val_a, proofs[bal_a]$} to leader;
 		\State $bal_a = ballot$;	
 		\EndIf
 		\EndFunction

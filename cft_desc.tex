@@ -139,7 +139,6 @@ In contrast to classic ballots, fast ballots are able to leverage a weaker speci
 		\If {$bal_a < ballot$}
 		\State \Call{send}{$P1B, ballot, bal_a, val_a$} to leader;
 		\State $bal_a = ballot$;	
-		\State $val_a[bal_a] = \bot$;	
 		\EndIf
 		\EndFunction
 		
@@ -171,10 +170,11 @@ To initiate a fast ballot, the leader informs both proposers and acceptors that 
 	\caption{Generalized Paxos - Learner l}
 	\textbf{Local variables: } $learned = \bot, messages = \bot$ 
 	\begin{algorithmic}[1]
-		\State \textbf{upon} receive($p2b, bal, val$) from acceptor $a_i$ \textbf{do}
-		\State \hspace{\algorithmicindent} $messages[bal][val][a_i] = true$;
-		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages[bal][val]) \geq N-f$ \textbf{then}
-		\State \hspace{\algorithmicindent} \hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, val}$;
+		\State \textbf{upon} receive($P2B, ballot, value$) from acceptor $a$ \textbf{do}
+		\State \hspace{\algorithmicindent} $messages[ballot][value][a] = true$;
+		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages[ballot][value]) \geq N-f$ \textbf{then}
+		\State \hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;
+		\State \hspace{\algorithmicindent} \textbf{else if} $\Call{isUniversallyCommutative}{value} $ and $\#(messages[ballot][value]) > f$ \State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = learned \bullet value$;
 	\end{algorithmic}
 \end{algorithm}
 
@@ -188,11 +188,13 @@ Note that the leader may assemble gathered sequences in an order that is non-com
 
 \subsubsection{Extending the protocol to universally commutative commands}
 % Generalized Paxos vs Paxos spec.
+{\color{red} Will almost never happen}
 The Generalized Paxos specification dictates that the only commands whose relative order can be reversed at different learners are those that commute with each other. This restriction has the advantage of allowing for running a replicated state machine on top of the Generalized Paxos protocol, while still ensuring that the state machine behaves in a way that is indistinguishable from running it on top of the original Paxos protocol. However, the downside of this use of commutative operations in the context of Generalized Paxos is that this commutativity check is done at runtime, and, if non-commutative operations are issued concurrently, then we must fall back to the slower classic Paxos protocol.\par
 This downside raises the possibility of extending the protocol to handle commands that are universally commutative, i.e., commute with every other command. For these commands, it is known before executing them that they will not generate any conflicts, and therefore it is not necessary to check them against concurrently executing commands. This allows us to optimize the protocol by decreasing the number of phase $2b$ messages required to learn to a smaller $f+1$ quorum. Since, by definition, these sequences are guaranteed to never produce conflicts, the $N-f$ quorum is not required to prevent learners from learning conflicting sequences. Instead, a quorum of $f+1$ is sufficient for the learner to be sure that the proposed sequence was proposed by a correct proposer. (Furthermore, for ``read-only'' commands, it is possible to run these against one single learner in the crash model, since there is no requirement to withstand $f$ faults for these commands.) This optimization is particularly useful in the context of geo-replicated systems, since it can be significantly faster to wait for the $f+1$st message instead of the $N-f$th one.
 
 \subsubsection{Generalized Paxos and weak consistency}
 %The Byzantine Generalized Paxos protocol tackles two challenges in two different avenues of research, fault tolerance and relaxed consistency models. By specifying the generalized consensus problem,
+{\color{red} If the previous extension doesn't hold much validity neither does this discussion}
 The key distinguishing feature of the specification of Generalized
 Paxos~\cite{Lamport2005} is allowing learners to learn concurrent
 proposals in a different order, when the proposals commute. This idea

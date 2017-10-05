@@ -1,4 +1,4 @@
-\chapter{Consensus}
+\chapter{Consensus Problem} \label{problem}
 
 One of our most important contributions is the revised consensus problem. In Lamport's original specification, the consensus problem is generalized from agreeing on a single value to agreeing on an increasing set of values~\cite{Lamport2005}. The consensus problem is defined in terms of \textit{c-structs} and includes four properties, where $learned[l]$ is the sequence of commands for a learner $l$, $propCmd$ is the set of all proposed commands and $Str(propCmd)$ is the set of all \textit{c-structs} that can be constructed from the elements in $propCmd$:
 \begin{itemize}

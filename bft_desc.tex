@@ -209,31 +209,27 @@ To initiate a fast ballot, the leader informs both proposers and acceptors that 
 		\State
 		\Function{phase\_2b\_classic}{$ballot, value$}
 		\State $univ\_commut = \Call{isUniversallyCommutative}{val_a}$;
-		\If {$ballot \geq bal_a$ and $!fast\_bal[bal_a]$ and ($univ\_commut$ or $proven == \bot$ or $proven == \Call{subsequence}{value, 0, \#(proven)}$)}
-		\State $bal_a = ballot$;
-		\If {$univ\_commut$}
-		\State $\Call{send}{P2B,bal_a, value}$ to learners;
-		\Else 
-		\State $val_a = value$;
-		\State $proof = \langle ballot, val_a \rangle_{priv_a}$;
-		\State $proofs[ballot][val_a][a] = proof$;
-		\State $\Call{send}{VERIFY, view, ballot, val_a, proof}$ to acceptors;
-		\EndIf
-		\EndIf
+		\State \textbf{if} $ballot \geq bal_a$ and $!fast\_bal[bal_a]$ and ($univ\_commut$ or $proven == \bot$ or $proven == \Call{subsequence}{value, 0, \#(proven)}$) \textbf{then}
+		\State \hspace{\algorithmicindent} $bal_a = ballot$;
+		\State \hspace{\algorithmicindent} \textbf{if} $univ\_commut$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B,bal_a, value}$ to learners;
+		\State \hspace{\algorithmicindent} \textbf{else} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a = value$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = \langle ballot, val_a \rangle_{priv_a}$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proofs[ballot][val_a][a] = proof$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{VERIFY, view, ballot, val_a, proof}$ to acceptors;
 		\EndFunction
 		
 		\State
 		\Function{phase\_2b\_fast}{$ballot, value$}
-		\If {$ballot == bal_a$ and $fast\_bal[bal_a]$}
-		\If {$\Call{isUniversallyCommutative}{value}$}
-		\State $\Call{send}{P2B,bal_a, value}$ to learners;
-		\Else
-		\State $val_a = val_a \bullet value$;
-		\State $proof = \langle ballot, val_a \rangle_{priv_a}$;
-		\State $proofs[ballot][val_a][a] = proof$;
-		\State \Call{send}{\textit{$VERIFY, view, ballot, val_a, proof$}} to acceptors;
-		\EndIf
-		\EndIf
+		\State \textbf{if} $ballot == bal_a$ and $fast\_bal[bal_a]$ \textbf{then}
+		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{value}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B,bal_a, value}$ to learners;
+		\State \hspace{\algorithmicindent} \textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a = val_a \bullet value$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = \langle ballot, val_a \rangle_{priv_a}$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proofs[ballot][val_a][a] = proof$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{\textit{$VERIFY, view, ballot, val_a, proof$}} to acceptors;
 		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
@@ -293,7 +289,6 @@ The third part consists simply of commands sent by proposers to the leader with 
 		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
 		\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $old\_seq =  old\_seq \bullet c$;
-		\State \textbf{end for}
 		\State \textbf{return} $old\_seq$;
 		\EndFunction
 	\end{algorithmic}

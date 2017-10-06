@@ -103,8 +103,8 @@ Next, we describe solely the agreement subprotocol since it's the only one affec
 Much like its Byzantine counterpart, \acrshort{vgp} preserves the original Fast Paxos message pattern. Proposers send their proposals to either the leader or the acceptors, depending on the type of ballot being currently executed. In fast ballots, proposers send their proposals directly to the acceptors, which broadcast their votes to other acceptors in a verification phase. This verification phase serves the same purpose as the analogous one in \acrshort{bgp}. Since the leader must be sure of exactly what sequences have been learned in order to propose sequences that are strict extensions of previously learned proposals, the acceptors must gather $N-f$ proofs from themselves and other acceptors in order to relay them in the next classic ballot's phase $1$. After gathering this quorum of proofs, acceptors send their votes and the corresponding proofs to the learners, who wait for a $N-f$ quorum of such messages before learning it. In classic ballots, the leader sends phase $1a$ messages requesting that acceptors respond with the largest sequence for which they have $N-f$ proofs. After receiving a quorum of such responses in phase $1b$ messages, the leader computes a sequence that is sure to be safe to be learned. This proposal is sent to the acceptors in phase $2a$ and contains both a proven prefix of commands and uncommitted proposals. After gathering a quorum of $N-f$ proofs, as in the fast ballots, the acceptors send phase $2b$ messages to the learners, relaying their votes.
 
 \begin{algorithm} 
-	\caption{Visigoth Generalized Paxos - Acceptor a (agreement, part 1)}
-	\label{VFT-Acc-1}
+	\caption{Visigoth Generalized Paxos - Acceptor a (agreement)}
+	\label{VFT-Acc}
 	\textbf{Local variables:} $leader = \bot,\ view = 0, bal_a = 0,\ val_a = \bot,\ fast\_bal = \bot,\ proven = \bot$
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive($P1A, ballot, view_l$)} from leader $l$ \textbf{do}
@@ -136,9 +136,9 @@ Much like its Byzantine counterpart, \acrshort{vgp} preserves the original Fast 
 		\State \hspace{\algorithmicindent} \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B, ballot_i, val_i, proofs[ballot_i][value_i]}$ to learners;
 
 		\State		
-		\State \textbf{upon} \textit{receive($VFT\_VERIFY, ballot_l, value_l$)} from learner $l$ \textbf{do}
+		\State \textbf{upon} \textit{receive($VERIFY\_REQ, ballot_l, value_l$)} from learner $l$ \textbf{do}
 		\State \hspace{\algorithmicindent} \textbf{if} $\#(proofs[ballot_l][value_l]) \geq N-u$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{VFT\_REPLY, ballot, value, proofs[ballot_l][value_l]}$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{VERIFY\_RESP, ballot, value, proofs[ballot_l][value_l]}$;
 
 		\State
 		\Function{phase\_2b\_classic}{$ballot, value$}
@@ -184,10 +184,11 @@ To prevent this situation, when sending phase $2b$ messages to learners, accepto
 \begin{algorithm}
 	\caption{Visigoth Generalized Paxos - Learner l}
 	\label{VFT-Learn}
-	\textbf{Local variables:} $learned = \bot,\ messages = \bot,\ quorumSize = \bot,\ verificationMessages = \bot$ 
+	\textbf{Local variables:} $learned = \bot,\ storedProofs = \bot,\ quorumSize = \bot,\ verificationMessages = \bot, validVotes = \bot$ 
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive($P2B, ballot, value, proofs$)} from acceptor $a$ \textbf{do}
 		
+		\State \hspace{\algorithmicindent} $storedProofs[ballot][value][a] = \langle a, proofs \rangle$;
 		\State \hspace{\algorithmicindent} $valid\_proofs = 0$;
 		\State \hspace{\algorithmicindent} \textbf{for} $i$ \textbf{in} $acceptors$ \textbf{do}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = proofs[i]$;
@@ -195,35 +196,50 @@ To prevent this situation, when sending phase $2b$ messages to learners, accepto
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
 		$valid\_proofs \mathrel{+{=}} 1$;
 		\State
-		\State \hspace{\algorithmicindent} \textbf{if} $valid\_proofs \geq N-u$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $messages[ballot][value][a] = proofs$;
+		\State \hspace{\algorithmicindent} \textbf{if} $valid\_proofs \geq N-s$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $validVotes[ballot][value][a] = proofs$;
 		\State
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $quorumSize[ballot][value] = \bot$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $quorumSize[ballot][value] = N-s$;
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{startTimer}{$3T, \textproc{timerEnded}, ballot, value$};
 		\State
-		\State \hspace{\algorithmicindent} \textbf{if} $(\#(messages[ballot][value]) \geq quorumSize[ballot][value]$ and $(quorumSize[ballot][value] = N-s$ or $verificationMessages[ballot][value] \geq N-u)$ \textbf{then}
+		\State \hspace{\algorithmicindent} \textbf{if} $(\#(validVotes[ballot][value]) \geq quorumSize[ballot][value]$ and $(quorumSize[ballot][value] = N-s$ or $verificationMessages[ballot][value] \geq N-u)$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;
 		
 			\State
 		\State \textbf{upon} \textit{receive($P2B, ballot, value$)} from acceptor $a$ \textbf{do}
 		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{value}$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}
-		$messages[ballot][value][a] = true$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(messages[ballot][value]) > u$ \textbf{then} 
+		$validVotes[ballot][value][a] = true$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(validVotes[ballot][value]) > u$ \textbf{then} 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = learned \bullet value$;
 		
 		\State
-		\State \textbf{upon} \textit{receive($VERIFICATION, ballot, value$)} from acceptor $a$ \textbf{do}
+		\State \textbf{upon} \textit{receive($VERIFY\_RESP, ballot, value$)} from acceptor $a$ \textbf{do}
 		\State \hspace{\algorithmicindent} $verificationMessages[ballot][value][a]  = true$;
+		\State \hspace{\algorithmicindent} \textbf{if} $(\#(validVotes[ballot][value]) \geq quorumSize[ballot][value]$ and $(quorumSize[ballot][value] = N-s$ or $verificationMessages[ballot][value] \geq N-u)$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;
 		
 		\State
 		\State
 		\textbf{function} \Call{timerEnded}{$ballot, value$}
 		\State \hspace{\algorithmicindent} $quorumSize[ballot][value] = N-u$;
-		\State \hspace{\algorithmicindent} \Call{send}{$VERIFICATION, ballot$} to acceptors;
-		\State \hspace{\algorithmicindent} 		\State \hspace{\algorithmicindent} \textbf{if} $(\#(messages[ballot][value]) \geq quorumSize[ballot][value]$ and $(quorumSize[ballot][value] = N-s$ or $verificationMessages[ballot][value] \geq N-u)$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;
+
+		\State
+		
+		\State \hspace{\algorithmicindent} \textbf{for} $a$ \textbf{in} $acceptors$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $acc\_proofs = storedProofs[a]$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $valid\_proofs = 0$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $i$ \textbf{in} $acceptors$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = acc\_proofs[i]$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof_{pub_i} == \langle ballot, value \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
+		$valid\_proofs \mathrel{+{=}} 1$;
+		\State
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $valid\_proofs \geq N-u$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $validVotes[ballot][value][a] = proofs$;
+		\State 		
+		\State \hspace{\algorithmicindent} \Call{send}{$VERIFY\_REQ, ballot$} to acceptors;
 		
 	\end{algorithmic}
 \end{algorithm}
@@ -240,7 +256,10 @@ This specification is directly related to the fact that all correct processes ar
 
 \subsubsection{Quorum intersections}
 
-Even though we are able of extending \acrshort{bgp} to the Visigoth model using VFT-SMaRt's \acrshort{qgp} to collect messages without introducing additional complexity to the protocol's message pattern, there exists some potential for conflict between the two protocols when we consider that each use different quorum sizes. In particular, \acrshort{bgp} requires acceptors to gather $N-f$ proofs in order to ensure the leader of the following classic ballot that enough acceptors committed to some sequence. Since learners only learn after witnessing $N-f$ collections of such proofs, we also guarantee that, when a sequence is learned, not only no other non-commutative sequence is learned at the same ballot but the leader of the next classic ballot will be aware of every learned sequence. However, as we previously mentioned, \acrshort{vft} uses either a larger quorum of $N-s$ or a smaller quorum of $N-u$, during its message gathering procedure. Although the original VFT protocol proves that any two quorums intersect, it's unclear how the variable quorums affect the collection of proofs in the verification phase. In particular, when a learner receives a vote, he has no way of knowing whether to expect $N-s$ or $N-u$ proofs. Since, at first glance, it's unclear if this variability in quorum size causes safety issues or not, we must consider the effect that different quorum sizes have on the invariants that \acrshort{bgp} upholds. \par
+Even though we are able of extending \acrshort{bgp} to the Visigoth model using VFT-SMaRt's \acrshort{qgp} to collect messages without introducing additional complexity to the protocol's message pattern, there exists some potential for conflict between the two protocols when we consider that each use different quorum sizes. In particular, \acrshort{bgp} requires acceptors to gather $N-f$ proofs in order to ensure the leader of the following classic ballot that enough acceptors committed to some sequence. Since learners only learn after witnessing $N-f$ collections of such proofs, we also guarantee that, when a sequence is learned, not only no other non-commutative sequence is learned at the same ballot but the leader of the next classic ballot will be aware of every learned sequence. However, as we previously mentioned, \acrshort{vft} uses either a larger quorum of $N-s$ or a smaller quorum of $N-u$, during its message gathering procedure. Although the original VFT protocol proves that any two quorums intersect, it's unclear what effect the variable quorums have on the collection of proofs in the verification phase. In particular, when a learner receives a vote, he has no way of knowing whether to expect $N-s$ or $N-u$ proofs. Since, at first glance, it's unclear if this variability in quorum size causes safety issues or not, we must consider the effect that different quorum sizes have on the invariants that \acrshort{bgp} upholds. \par
+
+\iffalse
 One such invariant is that, regardless of the size of the gathered quorums, the leader must receive a phase $1b$ message from at least one correct acceptor that relays the most recently learned sequence along with sufficient proofs. Naturally, this begs the question of how many proofs are "sufficient proofs". This can answered by noting that the goal of the proof collection is to allow an acceptor to attest that no other non-commutative value may have been voted for by a majority. Consider the most pessimistic parameterization of the fault model occurs when $o=u$. In this situation, the $o$ Byzantine acceptors can broadcast proofs for some sequence $s$ along with other $u+1$ acceptors. Since every faulty acceptor is Byzantine and those acceptors are replying to the quorum, we're sure that the gathered quorum is of dimension $N-s$. In the next classic ballot, the leader will try to gather a quorum of phase $1b$ messages. A possible avenue of attack for the Byzantine acceptors is to reply to the leader with an out of date sequence. Recall that the previous phase $2b$ quorum was of size $N-s$. If we remove $o$ acceptors that are replying with outdated sequences, $s$ acceptors that are in the phase $1b$ but not in the phase $2b$ quorum and another $s$ that were in the phase $2b$ quorum but not in the current phase $1b$ quorum, that still leaves us with $N-2s-o=u+\cancel{o}+\cancel{s}+1-s-\cancel{s}-\cancel{o}=u+1-s$ correct acceptors in the intersection of both quorums. Since our protocol already functions under the assumption that $u>s$, then it's clear that there are enough acceptors in the intersection that will relay the most recent learned sequence.\par
 Another possible attack would be for Byzantine acceptors to artificially reduce the quorum in the verification phase of some sequence $s$ such that the acceptors could only gather $N-u$ proofs and then vote for some other non-commutative sequence $s'$. However, the purpose of the $N-u$ proofs is still met. In this situation, the quorum of verification messages for $s'$ is $N-s$ since we know that the $u$ processes that didn't participate in $s$'s quorum are the $o$ Byzantine acceptors that will attempt to have $s'$ learned. This means that the verification quorum of the sequence $s'$ will contain $N-s=u+\cancel{o}+\cancel{s}+1-\cancel{o}-\cancel{s}=u+1$ correct acceptors. These acceptors intersect with the $u+s+1$ acceptors that voted for $s$ and, for that reason, wouldn't vote for a non-commutative sequence such as $s'$.
+\fi
 \subsection{Discussion}

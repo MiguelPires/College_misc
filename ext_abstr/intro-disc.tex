@@ -71,7 +71,7 @@ and also open the possibility of adopting Generalized Paxos in
 scenarios such as a blockchain deployment.
 
 %\paragraph{Contributions}.
-Concretely, this paper makes the following contributions to the Paxos family:
+Concretely, this paper and the accompanying tech report make the following contributions to the Paxos family:
 %
 \begin{itemize}
 \item
@@ -99,8 +99,5 @@ and we discuss several extensions to the protocol in the context of relaxed cons
 The remainder of the paper is organized as follows:
 Section~\ref{sec:related} gives an overview of Paxos and its family of related protocols.
 Section~\ref{sec:model} introduces the model and simplified specification of Generalized Paxos.
-Section~\ref{sec:protocol} presents the Generalized Paxos protocol that is resilient against Byzantine failures. 
-This section also presents a proof that the Byzantine Generalized Paxos protocol guarantees \textit{consistency}, 
-while the correctness proofs for the remaining properties are included in a tech report. 
-Section~\ref{sec:disc} concludes the paper with a discussion of several optimizations and practical considerations. 
+Section~\ref{sec:protocol} presents the Generalized Paxos protocol that is resilient against Byzantine failures. Section~\ref{sec:disc} concludes the paper with a discussion of several optimizations and practical considerations. Due to space constraints, this paper doesn't contain a description of the correctness proofs. However, these are included in a separate technical report~\cite{bgp:tr}. Also included in the tech report is an extension to the protocol that implements a checkpointing feature. This extension allows the protocol to deal with the accumulation of state by safely discarding stored commands.
 %

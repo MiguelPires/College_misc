@@ -7524,16 +7524,6 @@ fallback for best-effort hardware transactional memory.},
  OPTpublisher = {ACM},
 } 
 
-@inproceedings{chubby,
- author = {Burrows, Mike},
- title = {The Chubby Lock Service for Loosely-coupled Distributed Systems},
- booktitle = {Proc. 7th Symposium on Operating Systems Design and Implementation},
- OPTseries = {OSDI '06},
- year = {2006},
- OPTpages = {335--350},
- OPTpublisher = {USENIX Association},
-} 
-
 @inproceedings{zookeeper,
  author = {Junqueira, Flavio and Reed, Benjamin and Serafini, Marco},
  OPTauthor = {Junqueira, Flavio P. and Reed, Benjamin C. and Serafini, Marco},
@@ -7658,19 +7648,22 @@ volume = {32},
 year = {2001}
 }
 
-@article{Burrows2006,
-	abstract = {We describe our experiences with the Chubby lock service, which is intended to provide coarse-grained locking as well as reliable (though low-volume) storage for a loosely-coupled distributed system. Chubby provides an interface much like a distributed file system with advisory locks, but the design emphasis is on availability and reliability, as opposed to high performance. Many instances of the service have been used for over a year, with several of them each handling a few tens of thousands of clients concurrently. The paper describes the initial design and expected use, compares it with actual use, and explains how the design had to be modified to accommodate the differences.},
-	author = {Burrows, Mike},
-	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/chubby-osdi06.pdf:pdf},
-	isbn = {1-931971-47-1},
-	issn = {{\textless}null{\textgreater}},
-	journal = {OSDI '06: Proceedings of the 7th symposium on Operating systems design and implementation SE - OSDI '06},
-	keywords = {consensus,distributed-systems,fault-tolerance},
-	pages = {335--350},
-	title = {{The Chubby lock service for loosely-coupled distributed systems}},
-	url = {http://dl.acm.org/citation.cfm?id=1298455.1298487},
-	year = {2006}
-}
+@inproceedings{Burrows2006,
+ author = {Burrows, Mike},
+ title = {The Chubby Lock Service for Loosely-coupled Distributed Systems},
+ booktitle = {Proceedings of the 7th Symposium on Operating Systems Design and Implementation},
+ series = {OSDI '06},
+ year = {2006},
+ isbn = {1-931971-47-1},
+ location = {Seattle, Washington},
+ pages = {335--350},
+ numpages = {16},
+ url = {http://dl.acm.org/citation.cfm?id=1298455.1298487},
+ acmid = {1298487},
+ publisher = {USENIX Association},
+ address = {Berkeley, CA, USA},
+} 
+
 
 @article{Corbett2012,
 	abstract = {Spanner is Google's scalable, multi-version, globally- distributed, and synchronously-replicated database. It is the first system to distribute data at global scale and sup- port externally-consistent distributed transactions. This paper describes howSpanner is structured, its feature set, the rationale underlying various design decisions, and a novel time API that exposes clock uncertainty. This API and its implementation are critical to supporting exter- nal consistency and a variety of powerful features: non- blocking reads in the past, lock-free read-only transac- tions, and atomic schema changes, across all of Spanner},
@@ -7750,21 +7743,8 @@ year = {2006}
 @misc{AmazonS32,
 	title = {S3 data corruption?: June 22, 2008},
 	howpublished = {\url{https://forums.aws.amazon.com/thread.jspa?threadID=22709}},
-	note = {Accessed: 2016-12-22}
-}
-
-@article{Sousa2016,
-	author = {Sousa, Joao and Bessani, Alysson},
-	doi = {10.1109/SRDS.2015.40},
-	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/srds15-wheat.pdf:pdf},
-	isbn = {9781467393027},
-	issn = {10609857},
-	journal = {Proceedings of the IEEE Symposium on Reliable Distributed Systems},
-	keywords = {Byzantine fault tolerance,measurements,quorum systems,state machine replication},
-	pages = {146--155},
-	title = {{Separating the WHEAT from the Chaff: An Empirical Design for Geo-Replicated State Machines}},
-	volume = {2016-Janua},
-	year = {2016}
+	note = {Accessed: 2016-12-22},
+	year = {2008}
 }
 
 @article{Hunt2010,
@@ -7796,38 +7776,45 @@ volume = {4},
 year = {1982}
 }
 
-@article{Castro1999,
-abstract = {This paper describes a new replication algorithm that is able to tolerate Byzantine faults. We believe that Byzantine- fault-tolerant algorithms will be increasingly important in the future because malicious attacks and software errors are increasingly common and can cause faulty nodes to exhibit arbitrary behavior. Whereas previous algorithms assumed a synchronous system or were too slow to be used in practice, the algorithm described in this paper is practical: it works in asynchronous environments like the Internet and incorporates several important optimizations that improve the response time of previous algorithms by more than an order of magnitude. We implemented a Byzantine-fault-tolerant NFS service using our algorithm and measured its performance. The results show that our service is only3{\%}slower than a standard unreplicated NFS.},
-author = {Castro, Miguel and Liskov, Barbara},
-doi = {10.1145/571637.571640},
-file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/PBFT.pdf:pdf},
-isbn = {1-880446-39-1},
-issn = {07342071},
-journal = {Proceedings of the Symposium on Operating System Design and Implementation},
-number = {February},
-pages = {1--14},
-pmid = {380302},
-title = {{Practical Byzantine Fault Tolerance}},
-url = {http://www.itu.dk/stud/speciale/bepjea/xwebtex/litt/practical-byzantine-fault-tolerant.pdf},
-year = {1999}
 }
+@inproceedings{Castro1999,
+ author = {Castro, Miguel and Liskov, Barbara},
+ title = {Practical Byzantine Fault Tolerance},
+ booktitle = {Proceedings of the Third Symposium on Operating Systems Design and Implementation},
+ series = {OSDI '99},
+ year = {1999},
+ isbn = {1-880446-39-1},
+ location = {New Orleans, Louisiana, USA},
+ pages = {173--186},
+ numpages = {14},
+ url = {http://dl.acm.org/citation.cfm?id=296806.296824},
+ acmid = {296824},
+ publisher = {USENIX Association},
+ address = {Berkeley, CA, USA},
+} 
 
-@article{Liu2015,
-	archivePrefix = {arXiv},
-	arxivId = {arXiv:1502.05831v1},
-	author = {Liu, Shengyun and Cachin, Christian and Quema, Vivien and Vukolic, Marko},
-	eprint = {arXiv:1502.05831v1},
-	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/XFT.pdf:pdf},
-	pages = {1--32},
-	title = {{XFT: Practical fault tolerance beyond crashes}},
-	url = {http://arxiv.org/pdf/1502.05831v1.pdf},
-	year = {2015}
-}
+@inproceedings{Liu2015,
+ author = {Liu, Shengyun and Viotti, Paolo and Cachin, Christian and Qu{\'e}ma, Vivien and Vukolic, Marko},
+ title = {XFT: Practical Fault Tolerance Beyond Crashes},
+ booktitle = {Proceedings of the 12th USENIX Conference on Operating Systems Design and Implementation},
+ series = {OSDI'16},
+ year = {2016},
+ isbn = {978-1-931971-33-1},
+ location = {Savannah, GA, USA},
+ pages = {485--500},
+ numpages = {16},
+ url = {http://dl.acm.org/citation.cfm?id=3026877.3026915},
+ acmid = {3026915},
+ publisher = {USENIX Association},
+ address = {Berkeley, CA, USA},
+} 
+
 
 @misc{AmazonS31,
 	title = {Amazon S3 Availability Event: July 20, 2008},
 	howpublished = {\url{http://status.aws.amazon.com/s3-20080720.html}},
-	note = {Accessed: 2016-12-22}
+	note = {Accessed: 2016-12-22},
+	year = {2008}
 }
 
 @article{Dijkstra1974,
@@ -8141,22 +8128,26 @@ month={Jan},}
   organization={ACM}
 }
 
-@Inbook{Guerraoui2008,
-author="Guerraoui, Rachid",
-editor="Baker, Theodore P.
-and Bui, Alain
-and Tixeuil, S{\'e}bastien",
-title="The Next 700 BFT Protocols",
-bookTitle="Principles of Distributed Systems: 12th International Conference, OPODIS 2008, Luxor, Egypt, December 15-18, 2008. Proceedings",
-year="2008",
-publisher="Springer Berlin Heidelberg",
-address="Berlin, Heidelberg",
-pages="1--1",
-abstract="Byzantine fault-tolerant state machine replication (BFT) has reached a reasonable level of maturity as an appealing, software-based technique, to building robust distributed services with commodity hardware. The current tendency however is to implement a new BFT protocol from scratch for each new application and network environment. This is notoriously difficult. Modern BFT protocols require each more than 20.000 lines of sophisticated C code and proving their correctness involves an entire PhD. Maintainning and testing each new protocol seems just impossible.",
-isbn="978-3-540-92221-6",
-doi="10.1007/978-3-540-92221-6_1",
-url="https://doi.org/10.1007/978-3-540-92221-6_1"
-}
+@article{Guerraoui2008,
+ author = {Aublin, Pierre-Louis and Guerraoui, Rachid and Kne\v{z}evi\'{c}, Nikola and Qu{\'e}ma, Vivien and Vukoli\'{c}, Marko},
+ title = {The Next 700 BFT Protocols},
+ journal = {ACM Trans. Comput. Syst.},
+ issue_date = {January 2015},
+ volume = {32},
+ number = {4},
+ month = jan,
+ year = {2015},
+ issn = {0734-2071},
+ pages = {12:1--12:45},
+ articleno = {12},
+ numpages = {45},
+ url = {http://doi.acm.org/10.1145/2658994},
+ doi = {10.1145/2658994},
+ acmid = {2658994},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {Abstract, Byzantine, composability, fault tolerance, optimization, robustness},
+} 
 
 @article{Sousa2016,
 author = {Sousa, Joao and Bessani, Alysson},
@@ -8173,31 +8164,25 @@ year = {2016}
 }
 
 @article{time-clocks,
-author = {Lamport, Leslie},
-title = {Time, Clocks and the Ordering of Events in a Distributed System},
-booktitle = {},
-year = {1978},
-month = {July},
-abstract = {Jim Gray once told me that he had heard two different opinions of this paper: that it's trivial and that it's brilliant. I can't argue with the former, and I am disinclined to argue with the latter.
+ author = {Lamport, Leslie},
+ title = {Time, Clocks, and the Ordering of Events in a Distributed System},
+ journal = {Commun. ACM},
+ issue_date = {July 1978},
+ volume = {21},
+ number = {7},
+ month = jul,
+ year = {1978},
+ issn = {0001-0782},
+ pages = {558--565},
+ numpages = {8},
+ url = {http://doi.acm.org/10.1145/359545.359563},
+ doi = {10.1145/359545.359563},
+ acmid = {359563},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {clock synchronization, computer networks, distributed systems, multiprocess systems},
+} 
 
-The origin of this paper was the note The Maintenance of Duplicate Databases by Paul Johnson and Bob Thomas. I believe their note introduced the idea of using message timestamps in a distributed algorithm. I happen to have a solid, visceral understanding of special relativity (see [5]). This enabled me to grasp immediately the essence of what they were trying to do. Special relativity teaches us that there is no invariant total ordering of events in space-time; different observers can disagree about which of two events happened first. There is only a partial order in which an event e1 precedes an event e2 iff e1 can causally affect e2. I realized that the essence of Johnson and Thomas's algorithm was the use of timestamps to provide a total ordering of events that was consistent with the causal order. This realization may have been brilliant. Having realized it, everything else was trivial. Because Thomas and Johnson didn't understand exactly what they were doing, they didn't get the algorithm quite right; their algorithm permitted anomalous behavior that essentially violated causality. I quickly wrote a short note pointing this out and correcting the algorithm.
-
-It didn't take me long to realize that an algorithm for totally ordering events could be used to implement any distributed system. A distributed system can be described as a particular sequential state machine that is implemented with a network of processors. The ability to totally order the input requests leads immediately to an algorithm to implement an arbitrary state machine by a network of processors, and hence to implement any distributed system. So, I wrote this paper, which is about how to implement an arbitrary distributed state machine. As an illustration, I used the simplest example of a distributed system I could think of--a distributed mutual exclusion algorithm.
-
-This is my most often cited paper. Many computer scientists claim to have read it. But I have rarely encountered anyone who was aware that the paper said anything about state machines. People seem to think that it is about either the causality relation on events in a distributed system, or the distributed mutual exclusion problem. People have insisted that there is nothing about state machines in the paper. I've even had to go back and reread it to convince myself that I really did remember what I had written.
-
-The paper describes the synchronization of logical clocks. As something of an afterthought, I decided to see what kind of synchronization it provided for real-time clocks. So, I included a theorem about real-time synchronization. I was rather surprised by how difficult the proof turned out to be. This was an indication of what lay ahead in [62].
-
-This paper won the 2000 PODC Influential Paper Award (later renamed the Edsger W. Dijkstra Prize in Distributed Computing). It won an ACM SIGOPS Hall of Fame Award in 2007.},
-publisher = {},
-url = {https://www.microsoft.com/en-us/research/publication/time-clocks-ordering-events-distributed-system/},
-address = {},
-pages = {558-565},
-journal = {},
-volume = {},
-chapter = {},
-isbn = {},
-}
 
 @article{Schneider1990,
  author = {Schneider, Fred B.},

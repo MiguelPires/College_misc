@@ -30,7 +30,7 @@ We modularize our protocol explanation according to the following main component
 	{\bf View change} -- The goal of this subprotocol is to ensure that, at any given moment, one of the proposers is chosen as a distinguished leader, who runs a specific version of the agreement subprotocol. To achieve this, the view change subprotocol continuously replaces leaders, until one is found that can ensure progress (i.e., commands are eventually appended to the current sequence).
 	
 	\item
-	{\bf Agreement} -- Given a fixed leader, this subprotocol extends the current sequence with a new command or set of commands. Analogously to Fast Paxos~\cite{L06} and Generalized Paxos~\cite{Lamport2005}, choosing this extension can be done through two variants of the protocol: using either \textit{classic} ballots or \textit{fast} ballots, with the characteristic that fast ballots complete in fewer communication steps, but may have to fall back to using a classic ballot when there is contention among concurrent requests.
+	{\bf Agreement} -- Given a fixed leader, this subprotocol extends the current sequence with a new command or set of commands. Analogously to Fast Paxos~\cite{Lamport2006} and Generalized Paxos~\cite{Lamport2005}, choosing this extension can be done through two variants of the protocol: using either \textit{classic} ballots or \textit{fast} ballots, with the characteristic that fast ballots complete in fewer communication steps, but may have to fall back to using a classic ballot when there is contention among concurrent requests.
 	
 \end{itemize}
 

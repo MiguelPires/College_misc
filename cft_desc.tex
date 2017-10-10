@@ -42,7 +42,7 @@ In both protocols, ballots can either be \textit{classic} or \textit{fast}. \par
 	\end{algorithmic}
 \end{algorithm}
 In classic ballots, a leader proposes a single sequence of commands, such that it can be appended to the commands learned by the learners. 
-A classic ballot in Generalized Paxos follows a protocol that is very similar to the one used by classic Paxos~\cite{Lam98}. This protocol comprises a first phase where each acceptor conveys to the leader the sequences that the acceptor has already voted for (so that the leader can resend commands that may not have gathered enough votes).
+A classic ballot in Generalized Paxos follows a protocol that is very similar to the one used by classic Paxos~\cite{Lamport:1998}. This protocol comprises a first phase where each acceptor conveys to the leader the sequences that the acceptor has already voted for (so that the leader can resend commands that may not have gathered enough votes).
 This is followed by a second phase where the leader picks an extension to the sequence of previously proposed commands and broadcasts it to the acceptors. The acceptors send their votes to the learners, who then, after gathering enough support for a given extension to the current sequence, append the new commands to their own sequences of learned commands and discard the already learned ones.\par
 
 In fast ballots, multiple proposers can concurrently propose either single commands or sequences of commands by sending them directly to the acceptors. (We use the term \textit{proposal} to denote either the command or sequence of commands that was proposed.)
@@ -52,9 +52,9 @@ Next, we present the protocol for each type of ballot in detail.
 
 \subsection{Classic ballots} 
 
-Classic ballots work in a way that is very similar to the original Paxos protocol~\cite{Lam98}. Therefore, throughout our description, we will highlight the points where Generalized Paxos departs from the Classic Paxos protocol, in particular where it's due to behaviors caused by our simplified specification of Generalized Paxos.\par
+Classic ballots work in a way that is very similar to the original Paxos protocol~\cite{Lamport:1998}. Therefore, throughout our description, we will highlight the points where Generalized Paxos departs from the Classic Paxos protocol, in particular where it's due to behaviors caused by our simplified specification of Generalized Paxos.\par
 In this part of the protocol, the leader continuously collects proposals by assembling commands received from the proposers in a sequence. This sequence is built by appending arriving proposals to a sequence containing every proposal received since the previous ballot. (This differs from classic Paxos, where it suffices to keep a single proposed value that the leader attempts to reach agreement on.)\par
-When the next ballot is triggered, the leader starts the first phase by sending phase $1a$ messages to all acceptors containing just the ballot number. Similarly to classic Paxos, acceptors reply with a phase $1b$ message to the leader, which reports all sequences of commands they voted for. This message also implicitly conveys a promise not to participate in lower-numbered ballots, in order to prevent safety violations~\cite{Lam98}.
+When the next ballot is triggered, the leader starts the first phase by sending phase $1a$ messages to all acceptors containing just the ballot number. Similarly to classic Paxos, acceptors reply with a phase $1b$ message to the leader, which reports all sequences of commands they voted for. This message also implicitly conveys a promise not to participate in lower-numbered ballots, in order to prevent safety violations~\cite{Lamport:1998}.
 
 \begin{algorithm} 
 	\caption{Generalized Paxos - Leader l}

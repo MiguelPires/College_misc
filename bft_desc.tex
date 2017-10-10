@@ -219,7 +219,7 @@ To initiate a fast ballot, the leader informs both proposers and acceptors that 
 		\State
 		\Function{phase\_2b\_classic}{$ballot, value$}
 		\State $univ\_commut = \Call{isUniversallyCommutative}{val_a}$;
-		\State \textbf{if} $ballot \geq bal_a$ and \ $!fast\_bal[bal_a]$ and ($univ\_commut$ or $proven == \bot$ or $proven == \Call{subsequence}{value, 0, \#(proven)}$) \textbf{then}
+		\State \textbf{if} $ballot \geq bal_a$ and $val_a ==  \bot$ and \ $!fast\_bal[bal_a]$ and ($univ\_commut$ or $proven == \bot$ or $proven == \Call{subsequence}{value, 0, \#(proven)}$) \textbf{then}
 		\State \hspace{\algorithmicindent} $bal_a = ballot$;
 		\State \hspace{\algorithmicindent} \textbf{if} $univ\_commut$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B,bal_a, value}$ to learners;

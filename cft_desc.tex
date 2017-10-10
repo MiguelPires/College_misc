@@ -36,7 +36,7 @@ In both protocols, ballots can either be \textit{classic} or \textit{fast}. \par
 		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
 		\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $old\_seq =  old\_seq \bullet c$;
-		\State \textbf{end for}
+
 		\State \textbf{return} $old\_seq$;
 		\EndFunction
 	\end{algorithmic}
@@ -98,11 +98,11 @@ When the next ballot is triggered, the leader starts the first phase by sending 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $votes[val_a] > f$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $maxTried_l = val_a$;
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{break};
-		\State \textbf{end for}
+
 		\State
 		\State \textbf{for} $a$ \textbf{in} $acceptors$ \textbf{do}
 		\State \hspace{\algorithmicindent} $maxTried_l = \Call{merge\_sequences}{maxTried_l, accepted[ballot_l][a]$};
-		\State \textbf{end for}
+		\State
 		\State $maxTried_l = maxTried_l \bullet proposals$;
 		\State $\Call{send}{P2A\_CLASSIC,ballot_l, maxTried_l}$ to acceptors;
 		\State $proposals = \bot$;
@@ -141,35 +141,32 @@ In contrast to classic ballots, fast ballots are able to leverage a weaker speci
 		
 		\State
 		\Function{phase\_1b}{$ballot$}
-		\If {$bal_a < ballot$}
-		\State \Call{send}{$P1B, ballot, bal_a, val_a$} to leader;
-		\State $bal_a = ballot$;	
-		\State $val_a = \bot$;	
-		\EndIf
+		\State \textbf{if} $bal_a < ballot$ \textbf{then}
+		\State \hspace{\algorithmicindent} \Call{send}{$P1B, ballot, bal_a, val_a$} to leader;
+		\State \hspace{\algorithmicindent} $bal_a = ballot$;	
+		\State \hspace{\algorithmicindent} $val_a = \bot$;	
+
 		\EndFunction
 		
 		\State
 		\Function{phase\_2b\_classic}{$ballot, value$}
-		\If {$ballot \geq bal_a$ and $val_a = \bot$}
-		\State $bal_a = ballot$;
-		\State \textbf{if} $\Call{isUniversallyCommutative}{value}$ \textbf{then}
-		\State \hspace{\algorithmicindent} $\Call{send}{P2B, ballot, value}$ to learners;
-		\State \textbf{else}
-		\State \hspace{\algorithmicindent} $val_a[ballot] = value$;
-		\State \hspace{\algorithmicindent} $\Call{send}{P2B, ballot, value}$ to learners;
-		
-		\EndIf
+		\State \textbf{if} $ballot \geq bal_a$ and $val_a = \bot$ \textbf{then}
+		\State \hspace{\algorithmicindent} $bal_a = ballot$;
+		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{value}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B, ballot, value}$ to learners;
+		\State \hspace{\algorithmicindent}\textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a[ballot] = value$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B, ballot, value}$ to learners;
 		\EndFunction
 		
 		\State
 		\Function{phase\_2b\_fast}{$ballot, value$}
-		\If {$ballot = bal_a$ and $fast\_bal[bal_a]$}
-		\State \textbf{if} $\Call{isUniversallyCommutative}{value}$ \textbf{then}
-		\State \hspace{\algorithmicindent} $\Call{send}{P2B, ballot, value}$ to learners;
-		\State \textbf{else}
-		\State \hspace{\algorithmicindent} $val_a[bal_a] =  \Call{merge\_sequences}{val_a[bal_a], value}$;
-		\State \hspace{\algorithmicindent} $\Call{send}{P2B, bal_a, val_a[bal_a]}$ to learners;
-		\EndIf
+		\State \textbf{if} $ballot = bal_a$ and $fast\_bal[bal_a]$ \textbf{then}
+		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{value}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B, ballot, value}$ to learners;
+		\State \hspace{\algorithmicindent}\textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a[bal_a] =  \Call{merge\_sequences}{val_a[bal_a], value}$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B, bal_a, val_a[bal_a]}$ to learners;
 		\EndFunction
 	\end{algorithmic}
 \end{algorithm}

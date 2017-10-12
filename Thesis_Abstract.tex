@@ -13,9 +13,11 @@
 % Add entry in the table of contents as section
 \addcontentsline{toc}{section}{Abstract}
 
-Insert your abstract here with a maximum of 250 words, followed by 4 to 6 keywords...
+One of the most recent members of the Paxos family of
+protocols is Generalized Paxos. This variant of Paxos has the characteristic that it departs from the original specification of consensus, allowing for a
+weaker safety condition where different processes can have different views of a sequence being agreed upon. However, much like its original Paxos counterpart, Generalized Paxos does not have a simple implementation. Furthermore, with the recent practical adoption of Byzantine fault tolerant protocols, it is timely and important to understand how Generalized Paxos can be implemented in the Byzantine model. The same point can be made with respect to the Visigoth model which targets datacenter-like environments by allowing parameterizable fault and synchrony assumptions. In this paper, we make several contributions. First, we provide a description of Generalized Paxos based on a simpler specification of consensus that is easier to understand, along with a pseudocode specification that can be readily implemented. Second, we extend the protocol to the Byzantine fault model, also providing a pseudocode description to ease its mapping into a code implementation. This contribution is suplemented with correctness proofs and a discussion of relevant extensions and optimizations. Third, we extend this implementation to the Visigoth fault model, providing with it an accessible pseudocode description and correctness proofs. 
 
 \vfill
 
-\textbf{\Large Keywords:} keyword1, keyword2,...
+\textbf{\Large Keywords:} Paxos, Fault Tolerance, Consensus, Byzantine Fault Model
 

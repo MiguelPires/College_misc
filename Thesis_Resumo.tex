@@ -13,9 +13,9 @@
 % Add entry in the table of contents as section
 \addcontentsline{toc}{section}{Resumo}
 
-Inserir o resumo em Portugu\^{e}s aqui com o máximo de 250 palavras e acompanhado de 4 a 6 palavras-chave...
+Um dos membros mais recentes da família de protocolos \textit{Paxos} é o \textit{Generalized Paxos}. Esta variante tem a característica de se separar da especificação original de consenso, o que lhe permite ter uma condição de consistência mais fraca onde diferentes processos podem ter noções diferentes da sequência de comandos que está a ser concordada. No entanto, tal como o \textit{Paxos} original, o protocolo \textit{Generalized Paxos} não tem uma implementação simples. Para além disso, com a recente adoção prática de protocolos de tolerância a faltas Bizantinas, é relevante entender como é que o \textit{Generalized Paxos} pode ser implementado no modelo Bizantino. O mesmo pode ser dito relativamente ao modelo \textit{Visigoth} que tem como alvos ambientes semelhantes a datacenters ao permitir assunções de faltas e sincronia parametrizáveis. Esta dissertação faz várias contribuições. Em primeiro lugar, fornecemos uma descrição do protocolo \textit{Generalized Paxos} mais fácil de entender, baseada numa especificação de consenso simplificada, juntamente com uma especificação em pseudocódigo que pode ser prontamente implementada. Em segundo lugar, estendemos o protocolo para o modelo de faltas Bizantino, fornecendo também uma descrição em pseudocódigo para facilitar o seu mapeamento para uma implementação numa linguagem de programação. Esta contribuição é suplementada com provas de correção e uma discussão de extensões e otimizações relevantes. Em terceiro lugar, expandimos esta implementação para o modelo de faltas \textit{Visigoth}, fornecendo também uma descrição acessível em pseudocódigo e provas de correção. 
 
 \vfill
 
-\textbf{\Large Palavras-chave:} palavra-chave1, palavra-chave2,...
+\textbf{\Large Palavras-chave:} \textit{Paxos}, Consenso, Tolerância a faltas, Modelo de Faltas Bizantinas
 

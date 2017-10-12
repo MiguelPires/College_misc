@@ -23,7 +23,7 @@ This section describes the crash fault tolerant version of the Generalized Paxos
 	\end{algorithmic}
 \end{algorithm}
 
-\subsection{Agreement protocol} 
+\subsection{Agreement Protocol} 
 
 The consensus protocol allows learner processes to agree on equivalent sequences of commands (according to our previous definition of equivalence).
 An important conceptual distinction between the original Paxos protocol and Generalized Paxos is that, in the original Paxos, each instance of consensus is called a ballot and agrees upon a single value, whereas in Generalized Paxos, instead of being separate instances of consensus, ballots correspond to an extension to the sequence of learned commands of a single ongoing consensus instance.
@@ -50,7 +50,7 @@ In this case, concurrency implies that acceptors may receive proposals in a diff
 
 Next, we present the protocol for each type of ballot in detail.
 
-\subsection{Classic ballots} 
+\subsection{Classic Ballots} 
 
 Classic ballots work in a way that is very similar to the original Paxos protocol~\cite{Lamport:1998}. Therefore, throughout our description, we will highlight the points where Generalized Paxos departs from the Classic Paxos protocol, in particular where it's due to behaviors caused by our simplified specification of Generalized Paxos.\par
 In this part of the protocol, the leader continuously collects proposals by assembling commands received from the proposers in a sequence. This sequence is built by appending arriving proposals to a sequence containing every proposal received since the previous ballot. (This differs from classic Paxos, where it suffices to keep a single proposed value that the leader attempts to reach agreement on.)\par
@@ -115,7 +115,7 @@ After gathering a quorum of $N-f$ phase $1b$ messages, the leader initiates phas
 
 The acceptors reply to phase $2a$ messages by sending phase $2b$ messages to the learners, containing the ballot and the proposal from the leader. After receiving $N-f$ votes for a sequence, a learner learns it by extracting the commands that are not contained in his $learned$ sequence and appending them in order. Note that for a sequence to be learned, a learner doesn't have to receive $N-f$ votes for the exact same sequence but for equivalence sequences (in accordance to our previous definition of equivalence).
 
-\subsection{Fast ballots} 
+\subsection{Fast Ballots} 
 
 In contrast to classic ballots, fast ballots are able to leverage a weaker specification of generalized consensus, in terms of command ordering at different replicas, to allow for faster execution of commands in some cases.
 

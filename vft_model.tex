@@ -1,15 +1,15 @@
 \section{Model} \label{vft_model}
 To take advantage of the Visigoth model's additional assumptions, we will adopt most of its network and fault assumptions. However, we will point out some modifications that enable our protocol to preserve its solution of the command history consensus problem as well as retain its Paxos-like structure. 
 
-\subsection{Network model}
+\subsection{Network Model}
 
 Similarly to the Byzantine model, processes communicate by sending and receiving messages through authenticated perfect links where messages sent by non-faulty senders are eventually received exactly once and faulty processes cannot forge messages. However, unlike the two previously defined models, there is a bound on how asynchronous the system can be. In particular, the number of processes that can be slow with respect to some process is bounded by $s$, where a process $p$ is slow with respect to another process $q$ if one or more messages from $p$ to $q$ (or vice-versa) than longer than $T$ time units to be transmitted. We preserve the original Paxos structure where each process executes an algorithm for each role. The system must also have a minimum number of acceptor processes, each with an identifier in the set $\{0,...,N-1\}$. As in the previous models, each process can embody multiple roles and the number of proposer and learner processes can be set arbitrarily.
 
-\subsection{Fault model}
+\subsection{Fault Model}
 
 Like in \acrshort{vft}, our fault model follows UpRight's fault model~\cite{Clement:2009} in which two types of faults can occur: \textit{commission} faults where a process sends a message that doesn't follow the protocol; and \textit{omission} faults where a process crashes or fails to send a message it should have sent. The total number of faults is bounded by $u$, out of which $o$ correlated commission faults can occur. Commission faults are correlated if they can result in the sending of messages that can be used to trigger the same message collection step in the protocol {\color{red}(i.e., if two faulty messages both count as phase $2b$ votes for an invalid sequence, then those faults would be considered correlated)}. A process that hasn't suffered either a commission or omission fault is considered correct. In the \acrshort{vft} paper, it was shown that consensus is not solvable when less than $u+min(u,s)+o+1$ processes~\cite{Porto2015}. Therefore, we consider a total number of acceptors $N = u + min(u,s)+o+1$. As in the original \acrshort{vft}, we focus only on the advantageous case when $u>s$. VFT's additional assumptions allow us to infer how many process have crashed after a certain time period has passed. However, if it's possible for the system to have more slow processes than crashed processes, it becomes impossible to determine if the non-responsive processes are crashed or simply slow.	We also consider the Byzantine model where processes can produce digital signatures, since, like in \acrshort{bgp}, processes will have to broadcast and gather cryptographic proofs.
 
-\subsection{Problem statement}
+\subsection{Problem Statement}
 The consensus problem that our Visigoth protocol solves is identical to the one solved by \acrshort{bgp}. Even though the solution itself differs due the parameterizability of the \acrshort{vft} model, the consensus problem corresponds to the aforementioned command history problem adapted to the possibility of Byzantine behavior. For clarity, we repeat the description of the consensus problem's requirements:
 
 \begin{enumerate}

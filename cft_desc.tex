@@ -17,9 +17,9 @@ This section describes the crash fault tolerant version of the Generalized Paxos
 		\State \textbf{upon} command\_request($c$) \textbf{do}   \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\# receive request from application
 		\State \hspace{\algorithmicindent} \textbf{if} $ballot\_type = fast\_ballot$ \textbf{then}
 		
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$P2A\_FAST, ballot, c$} to acceptors;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2A\_FAST, ballot, c}$ to acceptors;
 		\State \hspace{\algorithmicindent} \textbf{else} 
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$PROPOSE, c$} to leader;		
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{PROPOSE, c}$ to leader;		
 	\end{algorithmic}
 \end{algorithm}
 
@@ -147,7 +147,7 @@ In contrast to classic ballots, fast ballots are able to leverage a weaker speci
 		\State
 		\Function{phase\_1b}{$ballot$}
 		\State \textbf{if} $bal_a < ballot$ \textbf{then}
-		\State \hspace{\algorithmicindent} \Call{send}{$P1B, ballot, bal_a, val_a$} to leader;
+		\State \hspace{\algorithmicindent} $\Call{send}{P1B, ballot, bal_a, val_a}$ to leader;
 		\State \hspace{\algorithmicindent} $bal_a = ballot$;	
 		\State \hspace{\algorithmicindent} $val_a = \bot$;	
 

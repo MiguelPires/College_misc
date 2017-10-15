@@ -1,6 +1,6 @@
 \section{Protocol} 
 
-This section presents our Visigoth fault tolerant Generalized Paxos protocol (\acrshort{vgp}). This protocol shares many similarities with \acrshort{bgp}. Instead of repeating the full protocol, we will describe its structure broadly while pointing differences introduced by \acrshort{vft}'s assumptions.  
+This section presents our Visigoth fault tolerant Generalized Paxos protocol (\acrshort{vgp}). This protocol shares many similarities with \acrshort{bgp}. In the following sections, we will describe the protocol while pointing differences introduced by \acrshort{vft}'s assumptions.  
 
 
 \begin{algorithm}
@@ -9,15 +9,15 @@ This section presents our Visigoth fault tolerant Generalized Paxos protocol (\a
 	\textbf{Local variables:} $ballot\_type = \bot$
 	\begin{algorithmic}[1]	
 		
-		\State \textbf{upon} \textit{receive(BALLOT, type)} \textbf{do} 
+		\State \textbf{upon} \textit{receive($BALLOT, type$)} \textbf{do} 
 		\State \hspace{\algorithmicindent} $ballot\_type = type$;
 		\State
 		
-		\State \textbf{upon} \textit{command\_request(c)} \textbf{do}   \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}
+		\State \textbf{upon} \textit{command\_request($c$)} \textbf{do}   \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}
 		\State \hspace{\algorithmicindent} \textbf{if} $ballot\_type == fast\_ballot$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$P2A\_FAST, c$} to acceptors;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2A\_FAST, c}$ to acceptors;
 		\State \hspace{\algorithmicindent} \textbf{else} 
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{\textit{PROPOSE, c}} to leader;		
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{PROPOSE, c}$ to leader;		
 	\end{algorithmic}
 \end{algorithm}
 
@@ -48,16 +48,16 @@ Much like the Visigoth model shares many similarities with the Byzantine model, 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $view = view_a$;
 		
 		\State
-		\State \textbf{upon} \textit{trigger\_next\_ballot(type)} \textbf{do}
+		\State \textbf{upon} \textit{trigger\_next\_ballot($type$)} \textbf{do}
 		\State \hspace{\algorithmicindent} $ballot_l \mathrel{+{=}} 1$;
-		\State \hspace{\algorithmicindent} \Call{send}{$BALLOT,type}$ to proposers;
+		\State \hspace{\algorithmicindent} $\Call{send}{BALLOT,type}$ to proposers;
 		\State \hspace{\algorithmicindent} \textbf{if} $type == fast$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$FAST,ballot_l,view}$ to acceptors;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{FAST,ballot_l,view}$ to acceptors;
 		\State \hspace{\algorithmicindent} \textbf{else}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$P1A, ballot_l, view$} to acceptors;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P1A, ballot_l, view}$ to acceptors;
 		
 		\State
-		\State \textbf{upon} \textit{receive(PROPOSE, prop)} from proposer $p_i$ \textbf{do} 
+		\State \textbf{upon} \textit{receive($PROPOSE, prop$)} from proposer $p_i$ \textbf{do} 
 		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{prop}$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2A\_CLASSIC, ballot_l,view, prop}$;
 		\State \hspace{\algorithmicindent} \textbf{else}
@@ -81,7 +81,7 @@ Much like the Visigoth model shares many similarities with the Byzantine model, 
 		
 		\State 
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(accepted[ballot_l]) \geq N-u$ \textbf{then} 
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2a}{$ $};
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{phase\_2a}{ }$;
 		
 		\State
 		\Function{phase\_2a}{$ $}
@@ -132,11 +132,11 @@ After assembling its proposal, the leader sends it to the acceptors in phase $2a
 		\State
 		\State \textbf{upon} \textit{receive($P2A\_CLASSIC, ballot, view_l, value$)} from leader \textbf{do}
 		\State \hspace{\algorithmicindent} \textbf{if} $view_l == view$ \textbf{then}
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{phase\_2b\_classic}{$ballot, value$}; 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{phase\_2b\_classic}{ballot, value}$; 
 		
 		\State		
 		\State \textbf{upon} \textit{receive($P2A\_FAST, value$)} from proposer \textbf{do}
-		\State \hspace{\algorithmicindent} \Call{phase\_2b\_fast}{$value$};
+		\State \hspace{\algorithmicindent} $\Call{phase\_2b\_fast}{value}$;
 		
 		\State
 		\State \textbf{upon} \textit{receive($VERIFY,view_i, ballot_i,val_i,proof$)} from acceptor $i$ \textbf{do}
@@ -175,7 +175,7 @@ After assembling its proposal, the leader sends it to the acceptors in phase $2a
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a = val_a \bullet value$;
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = \langle ballot, val_a \rangle_{priv_a}$;
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proofs[ballot][val_a][a] = proof$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{\textit{$VERIFY, view, ballot, val_a, proof$}} to acceptors;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{VERIFY, view, ballot, val_a, proof}$ to acceptors;
 		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
@@ -209,7 +209,7 @@ To prevent this situation, when sending phase $2b$ messages to learners, accepto
 		\State
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $quorumSize[ballot][value] = \bot$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $quorumSize[ballot][value] = N-s$;
-		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{startTimer}{$3T, \textproc{timerEnded}, ballot, value$};
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{startTimer}{3T, \textproc{timerEnded}, ballot, value}$;
 		\State
 		\State \hspace{\algorithmicindent} \textbf{if} $(\#(validVotes[ballot][value]) \geq quorumSize[ballot][value]$ and $(quorumSize[ballot][value] = N-s$ or $verificationMessages[ballot][value] \geq N-u)$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;
@@ -229,8 +229,7 @@ To prevent this situation, when sending phase $2b$ messages to learners, accepto
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;
 		
 		\State
-		\State
-		\textbf{function} \Call{timerEnded}{$ballot, value$}
+		\Function {timerEnded}{$ballot, value$}
 		\State \hspace{\algorithmicindent} $quorumSize[ballot][value] = N-u$;
 
 		\State
@@ -246,8 +245,8 @@ To prevent this situation, when sending phase $2b$ messages to learners, accepto
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $valid\_proofs \geq N-u$ \textbf{then}
 		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $validVotes[ballot][value][a] = proofs$;
 		\State 		
-		\State \hspace{\algorithmicindent} \Call{send}{$VERIFY\_REQ, ballot$} to acceptors;
-
+		\State \hspace{\algorithmicindent} $\Call{send}{VERIFY\_REQ, ballot}$ to acceptors;
+		\EndFunction
 		\State		
 		\Function{merge\_sequences}{$old\_seq, new\_seq$}
 		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 

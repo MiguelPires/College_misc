@@ -35,7 +35,7 @@ Much like the Visigoth model shares many similarities with the Byzantine model, 
 \begin{algorithm} 
 	\caption{Visigoth Generalized Paxos - Leader l}
 	\label{VFT-Lead}
-	\textbf{Local variables:} $ballot_l = 0,maxTried_l = \bot,proposals = \bot, accepted = \bot, notAccepted = \bot, view = 0$
+	\textbf{Local variables:} $ballot_l = 0,proposals = \bot, accepted = \bot, notAccepted = \bot, view = 0$
 	\begin{algorithmic}[1]
 		\State \textbf{upon} \textit{receive($LEADER,view_a,proofs$)} from acceptor \textit{a} \textbf{do}
 		\State \hspace{\algorithmicindent} $valid\_proofs = 0$;

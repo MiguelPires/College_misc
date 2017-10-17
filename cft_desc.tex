@@ -45,7 +45,7 @@ A classic ballot in Generalized Paxos follows a protocol that is very similar to
 This is followed by a second phase where the leader picks an extension to the sequence of commands relayed in \textit{phase 1b} messages and broadcasts it to the acceptors. The acceptors send their votes to the learners, who then, after gathering enough support for a given extension to the current sequence, append the new commands to their own sequences of learned commands and discard the already learned ones.\par
 
 In fast ballots, multiple proposers can concurrently propose either single commands or sequences of commands by sending them directly to the acceptors (we use the term \textit{proposal} to denote either the command or sequence of commands that was proposed).
-In this case, concurrency implies that acceptors may receive proposals in a different order. If the resulting sequences are equivalent, then the fast ballots are successfully learned in two message delays. If not, the protocol must fall back to using a classic ballot.
+In this case, concurrency implies that acceptors may receive proposals in a different order. If the resulting sequences are equivalent, then they are successfully learned in two message delays. If not, the protocol must fall back to using a classic ballot.
 
 Next, we present the protocol for each type of ballot in detail.
 

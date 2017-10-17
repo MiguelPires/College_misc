@@ -1902,19 +1902,21 @@ year = {2001}
  address = {Berkeley, CA, USA},
 } 
 
-@article{Junqueira2011,
-	abstract = {Zab is a crash-recovery atomic broadcast algorithm we designed for the ZooKeeper coordination service. ZooKeeper implements a primary-backup scheme in which a primary process executes clients operations and uses Zab to propagate the corresponding incremental state changes to backup processes1. Due the dependence of an incremental state change on the sequence of changes previously generated, Zab must guarantee that if it delivers a given state change, then all other changes it depends upon must be delivered first. Since primaries may crash, Zab must satisfy this requirement despite crashes of primaries.},
-	author = {Junqueira, Flavio P. and Reed, Benjamin C. and Serafini, Marco},
-	doi = {10.1109/DSN.2011.5958223},
-	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/zab.pdf:pdf},
-	isbn = {9781424492336},
-	issn = {1530-0889},
-	journal = {Proceedings of the International Conference on Dependable Systems and Networks},
-	keywords = {Asynchronous consensus,Atomic broadcast,Distributed algorithms,Fault tolerance,Primary backup},
-	pages = {245--256},
-	title = {{Zab: High-performance broadcast for primary-backup systems}},
-	year = {2011}
-}
+@inproceedings{Junqueira2011,
+ author = {Junqueira, Flavio P. and Reed, Benjamin C. and Serafini, Marco},
+ title = {Zab: High-performance Broadcast for Primary-backup Systems},
+ booktitle = {Proceedings of the 2011 IEEE/IFIP 41st International Conference on Dependable Systems\&Networks},
+ series = {DSN '11},
+ year = {2011},
+ isbn = {978-1-4244-9232-9},
+ pages = {245--256},
+ numpages = {12},
+ url = {http://dx.doi.org/10.1109/DSN.2011.5958223},
+ doi = {10.1109/DSN.2011.5958223},
+ acmid = {2056409},
+ publisher = {IEEE Computer Society},
+ address = {Washington, DC, USA},
+} 
 
 @article{Lamport2006,
 author="Lamport, Leslie",
@@ -2088,7 +2090,7 @@ url="https://doi.org/10.1007/s00446-006-0005-x"
 @article{DeepakChandra1996,
  author = {Chandra, Tushar Deepak and Toueg, Sam},
  title = {Unreliable Failure Detectors for Reliable Distributed Systems},
- journal = {J. ACM},
+ journal = {Journal of the ACM},
  issue_date = {March 1996},
  volume = {43},
  number = {2},
@@ -2172,38 +2174,44 @@ url="https://doi.org/10.1007/s00446-006-0005-x"
   year = 2003
 }
 
-
-
 @article{Dolev1983,
-	abstract = {Reaching agreement is a primitive of distributed computing. While this poses no problem in an ideal, failure-free environment, it imposes certain constraints on the capabilities of an actual system: a system is viable only if it permits the existence of consensus protocols tolerant to some number of failures. Fischer, Lynch and Paterson [FLP] have shown that in a completely asynchronous model, even one failure cannot be tolerated. In this paper we extend their work, identifying several critical system parameters, including various synchronicity conditions, and examine how varying these affects the number of faults which can be tolerated. Our proofs expose general heuristic principles that explain why consensus is possible in certain models but not possible in others.},
-	author = {Dolev, Danny and Dwork, Cynthia and Stockmeyer, Larry},
-	doi = {10.1109/SFCS.1983.41},
-	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/minimal{\_}synchronism.pdf:pdf},
-	isbn = {0-8186-0508-1},
-	issn = {0272-5428},
-	journal = {24th Annual Symposium on Foundations of Computer Science (sfcs 1983)},
-	number = {I},
-	pages = {77--97},
-	title = {{On the minimal synchronism needed for distributed consensus}},
-	volume = {34},
-	year = {1983}
-}
+ author = {Dolev, Danny and Dwork, Cynthia and Stockmeyer, Larry},
+ title = {On the Minimal Synchronism Needed for Distributed Consensus},
+ journal = {Journal of the ACM},
+ issue_date = {Jan. 1987},
+ volume = {34},
+ number = {1},
+ month = jan,
+ year = {1987},
+ issn = {0004-5411},
+ pages = {77--97},
+ numpages = {21},
+ url = {http://doi.acm.org/10.1145/7531.7533},
+ doi = {10.1145/7531.7533},
+ acmid = {7533},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+} 
 
-@article{Aguilera2012,
-	abstract = {We introduce a new model of partial synchrony for read-write shared$\backslash$nmemory systems. This model is based on the simple notion of set$\backslash$ntimeliness-a natural generalization of the seminal concept of timeliness$\backslash$nin the partially synchrony model of Dwork et al. (J. ACM 35(2):288-323,$\backslash$n1988). Despite its simplicity, the concept of set timeliness is powerful$\backslash$nenough to define a family of partially synchronous systems that closely$\backslash$nmatch individual instances of the t-resilient k-set agreement problem$\backslash$namong n processes, henceforth denoted (t, k, n)-agreement. In$\backslash$nparticular, we use it to give a partially synchronous system that is$\backslash$nsynchronous enough for solving (t, k, n)-agreement, but not enough for$\backslash$nsolving two incrementally stronger problems, namely, (t + 1, k,$\backslash$nn)-agreement, which has a slightly stronger resiliency requirement, and$\backslash$n(t, k - 1, n)-agreement, which has a slightly stronger agreement$\backslash$nrequirement. This is the first partially synchronous system that$\backslash$nseparates these sub-consensus problems. The above results show that set$\backslash$ntimeliness can be used to study and compare the partial synchrony$\backslash$nrequirements of problems that are strictly weaker than consensus.},
-	author = {Aguilera, Marcos K. and Delporte-Gallet, Carole and Fauconnier, Hugues and Toueg, Sam},
-	doi = {10.1007/s00446-012-0158-8},
-	file = {:C$\backslash$:/Users/Miguel/Google Drive/Thesis/Papers/partial{\_}synch{\_}set.pdf:pdf},
-	isbn = {9781605583969},
-	issn = {01782770},
-	journal = {Distributed Computing},
-	keywords = {algorithms,bivalency,consensus,failure detectors,impossibility,partial synchrony,set agreement,timeliness},
-	number = {3},
-	pages = {249--260},
-	title = {{Partial synchrony based on set timeliness}},
-	volume = {25},
-	year = {2012}
-}
+
+@inproceedings{Aguilera2012,
+ author = {Aguilera, Marcos K. and Delporte-Gallet, Carole and Fauconnier, Hugues and Toueg, Sam},
+ title = {Partial Synchrony Based on Set Timeliness},
+ booktitle = {Proceedings of the 28th ACM Symposium on Principles of Distributed Computing},
+ series = {PODC '09},
+ year = {2009},
+ isbn = {978-1-60558-396-9},
+ location = {Calgary, AB, Canada},
+ pages = {102--110},
+ numpages = {9},
+ url = {http://doi.acm.org/10.1145/1582716.1582737},
+ doi = {10.1145/1582716.1582737},
+ acmid = {1582737},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {algorithms, bivalency, consensus, failure detectors, impossibility, partial synchrony, set agreement, timeliness},
+} 
+
 
 @article{Chaudhuri1993,
  author = {Chaudhuri, Soma},

@@ -7,8 +7,6 @@ and an implementation of Generalized Paxos that is resilient against Byzantine f
 We now draw some lessons and outline some extensions to our protocol that present interesting directions for future work and hopefully
 a better understanding of its practical applicability.
 
-\shortnegspace
-
 \paragraph{Handling faults in the fast case.}
 A result that was stated in the original Generalized Paxos
 paper~\cite{Lamport2005} is that to tolerate $f$ crash faults and
@@ -17,8 +15,6 @@ total system size $N$ must uphold two conditions:
 $N > 2f$ and $N > 2e+f$.
 Additionally, the fast and classic quorums must be of size $N-e$ and $N-f$, respectively. This implies that there is a price to pay in terms of number of replicas and quorum size for being able to run fast operations during faulty periods.
 An interesting observation from our work is that, since Byzantine fault tolerance already requires a total system size of $3f+1$ and a quorum size of $2f+1$, we are able to amortize the cost of both features, i.e., we are able to tolerate the maximum number of faults for fast execution without paying a price in terms of the replication factor and quorum size.
-
-\shortnegspace
 
 \paragraph{Extending the protocol to universally commutative commands.}
 % Generalized Paxos vs Paxos spec.
@@ -40,11 +36,9 @@ ensure that a correct acceptor saw the command and will eventually
 propagate it to a quorum of $N-f$ acceptors. 
 This optimization is particularly useful in the context of 
 geo-replicated systems, since it can be significantly faster
-to wait for the $f+1$st message instead of the $N-f$th one.
-
+to wait for the $f+1$st message instead of the $N-f$th one.\par
+The usefulness of this optimization is severely reduced if these sequences are processed like any other, by being appended to previous sequences at the leader and acceptors. New proposals are appended to previous proven sequences to maintain the invariant that subsequent proven sequences are extensions of previous ones. Since the previous proven sequences to which a proposal will be appended to are probably not universally commutative, the resulting sequence will not be as well. We can increase this optimization's applicability by sending these sequences immediately to the learners, without appending them to previously accepted ones. This special handling has the added benefit of bypassing the verification phase, resulting in reduced latency for the requests and less traffic generated per sequence. This extension can also be easily implemented by adding a single check in Algorithm \ref{BFT-Lead} lines \{19-20\}, Algorithm \ref{BFT-Acc} lines \{29-30,40-41\} and Algorithm \ref{BFT-Learn} lines \{14-18\}.
 % Weakly consistent replication - also diff order but ok to have different v
-
-\shortnegspace
 
 \paragraph{Generalized Paxos and weak consistency.}
 %The Byzantine Generalized Paxos protocol tackles two challenges in two different avenues of research, fault tolerance and relaxed consistency models. By specifying the generalized consensus problem,

@@ -1,0 +1,217 @@
+\documentclass[11pt,pdftex,a4paper]{article}%
+\pdfoutput=1
+%This is a template for producing LIPIcs articles. 
+%See lipics-manual.pdf for further information.
+%for A4 paper format use option "a4paper", for US-letter use option "letterpaper"
+%for british hyphenation rules use option "UKenglish", for american hyphenation rules use option "USenglish"
+% for section-numbered lemmas etc., use "numberwithinsect"
+ \usepackage{enumitem}
+\setlist{nolistsep}
+%\setenumerate{itemsep=0pt}
+\usepackage{microtype}%if unwanted, comment out or use option "draft"
+
+%\graphicspath{{./graphics/}}%helpful if your graphic files are in another directory
+\usepackage{amssymb}
+%\bibliographystyle{plainurl}% the recommended bibstyle
+\usepackage{multicol}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{framed}
+\usepackage{float}
+\floatstyle{boxed} 
+\restylefloat{figure}
+%\expandafter\def\csname ver@subfig.sty\endcsname{}
+\usepackage{tikz}
+\usepackage{tabularx}
+\usepackage{cleveref}
+\crefname{section}{\S}{\S\S}
+\usepackage{hyperref}
+\usepackage{macros}
+\usepackage[ruled]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{ioa_code}
+\usepackage{graphicx}
+\usepackage[textsize=tiny]{todonotes}
+\usepackage{listings}
+\lstset{numbers=left,numberblanklines=false}
+\newcommand\Small{\fontsize{7.6}{7.6}\selectfont}
+\newcommand*\LSTfont{\Small\ttfamily\SetTracking{encoding=*}{-60}\lsstyle}
+
+\lstdefinestyle{customc}{
+    belowcaptionskip=1\baselineskip,
+    breaklines=true,
+    frame=L,	
+    xleftmargin=\parindent,
+    language=C,
+    showstringspaces=false,
+    escapeinside={//}{\^^M},
+    basicstyle=\LSTfont, %\scriptsize\ttfamily,
+    keywordstyle=\bfseries\color{green!40!black},
+    commentstyle=\itshape\color{gray!60!black},
+    identifierstyle=\color{blue!50!black},
+    stringstyle=\color{orange},
+    numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+    numbersep=5pt,                   % how far the line-numbers are from the code
+    numberstyle=\tiny\color{black},  % the style that is used for the line-numbers
+    otherkeywords={then,word,process_local,type,xbegin,xabort,xend}
+}
+
+\def\P{\ensuremath{\mathcal{P}}}
+\def\DP{\ensuremath{\Diamond\mathcal{P}}}
+\def\DS{\ensuremath{\Diamond\mathcal{S}}}
+%\def\T{\ensuremath{\mathcal{T}}}
+\def\Time{\mathbb{T}}
+\def\S{\ensuremath{\mathcal{S}}}
+\def\D{\ensuremath{\mathcal{D}}}
+\def\W{\ensuremath{\mathcal{W}}}
+\def\A{\ensuremath{\mathcal{A}}}
+\def\B{\ensuremath{\mathcal{B}}}
+\def\F{\ensuremath{\mathcal{F}}}
+\def\R{\ensuremath{\mathcal{R}}}
+\def\N{\ensuremath{\mathcal{N}}}
+\def\I{\ensuremath{\mathcal{I}}}
+\def\O{\ensuremath{\mathcal{O}}}
+\def\Q{\ensuremath{\mathcal{Q}}}
+\def\K{\ensuremath{\mathcal{K}}}
+\def\L{\ensuremath{\mathcal{L}}}
+\def\M{\ensuremath{\mathcal{M}}}
+\def\V{\ensuremath{\mathcal{V}}}
+\def\E{\ensuremath{\mathcal{E}}}
+\def\C{\ensuremath{\mathcal{C}}}
+\def\T{\ensuremath{\mathcal{T}}}
+\def\X{\ensuremath{\mathcal{X}}}
+\def\Y{\ensuremath{\mathcal{Y}}}
+\def\Nat{\ensuremath{\mathbb{N}}}
+\def\Om{\ensuremath{\Omega}}
+\def\ve{\varepsilon}
+\def\fd{failure detector}
+\def\cfd{\ensuremath{?\P+\DS}}
+\def\afd{timeless}
+\def\env{\ensuremath{\mathcal{E}}}
+%\def\faulty{unreliable}
+\def\bounded{one-shot}
+\def\cons{\textit{cons}}
+\def\val{\textit{val}}
+\def\code{\textit{code}}
+
+\def\HSS{\mathit{h}}
+\def\argmin{\mathit{argmin}}
+\def\proper{\mathit{proper}}
+\def\content{\mathit{content}}
+\def\Level{\mathit{L}}
+\def\Blocked{\mathit{Blocked}}
+\def\Set{\mathit{Set}}
+\def\TS{\mathit{TS}}
+\def\shared{\mathit{shared}}
+\def\exclusive{\mathit{exclusive}}
+
+\newcommand{\correct}{\mathit{correct}}
+\newcommand{\RNum}[1]{\uppercase\expandafter{\romannumeral #1\relax}}
+\newcommand	{\faulty}{\mathit{faulty}}
+\newcommand{\infi}{\mathit{inf}}
+\newcommand{\live}{\mathit{live}}
+\newcommand{\true}{\mathit{true}}
+\newcommand{\false}{\mathit{false}}
+\newcommand{\stable}{\mathit{Stable}}
+\newcommand{\setcon}{\mathit{setcon}}
+\newcommand{\remove}[1]{}
+
+\newcommand{\Wset}{\textit{Wset}}
+\newcommand{\Rset}{\textit{Rset}}
+\newcommand{\Dset}{\textit{Dset}}
+
+%\newcommand{\parts}{\textit{parts}}
+\newcommand{\txns}{\textit{txns}}
+
+\newcommand{\Read}{\textit{read}}
+\newcommand{\Write}{\textit{write}}
+\newcommand{\TryC}{\textit{tryC}}
+\newcommand{\TryA}{\textit{tryA}}
+\newcommand{\ok}{\textit{ok}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newtheorem{theorem}{Theorem}
+%\newtheorem{reptheorem}[]{Theorem \ref{th:sl}}
+%\newreptheorem{theorem}{Theorem}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{case}[theorem]{Case}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{proposition}{Proposition}
+\newtheorem{explanation}[theorem]{Explanation}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{fact}[theorem]{Fact}
+% \newtheorem{conclusion}[theorem]{Conclusion}
+% \newtheorem{condition}[theorem]{Condition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+% \newtheorem{criterion}[theorem]{Criterion}
+\newtheorem{definition}{Definition}
+% \newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{lemma}[theorem]{Lemma}
+% \newtheorem{notation}[theorem]{Notation}
+% \newtheorem{problem}[theorem]{Problem}
+%\newtheorem{proposition}[theorem]{Proposition}
+% \newtheorem{remark}[theorem]{Remark}
+% \newtheorem{solution}[theorem]{Solution}
+% \newtheorem{summary}[theorem]{Summary}
+\newtheorem{observation}[theorem]{Observation}
+%\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\hfill $\Box$\\[2mm]} %\rule{0.5em}{0.5em}\\}
+%\newenvironment{proofsketch}[1][Proof sketch]{\noindent\textbf{#1.} }{\hfill $\Box$\\[2mm]} %\rule{0.5em}{0.5em}\\}
+
+\newenvironment{reptheorem}[1][Theorem]{\noindent\textbf{#1}}{}
+\def\lf{\tiny}
+\def\rrnnll{\setcounter{linenumber}{0}}
+\def\nnll{\refstepcounter{linenumber}\lf\thelinenumber}
+\newcounter{linenumber}
+\newenvironment{algorithmfig}{\hrule\vskip 3mm}{ \vskip 3mm \hrule }
+
+% \newenvironment{proofsketch}[1][Proof sketch]{\noindent\textbf{#1.} }{\hfill $\Box$\\[2mm]}
+% \newtheorem{claim}[theorem]{Claim}
+% Author macros::begin %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Generalized Paxos made Byzantine (and Less Complex)}
+
+\begin{document}
+%\bibliographystyle{abbrv}
+
+\maketitle
+%
+%
+\begin{abstract}
+%
+One of the most recent members of the \emph{Paxos} family of protocols is \emph{Generalized} Paxos. 
+This variant of Paxos has the characteristic that it departs from the original specification of consensus, 
+allowing for a weaker safety condition where different processes can have a different views on a sequence being agreed upon. 
+However, much like the original Paxos counterpart, Generalized Paxos does not have a simple implementation.
+Furthermore, with the recent practical adoption of Byzantine fault tolerant protocols in the context of blockchain protocols, it is timely and important to understand how Generalized Paxos can be implemented in the Byzantine model.
+In this paper, we make two main contributions. First, we attempt to provide a simpler description of Generalized Paxos, based on a simpler specification and the pseudocode for a solution that can be readily implemented. Second, we extend the protocol to the Byzantine fault model, and provide the respective correctness proof.
+%, and we propose a variant of the protocol that leverage the weaker specification to allow for a more efficient protocol in wide area settings.
+\end{abstract}
+%
+\input{intro}
+% %
+\input{related}
+% %
+\input{model}
+%
+\input{protocol}
+%
+\bibliographystyle{plain}
+\bibliography{references}
+
+\appendix
+\clearpage
+\input{algo_cft}
+
+%\newpage
+%\appendix
+% %
+%\input{appendix}
+
+\end{document}
+%%% Local Variables:
+%%% mode: latex
+%%% mode: flyspell
+%%% Local IspellDict: "american"
+%%% mode: outline-minor
+%%% End:
+

@@ -1,4 +1,5 @@
 \begin{algorithm}[!t] 
+	\setstretch{1.35}
 	\caption{Byzantine Generalized Paxos - Proposer p}
 	\label{BFT-Prop}
 	\textbf{Local variables:} $ballot\_type = \bot$
@@ -18,6 +19,7 @@
 
 
 \begin{algorithm} 
+	\setstretch{1.35}
 	\caption{Byzantine Generalized Paxos - Leader l}
 	\label{BFT-Lead}
 	\textbf{Local variables:} $ballot_l = 0,\ maxTried_l = \bot,\ proposals = \bot,\ accepted = \bot$
@@ -62,6 +64,7 @@
 	\end{algorithmic}
 \end{algorithm}
 \begin{algorithm}
+	\setstretch{1.35}
 	\caption{Byzantine Generalized Paxos - Process p}
 	\begin{algorithmic}[1]
 		
@@ -86,6 +89,7 @@
 \end{algorithm}
 
 \begin{algorithm} 
+	\setstretch{1.35}
 	\caption{Byzantine Generalized Paxos - Acceptor a}
 	\label{BFT-Proc}
 	\textbf{Local variables:} $suspicions = \bot,\ new\_view = \bot,\ leader = \bot,\ view = 0, bal_a = 0,\ val_a = \bot,\ fast\_bal = \bot,\ checkpoint=\bot$
@@ -141,6 +145,7 @@
 \end{algorithm}
 
 \begin{algorithm} 
+	\setstretch{1.35}
 	\caption{Byzantine Generalized Paxos - Acceptor a}
 	\label{BFT-Acc}
 	\textbf{Local variables:} $suspicions = \bot,\ new\_view = \bot,\ leader = \bot,\ view = 0, bal_a = 0,\ val_a = \bot,\ fast\_bal = \bot,\ checkpoint=\bot$
@@ -201,6 +206,7 @@
 \end{algorithm}
 
 \begin{algorithm}
+	\setstretch{1.35}
 	\caption{Byzantine Generalized Paxos - Learner l}
 	\label{BFT-Learn}
 	\textbf{Local variables:} $learned = \bot,\ messages = \bot$ 

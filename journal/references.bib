@@ -2088,10 +2088,10 @@ year = 1991}
 @inproceedings{CL99,
     author = "Castro, Miguel   and Barbara Liskov",
     title = "Practical Byzantine Fault Tolerance",
-    booktitle = "{OSDI}: Symposium on Operating Systems Design and Implementation",
-    publisher = "USENIX Association, Co-sponsored by IEEE TCOS and ACM SIGOPS",
+    booktitle = "Proc.\ 3rd Symposium on Operating Systems Design and Implementation (OSDI)",
+    OPTpublisher = "USENIX Association, Co-sponsored by IEEE TCOS and ACM SIGOPS",
     year = "1999",
-    month = feb,
+    OPTmonth = feb,
 }
 
 
@@ -2219,10 +2219,10 @@ year = 1995}
   year      =   {1997},
    title     =   {Revisiting the {Paxos} Algorithm},
   author    =   {De Prisco, R. and Lampson , B. and Lynch, N. A.},
-  booktitle =   {Proceedings of the 11th Workshop on Distributed Algorithms},
-  month     =       sep,
-  pages     = "11-125",
-publisher = springer,
+  booktitle =   {Proc. 11th Workshop on Distributed Algorithms},
+  OPTmonth     =       sep,
+  OPTpages     = "11-125",
+ publisher = {Springer},
   series =  {LNCS 1320},
  }
 
@@ -2915,15 +2915,17 @@ title = "Reliable and Reliable Multicast Communication",
         pages="330--344",
      }
  
-@InProceedings{L06,
-	author = {Leslie Lamport},       
-	title = {Fast Paxos},
-	pages = {79--103},
-	journal ="Distributed Computing",
-	volume = 19,
-	number=2,
-	year = "2006"
- }
+
+@article{L06,
+	title={Fast paxos},
+	author={Lamport, Leslie},
+	journal={Distributed Computing},
+	volume={19},
+	number={2},
+	pages={79--103},
+	year={2006},
+	publisher={Springer}
+}
  
   
 @InProceedings{GG98,  
@@ -3917,11 +3919,14 @@ month= may,
 }
 
 @INPROCEEDINGS{LLS90,
-	crossref = "podc90",
+	OPTcrossref = "podc90",
 	AUTHOR = {Ladin, Rivka and Liskov, Barbara and Shrira, Liuba},
 	TITLE = {Lazy replication: Exploiting the semantics of Distributed
 		Services},
-	PAGES = {43--58}
+booktitle = {Proc. 9th Symp.\ Principles
+Distributed Computing},
+year = {1990},
+	OPTPAGES = {43--58}
 }
 
 @article{Lam78a,
@@ -6086,7 +6091,7 @@ publisher = "IEEE Computer Society Press",
   author    = {Marko Vukolic},
   title     = {Quorum Systems: With Applications to Storage and Consensus},
   series    = {Synthesis Lectures on Distributed Computing Theory},
-  publisher = {Morgan {\&} Claypool Publishers},
+  publisher = {Morgan {\&} Claypool},
   year      = {2012},
   OPTurl       = {http://dx.doi.org/10.2200/S00402ED1V01Y201202DCT009},
   OPTdoi       = {10.2200/S00402ED1V01Y201202DCT009},
@@ -7458,10 +7463,11 @@ fallback for best-effort hardware transactional memory.},
 	year = {2011}
 }
 
-@MISC{Lamport2005,
-	author = {Leslie Lamport},
-	title = {Generalized Consensus and Paxos },
-	year = {2005}
+@techreport{Lamport2005,
+	title={Generalized consensus and paxos},
+	author={Lamport, Leslie},
+	year={2005},
+	institution={Technical Report MSR-TR-2005-33, Microsoft Research}
 }
 
 @article{Mao2008,
@@ -7509,7 +7515,7 @@ fallback for best-effort hardware transactional memory.},
 @TechReport{paxos:tr,
   author = 	 {Leslie Lamport},
   title = 	 {The Part-Time Parliament},
-  institution =  {DEC SRC research report},
+  institution =  {DEC SRC},
   year = 	 {1989},
 }
 
@@ -7517,29 +7523,31 @@ fallback for best-effort hardware transactional memory.},
 @inproceedings{petal,
  author = {Lee, Edward K. and Thekkath, Chandramohan A.},
  title = {Petal: Distributed Virtual Disks},
- booktitle = {Proceedings of the Seventh International Conference on Architectural Support for Programming Languages and Operating Systems},
- series = {ASPLOS VII},
+ booktitle = {Proc.\ 7th Int.\ Conf.\ Architectural Support for Programming Languages and Operating Systems},
+ OPTseries = {ASPLOS VII},
  year = {1996},
- pages = {84--92},
- publisher = {ACM},
+ OPTpages = {84--92},
+ OPTpublisher = {ACM},
 } 
 
 @inproceedings{chubby,
  author = {Burrows, Mike},
  title = {The Chubby Lock Service for Loosely-coupled Distributed Systems},
- booktitle = {Proceedings of the 7th Symposium on Operating Systems Design and Implementation},
- series = {OSDI '06},
+ booktitle = {Proc. 7th Symposium on Operating Systems Design and Implementation},
+ OPTseries = {OSDI '06},
  year = {2006},
- pages = {335--350},
- publisher = {USENIX Association},
+ OPTpages = {335--350},
+ OPTpublisher = {USENIX Association},
 } 
 
 @inproceedings{zookeeper,
- author = {Junqueira, Flavio P. and Reed, Benjamin C. and Serafini, Marco},
+ author = {Junqueira, Flavio and Reed, Benjamin and Serafini, Marco},
+ OPTauthor = {Junqueira, Flavio P. and Reed, Benjamin C. and Serafini, Marco},
  title = {Zab: High-performance Broadcast for Primary-backup Systems},
- booktitle = {Proceedings of the 2011 IEEE/IFIP 41st International Conference on Dependable Systems and Networks},
- series = {DSN '11},
- pages = {245--256},
+ booktitle = {41st Int.\ Conf.\ Dependable Systems and Networks},
+ OPTseries = {DSN '11},
+ OPTpages = {245--256},
+ year = {2011},
 } 
 
 @Inbook{Lamport2011,
@@ -7559,16 +7567,16 @@ OPTurl="http://dx.doi.org/10.1007/978-3-642-24100-0_22"
 @Misc{bitcoin,
   author = 	 {Satoshi Nakamoto},
   title = 	 {Bitcoin: A Peer-to-Peer Electronic Cash System},
-  howpublished = {\url{http://www.bitcoin.org/bitcoin.pdf}},
   year = 	 {2008},
 }
 
 @inproceedings{dynamo,
- author = {DeCandia, Giuseppe and Hastorun, Deniz and Jampani, Madan and Kakulapati, Gunavardhan and Lakshman, Avinash and Pilchin, Alex and Sivasubramanian, Swaminathan and Vosshall, Peter and Vogels, Werner},
+ author = {{DeCandia et al.}, Giuseppe},
+ OPTauthor = {DeCandia, Giuseppe and Hastorun, Deniz and Jampani, Madan and Kakulapati, Gunavardhan and Lakshman, Avinash and Pilchin, Alex and Sivasubramanian, Swaminathan and Vosshall, Peter and Vogels, Werner},
  title = {Dynamo: Amazon's Highly Available Key-value Store},
- booktitle = {Proceedings of Twenty-first ACM SIGOPS Symposium on Operating Systems Principles},
+ booktitle = {Proc. 21st ACM SIGOPS Symposium on Operating Systems Principles},
  series = {SOSP '07},
- pages = {205--220},
+ OPTpages = {205--220},
 } 
 
 @inproceedings{Ahamad1995,
@@ -7591,9 +7599,29 @@ OPTurl="http://dx.doi.org/10.1007/978-3-642-24100-0_22"
 	author = {Li, Cheng and Porto, Daniel and Clement, Allen and Gehrke, Johannes and Pregui{\c{c}}a, Nuno and Rodrigues, Rodrigo},
 	OPTisbn = {978-1-931971-96-6},
 	journal = {OSDI'12 Proceedings of the 10th USENIX conference on Operating Systems Design and Implementation},
-	pages = {265--278},
+	OPTpages = {265--278},
 	title = {{Making Geo-Replicated Systems Fast as Possible, Consistent when Necessary}},
 	OPTurl = {http://dl.acm.org/citation.cfm?id=2387880.2387906},
 	year = {2012}
 }
 
+
+@article{Martin2006,
+ author = {Martin, Jean-Philippe and Alvisi, Lorenzo},
+ title = {Fast Byzantine Consensus},
+ journal = {IEEE Trans. Dependable Secur. Comput.},
+ issue_date = {July 2006},
+ volume = {3},
+ number = {3},
+ month = jul,
+ year = {2006},
+ issn = {1545-5971},
+ pages = {202--215},
+ numpages = {14},
+ url = {http://dx.doi.org/10.1109/TDSC.2006.35},
+ doi = {10.1109/TDSC.2006.35},
+ acmid = {1159374},
+ publisher = {IEEE Computer Society Press},
+ address = {Los Alamitos, CA, USA},
+ keywords = {Byzantine fault tolerance, Distributed systems, Distributed systems, Byzantine fault tolerance, consensus.},
+}

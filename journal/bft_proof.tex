@@ -1,7 +1,6 @@
-\subsection{Correctness Proofs}
+\section{Correctness Proofs} \label{bft_proof}
 
 This section argues for the correctness of the Byzantine Generalized Paxos protocol in terms of the specified consensus properties.\par
-
 
 \begin{table}[h!]
 	\renewcommand{\arraystretch}{1.5}
@@ -22,74 +21,91 @@ This section argues for the correctness of the Byzantine Generalized Paxos proto
 		\hline
 		$\mathcal{P}$ & Set of proposals (commands or sequences of commands) \\
 		\hline
+		$\mathcal{B}$ & Set of ballots \\
+		\hline
+		$\bot$ & Empty command \\
+		\hline		
 		$learned_{l_i}$ & Learner $l_i$'s $learned$ sequence of commands \\
 		\hline
 		$learned(l_i,s)$ & $learned_{l_i}$ contains the sequence $s$ \\
 		\hline
-		$maj\_accepted(s)$ & $N-f$ acceptors sent phase 2b messages to the learners for sequence $s$ \\
+		$maj\_accepted(s,b)$ & $N-f$ acceptors sent phase 2b messages to the learners for sequence $s$ in ballot $b$ \\
 		\hline
-		$proposed(s)$ & A proposer proposed $s$ \\
+		$min\_accepted(s,b)$ & $f+1$ acceptors sent phase 2b messages to the learners for sequence $s$ in ballot $b$\\
+		\hline
+		$proposed(s)$ & A correct proposer proposed $s$ \\
 		\hline
 		
-  	\end{tabularx} 
-	\caption{Proof notation} 
-	\label{table:1}
+	\end{tabularx} 
+	\vspace{\smallskipamount}
+	\caption{BGP proof notation} 
+	\label{table:bft_proof}
 \end{table}
 
 \subsubsection{Consistency}
-\begin{Theorem}At any time and for any two correct learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences \par
+\begin{Theorem}
+	At any time and for any two correct learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences \par
 \end{Theorem} 
-
 \textbf{Proof:} \par
-\parbox{\linewidth}{\strut1. At any given instant, $\forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}, learned(l_j,s) \land learned(l_i,s') \implies \exists \sigma_1,\sigma_2 \in \mathcal{P}, s \thicksim s' \bullet \sigma_1 \lor s' \thicksim s \bullet \sigma_2$}  \par
+\parbox{\linewidth-\algorithmicindent}{\strut1. At any given instant, $\forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}, learned(l_j,s) \land learned(l_i,s') \implies \exists \sigma_1,\sigma_2 \in \mathcal{P} \cup \{\bot\}, s \bullet \sigma_1 \thicksim s' \bullet \sigma_2$}  \par
 \indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} }\par
-\indent\indent\indent\parbox{\linewidth-\algorithmicindent*3}{\strut1.1. At any given instant, $\forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}, learned(l_i,s) \land learned(l_j,s') \implies maj\_accepted(s) \land maj\_accepted(s')$} \par
-\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*4}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, if a correct learner learned a sequence $s$ at any given instant, then $N-f$ acceptors must have executed phase $2b$ for $s$.}\par
-\indent\indent\indent\parbox{\linewidth-\algorithmicindent*3}{\strut1.2. At any given instant, $\forall s,s' \in \mathcal{P}, maj\_accepted(s) \land maj\_accepted(s') \implies \exists \sigma_1,\sigma_2 \in \mathcal{P}, s \thicksim s' \bullet \sigma_1 \lor s' \thicksim s \bullet \sigma_2$}\par
-\indent\indent\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} Proved by contradiction.}\par
-\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*5}{\strut1.2.1.~At any given instant, $\exists s,s' \in \mathcal{P}, \forall \sigma_1,\sigma_2 \in \mathcal{P}, maj\_accepted(s) \land maj\_accepted(s') \wedge s \not\thicksim s' \bullet \sigma_1 \land s' \not\thicksim s \bullet \sigma_2$} \par
-\indent\indent\indent\indent\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} Contradiction assumption.}\par
-\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*5}{\strut1.2.2. Take $s$ and $s'$ which are certain to exist by 1.2.1, $s$ and $s'$ are non-commutative }\par
-\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut\textbf{Proof:} If $\forall \sigma_1,\sigma_2 \in \mathcal{P}, s \not\thicksim s' \bullet \sigma_1 \land s' \not\thicksim s \bullet \sigma_2$ then $s$ and $s'$ must contain non-commutative commands differently ordered. Otherwise, they would be possible to extend to equivalent sequences.}\par
-\indent\indent\indent\indent\indent\parbox{\linewidth}{\strut1.2.3. At any given instant, $\neg (maj\_accepted(s) \land maj\_accepted(s'))$ } \par
-\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut\textbf{Proof:} By 1.2.2 and Algorithm \ref{BFT-Acc} lines \{27-31\}, since $s$ and $s'$ are non-commutative, $N-f$ acceptors can only have voted for one of the sequences.}\par
-\indent\indent\indent\indent\indent\parbox{\linewidth}{\strut1.2.4. Q.E.D. }\par
-\indent\indent\indent\parbox{\linewidth-\algorithmicindent*3}{\strut1.3. At any given instant, $\forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}, learned(l_i,s)\ \land\ learned(l_j,s') \implies \exists \sigma_1,\sigma_2 \in \mathcal{P}, s \thicksim s' \bullet \sigma_1 \lor s' \thicksim s \bullet \sigma_2$ }\par
-\indent\indent\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1.1 and 1.2.}\par
-\indent\indent\indent\parbox{\linewidth}{\strut1.4. Q.E.D. }\par
-\parbox{\linewidth-\algorithmicindent*3}{\strut2. At any given instant, $\forall l_i,l_j \in \mathcal{L}, learned(l_j,learned_j) \land learned(l_i,learned_i) \implies \exists \sigma_1,\sigma_2 \in \mathcal{P}, learned_i \thicksim learned_j \bullet \sigma_1 \lor learned_j \thicksim learned_i \bullet \sigma_2$}\par
+\indent\indent\indent\parbox{\linewidth-\algorithmicindent*3}{\strut1.1. At any given instant, $\forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}, learned(l_i,s) \land learned(l_j,s') \implies (maj\_accepted(s,b) \lor (min\_accepted(s,b) \land s \bullet \sigma_1 \thicksim x \bullet \sigma_2)) \land (maj\_accepted(s',b') \lor (min\_accepted(s',b') \land s' \bullet \sigma_1 \thicksim x \bullet \sigma_2)), \exists \sigma_1, \sigma_2 \in \mathcal{P} \cup \{\bot\}, \forall x \in \mathcal{P},\forall b,b' \in \mathcal{B}$} \par
+\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*4}{\strut\textbf{Proof:} A sequence can only be learned in some ballot $b$ if the learner gathers $N-f$ votes (i.e., $maj\_accepted(s,b)$), each containing $N-f$ valid proofs, or if it is universally commutative (i.e., $s \bullet \sigma_1 \thicksim x \bullet \sigma_2,\ \exists \sigma_1, \sigma_2 \in \mathcal{P} \cup \{\bot\}, \forall x \in \mathcal{P}$) and the learner gathers $f+1$ votes (i.e., $min\_accepted(s,b)$). The first case requires gathering $N-f$ votes from each acceptor and validating that each proof corresponds to the correct ballot and value (Algorithm \ref{BFT-Learn}, lines \{1-12\}). The second case requires that the sequence must be commutative with any other and at least $f+1$ matching values are gathered (Algorithm \ref{BFT-Learn}, \{14-18\}). This is encoded in the logical expression $s \bullet \sigma_1 \thicksim x \bullet \sigma_2$ which is true if the accepted sequence $s$ and any other sequence $x$ can be extended to an equivalent sequence, therefore making it impossible to result in a conflict.}
+
+\indent\indent\indent\parbox{\linewidth-\algorithmicindent*3}{\strut1.2. At any given instant, $\forall s,s' \in \mathcal{P},\forall b,b' \in \mathcal{B}, maj\_accepted(s,b) \land maj\_accepted(s',b') \implies \exists \sigma_1,\sigma_2 \in \mathcal{P} \cup \{\bot\}, s \bullet \sigma_1 \thicksim s' \bullet \sigma_2$}\par
+\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*4}{\strut\textbf{Proof:} We divide the following proof in two main cases: (1.2.1.) sequences $s$ and $s'$ are accepted in the same ballot $b$ and (1.2.2.) sequences $s$ and $s'$ are accepted in different ballots $b$ and $b'$.}\par
+\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*5}{\strut1.2.1.~At any given instant, $\forall s,s' \in \mathcal{P},\forall b \in \mathcal{B}, maj\_accepted(s,b) \land maj\_accepted(s',b) \implies \exists \sigma_1,\sigma_2 \in \mathcal{P} \cup \{\bot\}, s \bullet \sigma_1 \thicksim s' \bullet \sigma_2$} \par
+\indent\indent\indent\indent\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} Proved by contradiction.}\par
+\indent\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*7}{\strut1.2.1.1.~At any given instant, $\forall s,s' \in \mathcal{P}, \forall \sigma_1,\sigma_2 \in \mathcal{P} \cup \{\bot \},\forall b \in \mathcal{B}, maj\_accepted(s,b) \land maj\_accepted(s',b) \wedge s \bullet \sigma_1 \not\thicksim s' \bullet \sigma_2$} \par
+\indent\indent\indent\indent\indent\indent\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} Contradiction assumption.}\par
+\indent\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*7}{\strut1.2.1.2. Take a pair proposals $s$ and $s'$ that meet the conditions of 1.2.1 (and are certain to exist by the previous point), then $s$ and $s'$ contain non-commutative commands.}\par
+\indent\indent\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*8}{\strut\textbf{Proof:} The statement $\forall s,s' \in \mathcal{P}, \forall \sigma_1,\sigma_2 \in \mathcal{P} \cup \{\bot \}, s \bullet \sigma_1 \not\thicksim s' \bullet \sigma_2$ is trivially false because it implies that, for any combination of sequences and suffixes, the extended sequences would never be equivalent. Since there must be some $s,s',\sigma_1$ and $\sigma_2$ for which the extensions are equivalent (e.g., $s=s'$ and $\sigma_1=\sigma_2$), then the statement is false.}\par
+\indent\indent\indent\indent\indent\indent\indent\parbox{\linewidth}{\strut1.2.1.3. A contradiction is found, Q.E.D. }\par
+\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*5}{\strut1.2.2.~At any given instant, $\forall s,s' \in \mathcal{P},\forall b,b' \in \mathcal{B}, maj\_accepted(s,b) \land maj\_accepted(s',b') \land b \neq b' \implies \exists \sigma_1,\sigma_2 \in \mathcal{P} \cup \{\bot\}, s \bullet \sigma_1 \thicksim s' \bullet \sigma_2$} 
+\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut\textbf{Proof:} To prove that values accepted in different ballots are extensible to equivalent sequences, it suffices to prove that for any sequences $s$ and $s'$ accepted at ballots $b$ and $b'$, respectively, such that $b < b'$ then $s \sqsubseteq s'$. By Algorithm \ref{BFT-Acc} lines \{11-16,35,46\}, any correct acceptor only votes for a value in variable $val_a$ when it receives $2f+1$ proofs for a matching value. Therefore, we prove that a value $val_a$ that receives $2f+1$ verification messages is always an extension of a previous $val_a$ that received $2f+1$ verification messages. By Algorithm \ref{BFT-Acc} lines \{32,43\}, $val_a$ only changes when a leader sends a proposal in a classic ballot or when a proposer sends a sequence in a fast ballot.\strut}
+\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut In the first case, $val_a$ is substituted by the leader's proposal which means we must prove that this proposal is an extension of any $val_a$ that previously obtained $2f+1$ verification votes. By Algorithm \ref{BFT-Lead} lines \{24-39,41-47\}, the leader's proposal is prefixed by the largest of the proven sequences (i.e., $val_a$ sequences that received $2f+1$ votes in the verification phase) relayed by a quorum of acceptors in \textit{phase 1b} messages. Note that, the verification in Algorithm \ref{BFT-Acc} line \{27\} prevents a Byzantine leader from sending a sequence that isn't an extension of previous proved sequences. Since the verification phase prevents non-commutative sequences from being accepted by a quorum, every proven sequence in a ballot is extensible to equivalent sequences which means that the largest proven sequence is simply the most up-to-date sequence of the previous ballot. \strut}
+\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut To prove that the leader can only propose extensions to previous values by picking the largest proven sequence as its proposal's prefix, we need to assert that a proven sequence is an extension any previous sequence. However, since that is the same result that we are trying to prove, we must use induction to do so:\strut}
+\indent\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*7}{\strut\textbf{1. Base Case}: In the first ballot, any proven sequence will be an extension of the empty command $\bot$ and, therefore, an extension of the previous sequence.\strut}
+\indent\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*7}{\strut\textbf{2. Induction Hypothesis}: Assume that, for some ballot $b$, any sequence that gathers $2f+1$ verification votes from acceptors is an extension of previous proven sequences.\strut}
+\indent\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*7}{\strut\textbf{3. Inductive Step}: By the quorum intersection property, in a classic ballot $b+1$, the \textit{phase 1b} quorum will contain ballot $b$'s proven sequences. Given the largest proven sequence $s$ in the \textit{phase 1b} quorum (which, by our hypothesis, is an extension of any previous proven sequences), by picking $s$ as the prefix of its \textit{phase 2a} proposal (Algorithm \ref{BFT-Lead}, lines \{41-47\}), the leader will assemble a proposal that is an extension of any previous proven sequence.\strut}
+\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut In the second case, a proposer's proposal $c$ is appended to an acceptor's $val_a$ variable. By definition of the append operation, $val_a \sqsubseteq val_a \bullet c$ which means that the acceptor's new value $val_a \bullet c$ is an extension of previous ones.\par}
+\indent\indent\indent\parbox{\linewidth-\algorithmicindent*3}{\strut1.3. For any pair of proposals $s$ and $s'$, at any given instant, $\forall x \in \mathcal{P}, \exists \sigma_1,\sigma_2,\sigma_3,\sigma_4 \in \mathcal{P} \cup \{\bot\}, \forall b,b' \in \mathcal{B}, (maj\_accepted(s,b) \lor (min\_accepted(s,b) \land s \bullet \sigma_1 \thicksim x \bullet \sigma_2)) \land (maj\_accepted(s',b') \lor (min\_accepted(s',b') \land s \bullet \sigma_1 \thicksim x \bullet \sigma_2)) \implies s \bullet \sigma_3 \thicksim s' \bullet \sigma_4$}\par
+\indent\indent\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1.2 and by definition of $s \bullet \sigma_1 \thicksim x \bullet \sigma_2$.}\par
+\indent\indent\indent\parbox{\linewidth-\algorithmicindent*3}{\strut1.4. At any given instant, $\forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}, learned(l_i,s)\ \land\ learned(l_j,s') \implies \exists \sigma_1,\sigma_2 \in \mathcal{P} \cup \{\bot\}, s \bullet \sigma_1 \thicksim s' \bullet \sigma_2$ }\par
+\indent\indent\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1.1 and 1.3.}\par
+\indent\indent\indent\parbox{\linewidth}{\strut1.5. Q.E.D. }\par
+\parbox{\linewidth-\algorithmicindent*3}{\strut2. At any given instant, $\forall l_i,l_j \in \mathcal{L}, learned(l_j,learned_j) \land learned(l_i,learned_i) \implies \exists \sigma_1,\sigma_2 \in \mathcal{P} \cup \{\bot\}, learned_i \bullet \sigma_1 \thicksim learned_j \bullet \sigma_2$}\par
 \indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1.}\par
 \parbox{\linewidth}{\strut3. Q.E.D.} \par
 
-
-\subsubsection{Non-Triviality}
+\subsubsection{Nontriviality}
 \begin{Theorem}
-$learned_l$ can only contain proposed commands \label{N-T1} \par
+If all proposers are correct, $learned_l$ can only contain proposed commands. \label{N-T1} \par
 \end{Theorem} 
 \textbf{Proof:} \par
-\parbox{\linewidth}{\strut1. At any given instant, $\forall l_i \in \mathcal{L}, \forall s \in \mathcal{P}, learned(l_i,s) \implies maj\_accepted(s)$ }\par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, if a correct learner learned a sequence $s$ at any given instant then $N-f$ acceptors must have executed phase $2b$ for $s$.}\par
-\parbox{\linewidth}{\strut2. At any given instant, $\forall s \in \mathcal{P}, maj\_accepted(s) \implies proposed(s)$ }\par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{7-11, 20-31\}, for $N-f$ acceptors to accept a proposal it must have been proposed by a proposer.}\par
-\parbox{\linewidth}{\strut3. At any given instant, $\forall s \in \mathcal{P}, learned(l_i,s) \implies proposed(s),\forall l_i \in \mathcal{L}$}\par
+\parbox{\linewidth-\algorithmicindent}{\strut1. At any given instant, $\forall l_i \in \mathcal{L}, \forall s \in \mathcal{P}, learned(l_i,s) \implies \forall x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, \forall b \in \mathcal{B}, \ maj\_accepted(s,b) \lor (min\_accepted(s,b) \land  (s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma))$ }\par
+\indent\indent\parbox{\linewidth-\algorithmicindent*2}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{16,30,41\} and Algorithm \ref{BFT-Learn} lines \{1-18\}, if a correct learner learned a sequence $s$ at any given instant then either $N-f$ or $f+1$ (if $s$ is universally commutative) acceptors must have executed \textit{phase 2b} for $s$.}\par
+\parbox{\linewidth}{\strut2. At any given instant, $\forall s \in \mathcal{P}, \forall b \in \mathcal{B}, maj\_accepted(s,b) \lor min\_accepted(s,b) \implies proposed(s)$ }\par
+\indent\indent\parbox{\linewidth-\algorithmicindent*2}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{18-23\}, for either $N-f$ or $f+1$ acceptors to accept a proposal it must have been proposed by a proposer (note that the leader is considered a distinguished proposer).}\par
+\parbox{\linewidth}{\strut3. At any given instant, $\forall s \in \mathcal{P}, \forall l_i \in \mathcal{L}, learned(l_i,s) \implies proposed(s)$}\par
 \indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1 and 2.}\par
 \parbox{\linewidth}{\strut4. Q.E.D.}\par
 
 \subsubsection{Stability}
 \begin{Theorem}
-If $learned_l = v$ then, at all later times, $v \sqsubseteq learned_l$, for any $l$ and $v$ \par \label{S-T1}
+If $learned_l = s$ then, at all later times, $s \sqsubseteq learned_l$, for any sequence $s$ and correct learner $l$\looseness=-1 \par
 \end{Theorem} 
-\textbf{Proof:} By Algorithm \ref{BFT-Learn} lines \{1-4\}, a correct learner can only append new commands to its $learned$ command sequence.
+\textbf{Proof:} By Algorithm \ref{BFT-Learn} lines \{12,18,20-26\}, a correct learner can only append new commands to its $learned$ command sequence.
 
 \subsubsection{Liveness}
 \begin{Theorem}
-For any proposal $s$ and correct learner $l$, eventually $learned_l$ contains $s$ \label{L-T1} \par
+For any proposal $s$ from a correct proposer, and correct learner $l$, eventually $learned_l$ contains $s$\par
 \end{Theorem} 
 \parbox{\linewidth}{\textbf{Proof:}} \par
-\parbox{\linewidth}{\strut1. $\forall\ l_i \in \mathcal{L},\forall s \in \mathcal{P}, maj\_accepted(s) \overset{e}{\implies} learned(l_i,s)$}\par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{20-31\} and Algorithm \ref{BFT-Learn} lines \{1-4\}, when $N-f$ acceptors accepts a sequence $s$ (or some equivalent sequence), eventually $s$ will be learned by any correct learner.}\par
-\parbox{\linewidth}{\strut2. $\forall s \in \mathcal{P}, proposed(s) \overset{e}{\implies} maj\_accepted(s)$} \par
-\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} A proposed sequence is either conflict-free when its incorporated into every acceptor's current sequence or it creates conflicting sequences at different acceptors. In the first case, it's accepted by a quorum (Algorithm \ref{BFT-Acc} lines \{27-31\}) and, in the second case, it's sent in phase $1b$ messages to the in leader in the next ballot (Algorithm \ref{BFT-Acc} lines \{13-18\}) and incorporated in the next proposal (Algorithm \ref{BFT-Lead} lines \{13-18,20-32\}).} \par
+\parbox{\linewidth-\algorithmicindent}{\strut1. $\forall\ l_i \in \mathcal{L},\forall s,x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, \forall b \in \mathcal{B}, maj\_accepted(s,b) \lor (min\_accepted(s,b) \land  (s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma))\overset{e}{\implies} learned(l_i,s)$}\par
+\indent\indent\parbox{\linewidth-\algorithmicindent*2}{\strut\textbf{Proof:} By Algorithm \ref{BFT-Acc} lines \{10-15,28-29,41-42\} and Algorithm \ref{BFT-Learn} lines \{1-18\}, when either $N-f$ or $f+1$ (if $s$ is universally commutative) acceptors accept a sequence $s$ (or some equivalent sequence), eventually $s$ will be learned by any correct learner.}\par
+\parbox{\linewidth-\algorithmicindent}{\strut2. $\forall s \in \mathcal{P}, proposed(s) \overset{e}{\implies} \forall x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, \forall b \in \mathcal{B}, maj\_accepted(s,b) \lor (min\_accepted(s,b) \land  (s \thicksim x \bullet \sigma \lor x \thicksim s \bullet \sigma))$} \par
+\indent\indent\parbox{\linewidth-\algorithmicindent*2}{\strut\textbf{Proof:} A proposed sequence is either conflict-free when its incorporated into every acceptor's current sequence or it creates conflicting sequences at different acceptors. In the first case, it's accepted by a quorum (Algorithm \ref{BFT-Acc}, lines \{10-15,28-29,41-42\}) and, in the second case, it's sent in \textit{phase 1b} messages to the in leader in the next ballot (Algorithm \ref{BFT-Acc}, lines \{1-4\}) and incorporated in the next proposal (Algorithm \ref{BFT-Lead}, lines \{24-47\}).} \par
 \parbox{\linewidth}{\strut3. $\forall l_i \in \mathcal{L}, \forall s \in \mathcal{P}, proposed(s) \overset{e}{\implies} learned(l_i,s)$} \par
 \indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1 and 2.} \par
 \parbox{\linewidth}{\strut4. Q.E.D.}

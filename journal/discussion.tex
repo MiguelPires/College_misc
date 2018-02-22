@@ -1,25 +1,27 @@
-\section{Discussion}
+\section{Conclusion and discussion}
 % and Concluding remarks}
 \label{sec:disc}
+%
+We presented a simplified description of the Generalized Paxos specification and protocol, 
+and an implementation of Generalized Paxos that is resilient against Byzantine faults.
+We now draw some lessons and outline some extensions to our protocol that present interesting directions for future work and hopefully
+a better understanding of its practical applicability.
 
-\subsection{Extending the protocol to universally commutative commands}
+\paragraph{Handling faults in the fast case.}
+A result that was stated in the original Generalized Paxos
+paper~\cite{Lamport2005} is that to tolerate $f$ crash faults and
+allow for fast ballots whenever there are up to $e$ crash faults, the
+total system size $N$ must uphold two conditions:
+$N > 2f$ and $N > 2e+f$.
+Additionally, the fast and classic quorums must be of size $N-e$ and $N-f$, respectively. This implies that there is a price to pay in terms of number of replicas and quorum size for being able to run fast operations during faulty periods.
+An interesting observation from our work is that, since Byzantine fault tolerance already requires a total system size of $3f+1$ and a quorum size of $2f+1$, we are able to amortize the cost of both features, i.e., we are able to tolerate the maximum number of faults for fast execution without paying a price in terms of the replication factor and quorum size.
 
+\paragraph{Extending the protocol to universally commutative commands.}
 % Generalized Paxos vs Paxos spec.
-The Generalized Paxos specification dictates that the only commands
-whose relative order can be reversed at different learners are those
-that commute with each other. This restriction has the advantage of
-allowing for running a replicated state machine on top of the
-Generalized Paxos protocol, while still ensuring that the state
-machine behaves in a way that is indistinguishable from running it on
-top of the original Paxos protocol.
-
-% Extension to ops that commute with all
-However, the downside of this use of commutative operations in the
-context of Generalized Paxos is that this commutativity check is done
-at runtime, and, if two non-commutative operations are issued
-concurrently in the same ballot, then we must fall back to the slower
-classic Paxos protocol.
-
+A downside of the use of commutative commands in the
+context of Generalized Paxos is that the commutativity check is done
+at runtime, to determine if non-commutative commands have
+been proposed concurrently.
 This raises the possibility of extending the protocol to handle
 commands that are universally commutative, i.e., commute with every
 other command. For these commands, it is known before executing them
@@ -29,21 +31,16 @@ allows us to optimize the protocol by decreasing the number of phase
 $2b$ messages required to learn to a smaller $f+1$ quorum. Since, by
 definition, these sequences are guaranteed to never produce conflicts,
 the $N-f$ quorum is not required to prevent learners from learning
-conflicting sequences. Instead, a quorum of $f+1$ is sufficient for
-the learner to be sure that the proposed sequence was proposed by a
-correct proposer. (Furthermore, for read-only commands that do not
-change the state of the state machine, it is possible to run these
-against one single learner in the crash model, since there is no
-requirement to withstand $f$ faults for these commands.)
+conflicting sequences. Instead, a quorum of $f+1$ is sufficient to
+ensure that a correct acceptor saw the command and will eventually
+propagate it to a quorum of $N-f$ acceptors. 
 This optimization is particularly useful in the context of 
 geo-replicated systems, since it can be significantly faster
-to wait for the $f+1$st message instead of the $N-f$th one.
-
+to wait for the $f+1$st message instead of the $N-f$th one.\par
+The usefulness of this optimization is severely reduced if these sequences are processed like any other, by being appended to previous sequences at the leader and acceptors. New proposals are appended to previous proven sequences to maintain the invariant that subsequent proven sequences are extensions of previous ones. Since the previous proven sequences to which a proposal will be appended to are probably not universally commutative, the resulting sequence will not be as well. We can increase this optimization's applicability by sending these sequences immediately to the learners, without appending them to previously accepted ones. This special handling has the added benefit of bypassing the verification phase, resulting in reduced latency for the requests and less traffic generated per sequence. This extension can also be easily implemented by adding a single check in Algorithm \ref{BFT-Lead} lines \{19-20\}, Algorithm \ref{BFT-Acc} lines \{29-30,40-41\} and Algorithm \ref{BFT-Learn} lines \{14-18\}.
 % Weakly consistent replication - also diff order but ok to have different v
 
-\subsection{Generalized Paxos and weak consistency}
-
-
+\paragraph{Generalized Paxos and weak consistency.}
 %The Byzantine Generalized Paxos protocol tackles two challenges in two different avenues of research, fault tolerance and relaxed consistency models. By specifying the generalized consensus problem,
 The key distinguishing feature of the specification of Generalized
 Paxos~\cite{Lamport2005} is allowing learners to learn concurrent
@@ -53,45 +50,28 @@ causal consistency~\cite{Ahamad1995}, or consistency models that mix
 strong and weak consistency levels like RedBlue~\cite{Li2012}, which attempt
 to decrease the cost of executing operations by reducing coordination
 requirements between replicas. 
-
-The link between the two models becomes clearer after we introduce the
-notion of universally commutative commands from the previous subsection.
-In the case of weakly consistent replication (or multi-level replication),
+The link between the two models becomes clearer with the introduction of 
+universally commutative commands in the previous paragraph.
+In the case of weakly consistent replication,
 weakly consistent requests can be executed as if they were universally
 commutative, even if in practice that may not be the case. E.g., checking 
 the balance of a bank account and making a deposit do not commute since
 the output of the former depends on their relative order. However,
 some systems prefer to run both as weakly consistent operations, even
 though it may cause executions that are not explained by a sequential
-execution of all commands, since the semantics are still acceptable given
+execution, since the semantics are still acceptable given
 that the final state that is reached is the same and no invariants 
 of the application are violated~\cite{Li2012}.
-
-
 
 % Extension to diff replica grps
 
 
-\subsection{Handling faults in the fast case}
+%\textbf{Optimizations} One possible optimization of the Byzantine Generalized Paxos protocol leverages universally commutative commands or sequences of commands, which we define as sequences which commute with any other. Universally commutative sequences allows us to reduce latency by decreasing the number of phase $2b$ messages required to learn to a smaller $f+1$ quorum. Since, by definition, these sequences are guaranteed to never produce conflicts, the $N-f$ quorum isn't required to prevent learners from learning conflicting sequences. Instead, a $f+1$ quorum is sufficient for the learner to be sure that the proposed sequence was proposed by a correct proposer. 
 
-A result that was stated in the original Generalized Paxos
-paper~\cite{Lamport2005} is that to tolerate $f$ crash faults and
-allow for fast ballots whenever there are up to $e$ crash faults, the
-total system size $N$ must uphold two conditions:
-\begin{itemize}
-	\item $N > 2f$
-	\item $N > 2e+f$
-\end{itemize} 
 
-Additionally, the fast and classic quorums are of size $N-e$ and $N-f$, respectively, which means there is a dependence relationship between these three concepts: number of tolerated faults, system size, and quorum size. As such, if we don't mind keeping $e$ small, then the fast ballot quorum will be a larger fraction of the total system size, which itself will be smaller. Conversely, if we wish to allow fast ballots to progress in the presence of the maximum number of faults, we can set $e=f$, which means that $N >3f$ and $N-e=N-f$. \par 
-An interesting observation stemming from our results is that, since Byzantine fault tolerance also requires a total system size of $N>3f$ and a quorum size of $2f+1$, we are able to amortize the cost of both features, i.e., we are able to tolerate the maximum number of faults for fast execution while not increasing the overall replication factor.
-
-\subsection{Comparison to Fast Byzantine Consensus}
-Previous fast protocols that solve consensus in a Byzantine settings include Fast Byzantine Paxos (FaB)~\cite{Martin2006}. FaB solves consensus in two communication steps in the common case while requiring $5f+1$ acceptors to ensure safety and liveness. The Parameterized FaB Paxos protocol generalizes FaB that requires $3f+2t+1$ to solve consensus while tolerating up to $f$ faults and is fast as long as up to $t$ acceptors fail. Therefore, FaB Paxos is a special case of Parameterized FaB Paxos where $t=f$. \par
-FaB Paxos ensures safety as long as $N>3f$ but requires $N
->5f$ to ensure liveness. FaB is limited by a lower bound of $N > 5f$ acceptors in order to guarantee both safety and liveness. However, BGP allows several commands to be learned in the ballot and even no command at all. \par
-One potentially dangerous scenario occurs when the leader is faulty. In this case, the leader could split the acceptors votes or run a fast ballot in some and a classic ballot in others. In this scenario, since learners require $N-f$ votes for any given sequence and non-commutative sequences aren't considered equivalent, at most one sequence can be learned by correct learners. This also applies to the case where two non-commutative sequences are proposed in a fast ballot. It's possible for the votes to be split in a way such that no sequence is learned. In this case, for the remainder of the ballot, since every possible subsequent sequence at each acceptor will be an extension of the previous non-commutative sequences, no new sequences will be learned. This prevents safety from being violated but also precludes liveness until a new classic ballot is initiated by a correct leader. Once a correct leader gathers the previous votes from the acceptors, it will propose a serialization of previous sequences that solves the conflict caused by the non-commutative sequences.
-
-\section{Conclusion}
-\label{sec:conc}
-In this paper, we presented a simplified description of the Generalized Paxos protocol and specification, which is meant to pave the way for new avenues of research in this area. In addition, we present a Byzantine fault tolerant version of the protocol, and we prove the correctness of this protocol. In the future, we would like to implement this protocol and fully evaluate it, in addition to gaining a better understanding of its practical applicability.
+% \section{Conclusion}
+% \label{sec:conc}
+% In this paper, we presented a simplified description of the Generalized Paxos protocol and specification, 
+% which is meant to pave the way for new avenues of research in the area. 
+% In addition, we modify the protocol to tolerate Byzantine faults, and we prove the correctness of this protocol. 
+% In the future, we would like to implement and evaluate the protocol, in addition to gaining a better understanding of its practical applicability.

@@ -76,14 +76,16 @@ Consensus, which is focused on the most commonly used case of the
 solutions to this problem, which is to agree on a sequence of
 commands;
 
+\item 
+we present a simplified version of the Generalized Paxos protocol, complete with pseudocode;
+
 \item
 we extend the Generalized Paxos protocol to the Byzantine fault model; 
 
 \item
 we present a description of the Byzantine Generalized Paxos protocol
 that is more accessible than the original description, namely including the
-respective pseudocode, in order to to make it 
-easier to implement;
+respective pseudocode, in order to make it easier to implement;
 
 \item
 we prove the correctness of the Byzantine Generalize Paxos protocol;
@@ -91,11 +93,9 @@ we prove the correctness of the Byzantine Generalize Paxos protocol;
 \item
 and we discuss several extensions to the protocol in the context of relaxed consistency models and fault tolerance.
 
-
 \end{itemize}
 
 The remainder of the paper is organized as follows: 
 Section~\ref{sec:related} is a detailed overview of Paxos and related protocols that inspired the algorithm in this paper.
 Section~\ref{sec:model} introduces the model and specification of Generalized Paxos.
-Section~\ref{sec:protocol} presents the Generalized Paxos protocol that is resilient against Byzantine failures along with the corresponding proof sketches. 
-Section~\ref{sec:disc} discusses some optimizations and Section~\ref{sec:conc} concludes the paper.
+Section~\ref{sec:cft} presents a simplified version of the Generalized Paxos protocol in the crash fault model. Section~\ref{sec:bft} presents the Generalized Paxos protocol that is resilient against Byzantine failures. Section~\ref{bft_proof} presents correctness proofs, organized according to the properties defined in the problem statement of Section~\ref{sec:model}. Section~\ref{sec:disc} discusses some optimizations and concludes the paper.

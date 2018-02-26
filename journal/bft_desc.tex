@@ -40,7 +40,7 @@ The goal of the view change subprotocol is to elect a distinguished proposer pro
 
 In this subprotocol, the system moves through sequentially numbered views, and the leader for each view is chosen in a rotating fashion using the simple equation $\textit{leader(view)}=\textit{view mod N}$. The protocol works continuously by having acceptor processes monitor whether progress is being made on adding commands to the current sequence, and, if not, by multicasting a signed {\sc suspicion} message for the current view to all acceptors suspecting the current leader. Then, if enough suspicions are collected, processes can move to the subsequent view. However, the required number of suspicions must be chosen in a way that prevents Byzantine processes from triggering view changes spuriously. To this end, acceptor processes will multicast a view change message indicating their commitment to starting a new view only after hearing that $f+1$ processes suspect the leader to be faulty. This message contains the new view number, the $f+1$ signed suspicions, and is signed by the acceptor that sends it. This way, if a process receives a view-change message without previously receiving $f+1$ suspicions, it can also multicast a view-change message, after verifying that the suspicions are correctly signed by $f+1$ distinct processes.
 %As such, the signatures allow a process that receives this message to commit to the new view and multicast its own view-change message without receiving $f+1$ suspicions itself.
-This guarantees that if one correct process receives the $f+1$ suspicions and multicasts the view-change message, then all correct processes, upon receiving this message, will be able to validate the proof of $f+1$ suspicions and also multicast the view-change message.\par
+This guarantees that if one correct process receives the $f+1$ suspicions and multicasts the view-change message, then all correct processes, upon receiving this message, will be able to validate the $f+1$ suspicions and also multicast the view-change message.\par
 
 \begin{algorithm} 
 	\setstretch{1.35}
@@ -106,7 +106,7 @@ This guarantees that if one correct process receives the $f+1$ suspicions and mu
 	\end{algorithmic}
 \end{algorithm}
 
-Finally, an acceptor process must wait for $N-f$ view-change messages to start participating in the new view (i.e., update its view number and the corresponding leader process). At this point, the acceptor also assembles the $N-f$ view-change messages proving that others are committing to the new view, and sends them to the new leader. This allows the new leader to start its leadership role in the new view once it validates the $N-f$ signatures contained in a single message.
+Finally, an acceptor process must wait for $N-f$ view-change messages to start participating in the new view (i.e., update its view number and the corresponding leader process). At this point, the acceptor also assembles the $N-f$ view-change messages, proving that others are committing to the new view, and sends them to the new leader. This allows the new leader to start its leadership role in the new view once it validates the $N-f$ signatures contained in a single message.
 
 \subsection{Agreement Protocol} 
 

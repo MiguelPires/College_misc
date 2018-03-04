@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% %%	MDPI class for LaTeX files	 01-26-2018
+%% %%	MDPI class for LaTeX files	 28.2.2018
 %% %%	For any information please send an e-mail to:
 %% %%		latex-support@mdpi.com (Dr. Janine Daum) 
 %% %%
@@ -20,7 +20,7 @@
 
 %% IDENTIFICATION
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{mdpi}[2017/01/26 MDPI paper class]
+\ProvidesClass{mdpi}[28.2.2018 MDPI paper class]
 
 %%%% Copyright and citebox
  \AtEndDocument{\par \cright \par \vspace{12pt} \citebox}
@@ -51,451 +51,226 @@
 \RequirePackage{multirow}
 \RequirePackage{microtype} % For command \textls[]{}
 \RequirePackage{tikz} % For Orcid icon
+\RequirePackage{siunitx} % For leading zeros in DOI number
+
  
 %% OPTIONS
 %% To choose the journal
-\DeclareOption{test}{\gdef\@journal{test}}
-\DeclareOption{notspecified}{\gdef\@journal{notspecified}}
-\DeclareOption{actuators}{\gdef\@journal{actuators}}
-\DeclareOption{addictions}{\gdef\@journal{addictions}}
-\DeclareOption{admsci}{\gdef\@journal{admsci}}
-\DeclareOption{administrativesciences}{\gdef\@journal{admsci}} %to have backwards compatibility
-\DeclareOption{aerospace}{\gdef\@journal{aerospace}}
-\DeclareOption{agriculture}{\gdef\@journal{agriculture}}
-\DeclareOption{agronomy}{\gdef\@journal{agronomy}}
-\DeclareOption{algorithms}{\gdef\@journal{algorithms}}
-\DeclareOption{animals}{\gdef\@journal{animals}}
-\DeclareOption{antibiotics}{\gdef\@journal{antibiotics}}
-\DeclareOption{antibodies}{\gdef\@journal{antibodies}}
-\DeclareOption{antioxidants}{\gdef\@journal{antioxidants}}
-\DeclareOption{applsci}{\gdef\@journal{applsci}}
-\DeclareOption{appliedsciences}{\gdef\@journal{applsci}} %to have backwards compatibility
-\DeclareOption{arts}{\gdef\@journal{arts}}
-\DeclareOption{asi}{\gdef\@journal{asi}}
-\DeclareOption{atmosphere}{\gdef\@journal{atmosphere}}
-\DeclareOption{atoms}{\gdef\@journal{atoms}}
-\DeclareOption{axioms}{\gdef\@journal{axioms}}
-\DeclareOption{batteries}{\gdef\@journal{batteries}}
-\DeclareOption{bdcc}{\gdef\@journal{bdcc}}
-\DeclareOption{behavsci}{\gdef\@journal{behavsci}} 
-\DeclareOption{behavioralsciences}{\gdef\@journal{behavsci}} %to have backwards compatibility 
-\DeclareOption{beverages}{\gdef\@journal{beverages}}
-\DeclareOption{bioengineering}{\gdef\@journal{bioengineering}}
-\DeclareOption{biology}{\gdef\@journal{biology}}
-\DeclareOption{biomedicines}{\gdef\@journal{biomedicines}}
-\DeclareOption{biomimetics}{\gdef\@journal{biomimetics}}
-\DeclareOption{biomolecules}{\gdef\@journal{biomolecules}}
-\DeclareOption{biosensors}{\gdef\@journal{biosensors}}
-\DeclareOption{brainsci}{\gdef\@journal{brainsci}} 
-\DeclareOption{brainsciences}{\gdef\@journal{brainsci}} %to have backwards compatibility 
-\DeclareOption{buildings}{\gdef\@journal{buildings}}
-\DeclareOption{c}{\gdef\@journal{carbon}}%% for authors
-\DeclareOption{carbon}{\gdef\@journal{carbon}} 
-\DeclareOption{cancers}{\gdef\@journal{cancers}}
-\DeclareOption{catalysts}{\gdef\@journal{catalysts}}
-\DeclareOption{cells}{\gdef\@journal{cells}}
-\DeclareOption{ceramics}{\gdef\@journal{ceramics}}
-\DeclareOption{challenges}{\gdef\@journal{challenges}}
-\DeclareOption{chemengineering}{\gdef\@journal{chemengineering}}
-\DeclareOption{chemosensors}{\gdef\@journal{chemosensors}}
-\DeclareOption{children}{\gdef\@journal{children}}
-\DeclareOption{climate}{\gdef\@journal{climate}}
-\DeclareOption{coatings}{\gdef\@journal{coatings}}
-\DeclareOption{colloids}{\gdef\@journal{colloids}}
-\DeclareOption{computation}{\gdef\@journal{computation}}
-\DeclareOption{computers}{\gdef\@journal{computers}}
-\DeclareOption{condensedmatter}{\gdef\@journal{condensedmatter}}
-\DeclareOption{cosmetics}{\gdef\@journal{cosmetics}}
-\DeclareOption{cryptography}{\gdef\@journal{cryptography}}
-\DeclareOption{crystals}{\gdef\@journal{crystals}}
-\DeclareOption{cybersecurity}{\gdef\@journal{cybersecurity}}
-\DeclareOption{data}{\gdef\@journal{data}}
-\DeclareOption{dentistry}{\gdef\@journal{dentistry}}
-\DeclareOption{dentistryjournal}{\gdef\@journal{dentistry}} %to have backwards compatibility 
-\DeclareOption{designs}{\gdef\@journal{designs}} 
-\DeclareOption{diagnostics}{\gdef\@journal{diagnostics}}
-\DeclareOption{diseases}{\gdef\@journal{diseases}}
-\DeclareOption{diversity}{\gdef\@journal{diversity}}
-\DeclareOption{drones}{\gdef\@journal{drones}}
-\DeclareOption{econometrics}{\gdef\@journal{econometrics}}
-\DeclareOption{economies}{\gdef\@journal{economies}}
-\DeclareOption{education}{\gdef\@journal{education}}
-\DeclareOption{educationsciences}{\gdef\@journal{education}} %to have backwards compatibility 
-\DeclareOption{electrochem}{\gdef\@journal{electrochem}}
-\DeclareOption{electrochemistry}{\gdef\@journal{electrochemistry}}
-\DeclareOption{electronics}{\gdef\@journal{electronics}}
-\DeclareOption{energies}{\gdef\@journal{energies}}
-\DeclareOption{entropy}{\gdef\@journal{entropy}}
-\DeclareOption{environments}{\gdef\@journal{environments}}
-\DeclareOption{epigenomes}{\gdef\@journal{epigenomes}}
-\DeclareOption{est}{\gdef\@journal{est}}
-\DeclareOption{fermentation}{\gdef\@journal{fermentation}}
-\DeclareOption{fibers}{\gdef\@journal{fibers}}
-\DeclareOption{fire}{\gdef\@journal{fire}}
-\DeclareOption{fishes}{\gdef\@journal{fishes}}
-\DeclareOption{fluids}{\gdef\@journal{fluids}}
-\DeclareOption{foods}{\gdef\@journal{foods}}
-\DeclareOption{forecasting}{\gdef\@journal{forecasting}}
-\DeclareOption{forests}{\gdef\@journal{forests}}
-\DeclareOption{fractalfract}{\gdef\@journal{fractalfract}}
-\DeclareOption{futureinternet}{\gdef\@journal{futureinternet}}
-\DeclareOption{galaxies}{\gdef\@journal{galaxies}}
-\DeclareOption{games}{\gdef\@journal{games}}
-\DeclareOption{gastrointestdisord}{\gdef\@journal{gastrointestdisord}}
-\DeclareOption{gels}{\gdef\@journal{gels}}
-\DeclareOption{genealogy}{\gdef\@journal{genealogy}}
-\DeclareOption{genes}{\gdef\@journal{genes}}
-\DeclareOption{geosciences}{\gdef\@journal{geosciences}}
-\DeclareOption{geriatrics}{\gdef\@journal{geriatrics}}
-\DeclareOption{hazardousmatters}{\gdef\@journal{hazardousmatters}}
-\DeclareOption{healthcare}{\gdef\@journal{healthcare}}
-\DeclareOption{heritage}{\gdef\@journal{heritage}}
-\DeclareOption{highthroughput}{\gdef\@journal{highthroughput}}
-\DeclareOption{horticulturae}{\gdef\@journal{horticulturae}}
-\DeclareOption{humanities}{\gdef\@journal{humanities}}
-\DeclareOption{hydrology}{\gdef\@journal{hydrology}}
-\DeclareOption{informatics}{\gdef\@journal{informatics}}
-\DeclareOption{information}{\gdef\@journal{information}}
-\DeclareOption{infrastructures}{\gdef\@journal{infrastructures}}
-\DeclareOption{inorganics}{\gdef\@journal{inorganics}}
-\DeclareOption{insects}{\gdef\@journal{insects}}
-\DeclareOption{instruments}{\gdef\@journal{instruments}}
-\DeclareOption{ijerph}{\gdef\@journal{ijerph}}
-\DeclareOption{ijfs}{\gdef\@journal{ijfs}}
-\DeclareOption{ijms}{\gdef\@journal{ijms}}
-\DeclareOption{ijgi}{\gdef\@journal{ijgi}}
-\DeclareOption{ijtpp}{\gdef\@journal{ijtpp}}
-\DeclareOption{inventions}{\gdef\@journal{inventions}}
-\DeclareOption{j}{\gdef\@journal{jjournal}}
-\DeclareOption{jcdd}{\gdef\@journal{jcdd}}
-\DeclareOption{jcm}{\gdef\@journal{jcm}}
-\DeclareOption{jcs}{\gdef\@journal{jcs}}
-\DeclareOption{jdb}{\gdef\@journal{jdb}}
-\DeclareOption{jfb}{\gdef\@journal{jfb}}
-\DeclareOption{jfmk}{\gdef\@journal{jfmk}}
-\DeclareOption{jof}{\gdef\@journal{jof}}
-\DeclareOption{jimaging}{\gdef\@journal{jimaging}}
-\DeclareOption{jintelligence}{\gdef\@journal{jintelligence}}
-\DeclareOption{jlpea}{\gdef\@journal{jlpea}}
-\DeclareOption{jmmp}{\gdef\@journal{jmmp}}
-\DeclareOption{jmse}{\gdef\@journal{jmse}}
-\DeclareOption{jpm}{\gdef\@journal{jpm}}
-\DeclareOption{jrfm}{\gdef\@journal{jrfm}}
-\DeclareOption{jsan}{\gdef\@journal{jsan}}
-\DeclareOption{land}{\gdef\@journal{land}}
-\DeclareOption{languages}{\gdef\@journal{languages}}
-\DeclareOption{laws}{\gdef\@journal{laws}}
-\DeclareOption{life}{\gdef\@journal{life}}
-\DeclareOption{literature}{\gdef\@journal{literature}}
-\DeclareOption{logistics}{\gdef\@journal{logistics}}
-\DeclareOption{lubricants}{\gdef\@journal{lubricants}}
-\DeclareOption{machines}{\gdef\@journal{machines}}
-\DeclareOption{magnetochemistry}{\gdef\@journal{magnetochemistry}}
-\DeclareOption{make}{\gdef\@journal{make}}
-\DeclareOption{marinedrugs}{\gdef\@journal{marinedrugs}}
-\DeclareOption{materials}{\gdef\@journal{materials}}
-\DeclareOption{mathematics}{\gdef\@journal{mathematics}}
-\DeclareOption{mca}{\gdef\@journal{mca}}
-\DeclareOption{medsci}{\gdef\@journal{medsci}}
-\DeclareOption{medicalsciences}{\gdef\@journal{medsci}} %to have backwards compatibility 
-\DeclareOption{medicines}{\gdef\@journal{medicines}}
-\DeclareOption{membranes}{\gdef\@journal{membranes}}
-\DeclareOption{metabolites}{\gdef\@journal{metabolites}}
-\DeclareOption{metals}{\gdef\@journal{metals}}
-\DeclareOption{microarrays}{\gdef\@journal{microarrays}}
-\DeclareOption{micromachines}{\gdef\@journal{micromachines}}
-\DeclareOption{microorganisms}{\gdef\@journal{microorganisms}}
-\DeclareOption{minerals}{\gdef\@journal{minerals}}
-\DeclareOption{modelling}{\gdef\@journal{modelling}}
-\DeclareOption{molbank}{\gdef\@journal{molbank}}
-\DeclareOption{molecules}{\gdef\@journal{molecules}}
-\DeclareOption{mps}{\gdef\@journal{mps}}
-\DeclareOption{mti}{\gdef\@journal{mti}}
-\DeclareOption{nanomaterials}{\gdef\@journal{nanomaterials}}
-\DeclareOption{ncrna}{\gdef\@journal{ncrna}}
-\DeclareOption{neonatalscreening}{\gdef\@journal{neonatalscreening}}
-\DeclareOption{neuroglia}{\gdef\@journal{neuroglia}}
-\DeclareOption{nitrogen}{\gdef\@journal{nitrogen}}
-\DeclareOption{nutrients}{\gdef\@journal{nutrients}}
-\DeclareOption{ohbm}{\gdef\@journal{ohbm}}
-\DeclareOption{particles}{\gdef\@journal{particles}}
-\DeclareOption{pathogens}{\gdef\@journal{pathogens}}
-\DeclareOption{pharmaceuticals}{\gdef\@journal{pharmaceuticals}}
-\DeclareOption{pharmaceutics}{\gdef\@journal{pharmaceutics}}
-\DeclareOption{pharmacy}{\gdef\@journal{pharmacy}}
-\DeclareOption{philosophies}{\gdef\@journal{philosophies}}
-\DeclareOption{photonics}{\gdef\@journal{photonics}}
-\DeclareOption{plants}{\gdef\@journal{plants}}
-\DeclareOption{plasma}{\gdef\@journal{plasma}}
-\DeclareOption{polymers}{\gdef\@journal{polymers}}
-\DeclareOption{polysaccharides}{\gdef\@journal{polysaccharides}}
-\DeclareOption{preprints}{\gdef\@journal{preprints}} 
-\DeclareOption{proceedings}{\gdef\@journal{proceedings}}
-\DeclareOption{processes}{\gdef\@journal{processes}}
-\DeclareOption{proteomes}{\gdef\@journal{proteomes}}
-\DeclareOption{publications}{\gdef\@journal{publications}}
-\DeclareOption{quaternary}{\gdef\@journal{quaternary}}
-\DeclareOption{qubs}{\gdef\@journal{qubs}}
-\DeclareOption{recycling}{\gdef\@journal{recycling}}
-\DeclareOption{religions}{\gdef\@journal{religions}}
-\DeclareOption{remotesensing}{\gdef\@journal{remotesensing}}
-\DeclareOption{reports}{\gdef\@journal{reports}}
-\DeclareOption{resources}{\gdef\@journal{resources}}
-\DeclareOption{risks}{\gdef\@journal{risks}}
-\DeclareOption{robotics}{\gdef\@journal{robotics}}
-\DeclareOption{safety}{\gdef\@journal{safety}}
-\DeclareOption{scipharm}{\gdef\@journal{scipharm}}
-\DeclareOption{sensors}{\gdef\@journal{sensors}}
-\DeclareOption{separations}{\gdef\@journal{separations}}
-\DeclareOption{sexes}{\gdef\@journal{sexes}}
-\DeclareOption{sinusitis}{\gdef\@journal{sinusitis}}
-\DeclareOption{socsci}{\gdef\@journal{socsci}}
-\DeclareOption{socialsciences}{\gdef\@journal{socsci}} %to have backwards compatibility 
-\DeclareOption{societies}{\gdef\@journal{societies}}
-\DeclareOption{soils}{\gdef\@journal{soils}}
-\DeclareOption{sports}{\gdef\@journal{sports}}
-\DeclareOption{standards}{\gdef\@journal{standards}}
-\DeclareOption{stats}{\gdef\@journal{stats}}
-\DeclareOption{surfaces}{\gdef\@journal{surfaces}}
-\DeclareOption{surgeries}{\gdef\@journal{surgeries}}
-\DeclareOption{sustainability}{\gdef\@journal{sustainability}}
-\DeclareOption{symmetry}{\gdef\@journal{symmetry}}
-\DeclareOption{systems}{\gdef\@journal{systems}}
-\DeclareOption{technologies}{\gdef\@journal{technologies}}
-\DeclareOption{toxics}{\gdef\@journal{toxics}}
-\DeclareOption{toxins}{\gdef\@journal{toxins}}
-\DeclareOption{tropicalmed}{\gdef\@journal{tropicalmed}}
-\DeclareOption{universe}{\gdef\@journal{universe}}
-\DeclareOption{urbansci}{\gdef\@journal{urbansci}}
-\DeclareOption{vaccines}{\gdef\@journal{vaccines}}
-\DeclareOption{vetsci}{\gdef\@journal{vetsci}}
-\DeclareOption{veterinarysciences}{\gdef\@journal{vetsci}} %to have backwards compatibility
-\DeclareOption{vibration}{\gdef\@journal{vibration}}
-\DeclareOption{viruses}{\gdef\@journal{viruses}}
-\DeclareOption{vision}{\gdef\@journal{vision}}
-\DeclareOption{water}{\gdef\@journal{water}}
-\DeclareOption{wem}{\gdef\@journal{wem}}
+\DeclareOption{actuators}{\gdef\@journal{actuators}	\gdef\@doiabbr{act}	\gdef\@ISSN{2076-0825}}
+\DeclareOption{addictions}{\gdef\@journal{addictions}	\gdef\@doiabbr{}	\gdef\@ISSN{0006-0006}}
+\DeclareOption{admsci}{\gdef\@journal{admsci}	\gdef\@doiabbr{admsci}	\gdef\@ISSN{2076-3387}}
+\DeclareOption{aerospace}{\gdef\@journal{aerospace}	\gdef\@doiabbr{aerospace}	\gdef\@ISSN{2226-4310}}
+\DeclareOption{agriculture}{\gdef\@journal{agriculture}	\gdef\@doiabbr{agriculture}	\gdef\@ISSN{2077-0472}}
+\DeclareOption{agronomy}{\gdef\@journal{agronomy}	\gdef\@doiabbr{agronomy}	\gdef\@ISSN{2073-4395}}
+\DeclareOption{algorithms}{\gdef\@journal{algorithms}	\gdef\@doiabbr{a}	\gdef\@ISSN{1999-4893}}
+\DeclareOption{animals}{\gdef\@journal{animals}	\gdef\@doiabbr{ani}	\gdef\@ISSN{2076-2615}}
+\DeclareOption{antibiotics}{\gdef\@journal{antibiotics}	\gdef\@doiabbr{antibiotics}	\gdef\@ISSN{2079-6382}}
+\DeclareOption{antibodies}{\gdef\@journal{antibodies}	\gdef\@doiabbr{antib}	\gdef\@ISSN{2073-4468}}
+\DeclareOption{antioxidants}{\gdef\@journal{antioxidants}	\gdef\@doiabbr{antiox}	\gdef\@ISSN{2076-3921}}
+\DeclareOption{applsci}{\gdef\@journal{applsci}	\gdef\@doiabbr{app}	\gdef\@ISSN{2076-3417}}
+\DeclareOption{arts}{\gdef\@journal{arts}	\gdef\@doiabbr{arts}	\gdef\@ISSN{2076-0752}}
+\DeclareOption{asi}{\gdef\@journal{asi}	\gdef\@doiabbr{asi}	\gdef\@ISSN{2571-5577}}
+\DeclareOption{atmosphere}{\gdef\@journal{atmosphere}	\gdef\@doiabbr{atmos}	\gdef\@ISSN{2073-4433}}
+\DeclareOption{atoms}{\gdef\@journal{atoms}	\gdef\@doiabbr{atoms}	\gdef\@ISSN{2218-2004}}
+\DeclareOption{axioms}{\gdef\@journal{axioms}	\gdef\@doiabbr{axioms}	\gdef\@ISSN{2075-1680}}
+\DeclareOption{batteries}{\gdef\@journal{batteries}	\gdef\@doiabbr{batteries}	\gdef\@ISSN{2313-0105}}
+\DeclareOption{bdcc}{\gdef\@journal{bdcc}	\gdef\@doiabbr{bdcc}	\gdef\@ISSN{2504-2289}}
+\DeclareOption{behavsci}{\gdef\@journal{behavsci} 	\gdef\@doiabbr{bs}	\gdef\@ISSN{2076-328X}}
+\DeclareOption{beverages}{\gdef\@journal{beverages}	\gdef\@doiabbr{beverages}	\gdef\@ISSN{2306-5710}}
+\DeclareOption{bioengineering}{\gdef\@journal{bioengineering}	\gdef\@doiabbr{bioengineering}	\gdef\@ISSN{2306-5354}}
+\DeclareOption{biology}{\gdef\@journal{biology}	\gdef\@doiabbr{biology}	\gdef\@ISSN{2079-7737}}
+\DeclareOption{biomedicines}{\gdef\@journal{biomedicines}	\gdef\@doiabbr{biomedicines}	\gdef\@ISSN{2227-9059}}
+\DeclareOption{biomimetics}{\gdef\@journal{biomimetics}	\gdef\@doiabbr{biomimetics}	\gdef\@ISSN{2313-7673}}
+\DeclareOption{biomolecules}{\gdef\@journal{biomolecules}	\gdef\@doiabbr{biom}	\gdef\@ISSN{2218-273X}}
+\DeclareOption{biosensors}{\gdef\@journal{biosensors}	\gdef\@doiabbr{bios}	\gdef\@ISSN{2079-6374}}
+\DeclareOption{brainsci}{\gdef\@journal{brainsci} 	\gdef\@doiabbr{brainsci}	\gdef\@ISSN{2076-3425}}
+\DeclareOption{buildings}{\gdef\@journal{buildings}	\gdef\@doiabbr{buildings}	\gdef\@ISSN{2075-5309}}
+\DeclareOption{cancers}{\gdef\@journal{cancers}	\gdef\@doiabbr{cancers}	\gdef\@ISSN{2072-6694}}
+\DeclareOption{carbon}{\gdef\@journal{carbon} 	\gdef\@doiabbr{c}	\gdef\@ISSN{2311-5629}}
+\DeclareOption{catalysts}{\gdef\@journal{catalysts}	\gdef\@doiabbr{catal}	\gdef\@ISSN{2073-4344}}
+\DeclareOption{cells}{\gdef\@journal{cells}	\gdef\@doiabbr{cells}	\gdef\@ISSN{2073-4409}}
+\DeclareOption{ceramics}{\gdef\@journal{ceramics}	\gdef\@doiabbr{}	\gdef\@ISSN{2571-6131}}
+\DeclareOption{challenges}{\gdef\@journal{challenges}	\gdef\@doiabbr{challe}	\gdef\@ISSN{2078-1547}}
+\DeclareOption{chemengineering}{\gdef\@journal{chemengineering}	\gdef\@doiabbr{chemengineering}	\gdef\@ISSN{2305-7084}}
+\DeclareOption{chemosensors}{\gdef\@journal{chemosensors}	\gdef\@doiabbr{chemosensors}	\gdef\@ISSN{2227-9040}}
+\DeclareOption{children}{\gdef\@journal{children}	\gdef\@doiabbr{children}	\gdef\@ISSN{2227-9067}}
+\DeclareOption{climate}{\gdef\@journal{climate}	\gdef\@doiabbr{cli}	\gdef\@ISSN{2225-1154}}
+\DeclareOption{coatings}{\gdef\@journal{coatings}	\gdef\@doiabbr{coatings}	\gdef\@ISSN{2079-6412}}
+\DeclareOption{colloids}{\gdef\@journal{colloids}	\gdef\@doiabbr{colloids}	\gdef\@ISSN{2504-5377}}
+\DeclareOption{computation}{\gdef\@journal{computation}	\gdef\@doiabbr{computation}	\gdef\@ISSN{2079-3197}}
+\DeclareOption{computers}{\gdef\@journal{computers}	\gdef\@doiabbr{computers}	\gdef\@ISSN{2073-431X}}
+\DeclareOption{condensedmatter}{\gdef\@journal{condensedmatter}	\gdef\@doiabbr{condmat}	\gdef\@ISSN{2410-3896}}
+\DeclareOption{cosmetics}{\gdef\@journal{cosmetics}	\gdef\@doiabbr{cosmetics}	\gdef\@ISSN{2079-9284}}
+\DeclareOption{cryptography}{\gdef\@journal{cryptography}	\gdef\@doiabbr{cryptography}	\gdef\@ISSN{2410-387X}}
+\DeclareOption{crystals}{\gdef\@journal{crystals}	\gdef\@doiabbr{cryst}	\gdef\@ISSN{2073-4352}}
+\DeclareOption{cybersecurity}{\gdef\@journal{cybersecurity}	\gdef\@doiabbr{}	\gdef\@ISSN{0009-0009}}
+\DeclareOption{data}{\gdef\@journal{data}	\gdef\@doiabbr{data}	\gdef\@ISSN{2306-5729}}
+\DeclareOption{dentistry}{\gdef\@journal{dentistry}	\gdef\@doiabbr{dj}	\gdef\@ISSN{2304-6767}}
+\DeclareOption{designs}{\gdef\@journal{designs} 	\gdef\@doiabbr{designs}	\gdef\@ISSN{2411-9660}}
+\DeclareOption{diagnostics}{\gdef\@journal{diagnostics}	\gdef\@doiabbr{diagnostics}	\gdef\@ISSN{2075-4418}}
+\DeclareOption{diseases}{\gdef\@journal{diseases}	\gdef\@doiabbr{diseases}	\gdef\@ISSN{2079-9721}}
+\DeclareOption{diversity}{\gdef\@journal{diversity}	\gdef\@doiabbr{d}	\gdef\@ISSN{1424-2818}}
+\DeclareOption{drones}{\gdef\@journal{drones}	\gdef\@doiabbr{drones}	\gdef\@ISSN{2504-446X}}
+\DeclareOption{econometrics}{\gdef\@journal{econometrics}	\gdef\@doiabbr{econometrics}	\gdef\@ISSN{2225-1146}}
+\DeclareOption{economies}{\gdef\@journal{economies}	\gdef\@doiabbr{economies}	\gdef\@ISSN{2227-7099}}
+\DeclareOption{education}{\gdef\@journal{education}	\gdef\@doiabbr{educsci}	\gdef\@ISSN{2227-7102}}
+\DeclareOption{electrochem}{\gdef\@journal{electrochem}	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{electronics}{\gdef\@journal{electronics}	\gdef\@doiabbr{electronics}	\gdef\@ISSN{2079-9292}}
+\DeclareOption{energies}{\gdef\@journal{energies}	\gdef\@doiabbr{en}	\gdef\@ISSN{1996-1073}}
+\DeclareOption{entropy}{\gdef\@journal{entropy}	\gdef\@doiabbr{e}	\gdef\@ISSN{1099-4300}}
+\DeclareOption{environments}{\gdef\@journal{environments}	\gdef\@doiabbr{environments}	\gdef\@ISSN{2076-3298}}
+\DeclareOption{epigenomes}{\gdef\@journal{epigenomes}	\gdef\@doiabbr{epigenomes}	\gdef\@ISSN{2075-4655}}
+\DeclareOption{est}{\gdef\@journal{est}	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{fermentation}{\gdef\@journal{fermentation}	\gdef\@doiabbr{fermentation}	\gdef\@ISSN{2311-5637}}
+\DeclareOption{fibers}{\gdef\@journal{fibers}	\gdef\@doiabbr{fib}	\gdef\@ISSN{2079-6439}}
+\DeclareOption{fire}{\gdef\@journal{fire}	\gdef\@doiabbr{fire}	\gdef\@ISSN{2571-6255}}
+\DeclareOption{fishes}{\gdef\@journal{fishes}	\gdef\@doiabbr{fishes}	\gdef\@ISSN{2410-3888}}
+\DeclareOption{fluids}{\gdef\@journal{fluids}	\gdef\@doiabbr{fluids}	\gdef\@ISSN{2311-5521}}
+\DeclareOption{foods}{\gdef\@journal{foods}	\gdef\@doiabbr{foods}	\gdef\@ISSN{2304-8158}}
+\DeclareOption{forecasting}{\gdef\@journal{forecasting}	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{forests}{\gdef\@journal{forests}	\gdef\@doiabbr{f}	\gdef\@ISSN{1999-4907}}
+\DeclareOption{fractalfract}{\gdef\@journal{fractalfract}	\gdef\@doiabbr{fractalfract}	\gdef\@ISSN{2504-3110}}
+\DeclareOption{futureinternet}{\gdef\@journal{futureinternet}	\gdef\@doiabbr{fi}	\gdef\@ISSN{1999-5903}}
+\DeclareOption{galaxies}{\gdef\@journal{galaxies}	\gdef\@doiabbr{galaxies}	\gdef\@ISSN{2075-4434}}
+\DeclareOption{games}{\gdef\@journal{games}	\gdef\@doiabbr{g}	\gdef\@ISSN{2073-4336}}
+\DeclareOption{gastrointestdisord}{\gdef\@journal{gastrointestdisord}	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{gels}{\gdef\@journal{gels}	\gdef\@doiabbr{gels}	\gdef\@ISSN{2310-2861}}
+\DeclareOption{genealogy}{\gdef\@journal{genealogy}	\gdef\@doiabbr{genealogy}	\gdef\@ISSN{2313-5778}}
+\DeclareOption{genes}{\gdef\@journal{genes}	\gdef\@doiabbr{genes}	\gdef\@ISSN{2073-4425}}
+\DeclareOption{geosciences}{\gdef\@journal{geosciences}	\gdef\@doiabbr{geosciences}	\gdef\@ISSN{2076-3263}}
+\DeclareOption{geriatrics}{\gdef\@journal{geriatrics}	\gdef\@doiabbr{geriatrics}	\gdef\@ISSN{2308-3417}}
+\DeclareOption{hazardousmatters}{\gdef\@journal{hazardousmatters}	\gdef\@doiabbr{}	\gdef\@ISSN{0014-0014}}
+\DeclareOption{healthcare}{\gdef\@journal{healthcare}	\gdef\@doiabbr{healthcare}	\gdef\@ISSN{2227-9032}}
+\DeclareOption{heritage}{\gdef\@journal{heritage}	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{highthroughput}{\gdef\@journal{highthroughput}	\gdef\@doiabbr{ht}	\gdef\@ISSN{2571-5135}}
+\DeclareOption{horticulturae}{\gdef\@journal{horticulturae}	\gdef\@doiabbr{horticulturae}	\gdef\@ISSN{2311-7524}}
+\DeclareOption{humanities}{\gdef\@journal{humanities}	\gdef\@doiabbr{h}	\gdef\@ISSN{2076-0787}}
+\DeclareOption{hydrology}{\gdef\@journal{hydrology}	\gdef\@doiabbr{hydrology}	\gdef\@ISSN{2306-5338}}
+\DeclareOption{ijerph}{\gdef\@journal{ijerph}	\gdef\@doiabbr{ijerph}	\gdef\@ISSN{1660-4601}}
+\DeclareOption{ijfs}{\gdef\@journal{ijfs}	\gdef\@doiabbr{ijfs}	\gdef\@ISSN{2227-7072}}
+\DeclareOption{ijgi}{\gdef\@journal{ijgi}	\gdef\@doiabbr{ijgi}	\gdef\@ISSN{2220-9964}}
+\DeclareOption{ijms}{\gdef\@journal{ijms}	\gdef\@doiabbr{ijms}	\gdef\@ISSN{1422-0067}}
+\DeclareOption{ijtpp}{\gdef\@journal{ijtpp}	\gdef\@doiabbr{ijtpp}	\gdef\@ISSN{2504-186X}}
+\DeclareOption{informatics}{\gdef\@journal{informatics}	\gdef\@doiabbr{informatics}	\gdef\@ISSN{2227-9709}}
+\DeclareOption{information}{\gdef\@journal{information}	\gdef\@doiabbr{info}	\gdef\@ISSN{2078-2489}}
+\DeclareOption{infrastructures}{\gdef\@journal{infrastructures}	\gdef\@doiabbr{infrastructures}	\gdef\@ISSN{2412-3811}}
+\DeclareOption{inorganics}{\gdef\@journal{inorganics}	\gdef\@doiabbr{inorganics}	\gdef\@ISSN{2304-6740}}
+\DeclareOption{insects}{\gdef\@journal{insects}	\gdef\@doiabbr{insects}	\gdef\@ISSN{2075-4450}}
+\DeclareOption{instruments}{\gdef\@journal{instruments}	\gdef\@doiabbr{instruments}	\gdef\@ISSN{2410-390X}}
+\DeclareOption{inventions}{\gdef\@journal{inventions}	\gdef\@doiabbr{inventions}	\gdef\@ISSN{2411-5134}}
+\DeclareOption{j}{\gdef\@journal{jjournal}	\gdef\@doiabbr{}	\gdef\@ISSN{1234-1357}}
+\DeclareOption{jcdd}{\gdef\@journal{jcdd}	\gdef\@doiabbr{jcdd}	\gdef\@ISSN{2308-3425}}
+\DeclareOption{jcm}{\gdef\@journal{jcm}	\gdef\@doiabbr{jcm}	\gdef\@ISSN{2077-0383}}
+\DeclareOption{jcs}{\gdef\@journal{jcs}	\gdef\@doiabbr{jcs}	\gdef\@ISSN{2504-477X}}
+\DeclareOption{jdb}{\gdef\@journal{jdb}	\gdef\@doiabbr{jdb}	\gdef\@ISSN{2221-3759}}
+\DeclareOption{jfb}{\gdef\@journal{jfb}	\gdef\@doiabbr{jfb}	\gdef\@ISSN{2079-4983}}
+\DeclareOption{jfmk}{\gdef\@journal{jfmk}	\gdef\@doiabbr{jfmk}	\gdef\@ISSN{2411-5142}}
+\DeclareOption{jimaging}{\gdef\@journal{jimaging}	\gdef\@doiabbr{jimaging}	\gdef\@ISSN{2313-433X}}
+\DeclareOption{jintelligence}{\gdef\@journal{jintelligence}	\gdef\@doiabbr{jintelligence}	\gdef\@ISSN{2079-3200}}
+\DeclareOption{jlpea}{\gdef\@journal{jlpea}	\gdef\@doiabbr{jlpea}	\gdef\@ISSN{2079-9268}}
+\DeclareOption{jmmp}{\gdef\@journal{jmmp}	\gdef\@doiabbr{jmmp}	\gdef\@ISSN{2504-4494}}
+\DeclareOption{jmse}{\gdef\@journal{jmse}	\gdef\@doiabbr{jmse}	\gdef\@ISSN{2077-1312}}
+\DeclareOption{jof}{\gdef\@journal{jof}	\gdef\@doiabbr{jof}	\gdef\@ISSN{2309-608X}}
+\DeclareOption{joitmc}{\gdef\@journal{joitmc}	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{jpm}{\gdef\@journal{jpm}	\gdef\@doiabbr{jpm}	\gdef\@ISSN{2075-4426}}
+\DeclareOption{jrfm}{\gdef\@journal{jrfm}	\gdef\@doiabbr{jrfm}	\gdef\@ISSN{1911-8074}}
+\DeclareOption{jsan}{\gdef\@journal{jsan}	\gdef\@doiabbr{jsan}	\gdef\@ISSN{2224-2708}}
+\DeclareOption{land}{\gdef\@journal{land}	\gdef\@doiabbr{land}	\gdef\@ISSN{2073-445X}}
+\DeclareOption{languages}{\gdef\@journal{languages}	\gdef\@doiabbr{languages}	\gdef\@ISSN{2226-471X}}
+\DeclareOption{laws}{\gdef\@journal{laws}	\gdef\@doiabbr{laws}	\gdef\@ISSN{2075-471X}}
+\DeclareOption{life}{\gdef\@journal{life}	\gdef\@doiabbr{life}	\gdef\@ISSN{2075-1729}}
+\DeclareOption{literature}{\gdef\@journal{literature}	\gdef\@doiabbr{}	\gdef\@ISSN{2410-9789}}
+\DeclareOption{logistics}{\gdef\@journal{logistics}	\gdef\@doiabbr{logistics}	\gdef\@ISSN{2305-6290}}
+\DeclareOption{lubricants}{\gdef\@journal{lubricants}	\gdef\@doiabbr{lubricants}	\gdef\@ISSN{2075-4442}}
+\DeclareOption{machines}{\gdef\@journal{machines}	\gdef\@doiabbr{machines}	\gdef\@ISSN{2075-1702}}
+\DeclareOption{magnetochemistry}{\gdef\@journal{magnetochemistry}	\gdef\@doiabbr{magnetochemistry}	\gdef\@ISSN{2312-7481}}
+\DeclareOption{make}{\gdef\@journal{make}	\gdef\@doiabbr{make}	\gdef\@ISSN{2504-4990}}
+\DeclareOption{marinedrugs}{\gdef\@journal{marinedrugs}	\gdef\@doiabbr{md}	\gdef\@ISSN{1660-3397}}
+\DeclareOption{materials}{\gdef\@journal{materials}	\gdef\@doiabbr{ma}	\gdef\@ISSN{1996-1944}}
+\DeclareOption{mathematics}{\gdef\@journal{mathematics}	\gdef\@doiabbr{math}	\gdef\@ISSN{2227-7390}}
+\DeclareOption{mca}{\gdef\@journal{mca}	\gdef\@doiabbr{mca}	\gdef\@ISSN{2297-8747}}
+\DeclareOption{medicines}{\gdef\@journal{medicines}	\gdef\@doiabbr{medicines}	\gdef\@ISSN{2305-6320}}
+\DeclareOption{medsci}{\gdef\@journal{medsci}	\gdef\@doiabbr{medsci}	\gdef\@ISSN{2076-3271}}
+\DeclareOption{membranes}{\gdef\@journal{membranes}	\gdef\@doiabbr{membranes}	\gdef\@ISSN{2077-0375}}
+\DeclareOption{metabolites}{\gdef\@journal{metabolites}	\gdef\@doiabbr{metabo}	\gdef\@ISSN{2218-1989}}
+\DeclareOption{metals}{\gdef\@journal{metals}	\gdef\@doiabbr{met}	\gdef\@ISSN{2075-4701}}
+\DeclareOption{microarrays}{\gdef\@journal{microarrays}	\gdef\@doiabbr{}	\gdef\@ISSN{2076-3905}}
+\DeclareOption{micromachines}{\gdef\@journal{micromachines}	\gdef\@doiabbr{mi}	\gdef\@ISSN{2072-666X}}
+\DeclareOption{microorganisms}{\gdef\@journal{microorganisms}	\gdef\@doiabbr{microorganisms}	\gdef\@ISSN{2076-2607}}
+\DeclareOption{minerals}{\gdef\@journal{minerals}	\gdef\@doiabbr{min}	\gdef\@ISSN{2075-163X}}
+\DeclareOption{modelling}{\gdef\@journal{modelling}	\gdef\@doiabbr{}	\gdef\@ISSN{0012-0012}}
+\DeclareOption{molbank}{\gdef\@journal{molbank}	\gdef\@doiabbr{M}	\gdef\@ISSN{1422-8599}}
+\DeclareOption{molecules}{\gdef\@journal{molecules}	\gdef\@doiabbr{molecules}	\gdef\@ISSN{1420-3049}}
+\DeclareOption{mps}{\gdef\@journal{mps}	\gdef\@doiabbr{mps}	\gdef\@ISSN{2409-9279}}
+\DeclareOption{mti}{\gdef\@journal{mti}	\gdef\@doiabbr{mti}	\gdef\@ISSN{2414-4088}}
+\DeclareOption{nanomaterials}{\gdef\@journal{nanomaterials}	\gdef\@doiabbr{nano}	\gdef\@ISSN{2079-4991}}
+\DeclareOption{ncrna}{\gdef\@journal{ncrna}	\gdef\@doiabbr{ncrna}	\gdef\@ISSN{2311-553X}}
+\DeclareOption{neonatalscreening}{\gdef\@journal{neonatalscreening}	\gdef\@doiabbr{ijns}	\gdef\@ISSN{2409-515X}}
+\DeclareOption{neuroglia}{\gdef\@journal{neuroglia}	\gdef\@doiabbr{neuroglia}	\gdef\@ISSN{}}
+\DeclareOption{nitrogen}{\gdef\@journal{nitrogen}	\gdef\@doiabbr{}	\gdef\@ISSN{2504-3129}}
+\DeclareOption{notspecified}{\gdef\@journal{notspecified}	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{nutrients}{\gdef\@journal{nutrients}	\gdef\@doiabbr{nu}	\gdef\@ISSN{2072-6643}}
+\DeclareOption{ohbm}{\gdef\@journal{ohbm}	\gdef\@doiabbr{ohbm}	\gdef\@ISSN{2504-463X}}
+\DeclareOption{particles}{\gdef\@journal{particles}	\gdef\@doiabbr{particles}	\gdef\@ISSN{2571-712X}}
+\DeclareOption{pathogens}{\gdef\@journal{pathogens}	\gdef\@doiabbr{pathogens}	\gdef\@ISSN{2076-0817}}
+\DeclareOption{pharmaceuticals}{\gdef\@journal{pharmaceuticals}	\gdef\@doiabbr{ph}	\gdef\@ISSN{1424-8247}}
+\DeclareOption{pharmaceutics}{\gdef\@journal{pharmaceutics}	\gdef\@doiabbr{pharmaceutics}	\gdef\@ISSN{1999-4923}}
+\DeclareOption{pharmacy}{\gdef\@journal{pharmacy}	\gdef\@doiabbr{pharmacy}	\gdef\@ISSN{2226-4787}}
+\DeclareOption{philosophies}{\gdef\@journal{philosophies}	\gdef\@doiabbr{philosophies}	\gdef\@ISSN{2409-9287}}
+\DeclareOption{photonics}{\gdef\@journal{photonics}	\gdef\@doiabbr{photonics}	\gdef\@ISSN{2304-6732}}
+\DeclareOption{plants}{\gdef\@journal{plants}	\gdef\@doiabbr{plants}	\gdef\@ISSN{2223-7747}}
+\DeclareOption{plasma}{\gdef\@journal{plasma}	\gdef\@doiabbr{plasma}	\gdef\@ISSN{2571-6182}}
+\DeclareOption{polymers}{\gdef\@journal{polymers}	\gdef\@doiabbr{polym}	\gdef\@ISSN{2073-4360}}
+\DeclareOption{polysaccharides}{\gdef\@journal{polysaccharides}	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{preprints}{\gdef\@journal{preprints} 	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{proceedings}{\gdef\@journal{proceedings}	\gdef\@doiabbr{proceedings}	\gdef\@ISSN{2504-3900}}
+\DeclareOption{processes}{\gdef\@journal{processes}	\gdef\@doiabbr{pr}	\gdef\@ISSN{2227-9717}}
+\DeclareOption{proteomes}{\gdef\@journal{proteomes}	\gdef\@doiabbr{proteomes}	\gdef\@ISSN{2227-7382}}
+\DeclareOption{publications}{\gdef\@journal{publications}	\gdef\@doiabbr{publications}	\gdef\@ISSN{2304-6775}}
+\DeclareOption{quaternary}{\gdef\@journal{quaternary}	\gdef\@doiabbr{}	\gdef\@ISSN{2571-550X}}
+\DeclareOption{qubs}{\gdef\@journal{qubs}	\gdef\@doiabbr{qubs}	\gdef\@ISSN{2412-382X}}
+\DeclareOption{reactions}{\gdef\@journal{reactions}	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{recycling}{\gdef\@journal{recycling}	\gdef\@doiabbr{recycling}	\gdef\@ISSN{2313-4321}}
+\DeclareOption{religions}{\gdef\@journal{religions}	\gdef\@doiabbr{rel}	\gdef\@ISSN{2077-1444}}
+\DeclareOption{remotesensing}{\gdef\@journal{remotesensing}	\gdef\@doiabbr{rs}	\gdef\@ISSN{2072-4292}}
+\DeclareOption{reports}{\gdef\@journal{reports}	\gdef\@doiabbr{reports}	\gdef\@ISSN{}}
+\DeclareOption{resources}{\gdef\@journal{resources}	\gdef\@doiabbr{resources}	\gdef\@ISSN{2079-9276}}
+\DeclareOption{risks}{\gdef\@journal{risks}	\gdef\@doiabbr{risks}	\gdef\@ISSN{2227-9091}}
+\DeclareOption{robotics}{\gdef\@journal{robotics}	\gdef\@doiabbr{robotics}	\gdef\@ISSN{2218-6581}}
+\DeclareOption{safety}{\gdef\@journal{safety}	\gdef\@doiabbr{safety}	\gdef\@ISSN{2313-576X}}
+\DeclareOption{scipharm}{\gdef\@journal{scipharm}	\gdef\@doiabbr{scipharm}	\gdef\@ISSN{2218-0532}}
+\DeclareOption{sensors}{\gdef\@journal{sensors}	\gdef\@doiabbr{s}	\gdef\@ISSN{1424-8220}}
+\DeclareOption{separations}{\gdef\@journal{separations}	\gdef\@doiabbr{separations}	\gdef\@ISSN{2297-8739}}
+\DeclareOption{sexes}{\gdef\@journal{sexes}	\gdef\@doiabbr{}	\gdef\@ISSN{2411-5118}}
+\DeclareOption{sinusitis}{\gdef\@journal{sinusitis}	\gdef\@doiabbr{sinusitis}	\gdef\@ISSN{2309-107X}}
+\DeclareOption{societies}{\gdef\@journal{societies}	\gdef\@doiabbr{soc}	\gdef\@ISSN{2075-4698}}
+\DeclareOption{socsci}{\gdef\@journal{socsci}	\gdef\@doiabbr{socsci}	\gdef\@ISSN{2076-0760}}
+\DeclareOption{soilsystems}{\gdef\@journal{soilsystems}	\gdef\@doiabbr{}	\gdef\@ISSN{2411-5126}}
+\DeclareOption{sports}{\gdef\@journal{sports}	\gdef\@doiabbr{sports}	\gdef\@ISSN{2075-4663}}
+\DeclareOption{standards}{\gdef\@journal{standards}	\gdef\@doiabbr{}	\gdef\@ISSN{2305-6703}}
+\DeclareOption{stats}{\gdef\@journal{stats}	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{surfaces}{\gdef\@journal{surfaces}	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{surgeries}{\gdef\@journal{surgeries}	\gdef\@doiabbr{}	\gdef\@ISSN{2017-2017}}
+\DeclareOption{sustainability}{\gdef\@journal{sustainability}	\gdef\@doiabbr{su}	\gdef\@ISSN{2071-1050}}
+\DeclareOption{symmetry}{\gdef\@journal{symmetry}	\gdef\@doiabbr{sym}	\gdef\@ISSN{2073-8994}}
+\DeclareOption{systems}{\gdef\@journal{systems}	\gdef\@doiabbr{systems}	\gdef\@ISSN{2079-8954}}
+\DeclareOption{technologies}{\gdef\@journal{technologies}	\gdef\@doiabbr{technologies}	\gdef\@ISSN{2227-7080}}
+\DeclareOption{test}{\gdef\@journal{test}	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{toxics}{\gdef\@journal{toxics}	\gdef\@doiabbr{toxics}	\gdef\@ISSN{2305-6304}}
+\DeclareOption{toxins}{\gdef\@journal{toxins}	\gdef\@doiabbr{toxins}	\gdef\@ISSN{2072-6651}}
+\DeclareOption{tropicalmed}{\gdef\@journal{tropicalmed}	\gdef\@doiabbr{tropicalmed}	\gdef\@ISSN{2414-6366}}
+\DeclareOption{universe}{\gdef\@journal{universe}	\gdef\@doiabbr{universe}	\gdef\@ISSN{2218-1997}}
+\DeclareOption{urbansci}{\gdef\@journal{urbansci}	\gdef\@doiabbr{urbansci}	\gdef\@ISSN{2413-8851}}
+\DeclareOption{vaccines}{\gdef\@journal{vaccines}	\gdef\@doiabbr{vaccines}	\gdef\@ISSN{2076-393X}}
+\DeclareOption{vehicles}{\gdef\@journal{vehicles}	\gdef\@doiabbr{}	\gdef\@ISSN{}}
+\DeclareOption{vetsci}{\gdef\@journal{vetsci}	\gdef\@doiabbr{vetsci}	\gdef\@ISSN{2306-7381}}
+\DeclareOption{vibration}{\gdef\@journal{vibration}	\gdef\@doiabbr{vibration}	\gdef\@ISSN{2571-631X}}
+\DeclareOption{viruses}{\gdef\@journal{viruses}	\gdef\@doiabbr{v}	\gdef\@ISSN{1999-4915}}
+\DeclareOption{vision}{\gdef\@journal{vision}	\gdef\@doiabbr{vision}	\gdef\@ISSN{2411-5150}}
+\DeclareOption{water}{\gdef\@journal{water}	\gdef\@doiabbr{w}	\gdef\@ISSN{2073-4441}}
+\DeclareOption{wem}{\gdef\@journal{wem}	\gdef\@doiabbr{}	\gdef\@ISSN{1234-4321}}
 
-%% Uppercase will have the same effect
-\DeclareOption{Actuators}{\gdef\@journal{actuators}}
-\DeclareOption{Addictions}{\gdef\@journal{addictions}}
-\DeclareOption{Admsci}{\gdef\@journal{admsci}}
-\DeclareOption{Administrativesciences}{\gdef\@journal{admsci}} %to have backwards compatibility
-\DeclareOption{Aerospace}{\gdef\@journal{aerospace}}
-\DeclareOption{Agriculture}{\gdef\@journal{agriculture}}
-\DeclareOption{Agronomy}{\gdef\@journal{agronomy}}
-\DeclareOption{Algorithms}{\gdef\@journal{algorithms}}
-\DeclareOption{Animals}{\gdef\@journal{animals}}
-\DeclareOption{Antibiotics}{\gdef\@journal{antibiotics}}
-\DeclareOption{Antibodies}{\gdef\@journal{antibodies}}
-\DeclareOption{Antioxidants}{\gdef\@journal{antioxidants}}
-\DeclareOption{Applsci}{\gdef\@journal{applsci}}
-\DeclareOption{Appliedsciences}{\gdef\@journal{applsci}} %to have backwards compatibility
-\DeclareOption{Arts}{\gdef\@journal{arts}}
-\DeclareOption{ASI}{\gdef\@journal{asi}}
-\DeclareOption{Atmosphere}{\gdef\@journal{atmosphere}}
-\DeclareOption{Atoms}{\gdef\@journal{atoms}}
-\DeclareOption{Axioms}{\gdef\@journal{axioms}}
-\DeclareOption{Batteries}{\gdef\@journal{batteries}}
-\DeclareOption{BDCC}{\gdef\@journal{bdcc}}
-\DeclareOption{Behavsci}{\gdef\@journal{behavsci}}
-\DeclareOption{Behavioralsciences}{\gdef\@journal{behavsci}} %to have backwards compatibility
-\DeclareOption{Beverages}{\gdef\@journal{beverages}}
-\DeclareOption{Bioengineering}{\gdef\@journal{bioengineering}}
-\DeclareOption{Biology}{\gdef\@journal{biology}}
-\DeclareOption{Biomedicines}{\gdef\@journal{biomedicines}}
-\DeclareOption{Biomimetics}{\gdef\@journal{biomimetics}}
-\DeclareOption{Biomolecules}{\gdef\@journal{biomolecules}}
-\DeclareOption{Biosensors}{\gdef\@journal{biosensors}}
-\DeclareOption{Brainsci}{\gdef\@journal{brainsci}}
-\DeclareOption{Brainsciences}{\gdef\@journal{brainsci}} %to have backwards compatibility
-\DeclareOption{Buildings}{\gdef\@journal{buildings}}
-\DeclareOption{C}{\gdef\@journal{carbon}}
-\DeclareOption{Carbon}{\gdef\@journal{carbon}}
-\DeclareOption{Cancers}{\gdef\@journal{cancers}}
-\DeclareOption{Catalysts}{\gdef\@journal{catalysts}}
-\DeclareOption{Cells}{\gdef\@journal{cells}}
-\DeclareOption{Ceramics}{\gdef\@journal{ceramics}}
-\DeclareOption{Challenges}{\gdef\@journal{challenges}}
-\DeclareOption{ChemEngineering}{\gdef\@journal{chemengineering}}
-\DeclareOption{Chemosensors}{\gdef\@journal{chemosensors}}
-\DeclareOption{Children}{\gdef\@journal{children}}
-\DeclareOption{Climate}{\gdef\@journal{climate}}
-\DeclareOption{Coatings}{\gdef\@journal{coatings}}
-\DeclareOption{Colloids}{\gdef\@journal{colloids}}
-\DeclareOption{Computation}{\gdef\@journal{computation}}
-\DeclareOption{Computers}{\gdef\@journal{computers}}
-\DeclareOption{Condensedmatter}{\gdef\@journal{condensedmatter}}
-\DeclareOption{Cosmetics}{\gdef\@journal{cosmetics}}
-\DeclareOption{Cryptography}{\gdef\@journal{cryptography}}
-\DeclareOption{Crystals}{\gdef\@journal{crystals}}
-\DeclareOption{Cybersecurity}{\gdef\@journal{cybersecurity}}
-\DeclareOption{Data}{\gdef\@journal{data}}
-\DeclareOption{Dentistry}{\gdef\@journal{dentistry}}
-\DeclareOption{Dentistryjournal}{\gdef\@journal{dentistry}} %to have backwards compatibility 
-\DeclareOption{Designs}{\gdef\@journal{designs}}
-\DeclareOption{Diagnostics}{\gdef\@journal{diagnostics}}
-\DeclareOption{Diseases}{\gdef\@journal{diseases}}
-\DeclareOption{Diversity}{\gdef\@journal{diversity}}
-\DeclareOption{Drones}{\gdef\@journal{drones}}
-\DeclareOption{Econometrics}{\gdef\@journal{econometrics}}
-\DeclareOption{Economies}{\gdef\@journal{economies}}
-\DeclareOption{Education}{\gdef\@journal{education}}
-\DeclareOption{Educationsciences}{\gdef\@journal{education}} %to have backwards compatibility
-\DeclareOption{Electrochem}{\gdef\@journal{electrochem}}
-\DeclareOption{Electrochemistry}{\gdef\@journal{electrochemistry}}
-\DeclareOption{Electronics}{\gdef\@journal{electronics}}
-\DeclareOption{Energies}{\gdef\@journal{energies}}
-\DeclareOption{Entropy}{\gdef\@journal{entropy}}
-\DeclareOption{Environments}{\gdef\@journal{environments}}
-\DeclareOption{Epigenomes}{\gdef\@journal{epigenomes}}
-\DeclareOption{EST}{\gdef\@journal{est}}
-\DeclareOption{Fermentation}{\gdef\@journal{fermentation}}
-\DeclareOption{Fibers}{\gdef\@journal{fibers}}
-\DeclareOption{Fire}{\gdef\@journal{fire}}
-\DeclareOption{Fishes}{\gdef\@journal{fishes}}
-\DeclareOption{Fluids}{\gdef\@journal{fluids}}
-\DeclareOption{Foods}{\gdef\@journal{foods}}
-\DeclareOption{Forecasting}{\gdef\@journal{forecasting}}
-\DeclareOption{Forests}{\gdef\@journal{forests}}
-\DeclareOption{Fractalfract}{\gdef\@journal{fractalfract}}
-\DeclareOption{Futureinternet}{\gdef\@journal{futureinternet}}
-\DeclareOption{Galaxies}{\gdef\@journal{galaxies}}
-\DeclareOption{Games}{\gdef\@journal{games}}
-\DeclareOption{Gastrointestdisord}{\gdef\@journal{gastrointestdisord}}
-\DeclareOption{Gels}{\gdef\@journal{gels}}
-\DeclareOption{Genealogy}{\gdef\@journal{genealogy}}
-\DeclareOption{Genes}{\gdef\@journal{genes}}
-\DeclareOption{Geosciences}{\gdef\@journal{geosciences}}
-\DeclareOption{Geriatrics}{\gdef\@journal{geriatrics}}
-\DeclareOption{Hazardousmatters}{\gdef\@journal{hazardousmatters}}
-\DeclareOption{Healthcare}{\gdef\@journal{healthcare}}
-\DeclareOption{Heritage}{\gdef\@journal{heritage}}
-\DeclareOption{Highthroughput}{\gdef\@journal{highthroughput}}
-\DeclareOption{Horticulturae}{\gdef\@journal{horticulturae}}
-\DeclareOption{Humanities}{\gdef\@journal{humanities}}
-\DeclareOption{Hydrology}{\gdef\@journal{hydrology}}
-\DeclareOption{Informatics}{\gdef\@journal{informatics}}
-\DeclareOption{Information}{\gdef\@journal{information}}
-\DeclareOption{Infrastructures}{\gdef\@journal{infrastructures}}
-\DeclareOption{Inorganics}{\gdef\@journal{inorganics}}
-\DeclareOption{Insects}{\gdef\@journal{insects}}
-\DeclareOption{Instruments}{\gdef\@journal{instruments}}
-\DeclareOption{Ijerph}{\gdef\@journal{ijerph}}
-\DeclareOption{Ijfs}{\gdef\@journal{ijfs}}
-\DeclareOption{Ijms}{\gdef\@journal{ijms}}
-\DeclareOption{Ijgi}{\gdef\@journal{ijgi}}
-\DeclareOption{Ijtpp}{\gdef\@journal{ijtpp}}
-\DeclareOption{Inventions}{\gdef\@journal{inventions}}
-\DeclareOption{J}{\gdef\@journal{jjournal}}
-\DeclareOption{Jcdd}{\gdef\@journal{jcdd}}
-\DeclareOption{Jcm}{\gdef\@journal{jcm}}
-\DeclareOption{Jcs}{\gdef\@journal{jcs}}
-\DeclareOption{Jdb}{\gdef\@journal{jdb}}
-\DeclareOption{Jfb}{\gdef\@journal{jfb}}
-\DeclareOption{Jmk}{\gdef\@journal{jfmk}}
-\DeclareOption{Jof}{\gdef\@journal{jof}}
-\DeclareOption{Jimaging}{\gdef\@journal{jimaging}}
-\DeclareOption{Jintelligence}{\gdef\@journal{jintelligence}}
-\DeclareOption{Jlpea}{\gdef\@journal{jlpea}}
-\DeclareOption{Jmmp}{\gdef\@journal{jmmp}}
-\DeclareOption{Jmse}{\gdef\@journal{jmse}}
-\DeclareOption{Jpm}{\gdef\@journal{jpm}}
-\DeclareOption{Jrfm}{\gdef\@journal{jrfm}}
-\DeclareOption{Jsan}{\gdef\@journal{jsan}}
-\DeclareOption{Land}{\gdef\@journal{land}}
-\DeclareOption{Languages}{\gdef\@journal{languages}}
-\DeclareOption{Laws}{\gdef\@journal{laws}}
-\DeclareOption{Life}{\gdef\@journal{life}}
-\DeclareOption{Literature}{\gdef\@journal{literature}}
-\DeclareOption{Logistics}{\gdef\@journal{logistics}}
-\DeclareOption{Lubricants}{\gdef\@journal{lubricants}}
-\DeclareOption{Machines}{\gdef\@journal{machines}}
-\DeclareOption{Magnetochemistry}{\gdef\@journal{magnetochemistry}}
-\DeclareOption{Make}{\gdef\@journal{make}}
-\DeclareOption{MarineDrugs}{\gdef\@journal{marinedrugs}}
-\DeclareOption{Materials}{\gdef\@journal{materials}}
-\DeclareOption{Mathematics}{\gdef\@journal{mathematics}}
-\DeclareOption{Mca}{\gdef\@journal{mca}}
-\DeclareOption{Medsci}{\gdef\@journal{medsci}}
-\DeclareOption{Medicalsciences}{\gdef\@journal{medsci}} %to have backwards compatibility
-\DeclareOption{Medicines}{\gdef\@journal{medicines}}
-\DeclareOption{Membranes}{\gdef\@journal{membranes}}
-\DeclareOption{Metabolites}{\gdef\@journal{metabolites}}
-\DeclareOption{Metals}{\gdef\@journal{metals}}
-\DeclareOption{Microarrays}{\gdef\@journal{microarrays}}
-\DeclareOption{Micromachines}{\gdef\@journal{micromachines}}
-\DeclareOption{Microorganisms}{\gdef\@journal{microorganisms}}
-\DeclareOption{Minerals}{\gdef\@journal{minerals}}
-\DeclareOption{Modelling}{\gdef\@journal{modelling}}
-\DeclareOption{Molbank}{\gdef\@journal{molbank}}
-\DeclareOption{Molecules}{\gdef\@journal{molecules}}
-\DeclareOption{Mps}{\gdef\@journal{mps}}
-\DeclareOption{Mti}{\gdef\@journal{mti}}
-\DeclareOption{Nanomaterials}{\gdef\@journal{nanomaterials}}
-\DeclareOption{ncRNA}{\gdef\@journal{ncrna}}
-\DeclareOption{Neonatalscreening}{\gdef\@journal{neonatalscreening}}
-\DeclareOption{Neuroglia}{\gdef\@journal{neuroglia}}
-\DeclareOption{Nitrogen}{\gdef\@journal{nitrogen}}
-\DeclareOption{Nutrients}{\gdef\@journal{nutrients}}
-\DeclareOption{OHBM}{\gdef\@journal{ohbm}}
-\DeclareOption{Particles}{\gdef\@journal{particles}}
-\DeclareOption{Pathogens}{\gdef\@journal{pathogens}}
-\DeclareOption{Pharmaceuticals}{\gdef\@journal{pharmaceuticals}}
-\DeclareOption{Pharmaceutics}{\gdef\@journal{pharmaceutics}}
-\DeclareOption{Pharmacy}{\gdef\@journal{pharmacy}}
-\DeclareOption{Philosophies}{\gdef\@journal{philosophies}}
-\DeclareOption{Photonics}{\gdef\@journal{photonics}}
-\DeclareOption{Plants}{\gdef\@journal{plants}}
-\DeclareOption{Plasma}{\gdef\@journal{plasma}}
-\DeclareOption{Polymers}{\gdef\@journal{polymers}}
-\DeclareOption{Polysaccharides}{\gdef\@journal{polysaccharides}}
-\DeclareOption{Proceedings}{\gdef\@journal{proceedings}}
-\DeclareOption{Processes}{\gdef\@journal{processes}}
-\DeclareOption{Proteomes}{\gdef\@journal{proteomes}}
-\DeclareOption{Publications}{\gdef\@journal{publications}}
-\DeclareOption{Quaternary}{\gdef\@journal{quaternary}}
-\DeclareOption{Qubs}{\gdef\@journal{qubs}}
-\DeclareOption{Recycling}{\gdef\@journal{recycling}}
-\DeclareOption{Religions}{\gdef\@journal{religions}}
-\DeclareOption{RemoteSensing}{\gdef\@journal{remotesensing}}
-\DeclareOption{Reports}{\gdef\@journal{reports}}
-\DeclareOption{Resources}{\gdef\@journal{resources}}
-\DeclareOption{Risks}{\gdef\@journal{risks}}
-\DeclareOption{Robotics}{\gdef\@journal{robotics}}
-\DeclareOption{Safety}{\gdef\@journal{safety}}
-\DeclareOption{Scipharm}{\gdef\@journal{scipharm}}
-\DeclareOption{Sensors}{\gdef\@journal{sensors}}
-\DeclareOption{Separations}{\gdef\@journal{separations}}
-\DeclareOption{Sexes}{\gdef\@journal{sexes}}
-\DeclareOption{Sinusitis}{\gdef\@journal{sinusitis}}
-\DeclareOption{Socsci}{\gdef\@journal{socsci}}
-\DeclareOption{SocialSciences}{\gdef\@journal{socsci}} %to have backwards compatibility
-\DeclareOption{Societies}{\gdef\@journal{societies}}
-\DeclareOption{Soils}{\gdef\@journal{soils}}
-\DeclareOption{Sports}{\gdef\@journal{sports}}
-\DeclareOption{Standards}{\gdef\@journal{standards}}
-\DeclareOption{Stats}{\gdef\@journal{stats}}
-\DeclareOption{Surfaces}{\gdef\@journal{surfaces}}
-\DeclareOption{Surgeries}{\gdef\@journal{surgeries}}
-\DeclareOption{Sustainability}{\gdef\@journal{sustainability}}
-\DeclareOption{Symmetry}{\gdef\@journal{symmetry}}
-\DeclareOption{Systems}{\gdef\@journal{systems}}
-\DeclareOption{Technologies}{\gdef\@journal{technologies}}
-\DeclareOption{Toxics}{\gdef\@journal{toxics}}
-\DeclareOption{Toxins}{\gdef\@journal{toxins}}
-\DeclareOption{Tropicalmed}{\gdef\@journal{tropicalmed}}
-\DeclareOption{Universe}{\gdef\@journal{universe}}
-\DeclareOption{Urbansci}{\gdef\@journal{urbansci}}
-\DeclareOption{Vaccines}{\gdef\@journal{vaccines}}
-\DeclareOption{Vetsci}{\gdef\@journal{vetsci}}
-\DeclareOption{VeterinarySciences}{\gdef\@journal{vetsci}} %to have backwards compatibility
-\DeclareOption{Vibration}{\gdef\@journal{vibration}}
-\DeclareOption{Viruses}{\gdef\@journal{viruses}}
-\DeclareOption{Vision}{\gdef\@journal{vision}}
-\DeclareOption{Water}{\gdef\@journal{water}}
-\DeclareOption{Wem}{\gdef\@journal{wem}}
-\DeclareOption{journal}{\ClassWarning{mdpi}{You have not specified the journal. The first class option of the document class mdpi specifies the journal. The word journal should be replaced by one of the following journal names: actuators, addictions, admsci, aerospace, agriculture, agronomy, algorithms, animals, antibiotics, antibodies, antioxidants, applsci, arts, asi, atmosphere, atoms, axioms, batteries, bdcc, behavsci, beverages, bioengineering, biology, biomedicines, biomimetics, biomolecules, biosensors, brainsci, buildings, carbon, cancers, catalysts, cells, ceramics, challenges, chemengineering, chemosensors, children, climate, coatings, colloids, computation, computers, condensedmatter, cosmetics, cryptography, crystals, cybersecurity, data, dentistry, designs, diagnostics, diseases, diversity, drones, econometrics, economies, education, electrochem, electrochemistry, electronics, energies, entropy, environments, epigenomes, est, fermentation, fibers, fire, fishes, fluids, foods, forecasting, forests, fractalfract, futureinternet, galaxies, games, gastrointestdisord, gels, genealogy, genes, geosciences, geriatrics, hazardousmatters, healthcare, heritage, highthroughput, horticulturae, humanities, hydrology, informatics, information, infrastructures, inorganics, insects, instruments, ijerph, ijfs, ijms, ijgi, ijtpp, inventions, j, jcdd, jcm, jcs, jdb, jfb, jfmk, jimaging, jof, jintelligence, jlpea, jmmp, jmse, jpm, jrfm, jsan, land, languages, laws, life, literature, logistics, lubricants, machines, magnetochemistry, make, marinedrugs, materials, mathematics, mca, medsci, medicines, membranes, metabolites, metals, microarrays, micromachines, microorganisms, minerals, modelling, molbank, molecules, mps, mti, nanomaterials, ncrna, neonatalscreening, neuroglia, nitrogen, nutrients, ohbm, particles, pathogens, pharmaceuticals, pharmaceutics, pharmacy, philosophies, photonics, plants, plasma, polymers, polysaccharides, proceedings, processes, proteomes, publications, quaternary, qubs, recycling, religions, remotesensing, reports, resources, risks, robotics, safety, scipharm, sensors, separations, sexes, sinusitis, socsci, societies, soils, sports, standards, stats, surfaces, surgeries, sustainability, symmetry, systems, technologies, toxics, toxins, tropicalmed, universe, urbansci, vaccines, vetsci, vibration, viruses, vision, water,wem}} 
+\DeclareOption{journal}{\ClassWarning{mdpi}{You have not specified the journal. The first class option of the document class mdpi specifies the journal. The word journal should be replaced by one of the following journal names: actuators, addictions, admsci, aerospace, agriculture, agronomy, algorithms, animals, antibiotics, antibodies, antioxidants, applsci, arts, asi, atmosphere, atoms, axioms, batteries, bdcc, behavsci, beverages, bioengineering, biology, biomedicines, biomimetics, biomolecules, biosensors, brainsci, buildings, carbon, cancers, catalysts, cells, ceramics, challenges, chemengineering, chemosensors, children, climate, coatings, colloids, computation, computers, condensedmatter, cosmetics, cryptography, crystals, cybersecurity, data, dentistry, designs, diagnostics, diseases, diversity, drones, econometrics, economies, education, electrochem, electrochemistry, electronics, energies, entropy, environments, epigenomes, est, fermentation, fibers, fire, fishes, fluids, foods, forecasting, forests, fractalfract, futureinternet, galaxies, games, gastrointestdisord, gels, genealogy, genes, geosciences, geriatrics, hazardousmatters, healthcare, heritage, highthroughput, horticulturae, humanities, hydrology, informatics, information, infrastructures, inorganics, insects, instruments, ijerph, ijfs, ijms, ijgi, ijtpp, inventions, j, jcdd, jcm, jcs, jdb, jfb, jfmk, jimaging, jof, jintelligence, jlpea, jmmp, jmse, jpm, jrfm, jsan, land, languages, laws, life, literature, logistics, lubricants, machines, magnetochemistry, make, marinedrugs, materials, mathematics, mca, medsci, medicines, membranes, metabolites, metals, microarrays, micromachines, microorganisms, minerals, modelling, molbank, molecules, mps, mti, nanomaterials, ncrna, neonatalscreening, neuroglia, nitrogen, nutrients, ohbm, particles, pathogens, pharmaceuticals, pharmaceutics, pharmacy, philosophies, photonics, plants, plasma, polymers, polysaccharides, proceedings, processes, proteomes, publications, quaternary, qubs, reactions, recycling, religions, remotesensing, reports, resources, risks, robotics, safety, scipharm, sensors, separations, sexes, sinusitis, socsci, societies, soilsystems, sports, standards, stats, surfaces, surgeries, sustainability, symmetry, systems, technologies, toxics, toxins, tropicalmed, universe, urbansci, vaccines, vehicles, vetsci, vibration, viruses, vision, water,wem}} 
 
 %% To choose the type of manuscript
 \DeclareOption{abstract}{\gdef\@arttype{Abstract}}
@@ -763,7 +538,9 @@
 \newcommand{\AuthorNames}[1]{\gdef\@AuthorNames{#1}}%
 \newcommand{\firstpage}[1]{\gdef\@firstpage{#1}}
 \newcommand{\doinum}[1]{\gdef\@doinum{#1}}
-\doinum{10.3390/\@doiabbr\@pubvolume\@issuenum\@articlenumber}
+
+\doinum{10.3390/\@doiabbr\@pubvolume\num[minimum-integer-digits = 2]{\@issuenum}\num[minimum-integer-digits = 4]{\@articlenumber}}
+
 \newcommand{\pubvolume}[1]{\gdef\@pubvolume{#1}}
 \newcommand{\pubyear}[1]{\gdef\@pubyear{#1}}
 \newcommand{\copyrightyear}[1]{\gdef\@copyrightyear{#1}}
@@ -795,14 +572,9 @@
 \def\@keycontribution{}
 \newcommand{\keycontribution}[1]{\gdef\@keycontribution{#1}}
 
-\def\@ISSN{}
-\newcommand{\ISSN}[1]{\gdef\@ISSN{#1}}
+
 \def\@issuenum{}
 \newcommand{\issuenum}[1]{\gdef\@issuenum{#1}}
-
-\def\@doiabbr{}
-\newcommand{\doiabbr}[1]{\gdef\@doiabbr{#1}}
-
 \def\@updates{}
 \newcommand{\updates}[1]{\gdef\@updates{#1}}
 
@@ -977,6 +749,7 @@
   \ifthenelse{\equal{\@journal}{jlpea}}{J. Low Power Electron. Appl.}{}%
   \ifthenelse{\equal{\@journal}{jmmp}}{J. Manuf. Mater. Process.}{}%
   \ifthenelse{\equal{\@journal}{jmse}}{J. Mar. Sci. Eng.}{}%
+  \ifthenelse{\equal{\@journal}{joitmc}}{J. Open Innov. Technol. Mark. Complex.}{}%
   \ifthenelse{\equal{\@journal}{jpm}}{J. Pers. Med.}{}%
   \ifthenelse{\equal{\@journal}{jrfm}}{J. Risk Financial Manag.}{}%
   \ifthenelse{\equal{\@journal}{jsan}}{J. Sens. Actuator Netw.}{}%
@@ -1003,7 +776,7 @@
   \ifthenelse{\equal{\@journal}{micromachines}}{Micromachines}{}%
   \ifthenelse{\equal{\@journal}{microorganisms}}{Microorganisms}{}%
   \ifthenelse{\equal{\@journal}{minerals}}{Minerals}{}%
-  \ifthenelse{\equal{\@journal}{modelling}}{Modelling}{}
+  \ifthenelse{\equal{\@journal}{modelling}}{Modelling}{}%
   \ifthenelse{\equal{\@journal}{molbank}}{Molbank}{}%
   \ifthenelse{\equal{\@journal}{molecules}}{Molecules}{}%
   \ifthenelse{\equal{\@journal}{mps}}{Methods and Protoc.}{}%
@@ -1032,6 +805,7 @@
   \ifthenelse{\equal{\@journal}{publications}}{Publications}{}%
   \ifthenelse{\equal{\@journal}{quaternary}}{Quaternary}{}%
   \ifthenelse{\equal{\@journal}{qubs}}{Quantum Beam Sci.}{}%
+  \ifthenelse{\equal{\@journal}{reactions}}{Reactions}{}%
   \ifthenelse{\equal{\@journal}{recycling}}{Recycling}{}%
   \ifthenelse{\equal{\@journal}{religions}}{Religions}{}%
   \ifthenelse{\equal{\@journal}{remotesensing}}{Remote Sens.}{}%
@@ -1047,7 +821,7 @@
   \ifthenelse{\equal{\@journal}{sinusitis}}{Sinusitis}{}%
   \ifthenelse{\equal{\@journal}{socsci}}{Soc. Sci.}{}%
   \ifthenelse{\equal{\@journal}{societies}}{Societies}{}%
-  \ifthenelse{\equal{\@journal}{soils}}{Soils}{}%
+  \ifthenelse{\equal{\@journal}{soilsystems}}{Soil. Syst.}{}%
   \ifthenelse{\equal{\@journal}{sports}}{Sports}{}%
   \ifthenelse{\equal{\@journal}{standards}}{Standards}{}%
   \ifthenelse{\equal{\@journal}{stats}}{Stats}{}%
@@ -1063,6 +837,7 @@
   \ifthenelse{\equal{\@journal}{universe}}{Universe}{}%
   \ifthenelse{\equal{\@journal}{urbansci}}{Urban Sci.}{}%
   \ifthenelse{\equal{\@journal}{vaccines}}{Vaccines}{}%
+  \ifthenelse{\equal{\@journal}{vehicles}}{Vehicles}{}%
   \ifthenelse{\equal{\@journal}{vetsci}}{Vet. Sci.}{}%
   \ifthenelse{\equal{\@journal}{vibration}}{Vibration}{}%
   \ifthenelse{\equal{\@journal}{viruses}}{Viruses}{}%
@@ -1138,7 +913,7 @@
 					Submitted to {\em\journalname}, %
 					pages \thepage \ -- \color{black}{\pageref*{LastPage}}%
 					}{
-					{\em \journalname}%
+					{\em \journalname}\ %
 					{\bfseries \@pubyear}, %
 					{\em \@pubvolume}, %
 					\ifthenelse{\equal{\@articlenumber}{\@empty}}{%
@@ -1304,14 +1079,9 @@
 	\par
 	}%
 	{%
-	\ifthenelse{\equal{\@status}{submit}}{Version {\@ \today} submitted to \journalname}{\@history}
+	\ifthenelse{\equal{\@status}{submit}}{Version {\@ \today} submitted to \journalname}{\@history\hfill \ifthenelse{\equal{\@updates}{\@empty}}{}{\href{http://www.mdpi.com/\@ISSN/\@pubvolume/\@issuenum/\@articlenumber?type=check_update&version=1}{\includegraphics[height=.6cm]{logo-updates}}}}
 	\par
-	\vspace{6pt}
-	}%
-	{%
-	\ifthenelse{\equal{\@updates}{\@empty}}{}{\href{http://www.mdpi.com/\@ISSN/\@pubvolume/\@issuenum/\@articlenumber?type=check_update&version=1}{\includegraphics[height=.6cm]{logo-updates}}
-	\par
-	\vspace{-4pt}}%
+	\vspace{-4pt}%
 	}%
 	\end{spacing}
 	\end{flushleft}
@@ -1349,7 +1119,7 @@
 \ifthenelse{\equal{\@dataset}{\@empty}}{}{
 \begingroup
 \leftskip0.2cm
-\noindent\textbf{Data Set:\space}\@dataset
+\noindent\textbf{Dataset:\space}\@dataset
 \vspace{12pt}
 \par
 \endgroup}
@@ -1358,7 +1128,7 @@
 \ifthenelse{\equal{\@datasetlicense}{\@empty}}{}{
 \begingroup
 \leftskip0.2cm
-\noindent\textbf{Data Set License:\space}\@datasetlicense
+\noindent\textbf{Dataset License:\space}\@datasetlicense
 \vspace{12pt}
 \par
 \endgroup}
@@ -1377,7 +1147,7 @@
 \begingroup
 \leftskip0.2cm
 \ifthenelse{\equal{\@keycontribution}{\@empty}}{}{
-\noindent\textbf{Key contribution:\space}\@keycontribution
+\noindent\textbf{Key Contribution:\space}\@keycontribution
 \vspace{12pt}
 \par
 }
@@ -1646,6 +1416,9 @@
 \let\olditem\item
 \renewcommand{\item}{\setlength{\itemsep}{\wideitemsep}\olditem}
 
+%%%% Quote environment
+\patchcmd{\quote}{\rightmargin}{\leftmargin 0.75cm \rightmargin}{}{}
+
 %%%% Supplementary file
 \ifthenelse{\equal{\@arttype}{Supfile}}{
 	\renewcommand{\thefigure}{S\arabic{figure}}%
@@ -1653,7 +1426,7 @@
 	}{}%
 
 %% Link to supplementary material: www.mdpi.com/ISSN-number/volume-number/issue-number/article-number	
-\newcommand{\linksupplementary}{\url{http://www.mdpi.com/\@ISSN\@pubvolume\@issuenum\@articlenumber}}
+\newcommand{\linksupplementary}{\url{http://www.mdpi.com/\@ISSN/\@pubvolume/\@issuenum/\@articlenumber}}
 
 %%%% Header and footer (all pages except the first)
 \renewcommand\headrule{} %% set line (from fancyhdr) in header to nothing
@@ -1675,7 +1448,7 @@
         					\href{http://dx.doi.org/\@doinum}%
         					{\@doinum}}%
 			}{%
-			{\em\journalname}{\bfseries\@pubyear}, {\em \@pubvolume}, %
+			{\em\journalname\ }{\bfseries\@pubyear}, {\em \@pubvolume}, %
 			\ifthenelse{\equal{\@articlenumber}{}}{%
 			\@firstpage --\pageref*{LastPage}%
 			}{%

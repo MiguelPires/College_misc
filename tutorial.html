@@ -1,0 +1,78 @@
+<div class="row">
+	<div class="col-md-12">
+		<div id="modal" class="modal hide fade">
+			<div class="modal-header">
+				<h3>Illegal Parking Tutorial</h3>
+			</div>
+			<div id="0" class="modal-body" style="display:none">
+				<p><strong>Hi!</strong></p>
+				<p style="text-align: justify">Thank you for helping us collect enough data to build an European Illegal Parking Ranking. Hopefully, the resulting ranking will raise awareness to the problem in Europe and thus pressure the national and local institutions to pursue more effective measures to tackle the problem.</p>
+			</div>
+			<div id="1" class="modal-body" style="display:none">
+				<p><strong>How can you help?</strong></p>
+				<p style="text-align: justify">We need to examine each photo to check whether there is any illegal parking occurrence in it. 
+					While this can be done in a few seconds by any person, we need a huge team to analyse the whole set of photos - and this is where you can help with your free time.
+
+					It takes only a few seconds:
+					<ul> 
+						<li>You open a task and take a careful look at the photo</li>
+						<li>Then select whether you found any car that is clearly parked illegally</li>
+						<li>If so, tell us if any of the observed occurrences can put pedestrians in danger</li>
+					</ul>
+				</p>
+			</div>
+			<div id="2"  class="modal-body" style="display:none">
+				<p><strong>What should you consider as illegal parking?</strong></p>
+					<p>Cases where parking is illegal include the following:
+					<ul>
+						<li>On the pavement (except where signs permit it)</li>
+						<li>On (or a few meters before) a pedestrian or bicycle crossing</li>
+						<li>On a tram or cycle lane</li>
+						<li>A few meters before a junction or a roundabout</li>
+						<li>At (or near) a bus or tram stop</li>
+						<li>On the road, double parking or in areas where signs clearly prohibit parking</li>
+					</ul>
+					<p style="text-align: justify">Besides illegal, many situations above are also dangerous to vulnerable users (pedestrians and cyclists). These include any occurrence where the pedestrian or cyclist is forced to cross without visibility or walk/cycle outside the areas reserved for pedestrians/cyclist. For example:</p><br>
+				<p style="text-align: center">
+					<img height="4%" width="95%" vertical-align="bottom" src="http://www.bournemouthecho.co.uk/resources/images/3707171/"> 
+				</p>
+				
+			</div>
+			<div class="modal-footer">
+				<a id="prevBtn" href="#" onclick="showStep('prev')" class="btn">Previous</a>
+				<a id="nextBtn" href="#" onclick="showStep('next')" class="btn btn-success">Next</a>
+				<a id="startContrib" href="../Illegal_Parking/newtask" class="btn btn-primary" style="display:none"><i class="fa fa-thumbs-o-up"></i> Contribute!</a>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	var step = -1;
+	function showStep(action) {
+		$("#" + step).hide();
+		if (action == 'next') {
+			step = step + 1;
+		}
+		if (action == 'prev') {
+			step = step - 1;
+		}
+
+		if (step == 0) {
+			$("#prevBtn").hide();
+			$("#startContrib").hide();
+
+		} else if (step == 1) {
+			$("#prevBtn").show();
+			$("#startContrib").hide();
+			$("#nextBtn").show();
+
+		} else if (step == 2) {
+			$("#nextBtn").hide();
+			$("#startContrib").show();
+		}
+		$("#" + step).show();
+	}
+
+	showStep('next');
+	$("#modal").modal('show');
+</script>

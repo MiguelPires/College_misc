@@ -1,0 +1,302 @@
+<div class="row">
+    <!-- Success and Error Messages for the user --> 
+    <div class="col-md-6 col-md-offset-2" style="height:50px">
+        <div id="success" class="alert alert-success" style="display:none;">
+            <a class="close">×</a>
+            <strong id="i18n_welldone">Well done!</strong> <span id="i18n_welldone_text">Your answer has been saved</span>
+        </div>
+        <div id="loading" class="alert alert-info" style="display:none;">
+            <a class="close">×</a>
+            <span id="i18n_loading_next_task">Loading next task...</span>
+        </div>
+        <div id="taskcompleted" class="alert alert-info" style="display:none;">
+            <strong id="i18n_task_completed">The task has been completed!</strong> <span id="i18n_thanks">Thanks a lot!</span>
+        </div>
+        <div id="finish" class="alert alert-success" style="display:none;">
+            <strong id="i18n_congratulations">Congratulations!</strong> <span id="i18n_congratulations_text">You have participated in all available tasks!</span>
+            <br/>
+            <div class="alert-actions">
+                <a class="btn small" href="/">Go back</a>
+                <a class="btn small" href="/app">or, Check other projects</a>
+            </div>
+        </div>
+        <div id="error" class="alert alert-danger" style="display:none;">
+            <a class="close" onclick='return close()'>×</a>
+            <strong>Error!</strong> Something went wrong, please contact the site administrators
+        </div>
+    </div> <!-- End Success and Error Messages for the user -->
+</div> <!-- End of Row -->
+
+<!--
+    Task DOM for loading the Flickr Images
+    It uses the class="skeleton" to identify the elements that belong to the
+    task.
+-->
+<div class="row skeleton"> <!-- Start Skeleton Row-->
+    <div class="col-md-6 "><!-- Start of Question and Submission DIV (column) -->
+        <div style="margin-bottom: 3%;">
+            <h1 style="margin-bottom: 24%;" id="question"><span id="i18n_question">Do you see any parked cars?</span></h1> <!-- The question will be loaded here -->
+            <div id="answer" style="margin-bottom: 15px;"> <!-- Start DIV for the submission buttons -->
+                <button style="margin-right: 2px" type="button" onclick="this.blur();" class="btn btn-success"> Yes </button>
+                    <button style="margin-right: 8px" type="button" onclick="this.blur();" class="btn btn-danger"> No </button>
+
+                <!--If the user clicks this button, the saved answer will be value="NoPhoto"-->
+                <button class="btn btn-answer" onclick="this.blur();" id='picProblem'>I don't know</button>
+
+            </div><!-- End of DIV for the submission buttons -->
+        </div>
+        <!-- Feedback items for the user -->
+        <div>
+            <p><span id="i18n_working_task">You are working now on task:</span> <span id="task-id" class="label label-warning">#</span></p>
+            <p><span id="i18n_tasks_completed">You have completed:</span> <span id="done" class="label label-info"></span> <span id="i18n_tasks_from">tasks from</span>
+            <!-- Progress bar for the user -->
+            <span id="total" class="label label-info"></span></p>
+            <div class="progress progress-striped">
+                <div id="progress" rel="tooltip" title="#" class="progress-bar" style="width: 0%;"  role="progressbar"></div>
+            </div>
+            <!-- 
+                This application uses Disqus to allow users to provide some feedback.
+                The next section includes a button that when a user clicks on it will
+                load the comments, if any, for the given task
+            -->
+            <div id="disqus_show_btn" style="margin-top:5px;">
+                <button class="btn btn-primary btn-large btn-disqus" onclick="loadDisqus()"><i class="fa fa-comments"></i> <span id="i18n_show_comments">Show comments</span></button>
+                <button class="btn btn-large btn-disqus" onclick="loadDisqus()" style="display:none"><i class="fa fa-comments"></i> <span id="i18n_hide_comments">Hide comments</span></button>
+            </div><!-- End of Disqus Button section -->
+            <!-- Disqus thread for the given task -->
+        </div>
+        <div id="disqus_thread" style="margin-top:5px;display:none"></div>
+    </div><!-- End of Question and Submission DIV (column) -->
+
+
+
+    <div class="col-md-6">
+        <div id="photo-cont" style="display:none; position:fixed; z-index:1000;
+                    top:0; left:0; height: 100%; width: 100%; background: rgba(255, 255, 255, .9 ) 
+                    url('http://jimpunk.net/Loading/wp-content/uploads/loading1.gif') 50% 50% no-repeat;
+                    overflow: hidden; display:block">
+            <!-- Place at bottom of page -->
+        </div>
+    
+        <a id="photo-link" href="#">  <img id="photo">       </a>
+ 
+
+    <!-- <a id="photo-link" href="#">
+            <img id="photo" src="http://i.imgur.com/GeHxzb7.png" style="max-width=100%">
+        </a>-->
+    </div>
+</div><!-- End of Skeleton Row -->
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    function loadDisqus() {
+    $("#disqus_thread").toggle();
+    $(".btn-disqus").toggle();
+    var disqus_shortname = 'pybossa'; // required: replace example with your forum shortname
+    //var disqus_identifier = taskId;
+    var disqus_developer = 1;
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    }
+
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+<script>
+function close(){
+    $('#error').hide();
+}
+function loadUserProgress() {
+    pybossa.userProgress('Illegal_Parking').done(function(data){
+        var pct = Math.round((data.done*100)/data.total);
+        $("#progress").css("width", pct.toString() +"%");
+        $("#progress").attr("title", pct.toString() + "% completed!");
+        $("#progress").tooltip({'placement': 'left'}); 
+        $("#total").text(data.total);
+        $("#done").text(data.done);
+    });
+}
+
+pybossa.taskLoaded(function(task, deferred) {
+    $('#error').hide();
+    task.answer = {"city": task.info.city, 
+                    "parked": null, 
+                    "illegal": null, 
+                    "dangerous": null};
+
+    if (!$.isEmptyObject(task)) {
+
+        var img = $('<img />');
+        img.load(function() {
+            // continue as soon as the image is loaded
+            $("#photo-cont").hide();
+            deferred.resolve(task);
+        }); 
+
+        img.attr('src', task.info.url).css('height', 460);
+        img.addClass('img-thumbnail img-responsive');
+        task.info.image = img;
+    }
+    else {
+        $("#photo-cont").hide();
+        deferred.resolve(task);
+    }
+});
+
+pybossa.presentTask(function(task, deferred) {
+
+    if ( !$.isEmptyObject(task) ) {
+        loadUserProgress();
+
+        $('#photo-link').html('').append(task.info.image);
+        $("#photo-link").attr("href", task.info.link);
+
+        $('#task-id').html(task.id);
+        $('.btn-danger').off('click').on('click', function(evt) {
+
+            task.answer.parked = "No";
+            task.answer.illegal = "No";
+            task.answer.dangerous = "No";
+            pybossa.saveTask(task.id, task.answer).done(function() {
+            //    setTimeout(function() { $("#loading").fadeOut() }, 1000);
+
+              //  deferred.resolve();  
+                deferred.resolve().done(function(){
+                    $("#photo-cont").show();
+                });
+            });
+
+          //  $("#loading").fadeIn(500);
+            if ($("#disqus_thread").is(":visible")) {
+                $('#disqus_thread').toggle();
+                $('.btn-disqus').toggle();
+            }
+        });
+
+        $('.btn-success').off('click').on('click', function(evt) {
+            task.answer.parked = "Yes";
+
+            $('#i18n_question').fadeOut(function(){
+                $(this).text("Do you see any car that is clearly parked illegally?").fadeIn();
+            });
+
+            $('.btn-success').off('click').on('click', function(evt) {
+                task.answer.illegal = "Yes";
+
+                $('#i18n_question').fadeOut(function(){
+                    $(this).text("Is any illegally parked car clearly putting pedestrians in danger?").fadeIn();
+                });
+
+                $('.btn-success').off('click').on('click', function(evt) {
+                    task.answer.dangerous = "Yes";
+                    
+                    pybossa.saveTask(task.id, task.answer).done(function() { 
+                        $('#i18n_question').fadeOut(function(){
+                            $(this).text("Do you see any parked cars?").fadeIn();
+                        });           
+
+                      //  setTimeout(function() { $("#loading").fadeOut() }, 1000);
+                     //   deferred.resolve();
+                       deferred.resolve().done(function(){
+                            $("#photo-cont").show();
+                        });
+
+                    });
+
+                  //  $("#loading").fadeIn(500);
+                    if ($("#disqus_thread").is(":visible")) {
+                        $('#disqus_thread').toggle();
+                        $('.btn-disqus').toggle();
+                    }
+
+                });
+                $('.btn-danger').off('click').on('click', function(evt) {
+                    task.answer.dangerous = "No";
+
+                    pybossa.saveTask(task.id, task.answer).done(function() {            
+                        $('#i18n_question').fadeOut(function(){
+                            $(this).text("Do you see any parked cars?").fadeIn();
+                        });     
+
+                      //  setTimeout(function() { $("#loading").fadeOut() }, 1000);
+                        //deferred.resolve();
+                        deferred.resolve().done(function(){
+                            $("#photo-cont").show();
+                        });
+
+                    });
+
+                  //  $("#loading").fadeIn(500);
+                    if ($("#disqus_thread").is(":visible")) {
+                        $('#disqus_thread').toggle();
+                        $('.btn-disqus').toggle();
+                    }
+
+                });
+            });
+
+            $('.btn-danger').off('click').on('click', function(evt) {
+                task.answer.illegal = "No";
+                task.answer.dangerous = "No";
+                
+                pybossa.saveTask(task.id, task.answer).done(function() {            
+                    $('#i18n_question').fadeOut(function(){
+                        $(this).text("Do you see any parked cars?").fadeIn();
+                    });     
+                    //setTimeout(function() { $("#loading").fadeOut() }, 1000);
+                    //deferred.resolve();
+                    deferred.resolve().done(function(){
+                        $("#photo-cont").show();
+                    });
+                });
+
+                //$("#loading").fadeIn(500);
+                if ($("#disqus_thread").is(":visible")) {
+                    $('#disqus_thread').toggle();
+                    $('.btn-disqus').toggle();
+                }
+
+            });
+        });
+
+
+        $('#picProblem').off('click').on('click', function(evt) {
+            task.answer.parked = "BP";
+            task.answer.illegal = "BP";
+            task.answer.dangerous = "BP";
+            pybossa.saveTask(task.id, task.answer).done(function() {
+                $('#i18n_question').fadeOut(function(){
+                    $(this).text("Do you see any parked cars?").fadeIn();
+                });    
+
+               // setTimeout(function() { $("#loading").fadeOut() }, 1000);
+                //deferred.resolve();
+                deferred.resolve().done(function(){
+                    $("#photo-cont").show();
+                });
+            });
+
+            //$("#loading").fadeIn(500);
+            if ($("#disqus_thread").is(":visible")) {
+                $('#disqus_thread').toggle();
+                $('.btn-disqus').toggle();
+            }
+        });
+        
+        $("#loading").hide();
+    }
+    else {
+        $(".skeleton").hide();
+        $("#loading").hide();
+        $("#finish").fadeIn(500);
+    }
+});
+
+pybossa.run('Illegal_Parking');
+</script>

@@ -1,0 +1,325 @@
+
+This section presents our Byzantine fault tolerant Generalized Paxos
+Protocol (or BGP, for short). 
+
+\begin{algorithm}
+	\setstretch{1.35}
+	\caption{Byzantine Generalized Paxos - Proposer p}
+	\label{BFT-Prop}
+	\textbf{Local variables:} $ballot\_type = \bot$
+	\begin{algorithmic}[1]	
+		
+		\State \textbf{upon} \textit{receive($BALLOT, type$)} \textbf{do} 
+		\State \hspace{\algorithmicindent} $ballot\_type = type$
+		\State
+		
+		\State \textbf{upon} \textit{command\_request($c$)} \textbf{do}   \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}
+		\State \hspace{\algorithmicindent} \textbf{if} $ballot\_type == fast\_ballot$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2A\_FAST, c}$ to acceptors
+		\State \hspace{\algorithmicindent} \textbf{else} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{PROPOSE, c}$ to leader
+	\end{algorithmic}
+\end{algorithm}
+
+\subsection{Overview}
+We modularize our protocol explanation according to the following main components, which are also present in other protocols of the Paxos family:
+
+\begin{itemize}
+	
+	\item
+	{\bf View Change} -- The goal of this subprotocol is to ensure that, at any given moment, one of the proposers is chosen as a distinguished leader, who runs a specific version of the agreement subprotocol. To achieve this, the view change subprotocol continuously replaces leaders, until one is found that can ensure progress (i.e., commands are eventually appended to the current sequence).
+	
+	\item
+	{\bf Agreement} -- Given a fixed leader, this subprotocol extends the current sequence with a new command or set of commands. Analogously to Fast Paxos~\cite{L06} and Generalized Paxos~\cite{Lamport2005}, choosing this extension can be done through two variants of the protocol: using either \textit{classic} ballots or \textit{fast} ballots, with the characteristic that fast ballots complete in fewer communication steps, but may have to fall back to using a classic ballot when there is contention among concurrent requests.
+	
+\end{itemize}
+
+\subsection{View Change} 
+
+The goal of the view change subprotocol is to elect a distinguished proposer process, called the leader, that carries through the agreement protocol (i.e., enables proposed commands to eventually be learned by all the learners). The overall design of this subprotocol is similar to the corresponding part of existing BFT state machine replication protocols~\cite{CL99}.\par
+
+In this subprotocol, the system moves through sequentially numbered views, and the leader for each view is chosen in a rotating fashion using the simple equation $\textit{leader(view)}=\textit{view mod N}$. The protocol works continuously by having acceptor processes monitor whether progress is being made on adding commands to the current sequence, and, if not, by multicasting a signed {\sc suspicion} message for the current view to all acceptors suspecting the current leader. Then, if enough suspicions are collected, processes can move to the subsequent view. However, the required number of suspicions must be chosen in a way that prevents Byzantine processes from triggering view changes spuriously. To this end, acceptor processes will multicast a view change message indicating their commitment to starting a new view only after hearing that $f+1$ processes suspect the leader to be faulty. This message contains the new view number, the $f+1$ signed suspicions, and is signed by the acceptor that sends it. This way, if a process receives a view-change message without previously receiving $f+1$ suspicions, it can also multicast a view-change message, after verifying that the suspicions are correctly signed by $f+1$ distinct processes.
+%As such, the signatures allow a process that receives this message to commit to the new view and multicast its own view-change message without receiving $f+1$ suspicions itself.
+This guarantees that if one correct process receives the $f+1$ suspicions and multicasts the view-change message, then all correct processes, upon receiving this message, will be able to validate the $f+1$ suspicions and also multicast the view-change message.\par
+
+\begin{algorithm} 
+	\setstretch{1.35}
+	\caption{Byzantine Generalized Paxos - Leader l}
+	\label{BFT-Lead}
+	\textbf{Local variables:} $ballot_l = 0,proposals = \bot, accepted = \bot, notAccepted = \bot, view = 0$
+	\begin{algorithmic}[1]
+		\State \textbf{upon} \textit{receive($LEADER,view_a,proofs$)} from acceptor \textit{a} \textbf{do}
+		\State \hspace{\algorithmicindent} $valid\_proofs = 0$
+		\State \hspace{\algorithmicindent} \textbf{for} $p$ \textbf{in} $acceptors$ \textbf{do} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $view\_proof = proofs[p]$
+		
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $view\_proof_{pub_p} == \langle view\_change, view_a \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}  $valid\_proofs \mathrel{+{=}} 1$
+		\State \hspace{\algorithmicindent} \textbf{if} $valid\_proofs > f$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $view = view_a$
+		
+		\State
+		\State \textbf{upon} \textit{trigger\_next\_ballot($type$)} \textbf{do}
+		\State \hspace{\algorithmicindent} $ballot_l \mathrel{+{=}} 1$
+		\State \hspace{\algorithmicindent} $\Call{send}{BALLOT,type}$ to proposers
+		\State \hspace{\algorithmicindent} \textbf{if} $type == fast$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{FAST,ballot_l,view}$ to acceptors
+		\State \hspace{\algorithmicindent} \textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P1A, ballot_l, view}$ to acceptors
+		
+		\State
+		\State \textbf{upon} \textit{receive($PROPOSE, prop$)} from proposer \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{prop}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2A\_CLASSIC, ballot_l,view, prop}$
+		\State \hspace{\algorithmicindent} \textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proposals = proposals \bullet prop$
+		
+		\State
+		\State \textbf{upon} \textit{receive($P1B, ballot, bal_a, proven,val_a, proofs$)} from acceptor $a$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $ballot \neq ballot_l$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return}
+		\State
+		\State \hspace{\algorithmicindent} $valid\_proofs = 0$
+		\State \hspace{\algorithmicindent} \textbf{for} $i$ \textbf{in} $acceptors$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = proofs[proven][i]$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof_{pub_i} == \langle bal_a, proven \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
+		$valid\_proofs \mathrel{+{=}} 1$
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $valid\_proofs > N-f$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $accepted[ballot_l][a] = proven$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $notAccepted[ballot_l] = notAccepted[ballot_l] \bullet (val_a \setminus proven)$
+		
+		\State 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(accepted[ballot_l]) \geq N-f$ \textbf{then} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{phase\_2a}{ }$
+		
+		\State
+		\Function{phase\_2a}{$ $}
+		\State $maxTried = \Call{largest\_seq}{accepted[ballot_l]}$
+		\State $previousProposals = \Call{remove\_duplicates}{notAccepted[ballot_l]}$
+		\State $maxTried = maxTried \bullet previousProposals \bullet proposals$
+		\State $\Call{send}{P2A\_CLASSIC,ballot_l,view, maxTried}$ to acceptors
+		\State $proposals = \bot$
+		\EndFunction
+		
+	\end{algorithmic}
+\end{algorithm}
+
+Finally, an acceptor process must wait for $N-f$ view-change messages to start participating in the new view (i.e., update its view number and the corresponding leader process). At this point, the acceptor also assembles the $N-f$ view-change messages, proving that others are committing to the new view, and sends them to the new leader. This allows the new leader to start its leadership role in the new view once it validates the $N-f$ signatures contained in a single message.
+
+\subsection{Agreement Protocol} 
+
+The consensus protocol allows learner processes to agree on equivalent sequences of commands (according to the definition of equivalence present in Section~\ref{sec:model}). An important conceptual distinction between Fast Paxos~\cite{L06} and our protocol is that ballots correspond to an extension to the sequence of learned commands of a single ongoing consensus instance, instead of being a separate instance of consensus,. Proposers can try to extend the current sequence by either single commands or sequences of commands. We use the term \textit{proposal} to denote either the command or sequence of commands that was proposed.\par
+Ballots can either be \textit{classic} or \textit{fast}. In classic ballots, a leader proposes a single proposal to be appended to the commands learned by the learners. The protocol is then similar to the one used by classic Paxos~\cite{Lam98}, with a first phase where each acceptor conveys to the leader the sequences that the acceptor has already voted for (so that the leader can resend commands that may not have gathered enough votes), followed by a second phase where the leader instructs and gathers support for appending the new proposal to the current sequence of learned commands. Fast ballots, in turn, allow any proposer to contact all acceptors directly in order to extend the current sequence (in case there are no conflicts between concurrent proposals). However, both types of ballots contain an additional round, called the verification phase, in which acceptors broadcast proofs among each other indicating their committal to a sequence. This additional round comes after the acceptors receive a proposal and before they send their votes to the learners.\par
+Next, we present the protocol for each type of ballot in detail. We start by describing fast ballots since their structure has consequences that implicate classic ballots. Figures \ref{bgp_fast} and \ref{bgp_classic} illustrate the message pattern for fast and classic ballots, respectively. In these illustrations, arrows that are composed of solid lines represent messages that can be sent multiple times per ballot (once per proposal) while arrows composed of dotted lines represent messages that are sent only once per ballot.
+
+\begin{algorithm} 
+	\setstretch{1.35}
+	\caption{Byzantine Generalized Paxos - Acceptor a (view change)}
+	\label{BFT-Proc}
+	\textbf{Local variables:} $suspicions = \bot,\ new\_view = \bot,\ leader = \bot,\ view = 0, bal_a = 0,\ val_a = \bot,\ fast\_bal = \bot,\ checkpoint=\bot$
+	\begin{algorithmic}[1]		
+		\State \textbf{upon} \textit{suspect\_leader} \textbf{do} 
+		\State\hspace{\algorithmicindent} \textbf{if} $suspicions[p] \neq true$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions[p] = true$
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = \langle suspicion, view \rangle_{priv_a}$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{SUSPICION, view,proof}$
+		\State
+		
+		\State \textbf{upon} \textit{receive($SUSPICION, view_i, proof$)} from acceptor $i$ \textbf{do} 
+		\State\hspace{\algorithmicindent} \textbf{if} $view_i \neq view$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return}
+		\State\hspace{\algorithmicindent} \textbf{if} $proof_{pub_i} == \langle suspicion, view \rangle$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions[i] = proof$
+		
+		\State\hspace{\algorithmicindent} \textbf{if} $\#(suspicions) > f$ and $new\_view[view+1][p] == \bot$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $change\_proof = \langle view\_change, view +1 \rangle_{priv_a}$
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view+1][p] = change\_proof$
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{VIEW\_CHANGE, view+1, suspicions, change\_proof}$
+		\State
+		
+		\State\textbf{upon} \textit{receive($VIEW\_CHANGE, new\_view_i, suspicions, change\_proof_i$)} from acceptor $i$ \textbf{do} 
+		\State\hspace{\algorithmicindent} \textbf{if} $new\_view_i \leq view$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\textbf{return}
+		\State
+		\State\hspace{\algorithmicindent} $valid\_proofs = 0$
+		\State\hspace{\algorithmicindent} \textbf{for} $p$ \textbf{in} $acceptors$ \textbf{do} 
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = suspicions[p]$
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $last\_view = new\_view_i-1$
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof_{pub_p} == \langle suspicion, last\_view \rangle$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $valid\_proofs \mathrel{+{=}} 1$
+		\State
+		\State\hspace{\algorithmicindent} \textbf{if} $valid\_proofs \leq f$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return}
+		\State
+		\State\hspace{\algorithmicindent} $new\_view[new\_view_i][i] = change\_proof_i$
+		\State\hspace{\algorithmicindent} \textbf{if} $new\_view[view_i][a] == \bot$ \textbf{then}				
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $change\_proof = \langle view\_change, new\_view_i \rangle_{priv_a}$
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $new\_view[view_i][a] = change\_proof$
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent}  $\Call{send}{VIEW\_CHANGE, view_i, suspicions, change\_proof}$
+		\State
+		\State\hspace{\algorithmicindent} \textbf{if} $\#(new\_view[new\_view_i]) \geq N-f$ \textbf{then}
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $view = view_i$
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $leader = view\ mod\ N$
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $suspicions = \bot$
+		\State\hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{LEADER, view, new\_view[view_i]}$ to leader
+	\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Fast Ballots} 
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth*2/3]{Figures/bgp_fast}
+	\caption{BGP's fast ballot message pattern}
+	\label{bgp_fast}
+\end{figure}
+
+Fast ballots leverage the weaker specification of generalized consensus (compared to classic consensus) in terms of command ordering at different replicas, to allow for the faster execution of commands in some cases. The basic idea of fast ballots is that proposers contact the acceptors directly, bypassing the leader, and then the acceptors send their vote for the current sequence to the learners. If a conflict exists and progress isn't being made, the protocol reverts to using a classic ballot. This is where generalized consensus allows us to avoid falling back to this slow path, namely in the case where commands that ordered differently at different acceptors commute. \par 
+However, this concurrency introduces safety problems even when a quorum is reached for some sequence. If we keep the original Fast Paxos message pattern~\cite{L06}, it's possible for one sequence $s$ to be learned at one learner $l_1$ while another non-commutative sequence $s'$ is learned before $s$ at another learner $l_2$. Suppose $s$ obtains a quorum of votes and is learned by $l_1$ but the same votes are delayed indefinitely before reaching $l_2$. In the next classic ballot, when the leader gathers a quorum of \textit{phase 1b} messages it must arbitrate an order for the commands that it received from the acceptors and it doesn't know the order in which they were learned. This is because, of the $N-f$ messages it received, $f$ may not have participated in the quorum and another $f$ may be Byzantine and lie about their vote, which only leaves one correct acceptor that participated in the quorum and a single vote isn't enough to determine if the sequence was learned or not. If the leader picks the wrong sequence, it would be proposing a sequence $s'$ that is non-commutative to a learned sequence $s$. Since the learning of $s$ was delayed before reaching $l_2$, $l_2$ could learn $s'$ and be in a conflicting state with respect to $l_1$, violating consistency. In order to prevent this, sequences accepted by a quorum of acceptors must be monotonic extensions of previous accepted sequences. Regardless of the order in which a learner learns a set of monotonically increasing sequences, the resulting state will be the same. The additional verification phase is what allows acceptors to prove to the leader that some sequence was accepted by a quorum. By gathering $N-f$ proofs for some sequence, an acceptor can prove that at least $f+1$ correct acceptors voted for that sequence. Since there are only another $2f$ acceptors in the system, no other non-commutative value may have been voted for by a quorum. \par
+An interesting alternative to requiring $N-f$ proofs from each acceptor, would be for the leader to wait for $2f+1$ matching \textit{phase 1b} messages. Since at least $f+1$ of those would be correct, only that sequence could've been learned since any other non-commutative sequence would obtain at most $2f$ votes. Zyzzyva uses a similar approach of waiting for $3f+1$ to commit requests in single round-trip in executions where no faults occur~\cite{Kotla:2008}. However, this approach is unsuitable for BGP since it's possible for a sequence to be chosen by a quorum without the leader being aware of more than $f+1$ votes in its quorum. Since $f+1$ votes aren't enough to ensure the leader that the sequence was chosen by a quorum, the leader wouldn't be able to pick a learned sequence.\par
+Next, we explain each of the protocol's steps for fast ballots in greater detail.
+
+\noindent {\bf Step 1: Proposer to acceptors.}
+To initiate a fast ballot, the leader informs both proposers and acceptors that the proposals may be sent directly to the acceptors. Unlike classic ballots, where the sequence proposed by the leader consists of the commands received from the proposers appended to previously proposed commands, in a fast ballot, proposals can be sent to the acceptors in the form of either a single command or a sequence to be appended to the command history. These proposals are sent directly from the proposers to the acceptors.\par
+
+\begin{algorithm} 
+	\setstretch{1.35}
+	\caption{Byzantine Generalized Paxos - Acceptor a (agreement)}
+	\label{BFT-Acc}
+	\textbf{Local variables:} $leader = \bot,\ view = 0, bal_a = 0,\ val_a = \bot,\ fast\_bal = \bot,\ proven = \bot$
+	\begin{algorithmic}[1]
+		\State \textbf{upon} \textit{receive($P1A, ballot, view_l$)} from leader $l$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $view_l == view$ and $bal_a < ballot$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P1B, ballot,bal_a,proven, val_a, proofs[bal_a]}$ to leader
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $bal_a = ballot$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a = \bot$	
+		
+		
+		\State
+		\State \textbf{upon} \textit{receive($FAST,ballot,view_l$)} from leader \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $view_l == view$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $fast\_bal[ballot] = true$
+
+		\State
+		\State \textbf{upon} \textit{receive($VERIFY,view_i, ballot_i,val_i,proof$)} from acceptor $i$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $proof_{pub_i} == \langle ballot_i, val_i \rangle$ and $view == view_i$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proofs[ballot_i][val_i][i] = proof$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(proofs[ballot_i][val_i]) \geq N-f$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $proven = val_i$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B, ballot_i, val_i, proofs[ballot_i][value_i]}$ to learners
+		
+		\State
+		\State \textbf{upon} \textit{receive$(P2A\_CLASSIC, ballot, view, value$)} from leader \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $view_l == view$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{phase\_2b\_classic}{ballot, value}$
+		
+		\State		
+		\State \textbf{upon} \textit{receive($P2A\_FAST, value$)} from proposer \textbf{do}
+		\State \hspace{\algorithmicindent} $\Call{phase\_2b\_fast}{value}$
+	
+		\State
+		\Function{phase\_2b\_classic}{$ballot, value$}
+		\State $univ\_commut = \Call{isUniversallyCommutative}{val_a}$
+		\State \textbf{if} $ballot \geq bal_a$ and $val_a ==  \bot$ and \ $!fast\_bal[bal_a]$ and ($univ\_commut$ or $proven == \bot$ or $proven == \Call{subsequence}{value, 0, \#(proven)}$) \textbf{then}
+		\State \hspace{\algorithmicindent} $bal_a = ballot$
+		\State \hspace{\algorithmicindent} \textbf{if} $univ\_commut$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B,bal_a, value}$ to learners
+		\State \hspace{\algorithmicindent} \textbf{else} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a = value$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = \langle ballot, val_a \rangle_{priv_a}$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proofs[ballot][val_a][a] = proof$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{VERIFY, view, ballot, val_a, proof}$ to acceptors
+		\EndFunction
+		
+		\State
+		\Function{phase\_2b\_fast}{$ballot, value$}
+		\State \textbf{if} $ballot == bal_a$ and $fast\_bal[bal_a]$ \textbf{then}
+		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{value}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B,bal_a, value}$ to learners
+		\State \hspace{\algorithmicindent} \textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a = val_a \bullet value$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = \langle ballot, val_a \rangle_{priv_a}$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proofs[ballot][val_a][a] = proof$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{VERIFY, view, ballot, val_a, proof}$ to acceptors
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+
+\noindent {\bf Step 2: Acceptors to acceptors.}
+Acceptors append the proposals they receive to the proposals they have previously accepted in the current ballot and broadcast the resulting sequence and the current ballot to the other acceptors, along with a signed tuple of these two values. Intuitively, this broadcast corresponds to a verification phase where acceptors gather proofs that a sequence gathered enough support to be committed. This proofs will be sent to the leader in the subsequent classic ballot in order for it to pick a sequence that preserves consistency. To ensure safety, correct learners must learn non-commutative commands in a total order. When an acceptor gathers $N-f$ proofs for equivalent values, it proceeds to the next phase. That is, sequences do not necessarily have to be equal in order to be learned since commutative commands may be reordered. Recall that a sequence is equivalent to another if it can be transformed into the second one by reordering its elements without changing the order of any pair of non-commutative commands (in the pseudocode, proofs for equivalent sequences are being treated as belonging to the same index of the \emph{proofs} variable, to simplify the presentation). By requiring $N-f$ votes for a sequence of commands, we ensure that, given two sequences where non-commutative commands are differently ordered, only one sequence will receive enough votes even if $f$ Byzantine acceptors vote for both sequences. Outside the set of (up to) $f$ Byzantine acceptors, the remaining $2f+1$ correct acceptors will only vote for a single sequence, which means there are only enough correct processes to commit one of them. Note that the fact that proposals are sent as extensions to previous sequences is critical to the safety of the protocol. In particular, since the votes from acceptors can be reordered by the network before being delivered to the learners, if these values were single commands, it would be impossible to guarantee that non-commutative commands would be learned in a total order. \par
+\noindent {\bf Step 3: Acceptors to learners.} Similarly to what happens in classic ballots, the fast ballot equivalent of the \textit{phase 2b} message, which is sent from acceptors to learners, contains the current ballot number, the command sequence and the $N-f$ proofs gathered in the verification round. One could think that, since acceptors are already gathering proofs that a value will eventually be committed, learners are not required to gather $N-f$ votes and they can wait for a single \textit{phase 2b} message and validate the $N-f$ proofs contained in it. However, this is not the case due to the possibility of learners learning sequences without the leader being aware of it. If we allowed the learners to learn after witnessing $N-f$ proofs for just one acceptor then that would raise the possibility of that acceptor not being present in the quorum of \textit{phase 1b} messages. Therefore, the leader wouldn't be aware that some value was proven and learned. The only way to guarantee that at least one correct acceptor will relay the latest proven sequence to the leader is by forcing the learner to require $N-f$ \textit{phase 2b} messages since only then will one correct acceptor be in the intersection of the two quorums. \par
+\noindent {\bf Arbitrating an order after a conflict.} When, in a fast ballot, non-commutative commands are concurrently proposed, these commands may be incorporated into the sequences of various acceptors in different orders and, therefore, the sequences sent by the acceptors in \textit{phase 2b} messages will not be equivalent and will not be learned. In this case, the leader subsequently runs a classic ballot and gathers these unlearned sequences in \textit{phase 1b}. Then, the leader will arbitrate a single serialization for every previously proposed command, which it will then send to the acceptors. Therefore, if non-commutative commands are concurrently proposed in a fast ballot, they will be included in the subsequent classic ballot and the learners will learn them in a total order, thus preserving consistency.
+
+\subsubsection{Classic Ballots} 
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth*2/3]{Figures/bgp_classic}
+	\caption{BGP's classic ballot message pattern}
+	\label{bgp_classic}
+\end{figure}
+Classic ballots work in a way that is very close to the original Paxos protocol~\cite{Lam98}. Therefore, throughout our description, we will highlight the points where BGP departs from that original protocol, either due to the Byzantine fault model, or due to behaviors that are particular to our specification of the consensus problem.\par
+
+In this part of the protocol, the leader continuously collects proposals by assembling all commands that are received from the proposers since the previous ballot in a sequence (this differs from classic Paxos, where it suffices to keep a single proposed value that the leader attempts to reach agreement on). When the next ballot is triggered, the leader starts the first phase by sending \textit{phase 1a} messages to all acceptors containing just the ballot number. Similarly to classic Paxos, acceptors reply with a \textit{phase 1b} message to the leader, which reports all sequences of commands they voted for. In classic Paxos, acceptors also promise not to participate in lower-numbered ballots, in order to prevent safety violations~\cite{Lam98}. However, in BGP this promise is already implicit, given (1) there is only one leader per view and it is the only process allowed to propose in a classic ballot and (2) acceptors replying to that message must be in the same view as that leader.
+
+As previously mentioned, \textit{phase 1b} messages contain $N-f$ proofs for each learned sequence. By waiting for $N-f$ such messages, the leader is guaranteed that, for any learned sequence $s$, at least one of the messages will be from a correct acceptor that, due to the quorum intersection property, participated in the verification phase of $s$. Note that waiting for $N-f$ \textit{phase 1b} messages is not what makes the leader be sure that a certain sequence was learned in a previous ballot. The leader can be sure that some sequence was learned because each \textit{phase 1b} message contains cryptographic proofs from $2f+1$ acceptors stating that they would vote for that sequence. Since there are only $3f+1$ acceptors in the system, no other non-commutative sequence could've been learned. Even though each \textit{phase 1b} message relays enough proofs to ensure the leader that some sequence was learned, the leader still needs to wait for $N-f$ such messages to be sure that he is aware of any sequence that was previously learned. Note that, since each command is signed by the proposer (this signature and its check are not explicit in the pseudocode), a Byzantine acceptor can't relay made-up commands. However, it can omit commands from its \textit{phase 1b} message, which is why it's necessary for the leader to be sure that at least one correct acceptor in its quorum took part in the verification quorum of any learned sequence. \par
+After gathering a quorum of $N-f$ \textit{phase 1b} messages, the leader initiates \textit{phase 2a} where it assembles a proposal and sends it to the acceptors. This proposal sequence must be carefully constructed in order to ensure all of the intended properties. In particular, the proposal cannot contain already learned non-commutative commands in different relative orders than the one in which they were learned, in order to preserve consistency, and it must contain unlearned proposals from both the current and the previous ballots, in order to preserve liveness (this differs from sending a single value with the highest ballot number as in the classic specification). Due to the importance and required detail of the leader's value picking rule, it will be described next in its own subsection. \par
+The acceptors reply to \textit{phase 2a} messages by broadcasting their verification messages containing the current ballot, the proposed sequence and proof of their committal to that sequence. After receiving $N-f$ verification messages, an acceptor sends its \textit{phase 2b} messages to the learners, containing the ballot, the proposal from the leader and the $N-f$ proofs gathered in the verification phase. As is the case in the fast ballot, when a learner receives a \textit{phase 2b} vote, it validates the $N-f$ proofs contained in it. Waiting for a quorum of $N-f$ messages for a sequence ensures the learners that at least one of those messages was sent by a correct acceptor that will relay the sequence to the leader in the next classic ballot (the learning of sequences also differs from the original protocol in the quorum size, due to the fault model, and in that the learners would wait for a quorum of matching values instead of equivalent sequences, due to the consensus specification.)\par
+
+\subsubsection{Leader Value Picking Rule} \textit{Phase 2a} is crucial for the correct functioning of the protocol because it requires the leader to pick a value that allows new commands to be learned, ensuring progress, while at the same time preserving a total order of non-commutative commands at different learners, ensuring consistency. The value picked by the leader is composed of three pieces: (1) the subsequence that has proven to be accepted by a majority of acceptors in the previous fast ballot, (2) the subsequence that has been proposed in the previous fast ballot but for which a quorum hasn't been gathered and (3) new proposals sent to the leader in the current classic ballot. \par
+The first part of the sequence will be the largest of the $N-f$ proven sequences sent in the \textit{phase 1b} messages. The leader can pick such a value deterministically because, for any two proven sequences, they are either equivalent or one can be extended to the other. The leader is sure of this because for the quorums of any two proven sequences there is at least one correct acceptor that voted in both and votes from correct acceptors are always extensions of previous votes from the same ballot. If there are multiple sequences with the maximum size then they are equivalent (by same reasoning applied previously) and any can be picked. \par
+The second part of the sequence is simply the concatenation of unproven sequences of commands in an arbitrary order. Since these commands are guaranteed to not have been learned at any learner, they can be appended to the leader's sequence in any order. Since $N-f$ \textit{phase 2b} messages are required for a learner to learn a sequence and the intersection between the leader's quorum and the quorum gathered by a learner for any sequence contains at least one correct acceptor, the leader can be sure that if a sequence of commands is unproven in all of the gathered \textit{phase 1b} messages, then that sequence wasn't learned and can be safely appended to the leader's sequence in any order. \par 
+The third part consists simply of commands sent by proposers to the leader with the intent of being learned at the current ballot. These values can be appended in any order and without any restriction since they're being proposed for the first time.
+
+\begin{algorithm}
+	\setstretch{1.35}
+	\caption{Byzantine Generalized Paxos - Learner l}
+	\label{BFT-Learn}
+	\textbf{Local variables:} $learned = \bot, messages = \bot$
+	\begin{algorithmic}[1]			
+		\State \textbf{upon} \textit{receive($P2B, ballot, value, proofs$)} from acceptor $a$ \textbf{do}
+		\State \hspace{\algorithmicindent} $valid\_proofs = 0$
+		\State \hspace{\algorithmicindent} \textbf{for} $i$ \textbf{in} $acceptors$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = proofs[i]$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof_{pub_i} == \langle ballot, value \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
+		$valid\_proofs \mathrel{+{=}} 1$
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $valid\_proofs \geq N-f$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $messages[ballot][value][a] = proofs$
+		\State
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(messages[ballot][value]) \geq N-f$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$
+
+		\State
+		\State \textbf{upon} \textit{receive($P2B, ballot, value$)} from acceptor $a$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{value}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}
+		 $messages[ballot][value][a] = true$
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(messages[ballot][value]) > f$ \textbf{then} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = learned \bullet value$
+		
+		\State		
+		\Function{merge\_sequences}{$old\_seq, new\_seq$}
+		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $old\_seq =  old\_seq \bullet c$
+		\State \textbf{return} $old\_seq$
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Byzantine Leader}
+The correctness of the protocol is heavily dependent on the guarantee that the sequence accepted by a quorum of acceptors is an extension of previous 
+proven sequences. Otherwise, if the network rearranges \textit{phase 2b} messages such that they're seen by different learners in different orders, they will result in a state divergence. If, however, every vote is a prefix of all subsequent votes then, regardless of the order in which the sequences are learned, the final state will be the same. \par 
+This state equivalence between learners is ensured by the correct execution of the protocol since every vote in a fast ballot is equal to the previous vote with a sequence appended at the end (Algorithm~\ref{BFT-Acc} lines \{43-46\}) and every vote in a classic ballot is equal to all the learned votes concatenated with unlearned votes and new proposals (Algorithm~\ref{BFT-Lead} lines \{42-45\}) which means that new votes will be extensions of previous proven sequences. However, this begs the question of how the protocol fares when Byzantine faults occur. In particular, the worst case scenario occurs when both $f$ acceptors and the leader are Byzantine (remember that a process can have multiple roles, such as leader and acceptor). In this scenario, the leader can purposely send \textit{phase 2a} messages for a sequence that is not prefixed by the previously accepted values. Coupled with an asynchronous network, this malicious message can be delivered before the correct votes of the previous ballot, resulting in different learners learning sequences that may not be extensible to equivalent sequences. \par
+To prevent this scenario, the acceptors must ensure that the proposals they receive from the leader are prefixed by the values they have previously voted for. Since an acceptor votes for its $val_a$ sequence after receiving $N-f$ verification votes for an equivalent sequence and stores it in its $proven$ variable, the acceptor can verify that it is a prefix of the leader's proposed value (i.e., $proven \sqsubseteq value$). A practical implementation of this condition is simply to verify that the  subsequence of $value$ starting at the index $0$ up to index $length(proven)-1$ is equivalent to the acceptor's $proven$ sequence. 
+
+
+\subsection{Checkpointing}  BGP includes an additional feature that deals with the indefinite accumulation of state at the acceptors and learners. This is of great practical importance since it can be used to prevent the storage of commands sequences from depleting the system's resources. This feature is implemented by a special command $C^*$, proposed by the leader, which causes both acceptors and learners to safely discard previously stored commands. However, the reason why acceptors accumulate state continuously is because each new proven sequence must contain any previous proven sequence. This ensures that an asynchronous network can't reorder messages and cause learners to learn in different orders. In order to safely discard state, we must implement a mechanism that allows us to deal with reordered messages that don't contain the entire history of learned commands.\par
+To this end, when a learner learns a sequence that contains a checkpointing command $C^*$ at the end, it discards every command in its $learned$ sequence except $C^*$ and sends a message to the acceptors notifying them that it executed the checkpoint for some command $C^*$. Acceptors stop participating in the protocol after sending \textit{phase 2b} messages with checkpointing commands and wait for $N-f$ notifications from learners. After gathering a quorum of notifications, the acceptors discard their state, except for the command $C^*$, and resume their participation in the protocol. Note that, since the acceptors also leave the checkpointing command in their sequence of proven commands, every valid subsequent sequence will begin with $C^*$. The purpose of this command is to allow a learner to detect when an incoming message was reordered. The learner can check the first position of an incoming sequence against the first position of its $learned$ and, if a mismatch is detected, it knows that either a pre and post-checkpoint message has been reordered. \par
+When performing this check, two possible anomalies that can occur: either (1) the first position of the incoming sequence contains a $C^*$ command and the learner's $learned$ sequence doesn't, in which case the incoming sequence was sent post-checkpoint and the learner is missing a sequence containing the respective checkpoint command; or (2) the first position of the $learned$ sequence contains a checkpoint command and the incoming sequence doesn't, in which case the incoming sequence was assembled pre-checkpoint and the learner has already executed the checkpoint. \par
+In the first case, the learner can simply store the post-checkpoint sequences until it receives the sequence containing the appropriate $C^*$ command at which point it can learn the stored sequences. Note that the order in which the post-checkpoint sequences are executed is irrelevant since they're extensions of each other. In the second case, the learner receives sequences sent before the checkpoint sequence that it has already executed. In this scenario, the learner can simply discard these sequences since it knows that it executed a subsequent sequence (i.e., the one containing the checkpoint command) and proven sequences are guaranteed to be extensions of previous proven sequences. \par
+For clarity, this extension to the protocol isn't included in the pseudocode description.

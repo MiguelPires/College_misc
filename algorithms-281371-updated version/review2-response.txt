@@ -8,7 +8,7 @@ Q3: System model:
 The system model follows the standard description [21,22] where each of the n processes might take the role of learners, proposers or acceptors.
 
 Q4: Zyzzvya discussion:
-We acknowledge that this discussion was imprecise especially in light of the fact that Revisiting Fast Practical Byzantine Fault Tolerance" by Abraham et al., 2018 presents a counter-example. The point of that comment originally included was to make this observation that sequences may be chosen by a quorum in BGP without the leader being aware of more than f+1 votes in its quorum. Nonetheless, we have avoided making this observation in the updated version given the issue pointed out concerning Zyvvzya. We thank the reviewer for this noting this.
+We acknowledge that this discussion was imprecise especially in light of the fact that Revisiting Fast Practical Byzantine Fault Tolerance" by Abraham et al., 2018 presents a counter-example. The point of that comment originally included was to make this observation that sequences may be chosen by a quorum in BGP without the leader being aware of more than f+1 votes in its quorum. Nonetheless, we have avoided making this observation in the updated version given the issue pointed out concerning Zyvvzya. We thank the reviewer for noting this.
 
 Q5: DLS and PBFT discussion:
 

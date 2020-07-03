@@ -1,0 +1,40 @@
+<project name="lab01" default="jar" basedir=".">
+	<target name="init" depends="clean" >
+		<mkdir dir="classes"/>
+	</target>
+
+	<target name="clean">
+		<delete dir="classes" failonerror="false"/>
+		<delete file="keyConstructors.jar" failonerror="false"/>
+	</target>
+	
+	<target name="compile" depends="init">
+		<javac srcdir="src" destdir="classes" debug="true">
+			<classpath>
+				<fileset dir="lib">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+			<compilerarg line="-Xlint:unchecked"/>
+		</javac>
+	</target>
+
+	<target name="jar" depends="compile">
+		<jar destfile="./keyConstructors.jar" basedir="classes" >
+			<zipgroupfileset dir="lib" includes="*.jar" excludes="classes/test/*"/>
+			<manifest>
+				<attribute name="Main-Class" value="ist.meic.pa.KeyConstructors"/>
+				<!--<attribute name="Main-Class" value="ist.meic.pa.KeyConstructorExtended.KeyConstructorsExtended"/>-->
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="run" depends="compile">
+		<java classname="ist.meic.pa.KeyConstructorExtended.KeyConstructorsExtended" fork="true">
+			<classpath>
+				<pathelement location="classes"/>
+			</classpath>
+		</java>
+	</target>
+</project>
+

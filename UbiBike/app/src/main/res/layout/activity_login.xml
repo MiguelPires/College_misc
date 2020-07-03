@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="pt.ulisboa.tecnico.grupo11.ubibike.Login">
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/usernameTb"
+        android:hint="@string/usernameTbtext"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="172dp" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:ems="10"
+        android:id="@+id/passwordTb"
+        android:hint="@string/passwordTbtext"
+        android:layout_below="@+id/usernameTb"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_Login"
+        android:onClick="login"
+        android:id="@+id/LoginBtn"
+        android:layout_below="@+id/passwordTb"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registerTxt"
+        android:clickable="true"
+        android:id="@+id/registerTxt"
+        android:layout_below="@+id/LoginBtn"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="44dp"
+        android:onClick="loadRegister" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Override"
+        android:id="@+id/button"
+        android:onClick="override"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/LoginBtn"
+        android:layout_alignStart="@+id/LoginBtn"
+        android:layout_marginLeft="35dp"
+        android:layout_marginStart="35dp" />
+</RelativeLayout>

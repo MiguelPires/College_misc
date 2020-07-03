@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">UbiBike</string>
+    <string name="btn_Submit_txt">Submit</string>
+    <string name="usernameTbtext">Username</string>
+    <string name="passwordTbtext">Password</string>
+    <string name="confirmPasswordTb">Confirm Password</string>
+    <string name="btn_Login">Login</string>
+    <string name="btn_Register">Register</string>
+    <string name="registerTxt"><u>Not a member? Register!</u></string>
+    <string name="title_activity_maps">Map</string>
+    <string name="port">10001</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <string name="title_activity_stations">Stations</string>
+</resources>

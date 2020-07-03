@@ -1,0 +1,15 @@
+Q1: On Generalized Paxos being "weaker than consensus":
+The safety property enforced by generalized consensus is weaker than consensus. Hence we state that Generalized Paxos enforces a weaker safety property.
+
+Q2: Explanation of C-struct:
+We have included an updated explanation.
+
+Q3: System model:
+The system model follows the standard description [21,22] where each of the n processes might take the role of learners, proposers or acceptors.
+
+Q4: Zyzzvya discussion:
+We acknowledge that this discussion was imprecise especially in light of the fact that Revisiting Fast Practical Byzantine Fault Tolerance" by Abraham et al., 2018 presents a counter-example. The point of that comment originally included was to make this observation that sequences may be chosen by a quorum in BGP without the leader being aware of more than f+1 votes in its quorum. Nonetheless, we have avoided making this observation in the updated version given the issue pointed out concerning Zyvvzya. We thank the reviewer for noting this.
+
+Q5: DLS and PBFT discussion:
+
+I think the main critique pointed out by the reviewer is the use of the phrase "both of these phases are needed to ensure that the requested operation is totally ordered at every correct replica" (w.r.t PBFT). We have clarified this and removed the "are needed" requirement since it clearly is not a lower bound (it is sufficient, but not necessary).

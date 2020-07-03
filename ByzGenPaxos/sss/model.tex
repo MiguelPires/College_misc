@@ -1,0 +1,29 @@
+\section{Model}
+\label{sec:model}
+%
+We consider an \emph{asynchronous} system in which
+a set of $n \in \mathbb{N}$ processes communicate by 
+\emph{sending} and \emph{receiving} messages.
+Each process executes an algorithm assigned to it, but may stop executing it by \emph{crashing}.
+If a process does not follow the algorithm assigned to it during an execution, then it is \emph{Byzantine}; otherwise, we say that process is \emph{correct}.
+This paper considers the \emph{authenticated} Byzantine model: every process can produce cryptographic digital signatures~\cite{quorum}. 
+Furthermore, for clarity of exposition, we assume authenticated perfect links~\cite{cgr:book}, 
+where a message that is sent by a non-faulty sender is eventually received and messages cannot be forged 
+(such links can be implemented trivially using retransmission, elimination of duplicates, and point-to-point message authentication codes~\cite{cgr:book}.)
+A process may be a \emph{learner}, \emph{proposer} or \emph{acceptor}.
+Informally, proposers provide input values that must be agreed upon by learners, the acceptors help the learners \emph{agree} on a value, and learners learn commands by appending them to a local sequence of commands to be executed, $learned_l$ .
+Our protocols require a minimum number of acceptor processes ($N$) that is a function of the maximum number of tolerated Byzantine faults ($f$), namely $N \ge 3f+1$. We assume that acceptor processes have identifiers in the set $\{0,...,N-1\}$. In contrast, the number of proposer and learner processes can be set arbitrarily.\par
+\noindent\textbf{Problem Statement.}
+In our simplified specification of Generalized Paxos, each learner $l$ maintains a monotonically increasing sequence of commands $learned_l$. 
+We define these learned sequences of commands to be equivalent ($\thicksim$) 
+if one can be transformed into the other by permuting the elements in a way such that the order of non-commutative pairs is preserved. A sequence $x$ is defined to be an \textit{eq-prefix} of another sequence $y$ ($x \sqsubseteq y$), if the subsequence of $y$ that contains all the elements in $x$ is equivalent ($\thicksim$) to $x$. 
+We present the requirements for this consensus problem, stated in terms of learned sequences of commands for a learner $l$, $learned_l$. 
+To simplify the original specification, instead of using c-structs (as explained in Section~\ref{sec:related}), we specialize to agreeing on equivalent sequences of commands:\par
+%
+\begin{enumerate}
+\item \textbf{Nontriviality.} If all proposers are correct, $learned_l$ can only contain proposed commands.
+\item \textbf{Stability.} If $learned_l = s$ then, at all later times, $s \sqsubseteq learned_l$, for any sequence $s$ and correct learner $l$.
+\item \textbf{Consistency.} At any time and for any two correct learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$.
+can subsequently be extended to equivalent sequences.
+\item \textbf{Liveness.} For any proposal $s$ from a correct proposer, and correct learner $l$, eventually $learned_l$ contains $s$.
+\end{enumerate}

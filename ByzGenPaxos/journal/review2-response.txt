@@ -1,0 +1,14 @@
+Q1: ention of Generalized Paxos says it is "weaker than consensus":
+
+Q2: Reference to stages 1a/2a:
+
+
+Q3: Explanation of C-struct:
+
+Q4: DLS Byzantine:
+
+Q5: System model:
+
+Q6: Zyzzvya discussion:
+
+Q7: PBFT discussion:

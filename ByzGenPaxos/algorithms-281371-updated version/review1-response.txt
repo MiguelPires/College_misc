@@ -1,0 +1,5 @@
+Q1: Please add references and explanations to all algorithms that you mention:
+
+We have made sure no algorithms mentioned have missing references. We have also included further details on the background of the protocols mentioned which helps with a better perspective of the intellectual merit of the generalized Paxos protocols presented in the paper.
+
+

@@ -1,0 +1,88 @@
+\section{Discussion}
+% and Concluding remarks}
+\label{sec:disc}
+
+\noindent \textbf{Extending the protocol to universally commutative commands}.
+% Generalized Paxos vs Paxos spec.
+The Generalized Paxos specification dictates that the only commands
+whose relative order can be reversed at different learners are those
+that commute with each other. This restriction has the advantage of
+allowing for running a replicated state machine on top of the
+Generalized Paxos protocol, while still ensuring that the state
+machine behaves in a way that is indistinguishable from running it on
+top of the original Paxos protocol.
+
+% Extension to ops that commute with all
+However, the downside of this use of commutative operations in the
+context of Generalized Paxos is that this commutativity check is done
+at runtime, and, if non-commutative operations are issued
+concurrently, then we must fall back to the slower
+classic Paxos protocol.
+
+This raises the possibility of extending the protocol to handle
+commands that are universally commutative, i.e., commute with every
+other command. For these commands, it is known before executing them
+that they will not generate any conflicts, and therefore it is not
+necessary to check them against concurrently executing commands.  This
+allows us to optimize the protocol by decreasing the number of phase
+$2b$ messages required to learn to a smaller $f+1$ quorum. Since, by
+definition, these sequences are guaranteed to never produce conflicts,
+the $N-f$ quorum is not required to prevent learners from learning
+conflicting sequences. Instead, a quorum of $f+1$ is sufficient for
+the learner to be sure that the proposed sequence was proposed by a
+correct proposer. (Furthermore, for ``read-only'' commands, it is possible to run these
+against one single learner in the crash model, since there is no
+requirement to withstand $f$ faults for these commands.)
+This optimization is particularly useful in the context of 
+geo-replicated systems, since it can be significantly faster
+to wait for the $f+1$st message instead of the $N-f$th one.
+
+% Weakly consistent replication - also diff order but ok to have different v
+
+\noindent \textbf{Generalized Paxos and weak consistency}.
+%The Byzantine Generalized Paxos protocol tackles two challenges in two different avenues of research, fault tolerance and relaxed consistency models. By specifying the generalized consensus problem,
+The key distinguishing feature of the specification of Generalized
+Paxos~\cite{Lamport2005} is allowing learners to learn concurrent
+proposals in a different order, when the proposals commute. This idea
+is closely related to the work on weaker consistency models like eventual or
+causal consistency~\cite{Ahamad1995}, or consistency models that mix
+strong and weak consistency levels like RedBlue~\cite{Li2012}, which attempt
+to decrease the cost of executing operations by reducing coordination
+requirements between replicas. 
+
+The link between the two models becomes clearer with the introduction of 
+universally commutative commands in the previous subsection.
+In the case of weakly consistent replication (or multi-level replication),
+weakly consistent requests can be executed as if they were universally
+commutative, even if in practice that may not be the case. E.g., checking 
+the balance of a bank account and making a deposit do not commute since
+the output of the former depends on their relative order. However,
+some systems prefer to run both as weakly consistent operations, even
+though it may cause executions that are not explained by a sequential
+execution, since the semantics are still acceptable given
+that the final state that is reached is the same and no invariants 
+of the application are violated~\cite{Li2012}.
+
+
+
+% Extension to diff replica grps
+
+
+\noindent \textbf{Handling faults in the fast case}.
+A result that was stated in the original Generalized Paxos
+paper~\cite{Lamport2005} is that to tolerate $f$ crash faults and
+allow for fast ballots whenever there are up to $e$ crash faults, the
+total system size $N$ must uphold two conditions:
+$N > 2f$ and $N > 2e+f$.
+
+Additionally, the fast and classic quorums are of size $N-e$ and $N-f$, respectively, which means there is a dependence relationship between these three concepts: number of tolerated faults, system size, and quorum size. As such, if we don't mind keeping $e$ small, then the fast ballot quorum will be a larger fraction of the total system size, which itself will be smaller. Conversely, if we wish to allow fast ballots to progress in the presence of the maximum number of faults, we can set $e=f$, which means that $N >3f$ and $N-e=N-f$. 
+
+
+An interesting observation stemming from our results is that, since Byzantine fault tolerance also requires a total system size of $N>3f$ and a quorum size of $2f+1$, we are able to amortize the cost of both features, i.e., we are able to tolerate the maximum number of faults for fast execution while not increasing the overal replication factor.
+
+%\textbf{Optimizations} One possible optimization of the Byzantine Generalized Paxos protocol leverages universally commutative commands or sequences of commands, which we define as sequences which commute with any other. Universally commutative sequences allows us to reduce latency by decreasing the number of phase $2b$ messages required to learn to a smaller $f+1$ quorum. Since, by definition, these sequences are guaranteed to never produce conflicts, the $N-f$ quorum isn't required to prevent learners from learning conflicting sequences. Instead, a $f+1$ quorum is sufficient for the learner to be sure that the proposed sequence was proposed by a correct proposer. 
+
+
+\section{Conclusion}
+\label{sec:conc}
+In this paper, we presented a simplified description of the Generalized Paxos protocol and specification, which is meant to pave the way for new avenues of research in the area. In addition, we modify the protocol to tolerate Byzantine faults, and we prove the correctness of this protocol. In the future, we would like to implement and evaluate the protocol, in addition to gaining a better understanding of its practical applicability.

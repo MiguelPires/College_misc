@@ -1,0 +1,117 @@
+\subsection{Correctness Proofs}
+
+This section argues for the correctness of the Visigoth Generalized Paxos protocol in terms of the specified consensus properties.\par
+
+
+\begin{table}[h!]
+	\renewcommand{\arraystretch}{1.5}
+	\centering
+	\begin{tabularx}{\linewidth}{ |c|X|}
+		%\hline
+		%\multicolumn{2}{|c|}{Notation}\\
+		\hline
+		Invariant/Symbol & Definition \\
+		\hline
+		$\thicksim$ & Equivalence relation between sequences \\
+		\hline
+		$X \overset{e}{\implies} Y$ & $X$ implies that $Y$ is eventually true \\
+		\hline
+		$X \sqsubseteq Y$ & The sequence $X$ is a prefix of sequence $Y$ \\
+		\hline
+		$\mathcal{L}$ & Set of learner processes \\
+		\hline
+		$\mathcal{P}$ & Set of proposals (commands or sequences of commands) \\
+		\hline
+		$learned_{l_i}$ & Learner $l_i$'s $learned$ sequence of commands \\
+		\hline
+		$learned(l_i,s)$ & $learned_{l_i}$ contains the sequence $s$ \\
+		\hline
+		$min\_accepted(s)$ & $f+1$ acceptors sent phase 2b messages to the learners for sequence $s$ \\
+		\hline
+		$proposed(s)$ & A correct proposer proposed $s$ \\
+		\hline
+		$acc\_send(x,s)$ & At least $x$ acceptors have sent votes for the sequence $s$ \\
+		\hline
+		$wait\_learn(t,l,s)$ & At least $t$ time units have passed since the learner $l$ received the first vote for sequence $s$ and $N-s$ votes haven't been gathered\\
+		\hline
+  	\end{tabularx} 
+	\caption{Proof notation} 
+	\label{table:1}
+\end{table}
+
+\subsubsection{Consistency}
+\begin{theorem}At any time and for any two correct learners $l_i$ and $l_j$, $learned_{l_i}$ and $learned_{l_j}$ can subsequently be extended to equivalent sequences \par
+\end{theorem} 
+\textbf{Proof:} \par
+\indent\parbox{\linewidth-\algorithmicindent}{\strut1.~At any given instant, $\forall s,s' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}, learned(l_j,s) \land learned(l_i,s') \implies \exists \sigma \in \mathcal{P}, s \thicksim s' \bullet \sigma \lor s' \thicksim s \bullet \sigma$}  \par
+\indent\indent\parbox{\linewidth-\algorithmicindent*2}{\strut\textbf{Proof:} }\par
+\indent\indent\indent\parbox{\linewidth-\algorithmicindent*3}{\strut1.1. At any given instant, $\forall seq,seq' \in \mathcal{P}, \forall l_i,l_j \in \mathcal{L}, learned(l_i,seq) \land learned(l_j,seq') \implies \exists \sigma_1, \sigma_2 \in \mathcal{P}, \forall x \in \mathcal{P}, (acc\_send(N-s, seq) \lor (acc\_send(N-u, seq) \land wait\_learn(3T,l_i,seq)) \lor (min\_accepted(seq) \land (seq \thicksim x \bullet \sigma_1 \lor x \thicksim seq \bullet \sigma_1))) \land (acc\_send(N-s, seq') \lor (acc\_send(N-u, seq') \land wait\_learn(3T,l_j,seq')) \lor (min\_accepted(seq') \land (seq' \thicksim x \bullet \sigma_2 \lor x \thicksim seq' \bullet \sigma_2)))$} \par
+\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*4}{\strut\textbf{Proof:} A sequence can be learned if: (1) the learner gathers either $N-s$ votes (Algorithm \ref{VFT-Learn} lines \{1-4\}), (2) the learner gathers $N-u$ votes after a timeout of $3T$ occurs (Algorithm \ref{VFT-Learn} \{5, 10-13\}) or (3) if the sequence is universally commutative  and the learner gathers $f+1$ votes (Algorithm \ref{VFT-Learn} \{7-8\}). This requires that the sequence must be commutative with any other possible sequence, which is encoded in the logical expression $s \thicksim x \bullet \sigma \lor x \thicksim \bullet \sigma$. This expression is true if either the learned sequence $s$ can be extended with some suffix $\sigma_1$ to any other sequence $x$ or if any sequence $x$ can be extended with some prefix $\sigma_2$ to be equivalent to $s$.}
+\indent\indent\indent\parbox{\linewidth-\algorithmicindent*3}{\strut1.2.~At any given instant, $\forall seq,seq',x \in \mathcal{P}, \exists \sigma_1,\sigma_2 \in \mathcal{P}, (acc\_send(N-s, seq) \lor (acc\_send(N-u, seq) \land wait\_learn(3T,l_i,seq)) \lor (min\_accepted(seq) \land (seq \thicksim x \bullet \sigma_1 \lor x \thicksim seq \bullet \sigma_1))) \land (acc\_send(N-s, seq') \lor (acc\_send(N-u, seq') \land wait\_learn(3T,l_j,seq')) \lor (min\_accepted(seq') \land (seq' \thicksim x \bullet \sigma_2 \lor x \thicksim seq' \bullet \sigma_2))) \implies \exists \sigma_3 \in \mathcal{P}, seq \thicksim seq' \bullet \sigma_3 \lor seq' \thicksim seq \bullet \sigma_3$}\par
+\indent\indent\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:}}\par
+\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*5}{\strut1.2.1.~At any given instant, $\forall seq,seq' \in \mathcal{P}, (acc\_send(N-s, seq) \lor (acc\_send(N-u, seq) \land wait\_learn(3T,l_i,seq))) \land (acc\_send(N-s, seq') \lor (acc\_send(N-u, seq') \land wait\_learn(3T,l_j,seq'))) \implies \exists \sigma \in \mathcal{P}, seq \thicksim seq' \bullet \sigma \lor seq' \thicksim seq \bullet \sigma$} \par
+\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut\textbf{Proof:} To prove that if any two sequences are accepted then they must be extensible to equivalent sequences, we must prove that two non-commutative sequences can't both gather a quorum of votes. Since a correct acceptor will not vote for two non-commutative sequences, we must prove that in, any two gathered quorums, the intersection between them contains at least one correct quorum.\par
+Gathered quorums can be of size $Q_1=N-s$ or $N-u \leq Q_2 < N-s$, which means there are three possible combinations: (1) two quorums of size $Q_1$, (2) two quorums of size $Q_2$ and (3) one quorum of size $Q_1$ and one quorum of size $Q_2$.\par
+To guarantee that two quorums of size $Q_1$ intersect in at least one correct process, it must hold that $N-s+N-s > N+o$. Assuming the worst case scenario where $N=u+o+s+1$:
+\begin{align*}
+	N-s+N-s > N+o \\
+	N-2s > o \\
+	u+o+s+1-2s > o \\
+	u+1-s>0 \\
+	u+1>s 
+\end{align*} 
+Since we already assume that $u<s$, the condition holds.\par
+Given two quorums of size $Q_2$, when the first quorum is gathered the sizes are $q_1= N-u-a$ and $q_2=N-u-b$. This means that there are $u-a-s$ crashed processes and the system size is now $N'=N-u+a+s$. To guarantee that the intersection between the quorums contains at least one correct process, the following must hold $q_1+q_2-N'>o$. 
+\begin{align*}
+	q_1+q_2-N'>o \\
+	N-u+a+N-u+b-N+u-a-s>o \\
+	N-u+b-s>o \\
+	u+o+s+1-u+b-s>o\\
+	b+1>0
+\end{align*}
+Given a quorum of size $Q_1=N-s$ and a quorum of size $Q_2=N-u+a$, at least $u-a-s$ processes have crashed, which means that the system is now of size $N'=N-u+a+s$. To guarantee that the intersection between quorums contains at least one correct process, the following must hold $Q_1+Q_2-N'>o$:
+\begin{align*}
+	Q_1+Q_2-N'>o \\
+	N-s+N-u+a-N+u-a-s>o\\
+	N-2s>o\\
+	u+o+s+1-2s>o\\
+	u-s+1>0
+\end{align*}
+Since we already assume that $u>s$, the condition holds.}
+\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*5}{\strut1.2.2.~At any given instant, $\forall seq,seq',\sigma \in \mathcal{P}, (min\_accepted(seq) \land (seq \thicksim x \bullet \sigma_1 \lor x \thicksim seq \bullet \sigma_1)) \implies \exists \sigma_2 \in \mathcal{P}, seq \thicksim seq' \bullet \sigma_2 \lor seq' \thicksim seq \bullet \sigma_2$} \par
+\indent\indent\indent\indent\indent\indent\parbox{\linewidth-\algorithmicindent*6}{\strut\textbf{Proof:} If $seq$ is universally commutative then, trivially, $seq$ is commutative with any other sequence $seq'$.}
+\indent\parbox{\linewidth-\algorithmicindent}{\strut2. At any given instant, $\forall l_i,l_j \in \mathcal{L}, learned(l_j,learned_j) \land learned(l_i,learned_i) \implies \exists \sigma \in \mathcal{P}, learned_i \thicksim learned_j \bullet \sigma \lor learned_j \thicksim learned_i \bullet \sigma$}\par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1.}\par
+\indent\parbox{\linewidth-\algorithmicindent}{\strut3. Q.E.D.} \par
+
+\subsubsection{Non-Triviality}
+\begin{theorem}
+If all proposers are correct, $learned_l$ can only contain proposed commands \label{N-T1} \par
+\end{theorem} 
+\textbf{Proof:} \par
+\parbox{\linewidth}{\strut1. At any given instant, $\forall l_i \in \mathcal{L}, \forall seq \in \mathcal{P}, learned(l_i,seq) \implies \forall x \in \mathcal{P}, \exists \sigma \in \mathcal{P},  acc\_send(N-s, seq) \lor (acc\_send(N-u, seq) \land wait\_learn(3T,l_i,seq)) \lor (min\_accepted(seq) \land (seq \thicksim x \bullet \sigma \lor x \thicksim seq \bullet \sigma))$ }\par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{VFT-Acc} lines \{31-44\} and Algorithm \ref{VFT-Learn} lines \{1-8\}, if a correct learner learned a sequence $s$ at any given instant then either a quorum was gathered or $f+1$ (if $seq$ is universally commutative) acceptors must have executed phase $2b$ for $seq$.}\par
+\parbox{\linewidth}{\strut2. At any given instant, $\forall seq,x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, acc\_send(N-s, seq) \lor (acc\_send(N-u, seq) \land wait\_learn(3T,l_i,seq)) \lor (min\_accepted(seq) \land (seq \thicksim x \bullet \sigma \lor x \thicksim seq \bullet \sigma)) \implies proposed(seq)$ }\par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{VFT-Acc} lines \{9-11, 17-19\}, for either a quorum to be gathered or $f+1$ acceptors to accept a proposal, it must have been proposed by a proposer.}\par
+\parbox{\linewidth}{\strut3. At any given instant, $\forall seq \in \mathcal{P}, learned(l_i,seq) \implies proposed(seq),\forall l_i \in \mathcal{L}$}\par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1 and 2.}\par
+\parbox{\linewidth}{\strut4. Q.E.D.}\par
+
+\subsubsection{Stability}
+\begin{theorem}
+If $learned_l = seq$ then, at all later times, $seq \sqsubseteq learned_l$, for any sequence $seq$ and correct learner $l$ \par \label{S-T1}
+\end{theorem} 
+\textbf{Proof:} By Algorithm \ref{VFT-Learn} lines \{8,18\}, a correct learner can only append new commands to its $learned$ command sequence.
+
+\subsubsection{Liveness}
+\begin{theorem}
+For any correct learner $l$ and any proposal $seq$ from a correct proposer, eventually $learned_l$ contains $seq$ \label{L-T1} \par
+\end{theorem} 
+\parbox{\linewidth}{\textbf{Proof:}} \par
+\parbox{\linewidth}{\strut1. $\forall\ l_i \in \mathcal{L},\forall seq,x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, acc\_send(N-s, seq) \lor (acc\_send(N-u, seq) \land wait\_learn(3T,l_i,seq)) \lor (min\_accepted(seq) \land (seq \thicksim x \bullet \sigma \lor x \thicksim seq \bullet \sigma)) \overset{e}{\implies} learned(l_i,seq)$}\par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By Algorithm \ref{VFT-Acc} lines \{31-44\} and Algorithm \ref{VFT-Learn} lines \{7-8,17-18\}, if either a quorum is gathered or $f+1$ (if $seq$ is universally commutative) acceptors accept a sequence $seq$ (or some equivalent sequence), eventually $seq$ will be learned by any correct learner.}\par
+\parbox{\linewidth}{\strut2. $\forall seq \in \mathcal{P}, proposed(seq) \overset{e}{\implies} \forall x \in \mathcal{P}, \exists \sigma \in \mathcal{P}, acc\_send(N-s, seq) \lor (acc\_send(N-u, seq) \land wait\_learn(3T,l_i,seq)) \lor (min\_accepted(seq) \land (seq \thicksim x \bullet \sigma \lor x \thicksim seq \bullet \sigma))$} \par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} A proposed sequence is either conflict-free when it's incorporated into every acceptor's current sequence or it creates conflicting sequences at different acceptors. In the first case, it's accepted by a quorum (Algorithm \ref{VFT-Acc} lines \{27-31\}) and learned after the votes reach the learners. In the second case, eventually the next ballot is initiated and the sequence is sent in phase $1b$ messages to the leader (Algorithm \ref{VFT-Acc} lines \{24-29\}). After being sent to the leader, the sequence is incorporated in the next proposal and sent to the acceptors a long with others proposed commands (Algorithm \ref{VFT-Lead} lines \{23-27,29-35\}).} \par
+\parbox{\linewidth}{\strut3. $\forall l_i \in \mathcal{L}, \forall seq \in \mathcal{P}, proposed(s) \overset{e}{\implies} learned(l_i,seq)$} \par
+\indent\indent\parbox{\linewidth}{\strut\textbf{Proof:} By 1 and 2.} \par
+\parbox{\linewidth}{\strut4. Q.E.D.}

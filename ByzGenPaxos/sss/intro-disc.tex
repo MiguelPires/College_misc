@@ -1,0 +1,99 @@
+% Importance of Paxos, initially theoretical, now at the heart of
+% data center infrastructure, namely smr and a special instance of smr
+% called coordination. Such a transition took decades, arguably due
+% to a dense presentation and non-trivial transformation of certain
+% aspects of protocol
+The evolution of the Paxos~\cite{Lam98} protocol is an unique
+chapter in the history of Computer Science. It was first described in
+1989 through a technical report~\cite{paxos:tr}, and was only
+published a decade later~\cite{Lam98}. Another long wait took
+place until the protocol started to be studied in depth and used by
+researchers in various fields, namely the distributed
+algorithms~\cite{DPLL97} and the distributed systems~\cite{petal}
+research communities. And finally, another decade later, the protocol
+made its way to the core of the implementation of the services that
+are used by millions of people over the Internet, in particular since
+Paxos-based state machine replication is the key component of Google's
+Chubby lock service~\cite{chubby}, or the open source ZooKeeper
+project~\cite{zookeeper}, used by Yahoo!\ among others. Arguably, the
+complexity of the presentation may have stood in the way of a faster
+adoption of the protocol, and several attempts have been made at
+writing more concise explanations of
+it~\cite{L01,Renesse2011}.
+
+
+% Recently, interesting developments came along in space of both Paxos
+% . On Paxos land you have interesting
+% new variants, most notably generalized Paxos which extends fast paxos
+% to allow for fewer msg steps / need commut / change in spec
+More recently, several variants of Paxos have been proposed and
+studied. Two important lines of research can be highlighted in this
+regard. First, a series of papers hardened the protocol against
+malicious adversaries by solving consensus in a Byzantine fault
+model~\cite{Martin2006,Lamport2011}. The importance of this line of
+research is now being confirmed as these protocols are now in widespread
+use in the context of cryptocurrencies and distributed ledger
+schemes such as blockchain~\cite{bitcoin}.
+Second, many proposals target improving
+the Paxos protocol by eliminating communication costs~\cite{L06},
+including an important evolution of the protocol called Generalized
+Paxos~\cite{Lamport2005}, which has the noteworthy aspect of
+having lower communication costs by leveraging a more general specification than traditional consensus that can lead to a weaker requirement in terms of ordering of commands across replicas. In particular, instead of forcing all
+processes to agree on the same value, it allows processes to pick an
+increasing sequence of commands that differs from process to process
+in that commutative commands may appear in a different order.
+The practical importance of such weaker specifications is underlined
+by a significant research activity on the corresponding weaker consistency
+models for replicated systems~\cite{LLS90,dynamo}.
+%(This evolution has a parallel to the recent trend in studying replicated
+%systems that offer consistency models that are weaker than
+
+
+% [SKIP parag] smr has also interesting trend - weak consistency, motivated
+% by availabiltiy and perf, and made even more important as replicas
+% are more spread and less well connected
+
+% We argue that, similarly to the clarification was helpful to bring
+% Paxos to the light of day, we need the same for generalized Paxos
+% a clarification and connection to practice
+In this paper, we draw a parallel between the evolution of the Paxos
+protocol and the current status of Generalized Paxos. In particular,
+we argue that, much in the same way that the clarification of the Paxos
+protocol contributed to its practical adoption, it is also important
+to simplify the description of Generalized Paxos. Furthermore, we believe
+that evolving this protocol to the Byzantine model is an important
+task, since it will contribute to the understanding
+and also open the possibility of adopting Generalized Paxos in
+scenarios such as a Blockchain deployment.
+
+As such, the paper makes several contributions, which are listed next.
+%
+\begin{itemize}
+\item
+We present a simplified version of the specification of Generalized
+Consensus, which is focused on the most commonly used case of the
+solutions to this problem, which is to agree on a sequence of
+commands;
+
+\item
+we extend the Generalized Paxos protocol to the Byzantine fault model; 
+
+\item
+we present a description of the Byzantine Generalized Paxos protocol
+that is more accessible than the original description, namely including the
+respective pseudocode, in order to to make it 
+easier to implement;
+
+\item
+we prove the correctness of the Byzantine Generalize Paxos protocol;
+
+\item
+and we discuss several extensions to the protocol in the context of relaxed consistency models and fault tolerance.
+\end{itemize}
+%
+The remainder of the paper is organized as follows: 
+Section~\ref{sec:related} is a detailed overview of Paxos and the respective family of related protocols.
+Section~\ref{sec:model} introduces the model and simplified specification of Generalized Paxos.
+Section~\ref{sec:protocol} presents the Generalized Paxos protocol that is resilient against Byzantine failures along with the corresponding proof sketches. 
+Section~\ref{sec:disc} discusses several optimizations and practical considerations, and Section~\ref{sec:conc} concludes the paper. In Appendix~\ref{bft_code} we present the pseudocode for the protocol and appendix~\ref{proof} presents the respective correctness proofs.
+%

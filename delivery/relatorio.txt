@@ -1,0 +1,18 @@
+Relatório - 1º Projecto de LN
+
+Miguel Pires, nº 76433	 								
+Grupo 6
+
+Descrição
+
+O projecto foi desenvolvido em 4 partes e cada uma foi testada tanto independentemente como em conjunto com as outras. Foram escritos scripts para cada parte que testam os transdutores parciais, bem como o transdutor final, com várias palavras que tentam encontrar casos que não estejam a ser bem traduzidos. Estes scripts não estão incluídos no ficheiro submetido.
+
+Entrega
+
+A directoria de entrega contém vários scripts e transdutores parciais que compõem o projecto. Os scripts ‘compact2fst.py’ e ‘word2fst.py’ foram fornecidos pelo corpo docente, pelo que a sua descrição é omitida. Os ficheiros em formato textual consistem nos transdutores parciais, o ficheiro de símbolos (‘syms.txt’) e o ficheiro de teste (‘pires.txt’). Os transdutores parciais estão disponíveis tanto em formato OpenFST como no formato compacto, compatível com o script fornecido pelo corpo docente. Deste modo, para cada parte do transdutor existe um ficheiro ‘part[1234]-compact.txt’ e um ficheiro ‘part[1234].txt’. Adicionalmente, a directoria de entrega também contém o script de compilação (‘run.sh’) que compila o transdutor e gera os ficheiros em formato PDF e OpenFST. O script de compilação gera os seguintes ficheiros:
+	•	Ficheiros OpenFST e PDF para cada parte do transdutor (e.g., part1.fst e part1.pdf);
+	•	Ficheiros OpenFST e PDF para o transdutor final (i.e., transdutorFinal.fst e transdutorFinal.pdf);
+	•	Um ficheiro OpenFST para a palavra de teste em formato OpenFST (e.g., pires.fst);
+	•	Ficheiros OpenFST e PDF para o resultado de compor a palavra de teste com o transdutor (e.g., testResult.fst e testResult.pdf). 
+
+Foram comentadas do script ‘run.sh’ as instruções (fstprint) que geram representações textuais do transdutor e do resultado da sua composição com a palavra de teste, dado que esses ficheiros não foram pedidos no enunciado.

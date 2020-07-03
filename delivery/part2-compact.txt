@@ -1,0 +1,27 @@
+0 0 [^clnrs] =
+0 1 c eps
+1 0 h x
+0 2 c c
+2 0 [^h] =
+0 3 l eps
+3 0 h 2
+0 4 l l
+4 0 [^h] =
+0 5 n eps
+5 0 h 3
+0 6 n n
+6 0 [^h] =
+0 7 r eps
+7 0 r 4
+0 8 r r
+8 0 [^r] =
+0 9 s s
+0 10 s s
+9 0 [^s] =
+9 0 s eps 
+2 10 eps eps
+4 10 eps eps 
+6 10 eps eps
+8 10 eps eps
+10
+0

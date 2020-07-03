@@ -1,0 +1,4 @@
+0 1 simbolo =
+1 1 [^aeiou] =
+1 1 vogal eps
+1

@@ -1,0 +1,10 @@
+<handler-chains xmlns="http://java.sun.com/xml/ns/javaee">
+	<handler-chain>
+		<handler>
+			<handler-class>pt.tecnico.handler.SecurityHandler</handler-class>
+		</handler>
+		<handler>
+			<handler-class>pt.tecnico.handler.ClientHandler</handler-class>
+		</handler>
+	</handler-chain>
+</handler-chains>   

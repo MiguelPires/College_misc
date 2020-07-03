@@ -1,0 +1,160 @@
+package pt.tecnico.bubbledocs.domain;
+
+class Bubbledocs{
+	Integer lastID;
+}
+
+class Session;
+
+class User{
+	Boolean validPassword;
+	String username;
+	String name;
+	String password;
+	String email;
+}
+
+class ActiveUser{
+	String token;
+	DateTime lastAccess;
+}
+
+class Root extends User;
+
+class Spreadsheet{
+	int ID;
+	String name;
+	DateTime createdAt;
+	DateTime modifiedAt;
+	Integer rows;
+	Integer columns;
+}
+
+class Cell{
+	Integer row;
+	Integer column;
+	Boolean protect;
+}
+
+class Content;
+
+class Argument extends Content;
+
+class Literal extends Argument{
+	Integer value;
+}
+
+class Reference extends Argument;
+
+class Function extends Content;
+
+class BinaryFunction extends Function;
+
+class Addition extends BinaryFunction;
+
+class Subtraction extends BinaryFunction;
+
+class Division extends BinaryFunction;
+
+class Multiplication extends BinaryFunction;
+
+relation SessionContainsActiveUser{
+	Session playsRole session;
+	ActiveUser playsRole activeUsers{
+		multiplicity 0..*;
+	}
+}
+relation ActiveUserContainsUser{
+	ActiveUser playsRole activeUser;
+	User playsRole loggedUser{
+		multiplicity 1;
+	}
+}
+
+relation UserContainsSpreadsheet{
+	User playsRole creator;
+	Spreadsheet playsRole createdDocs{
+		multiplicity 0..*;
+	}
+}
+
+relation SpreadsheetContainsUsers1{
+	Spreadsheet playsRole writableDocs;
+	User playsRole writers{
+		multiplicity 0..*;
+	}
+}
+
+relation SpreadsheetContainsUsers2{
+	Spreadsheet playsRole readableDocs;
+	User playsRole readers{
+		multiplicity 0..*;
+	}
+}
+
+relation SpreadsheetContainsCells{
+	Spreadsheet playsRole forbiddenCells;
+	Cell playsRole cells{
+		multiplicity 0..*;
+	}
+}
+
+relation CellContainsContent{
+	Cell playsRole forbiddenCell;
+	Content playsRole content{
+		multiplicity 0..1;
+	}
+}
+
+relation BinaryFunctionContainsArgument1{
+	BinaryFunction playsRole forbiddenBin1;
+	Argument playsRole firstOperand{
+		multiplicity 1;
+	}
+}
+	
+relation BinaryFunctionContainsArgument2{
+	BinaryFunction playsRole forbiddenBin2;
+	Argument playsRole secondOperand{
+		multiplicity 1;
+	}
+}
+
+relation DomainRootHasBubbleApplication{
+  	.pt.ist.fenixframework.DomainRoot playsRole root{
+   		multiplicity 0..1;
+  	}
+ 	Bubbledocs playsRole bubbledocs{
+    	multiplicity 0..1;
+  	}
+}
+
+relation BubbledocsContainsSession{
+	Bubbledocs playsRole forbiddenApp;
+	Session playsRole session{
+		multiplicity 1;
+	}
+}
+
+relation BubbledocsContainsUsers{
+	Bubbledocs playsRole bubbleApp;
+	User playsRole users{
+		multiplicity 0..*;
+	}
+}
+
+relation ReferenceContainsCell{
+	Reference playsRole forbiddenReference{
+		multiplicity *;
+	}
+	Cell playsRole referedCell{
+		multiplicity 1;
+	}
+}
+
+relation RootContainsBubbledocs{
+	Root playsRole forbiddenRoot;
+	Bubbledocs playsRole application{
+		multiplicity 0..1;
+	}
+}

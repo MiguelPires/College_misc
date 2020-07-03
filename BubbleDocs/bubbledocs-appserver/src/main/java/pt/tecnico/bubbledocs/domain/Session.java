@@ -1,0 +1,72 @@
+package pt.tecnico.bubbledocs.domain;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
+import pt.tecnico.bubbledocs.exception.EmptyUsernameException;
+import pt.tecnico.bubbledocs.exception.InvalidUsernameException;
+import pt.tecnico.bubbledocs.exception.UserNotInSessionException;
+
+public class Session extends Session_Base {
+
+    public Session() {
+        super();
+    }
+
+    public void addUser(User user, String token) {
+        ActiveUser loggedUser = new ActiveUser(user, token, this);
+        addActiveUsers(loggedUser);
+
+        for (ActiveUser u : getActiveUsersSet()) {
+            if (isInactive(u))
+                removeUser(u);
+        }
+    }
+
+    public void removeUser(ActiveUser user) {
+        removeActiveUsers(user);
+        user.delete();
+    }
+
+    public void removeUser(String token) throws UserNotInSessionException {
+        for (ActiveUser user : getActiveUsersSet()) {
+            if (user.getToken().equals(token)) {
+                user.delete();
+                return;
+            }
+        }
+    }
+
+    public boolean isInactive(ActiveUser user) {
+        DateTime last = user.getLastAccess();
+        DateTime now = new DateTime(DateTimeZone.getDefault());
+
+        if (now.compareTo(last.plusHours(2)) >= 0)
+            return true;
+        else
+            return false;
+    }
+
+    public User getUserByToken(String token) throws UserNotInSessionException {
+        if (token == null || token.equals(""))
+            throw new EmptyUsernameException();
+
+        else if (token.length() < 4 || token.length() > 9)
+            throw new InvalidUsernameException("The " + token + " token is invalid");
+
+        for (ActiveUser user : getActiveUsersSet()) {
+            if (user.getToken().equals(token))
+                return user.getLoggedUser();
+        }
+
+        throw new UserNotInSessionException();
+    }
+
+    public ActiveUser getActiveUserByUsername(String username) throws UserNotInSessionException {
+        for (ActiveUser user : getActiveUsersSet()) {
+            if (user.getLoggedUser().getUsername().equals(username))
+                return user;
+        }
+        throw new UserNotInSessionException();
+    }
+}

@@ -1,0 +1,215 @@
+\section{Protocol} 
+
+This section describes the crash fault tolerant version of the Generalized Paxos protocol for our simplified problem. The only modifications applied to the protocol were made to make it simpler while still ensuring its correctness. The protocol should still be recognizable as Generalized Paxos since its message pattern and control flow remain the same. However, we chose to describe it in detail, both in the interest of clarity and also to showcase how the specialization to the command history problem affects the protocol.
+
+\begin{algorithm}[h] 
+	\caption{Generalized Paxos - Proposer p}
+	\textbf{Local variables:} $ballot\_type = \bot, ballot = 0 $
+	\begin{algorithmic}[1]
+		
+		\State \textbf{upon} receive($BALLOT, bal, type$) \textbf{do} 
+		\State \hspace{\algorithmicindent} 
+		$ballot = bal$;
+		\State \hspace{\algorithmicindent} 
+		$ballot\_type = type$;
+		\State
+		
+		\State \textbf{upon} command\_request($c$) \textbf{do}   \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\# receive request from application
+		\State \hspace{\algorithmicindent} \textbf{if} $ballot\_type = fast\_ballot$ \textbf{then}
+		
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2A\_FAST, ballot, c}$ to acceptors;
+		\State \hspace{\algorithmicindent} \textbf{else} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{PROPOSE, c}$ to leader;		
+	\end{algorithmic}
+\end{algorithm}
+
+\subsection{Agreement Protocol} 
+
+The consensus protocol allows learner processes to agree on equivalent sequences of commands (according to our previous definition of equivalence).
+An important conceptual distinction between the Fast Paxos protocol and our simplified Generalized Paxos is that, in Fast Paxos~\cite{Lamport2006}, each instance of consensus is called a ballot and agrees upon a single value, whereas in our protocol, much like the original Generalized Paxos, instead of being separate instances of consensus, ballots correspond to an extension to the sequence of learned commands of a single ongoing consensus instance. In both protocols, ballots can either be \textit{classic} or \textit{fast}. \par
+\begin{algorithm}
+	\caption{Generalized Paxos - Process p}
+	\begin{algorithmic}[1]
+		
+		\Function{merge\_sequences}{$old\_seq, new\_seq$}
+		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $old\_seq =  old\_seq \bullet c$;
+
+		\State \textbf{return} $old\_seq$;
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+In classic ballots, a leader proposes a single sequence of commands, such that it can be appended to the commands learned by the learners. 
+A classic ballot in Generalized Paxos follows a protocol that is very similar to the one used by classic Paxos~\cite{Lamport:1998}. This protocol comprises a first phase where each acceptor conveys to the leader the sequences it has voted for. This allows the protocol to preserve safety, as explained in section \ref{value_picking}, and also allows leader to resend unlearned commands.
+This is followed by a second phase where the leader picks an extension to the sequence of commands relayed in \textit{phase 1b} messages and broadcasts it to the acceptors. The acceptors send their votes to the learners, who then, after gathering enough support for a given extension to the current sequence, append the new commands to their own sequences of learned commands and discard the already learned ones.\par
+
+In fast ballots, multiple proposers can concurrently propose either single commands or sequences of commands by sending them directly to the acceptors (we use the term \textit{proposal} to denote either the command or sequence of commands that was proposed).
+In this case, concurrency implies that acceptors may receive proposals in a different order. If the resulting sequences are equivalent, then they are successfully learned in two message delays. If not, the protocol must fall back to using a classic ballot.
+
+Next, we present the protocol for each type of ballot in detail.
+
+\subsection{Classic Ballots} 
+
+As previously mentioned, classic ballots work in a similar way to previous Paxos protocols. Therefore, we will highlight the points where Generalized Paxos departs from the Classic Paxos protocol, in particular where it's due to behaviors caused by our simplified specification of Generalized Paxos.\par
+In this part of the protocol, the leader continuously collects proposals by assembling commands received from the proposers in a sequence. This sequence is built by appending arriving proposals to a sequence containing every proposal received since the previous ballot (this differs from classic Paxos, where it suffices to keep a single proposed value that the leader attempts to reach agreement on).\par
+When the next ballot is triggered, the leader starts the first phase by sending \textit{phase 1a} messages to all acceptors containing just the ballot number. Similarly to classic Paxos, acceptors reply with a \textit{phase 1b} message to the leader, which reports all sequences of commands they voted for. This message also implicitly conveys a promise not to participate in lower-numbered ballots, in order to prevent safety violations~\cite{Lamport:1998}.
+
+\begin{algorithm} 
+	\caption{Generalized Paxos - Leader l}
+	\label{CFT-Lead}
+	\textbf{Local variables:} $ballot_l = 0,proposals = \bot, accepted = \bot$
+	\begin{algorithmic}[1]
+		\State \textbf{upon} trigger\_next\_ballot($type$) \textbf{do}
+		\State \hspace{\algorithmicindent} $ballot_l \mathrel{+{=}} 1$;
+		\State \hspace{\algorithmicindent} $\Call{send}{BALLOT,ballot_l,type}$ to proposers;
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $type = fast$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{FAST,ballot_l,view} $ to acceptors;
+		\State \hspace{\algorithmicindent} \textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P1A, ballot_l, view}$ to acceptors;
+		
+		\State
+		\State \textbf{upon} receive($PROPOSE, prop$) from proposer $p_i$ \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{prop}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P1A, ballot, prop}$ to acceptors;
+		\State \hspace{\algorithmicindent} \textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proposals = proposals \bullet prop$;
+		\State
+		\State \textbf{upon} receive($P1B, ballot, bal_a,vals_a$) from acceptor $a$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $ballot_a = ballot_l$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $accepted[ballot_l][a] =\langle bal_a, vals_a \rangle$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(accepted[ballot_l]) \geq N-f$ \textbf{then} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{phase\_2a}{ }$;
+		
+		\State
+		\Function{phase\_2a}{$ $}	
+		\State $votes = \bot$;
+		\State $k = -1$;
+		\State \textbf{for} $a$ \textbf{in} $acceptors$ \textbf{do}
+		\State \hspace{\algorithmicindent} $bal_a = accepted[ballot_l][a][0]$;
+		\State \hspace{\algorithmicindent} $val_a = accepted[ballot_l][a][1]$;
+		\State \hspace{\algorithmicindent} \textbf{if} $bal_a > k$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $k = bal_a$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $votes = \bot$;
+		\State \hspace{\algorithmicindent} \textbf{else if} $bal_a = k$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $votes[val_a] \mathrel{+{=}} 1$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $votes[val_a] > f$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $maxTried_l = val_a$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{break};
+
+		\State
+		\State \textbf{for} $a$ \textbf{in} $acceptors$ \textbf{do}
+		\State \hspace{\algorithmicindent} $maxTried_l = \Call{merge\_sequences}{maxTried_l, accepted[ballot_l][a]$};
+		\State
+		\State $maxTried_l = maxTried_l \bullet proposals$;
+		\State $\Call{send}{P2A\_CLASSIC,ballot_l, maxTried_l}$ to acceptors;
+		\State $proposals = \bot$;
+		\State $maxTried_l = \bot$;
+		\EndFunction	
+	\end{algorithmic}
+\end{algorithm}
+
+After gathering a quorum of $N-f$ \textit{phase 1b} messages, the leader initiates \textit{phase 2a} by sending a message with a proposal to the acceptors. As was described in section \ref{value_picking}, the procedure followed by the leader to construct this proposal is critical to prevent conflicts between sequences proposed in different ballots as well as to ensure liveness even when conflicts occur during fast ballots. There are two possible scenarios when observing the quorum $Q$ of gathered \textit{phase 1b} messages: either there is one reported sequence $s$ that was voted for at least $f+1$ acceptors in the latest ballot or there is none. If such a sequence exists then it's guaranteed to be the only one that may have been learned. Since $2f+1$ votes are necessary for any sequence to be learned and at least $f+1$ acceptors voted for $s$ then any other non-commutative sequence gathered at most $2f$ votes, which is insufficient for it to be learned. If no sequence in the quorum gathered $f+1$ votes then the leader can be sure that no value was or will be learned in that ballot. Since any sequence present in the quorum gathered at most $f$ votes and there are only $f$ acceptors outside of it, any sequence gathered at most $2f$ votes, which is also not enough for it to be learned. However, even if the latest ballot didn't result in the learning of a value, the leader still has to pick the most up-to-date sequence in order to extend it with his proposals. Notice that, even though the latest ballot may not have reached consensus on a sequence, some previous ballot did and the \textit{phase 2b} quorum of that ballot intersects in the current quorum of \textit{phase 1b} messages in $f+1$ acceptors. Therefore, we arrive at a well-defined value picking rule: given a quorum $Q$ of \textit{phase 1b} messages, if some sequence $s$ has more than $f$ votes at the highest ballot in which some acceptor voted for, then that sequence is chosen as the prefix of the leader's proposal. If no such sequence exists, then the leader picks the longest prefix that is present in $f+1$ sequences. It's possible to further simplify this rule by noting that the second case encases the first, since the longest possible prefix ($\sqsubseteq$) of a sequence is the sequence itself. More formally:
+
+\begin{displayquote}
+\textbf{Leader rule.} For a quorum $Q$ of \textit{phase 1b} messages, pick the longest prefix present in the sequences of at least $f+1$ messages in $Q$.
+\end{displayquote}
+
+After picking the most up-to-date sequence accepted by a quorum, the leader appends the commands present in \textit{phase 1b} messages that are not in the chosen sequence. This ensures liveness since any proposer's command that reaches more than $f$ acceptors before the next ballot begins will eventually be included in an accepted proposal. After executing this rule, the leader simply appends the proposers' commands to the sequence and sends it to the acceptors in \textit{phase 2a} messages.\par
+
+The acceptors reply to \textit{phase 2a} messages by sending \textit{phase 2b} messages to the learners, containing the ballot and the proposal from the leader. After receiving $N-f$ votes for a sequence, a learner learns it by extracting the commands that are not contained in his $learned$ sequence and appending them in order. Note that for a sequence to be learned, a learner doesn't have to receive $N-f$ votes for the exact same sequence but for equivalence sequences (in accordance to our previous definition of equivalence).
+
+\subsection{Fast Ballots} 
+
+In contrast to classic ballots, fast ballots are able to leverage a weaker specification of generalized consensus, in terms of command ordering at different replicas, to allow for faster execution of commands in some cases.
+
+\begin{algorithm} 
+	\caption{Generalized Paxos - Acceptor a}
+	\label{CFT-Acc}
+	\textbf{Local variables:} $leader = \bot, bal_a = 0,val_a = \bot,fast\_bal = \bot$
+	\begin{algorithmic}[1]
+		\State \textbf{upon} receive($P1A, ballot$) from leader \textbf{do}
+		\State \hspace{\algorithmicindent} $\Call{phase\_1b}{ballot}$;
+		
+		\State
+		\State \textbf{upon} receive($FAST,ballot$) from leader \textbf{do}
+		\State \hspace{\algorithmicindent} $fast\_bal[ballot] = true$;
+		
+		\State
+		\State \textbf{upon} receive($P2A\_CLASSIC, ballot, value$) from leader \textbf{do}
+		\State \hspace{\algorithmicindent} $\Call{phase\_2b\_classic}{ballot, value}$; 
+		
+		\State		
+		\State \textbf{upon} receive($P2A\_FAST,ballot,value$) from proposer p \textbf{do}
+		\State \hspace{\algorithmicindent} $\Call{phase\_2b\_fast}{ballot, value}$;
+		
+		\State
+		\Function{phase\_1b}{$ballot$}
+		\State \textbf{if} $bal_a < ballot$ \textbf{then}
+		\State \hspace{\algorithmicindent} $\Call{send}{P1B, ballot, bal_a, val_a}$ to leader;
+		\State \hspace{\algorithmicindent} $bal_a = ballot$;	
+		\State \hspace{\algorithmicindent} $val_a = \bot$;	
+
+		\EndFunction
+		
+		\State
+		\Function{phase\_2b\_classic}{$ballot, value$}
+		\State \textbf{if} $ballot \geq bal_a$ and $val_a = \bot$ \textbf{then}
+		\State \hspace{\algorithmicindent} $bal_a = ballot$;
+		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{value}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B, ballot, value}$ to learners;
+		\State \hspace{\algorithmicindent}\textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a[ballot] = value$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B, ballot, value}$ to learners;
+		\EndFunction
+		
+		\State
+		\Function{phase\_2b\_fast}{$ballot, value$}
+		\State \textbf{if} $ballot = bal_a$ and $fast\_bal[bal_a]$ \textbf{then}
+		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{value}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B, ballot, value}$ to learners;
+		\State \hspace{\algorithmicindent}\textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a[bal_a] =  \Call{merge\_sequences}{val_a[bal_a], value}$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B, bal_a, val_a[bal_a]}$ to learners;
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+The basic idea of fast ballots is that proposers contact the acceptors directly, bypassing the leader, and then the acceptors send their votes on proposals to the learners. If a learner can gather $N-f$ votes for a sequence (or an equivalent one), then it is learned. If, however, a conflict exists between sequences then they will not be considered equivalent and at most one of them will gather enough votes to be learned. Conflicts are dealt with by maintaining the proposals at the acceptors so they can be sent to the leader and learned in the next classic ballot. This differs from Fast Paxos where recovery is performed through an additional round-trip~\cite{Lamport2006}. \par
+Next, we explain each of these steps in more detail.\par
+\noindent {\bf Step 1: Proposer to acceptors.}
+To initiate a fast ballot, the leader informs both proposers and acceptors that the proposals may be sent directly to the acceptors. Unlike classic ballots, where the sequence proposed by the leader consists of the commands received from the proposers appended to previously proposed commands, in a fast ballot proposals can be sent to the acceptors in the form of either a single command or a sequence to be appended to the command history. These proposals are sent directly from the proposers to the acceptors.\par
+
+\begin{algorithm}
+	\caption{Generalized Paxos - Learner l}
+	\label{CFT-Learn}
+	\textbf{Local variables: } $learned = \bot, messages = \bot$ 
+	\begin{algorithmic}[1]
+		\State \textbf{upon} receive($P2B, ballot, value$) from acceptor $a$ \textbf{do}
+		\State \hspace{\algorithmicindent} $messages[ballot][value][a] = true$;
+		\State \hspace{\algorithmicindent} \textbf{if} $\#(messages[ballot][value]) \geq N-f$ or ($\Call{isUniversallyCommutative}{value}$ and $\#(messages[ballot][value]) > f$) \textbf{then}
+		\State \hspace{\algorithmicindent} \hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;
+	\end{algorithmic}
+\end{algorithm}
+
+\noindent {\bf Step 2: Acceptors to learners.}
+Acceptors append the proposals they receive to the proposals they have previously accepted in the current ballot and broadcast the result to the learners. Similarly to what happens in classic ballots, a \textit{phase 2b} message is sent from acceptors to learners, containing the current ballot number and the command sequence. However, since commands (or sequences of commands) are concurrently proposed, acceptors can receive and vote for non-commutative proposals in different orders. To ensure safety, correct learners must learn non-commutative commands in a total order. To this end, a learner must gather $N-f$ votes for equivalent sequences. That is, sequences do not necessarily have to be equal in order to be learned since commutative commands may be reordered. Recall that a sequence is equivalent to another if it can be transformed into the second one by reordering its elements without changing the order of any pair of non-commutative commands. Note that, in Algorithm \ref{CFT-Lead} lines \{32-33\} and Algorithm \ref{CFT-Learn} lines \{2-3\}, equivalent sequences are being treated as belonging to the same index of the \textit{votes} or \emph{messages} variable, to simplify the presentation. By requiring $N-f$ votes for a sequence of commands, we ensure that, given two sequences where non-commutative commands are differently ordered, only one sequence will receive enough votes. Since each acceptor will only vote for a single sequence, there are only enough correct processes to commit one of them. Note that the fact that proposals are sent as extensions of previous sequences is critical to the safety of the protocol. In particular, since the votes from acceptors can be reordered by the network before being delivered at the learners, if these values were single commands it would be impossible to guarantee that non-commutative commands would be learned in a total order. \par
+
+\noindent\textbf{Arbitrating an order after a conflict.} When, in a fast ballot, non-commutative commands are  concurrently proposed, these commands may be incorporated into the sequences of various acceptors in different orders. In that case, the sequences sent by the acceptors in \textit{phase 2b} messages will not be equivalent and will not be learned. In order to preserve liveness, the leader subsequently runs a classic ballot and gathers the acceptors' previous votes in \textit{phase 1b}. After reaching a quorum of \textit{phase 1b} messages, it assembles a single serialization for every previously proposed command, which it will then send to the acceptors along with new proposals. Therefore, if non-commutative commands fail to be learned in a fast ballot, they will be included in the subsequent classic ballot and the learners will learn them in a total order, thus preserving consistency and liveness. \par 
+The assembling of previous commands in a single serialization is done through a deterministic procedure. In the first part of this procedure, the leader guarantees safety by picking the most recent previously learned sequence. In the second part of the procedure, the leader extracts commands not included in the previous chosen sequence and appends them to it. This guarantees that any proposed command will eventually be learned, ensuring liveness. The last component of the leader's proposal is a sequence with new sequences sent by proposers. 
+
+\subsection{Discussion}
+
+\subsubsection{Universally Commutative Commands}
+% Generalized Paxos vs Paxos spec.
+The specification of command history consensus dictates that the only commands whose relative order can be reversed at different learners are those that commute with each other. This restriction has the advantage of allowing for running a replicated state machine on top of the Generalized Paxos protocol, while still ensuring that the state machine behaves in a way that is indistinguishable from running it on top of the original Paxos protocol. However, the downside of this use of commutative operations in the context of Generalized Paxos is that this commutativity check is done at runtime, and, if non-commutative operations are issued concurrently, then we must fall back to the slower classic Paxos protocol.\par
+This downside raises the possibility of extending the protocol to handle commands that are universally commutative (i.e., commute with every other command). For these commands, it is known before executing them that they will not generate any conflicts and, therefore, it is not necessary to check them against concurrently executing commands. This allows us to optimize the protocol by decreasing the number of \textit{phase 2b} messages required to learn to a smaller $f+1$ quorum. Since, by definition, these sequences are guaranteed to never produce conflicts, the $N-f$ quorum is not required to prevent learners from learning conflicting sequences. Instead, a quorum of $f+1$ is sufficient for the learner to be sure that the proposed sequence was witnessed by at least one correct acceptor that can propagate them to others. Furthermore, for ``read-only'' commands, it is possible to run these against a single learner, since there is no requirement to withstand $f$ faults for these commands. \par
+Even though proposers can propose universally commutative sequences that are guaranteed to never cause conflicts with any other sequence, in both classic and fast ballots, proposals are appended to a prefix of sequences. However, the resulting sequence is unlikely to be universally commutative since it contains every previous sequence. This greatly diminishes the applicability of the overall optimization since it's only possible when every command in the history is universally commutative. Proposals are appended to proven sequences because, if they were sent individually, the network could reorder them and cause a conflict between multiple learners. However, since universally commutative commands are guaranteed to never cause conflicts, it's safe to send them individually and allow for them to be learned in arbitrary orders. When the leader or the acceptors receive universally commutative sequences, they immediately trigger the next phase without appending them to previous sequences. The reason why this is possible is because, since the proposal is a universally commutative sequence, it can arrive at the learner in a different order relative to other sequences at different learners while the final state will still converge across the system.\par
+This optimization is particularly useful in the context of geo-replicated systems, since it can be significantly faster to wait for the $f+1$th message instead of the $N-f$th one. It can also be easily implemented with an additional check in some of the protocol's algorithms. This can be seen in Algorithm \ref{CFT-Lead} lines \{11-12\}, Algorithm \ref{CFT-Acc} lines \{23-24,32-33\} and Algorithm \ref{CFT-Learn} lines \{3-4\}.
+
+\subsubsection{Generalized Paxos and Weak Consistency}
+%The Byzantine Generalized Paxos protocol tackles two challenges in two different avenues of research, fault tolerance and relaxed consistency models. By specifying the generalized consensus problem,
+The key distinguishing feature of the specification of Generalized Paxos~\cite{Lamport2005} is allowing learners to learn concurrent proposals in a different order, when the proposals commute. This idea is closely related to the work on weaker consistency models like eventual or causal consistency~\cite{Ahamad1995}, or consistency models that mix
+strong and weak consistency levels like RedBlue~\cite{Li2012}, which attempt to decrease the cost of executing operations by reducing coordination requirements between replicas. 
+
+The link between the two models becomes clearer with the introduction of universally commutative commands in the previous subsection. In the case of weakly consistent replication (or multi-level replication), weakly consistent requests can be executed as if they were universally commutative, even if in practice that may not be the case. For instance, checking the balance of a bank account and making a deposit do not commute since the output of the former depends on their relative order. However, some systems prefer to run both as weakly consistent operations, even though it may cause executions that are not explained by a sequential execution, since the semantics are still acceptable given that the final state that is reached is the same and no invariants of the application are violated~\cite{Li2012}.

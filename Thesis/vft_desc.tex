@@ -1,0 +1,281 @@
+\section{Protocol} 
+
+This section presents our Visigoth fault tolerant Generalized Paxos protocol (\acrshort{vgp}). This protocol shares many similarities with \acrshort{bgp}. In the following sections, we will describe the protocol while pointing differences introduced by \acrshort{vft}'s assumptions.  
+
+
+\begin{algorithm}
+	\caption{Visigoth Generalized Paxos - Proposer p}
+	\label{VFT-Prop}
+	\textbf{Local variables:} $ballot\_type = \bot$
+	\begin{algorithmic}[1]	
+		
+		\State \textbf{upon} \textit{receive($BALLOT, type$)} \textbf{do} 
+		\State \hspace{\algorithmicindent} $ballot\_type = type$;
+		\State
+		
+		\State \textbf{upon} \textit{command\_request($c$)} \textbf{do}   \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}
+		\State \hspace{\algorithmicindent} \textbf{if} $ballot\_type == fast\_ballot$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2A\_FAST, c}$ to acceptors;
+		\State \hspace{\algorithmicindent} \textbf{else} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{PROPOSE, c}$ to leader;		
+	\end{algorithmic}
+\end{algorithm}
+
+\subsection{Overview}
+Much like the Visigoth model shares many similarities with the Byzantine model, our Visigoth Generalized Paxos protocol shares most of its structure and message pattern with \acrshort{bgp}, namely the following two components:
+\begin{itemize}
+	\item 
+	\textbf{View Change} -- The goal of the view change subprotocol is to ensure that one of the proposers is elected as the leader, who helps the agreement protocol to make progress. If the current leader is perceived to be preventing progress, the acceptors share their suspicions with each other and, if enough suspicions are gathered, they elect a new leader. 
+	
+	\item 
+	\textbf{Agreement} -- The goal of the agreement subprotocol is to extend the learners' learned sequence with commands proposed by the proposers. In order to do this, acceptors cast their votes in either \textit{classic} or \textit{fast} ballots, where fast ballots incur in fewer message steps but may run into contention among concurrent requests, requiring a subsequent classic ballot to fix the conflict.
+\end{itemize}
+
+
+\begin{algorithm} 
+	\caption{Visigoth Generalized Paxos - Leader l}
+	\label{VFT-Lead}
+	\textbf{Local variables:} $ballot_l = 0,proposals = \bot, accepted = \bot, notAccepted = \bot, view = 0$
+	\begin{algorithmic}[1]
+		\State \textbf{upon} \textit{receive($LEADER,view_a,proofs$)} from acceptor \textit{a} \textbf{do}
+		\State \hspace{\algorithmicindent} $valid\_proofs = 0$;
+		\State \hspace{\algorithmicindent} \textbf{for} $p$ \textbf{in} $acceptors$ \textbf{do} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $view\_proof = proofs[p]$;
+		
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $view\_proof_{pub_p} == \langle view\_change, view_a \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}  $valid\_proofs \mathrel{+{=}} 1$;
+		\State \hspace{\algorithmicindent} \textbf{if} $valid\_proofs > u$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $view = view_a$;
+		
+		\State
+		\State \textbf{upon} \textit{trigger\_next\_ballot($type$)} \textbf{do}
+		\State \hspace{\algorithmicindent} $ballot_l \mathrel{+{=}} 1$;
+		\State \hspace{\algorithmicindent} $\Call{send}{BALLOT,type}$ to proposers;
+		\State \hspace{\algorithmicindent} \textbf{if} $type == fast$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{FAST,ballot_l,view}$ to acceptors;
+		\State \hspace{\algorithmicindent} \textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P1A, ballot_l, view}$ to acceptors;
+		
+		\State
+		\State \textbf{upon} \textit{receive($PROPOSE, prop$)} from proposer $p_i$ \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{prop}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2A\_CLASSIC, ballot_l,view, prop}$;
+		\State \hspace{\algorithmicindent} \textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proposals = proposals \bullet prop$;
+		
+		\State
+		\State \textbf{upon} \textit{receive($P1B, ballot, bal_a, proven,val_a, proofs$)} from acceptor $a$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $ballot \neq ballot_l$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{return};
+		\State
+		\State \hspace{\algorithmicindent} $valid\_proofs = 0$; 
+		\State \hspace{\algorithmicindent} \textbf{for} $i$ \textbf{in} $acceptors$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = proofs[proven][i]$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof_{pub_i} == \langle bal_a, proven \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
+		$valid\_proofs \mathrel{+{=}} 1$;
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $valid\_proofs > N-u$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $accepted[ballot_l][a] = proven$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}	$notAccepted[ballot_l] = notAccepted[ballot_l] \bullet (val_a \setminus proven)$;		
+		
+		\State 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(accepted[ballot_l]) \geq N-u$ \textbf{then} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{phase\_2a}{ }$;
+		
+		\State
+		\Function{phase\_2a}{$ $}
+		\State $maxTried = \Call{largest\_seq}{accepted[ballot_l]}$;
+		\State $previousProposals = \Call{remove\_duplicates}{notAccepted[ballot_l]}$;
+		\State $maxTried = maxTried \bullet previousProposals \bullet proposals$;
+		\State $proof = \langle ballot_l, view, maxTried_l \rangle_{priv_l}$;
+		\State $\Call{send}{P2A\_CLASSIC,ballot_l,view, maxTried_l, proof}$ to acceptors;
+		\State $proposals = \bot$;
+		\EndFunction
+		
+	\end{algorithmic}
+\end{algorithm}
+
+Next, we describe solely the agreement subprotocol since it's the only one affected by the Visigoth model. The view change subprotocol is identical to the one used in \acrlong{bgp}.
+
+\subsection{Agreement}
+
+Much like its Byzantine counterpart, \acrshort{vgp} preserves the original structure of the Fast Paxos protocol where ballots can be either classic or fast. Proposers send their proposals to either the leader or the acceptors, depending on the type of ballot being currently executed. For clarity, we describe the protocol in its entirety albeit more succinctly than in the previous chapter. We start by explaining how classic and fast ballots interact with each other, noting how this interaction is critical to safety, and then we briefly describe the protocol's behavior in both of these types of ballots. \par
+The purpose of fast ballots is to allow proposers to bypass the leader by sending their proposals directly to the acceptors. Conflicts between non-commutative sequences may split the acceptors' votes in a way such that neither value can achieve the necessary quorum and progress isn't being made. In this situation, the protocol falls back to a classic ballot in order for the leader to propose a single serialization that includes the conflicting sequences. However, even though two non-commutative sequences are prevented from both being accepted in the same ballot, it's still possible for safety to be threatened when considering sequences that are accepted in different ballots. If any sequence could be proposed in each ballot, it would be possible for consistency to be violated because two non-commutative sequences could be accepted in different ballots while their respective \textit{phase 2b} votes could also be delayed in a way such that they reach different learners in different orders.\par
+Both \acrshort{bgp} and \acrshort{vgp} solve this problem by noting that if each sequence is an extension of previous sequences then the order in which they are incorporated in the learner's $learned$ sequence is irrelevant. For a learner to be able to learn a sequence that is prefixed with possibly previously learned commands, it must accumulate learned commands in its $learned$ sequence, in order to detect duplicates in incoming messages. To maintain the invariant that every sequence that obtains a quorum of votes must be an extension of previous proven sequences, we must consider separately when and how sequences are assembled and voted for in each type of ballot. \par 
+In fast ballots, it's trivial to guarantee this invariant since we just need to accumulate each proposed command at the acceptors such that each new proposal is appended to a sequence of previous proposals (e.g., variable $val_a$ in Algorithm \ref{VFT-Acc}). Whenever a command or sequence  of commands is appended to the sequence of accumulated proposals, the acceptor executes the verification phase and, after gathering a quorum of valid proofs, it sends a \textit{phase 2b} message voting for the entire sequence, not just the new proposal sent by the proposer. Classic ballots, however, require special care, since proposals are assembled solely by the leader. To maintain our previously defined invariant, the leader must be aware of which sequences gathered a quorum of votes. Much like in \acrshort{bgp}, this is ensured by having the acceptors gather a quorum of $N-f$ proofs from themselves and other acceptors such that they can send them to the leader in their \textit{phase 1b} messages. After waiting for a quorum of these messages, the leader can not only know if some reported sequence was voted for by at least $f+1$ acceptors, precluding a non-commutative sequence from being accepted by a quorum, but it also knows this for any sequence which may have been learned. \par
+Next, we will present the protocol in detail. We start our description with fast ballots since their execution affects how proposals are assembled in classic ballots.
+
+\subsubsection{Fast Ballots}
+As previously mentioned, in fast ballots proposals are sent by the proposers directly to the acceptors in order to bypass the leader and allow a faster execution. This ballot can be described in the following steps:\looseness=-1\par
+\noindent\textbf{Step 1: Proposers to acceptors.} The leader starts by informing proposers and acceptors that a fast ballot is starting by sending a message at the beginning of the ballot. For the remainder of the ballot the proposers send their proposed commands or sequences of commands to acceptors. In order to maintain the invariant that any sequence accepted by a quorum is an extension of previous ones, the acceptors append these sequences to the sequence that they maintain locally.\par
+\noindent\textbf{Step 2: Acceptors to acceptors.} In order for the acceptors to be able to prove that, with respect with some sequence that they voted for, no other non-commutative sequence may have been learned, they broadcast a signed tuple with the current ballot and the sequence. After gathering $N-f$ such proofs and validating their signatures, the acceptors can prove to the leader that at least $f+1$ correct acceptors voted for the same sequence which means that no non-commutative sequence may have been learned since there are only another $2f$ acceptors in the system\looseness=-1.\par
+\noindent\textbf{Step 3: Acceptors to learners} The acceptors issue their votes to the learners containing not only the current ballot and sequence but also the $N-f$ proofs. The learners validate the proofs contained in the votes and count the vote if at least $N-f$ of the signatures are valid. After gathering $N-f$ such votes, a learner is sure that, due to the quorum intersection property, at least one correct acceptor in its \textit{phase 2b} quorum will also participate in the next classic ballot's \textit{phase 1b} quorum and report the current sequence to the leader.
+
+\subsubsection{Classic Ballots}
+Classic ballots in \acrshort{vgp} work in a similar way to the original Generalized Paxos protocol~\cite{Lamport2005}. In \textit{phase 1a}, the leader sends a message prompting the acceptors to report back with their accumulated sequence of values and the proofs for the sequences they have voted for. In \textit{phase 1b}, the acceptors respond to the leader's request by sending the sequence of commands they accumulated in the previous ballot and the proofs they gathered for the values they have voted for. Note that their sequence of accumulated commands may contain a sequence for which they don't have proofs. This means that the verification phase didn't complete for that sequence and it wasn't learned. This unproven is sequence is included so that it can be committed in the classic ballot, ensuring liveness. When the leader receives $N-f$ \textit{phase 1b} messages from the acceptors, it's guaranteed that any value accepted by a quorum in the previous ballot will be present in the \textit{phase 1b} quorum and any value in the quorum for which there are $N-f$ proofs was or will be learned. With this knowledge the leader can assemble its proposal sequence by concatenating the proven sequences (i.e., the sequences reported in \textit{phase 1b} messages for which the leader has $N-f$ proofs), the unproven sequences  (i.e., the sequences report in \textit{phase 1b} messages for which the leader doesn't have $N-f$ proofs) and the proposals that the leader has received directly from proposers. \par
+After assembling its proposal, the leader sends it to the acceptors in \textit{phase 2a} messages. The acceptors then broadcast their verification messages among each other. As in the fast ballots, these messages contain the current ballot, the sequence being verified and a signed tuple of the same ballot and sequence. After receiving $N-f$ verification messages with valid proofs, the acceptors send a \textit{phase 2b} message to the learners expressing their vote for the sequence. This vote contains the current ballot, the sequence being voted for and the $N-f$ proofs gathered in the previous phase. Even though each vote contains $N-f$ proofs, the learner waits for $N-f$ such votes before learning the sequence. This is because, for the learner to safely learn a sequence it must be sure that, not only $f+1$ correct acceptors agreed to vote for the sequence but also, of the $N-f$ acceptors whose vote is in the \textit{phase 2b} quorum, at least one of them will be a correct acceptor that also participates in the next classic ballot's \textit{phase 1b} in order to inform the leader that the sequence was learned.
+
+\begin{algorithm} 
+	\caption{Visigoth Generalized Paxos - Acceptor a (agreement)}
+	\label{VFT-Acc}
+	\textbf{Local variables:} $leader = \bot,\ view = 0, bal_a = 0,\ val_a = \bot,\ fast\_bal = \bot,\ proven = \bot$
+	\begin{algorithmic}[1]
+		\State \textbf{upon} \textit{receive($P1A, ballot, view_l$)} from leader $l$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $view_l == view$ and $bal_a < ballot$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \Call{send}{$P1B, ballot,bal_a,proven, val_a, proofs[bal_a]$} to leader;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $bal_a = ballot$;
+		
+		\State
+		\State \textbf{upon} \textit{receive($FAST,ballot,view_l$)} from leader \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $view_l == view$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $fast\_bal[ballot] = true$;
+		
+		\State
+		\State \textbf{upon} \textit{receive($P2A\_CLASSIC, ballot, view_l, value, proof$)}  \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $view_l == view$ and $proof_{pub_{leader}} == \langle ballot, view_l, value \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2A\_CLASSIC, ballot, view_l, value, proof}$ to acceptors;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{phase\_2b\_classic}{ballot, value}$; 
+		
+		\State		
+		\State \textbf{upon} \textit{receive($P2A\_FAST, value$)} from proposer \textbf{do}
+		\State \hspace{\algorithmicindent} $\Call{phase\_2b\_fast}{value}$;
+		
+		\State
+		\State \textbf{upon} \textit{receive($VERIFY,view_i, ballot_i,val_i,proof$)} from acceptor $i$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $proof_{pub_i} == \langle ballot_i, val_i \rangle$ or $view == view_i$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proofs[ballot_i][val_i][i] = proof$;
+		
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(proofs[ballot_i][val_i]) \geq N-u$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \hspace{\algorithmicindent} $proven = val_i$;
+		\State \hspace{\algorithmicindent} \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B, ballot_i, val_i, proofs[ballot_i][value_i]}$ to learners;
+
+		\State		
+		\State \textbf{upon} \textit{receive($VERIFY\_REQ, ballot_l, value_l$)} from learner $l$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $\#(proofs[ballot_l][value_l]) \geq N-u$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{VERIFY\_RESP, ballot, value, proofs[ballot_l][value_l]}$;
+
+		\State
+		\Function{phase\_2b\_classic}{$ballot, value$}
+		\State $univ\_commut = \Call{isUniversallyCommutative}{val_a}$;
+		\State \textbf{if} $ballot \geq bal_a$ and $val_a == \bot$ and $!fast\_bal[bal_a]$ and ($univ\_commut$ or $proven == \bot$ or $proven == \Call{subsequence}{value, 0, \#(proven)}$) \textbf{then}
+		\State \hspace{\algorithmicindent} $bal_a = ballot$;
+		\State \hspace{\algorithmicindent} \textbf{if} $univ\_commut$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B,bal_a, value}$ to learners;
+		\State \hspace{\algorithmicindent} \textbf{else} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a = value$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = \langle ballot, val_a \rangle_{priv_a}$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proofs[ballot][val_a][a] = proof$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{VERIFY, view, ballot, val_a, proof}$ to acceptors;
+		\EndFunction
+		
+		\State
+		\Function{phase\_2b\_fast}{$ballot, value$}
+		\State \textbf{if} $ballot == bal_a$ and $fast\_bal[bal_a]$ \textbf{then}
+		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{value}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{P2B,bal_a, value}$ to learners;
+		\State \hspace{\algorithmicindent} \textbf{else}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $val_a = val_a \bullet value$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = \langle ballot, val_a \rangle_{priv_a}$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proofs[ballot][val_a][a] = proof$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{send}{VERIFY, view, ballot, val_a, proof}$ to acceptors;
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Quorum Gathering in VFT}
+Note that until this point, the \acrshort{vgp} protocol seems entirely indistinguishable from its Byzantine counterpart. However, the improved latency showcased in \acrshort{vft}'s state machine replication protocol (VFT-SMaRt) is made possible by the Visigoth model's increased assumptions regarding process synchrony. These assumptions are neatly encapsulated in the \acrfull{qgp}, which implements the actions of gathering a quorum of messages for a given step of the protocol. Since these assumptions are encapsulated in a single primitive, it seems logical to simply substitute \acrshort{bgp}'s quorum gathering procedure with the \acrshort{qgp}. However, unlike the Fast and Generalized Paxos protocols, the VFT-SMaRt protocol doesn't specialize its algorithms by role, considering instead a system of $N$ identical processes~\cite{Porto2015}. Since we wish to preserve the role specialization present in Generalized Paxos, we must adapt VFT-SMaRt's quorum gathering procedure to a Paxos-like structure.\par
+The Visigoth model differs from its Byzantine counterpart by allowing $s$ processes to be slow but correct \cite{Porto2015}. A process $i$ is defined to be slow with respect to $j$ if messages from $i$ to $j$ (or vice-versa) take more than $T$ time units to be transmitted. This assumption allows us to gather more efficient quorums by leveraging the knowledge that only $s$ processes can take more than $T$ time units to send and process a message. In \acrshort{vft}'s \acrlong{qgp}, a process gathers a quorum by waiting for messages from $N-s$ distinct processes. Since the Visigoth model provides a bound on the time messages from correct processes take to be transmitted, a gatherer process can set a timer that allows all correct and non-slow  messages to be delivered. After a timeout occurs, of the $x$ processes that are unresponsive, only $s$ of them may be slow, which means that $x-s$ processes must be faulty (recall that we consider only the case when $u>s$). This allows us to leverage the assumption of $s$ slow but correct processes to decrease the quorum size to $N-u$ while still guaranteeing the intersection properties necessary for safety. We make use of this mechanism to adapt our \acrlong{bgp} protocol to the Visigoth fault model. This includes changing the quorum gathering in \textit{phase 1b}, where acceptors relay their previous votes to the leader, in the verification phase, where acceptors exchange cryptographic proofs, and \textit{phase 2b}, where acceptors send their votes to the learners. \par
+In our previous implementation of the Byzantine Generalized Paxos protocol, the nature of the consensus problem combined with the possibility of faults required altering the message pattern to contain an additional broadcast round. In the Visigoth model, this broadcast round serves a new purpose in addition to the gathering of proofs. In Byzantine Generalized Paxos, a Byzantine leader can at most prevent progress until a new leader is elected. Even if a leader causes a split vote by sending different values to some acceptors in its \textit{phase 2a} messages, at most one of those values can obtain the $N-u$ votes required to be learned. However, since in the Visigoth model we want to take advantage of the additional assumptions to reduce the quorum to $N-u$, it becomes possible for the leader to attempt a split vote by sending two different values to two sets of acceptors and ignoring others such that the ignored acceptors are more than $s$ and the timeout is reached, causing the required quorum size to be reduced. Since $o$ of the remaining acceptors can vote for both values and the leader could attempt a split vote between the remaining $u+s+1$ (including the acceptors that were previously ignored), there are enough votes for both values to be committed, violating the safety property. One configuration where this would happen would be with $u=o=2,\ s=1,\ N=u+o+\min(u,s)+1=6$. In this system the initial quorum is $N-s=5$ and the reduced quorum is $N-u=4$. If the leader sends $v_1$ to two acceptors (one correct and one faulty), $v_2$ to other two (also one correct and one faulty) and ignores the last two, then the timeout is reached and the required quorum size is reduced from 5 to 4. In this case, each value has two votes from both of the Byzantine acceptors and one vote from one of the two correct acceptors that received the split vote. Since the previously ignored acceptors are correct, the leader can employ another split vote to divide them between $v_1$ and $v_2$ to achieve four votes for both values. \par
+To prevent this situation, when acceptors receive a \textit{phase 2a} message from the leader, they must replay it to all other acceptors. This prevents the leader from purposely ignoring acceptors to force the quorum to decrease. Since the leader can employ a split vote in a way such that at most $o$ acceptors receive a \textit{phase 2a} for each sequence, the acceptors can't rely on receiving $f+1$ replays in order to be sure that they are correct. To ensure that the replay message originated from the leader and not from a Byzantine acceptor, it must include the leader's signature. After receiving this message the acceptor executes the algorithm just as it would if the message had come from the leader (Algorithm~\ref{VFT-Acc} lines \{10-12\}).
+
+
+\algnewcommand{\parState}[1]{\State%
+	\parbox[t]{\dimexpr\linewidth-\algmargin}{\strut #1\strut}}
+\begin{algorithm}
+	\caption{Visigoth Generalized Paxos - Learner l}
+	\label{VFT-Learn}
+	\textbf{Local variables:} $learned = \bot,\ storedProofs = \bot,\ quorumSize = \bot,\ verificationMessages = \bot, validVotes = \bot$ 
+	\begin{algorithmic}[1]
+		\State \textbf{upon} \textit{receive($P2B, ballot, value, proofs$)} from acceptor $a$ \textbf{do}
+		
+		\State \hspace{\algorithmicindent} $storedProofs[ballot][value][a] = \langle a, proofs \rangle$;
+		\State \hspace{\algorithmicindent} $valid\_proofs = 0$;
+		\State \hspace{\algorithmicindent} \textbf{for} $i$ \textbf{in} $acceptors$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = proofs[i]$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof_{pub_i} == \langle ballot, value \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
+		$valid\_proofs \mathrel{+{=}} 1$;
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $valid\_proofs \geq N-s$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $validVotes[ballot][value][a] = proofs$;
+		\State
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $quorumSize[ballot][value] = \bot$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $quorumSize[ballot][value] = N-s$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $\Call{startTimer}{3T, \textproc{timerEnded}, ballot, value}$;
+		\State
+		\State \hspace{\algorithmicindent} \textbf{if} $(\#(validVotes[ballot][value]) \geq quorumSize[ballot][value]$ and $(quorumSize[ballot][value] = N-s$ or $verificationMessages[ballot][value] \geq N-u)$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;
+		
+			\State
+		\State \textbf{upon} \textit{receive($P2B, ballot, value$)} from acceptor $a$ \textbf{do}
+		\State \hspace{\algorithmicindent} \textbf{if} $\Call{isUniversallyCommutative}{value}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}
+		$validVotes[ballot][value][a] = true$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $\#(validVotes[ballot][value]) > u$ \textbf{then} 
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = learned \bullet value$;
+		
+		\State
+		\State \textbf{upon} \textit{receive($VERIFY\_RESP, ballot, value$)} from acceptor $a$ \textbf{do}
+		\State \hspace{\algorithmicindent} $verificationMessages[ballot][value][a]  = true$;
+		\State \hspace{\algorithmicindent} \textbf{if} $(\#(validVotes[ballot][value]) \geq quorumSize[ballot][value]$ and $(quorumSize[ballot][value] = N-s$ or $verificationMessages[ballot][value] \geq N-u)$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $learned = \Call{merge\_sequences}{learned, value}$;
+		
+		\State
+		\Function {timerEnded}{$ballot, value$}
+		\State \hspace{\algorithmicindent} $quorumSize[ballot][value] = N-u$;
+
+		\State
+		\State \hspace{\algorithmicindent} \textbf{for} $a$ \textbf{in} $acceptors$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $acc\_proofs = storedProofs[a]$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} $valid\_proofs = 0$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{for} $i$ \textbf{in} $acceptors$ \textbf{do}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $proof = acc\_proofs[i]$;
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $proof_{pub_i} == \langle ballot, value \rangle$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} 
+		$valid\_proofs \mathrel{+{=}} 1$;
+		\State
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent} \textbf{if} $valid\_proofs \geq N-u$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $validVotes[ballot][value][a] = proofs$;
+		\State 		
+		\State \hspace{\algorithmicindent} $\Call{send}{VERIFY\_REQ, ballot}$ to acceptors;
+		\EndFunction
+		\State		
+		\Function{merge\_sequences}{$old\_seq, new\_seq$}
+		\State \textbf{for} $c$ \textbf{in} $new\_seq$ \textbf{do} 
+		\State \hspace{\algorithmicindent} \textbf{if} $!\Call{contains}{old\_seq,c}$ \textbf{then}
+		\State \hspace{\algorithmicindent}\hspace{\algorithmicindent}\hspace{\algorithmicindent} $old\_seq =  old\_seq \bullet c$;
+		\State \textbf{return} $old\_seq$;
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Timings}
+
+One important aspect of the original Visigoth description is related to the setting of timeouts. In \acrshort{vft}, all processes are expected to initiate the quorum gathering so they may commit a value. The timeouts used by the \acrlong{qgp} to trigger the quorum reduction must be set according to both the upper bound on message latency between processes and the maximum relative delay that can be expected between two processes initiating the primitive. This is encoded in the following property guaranteed by Quorum Gathering Primitive: \par
+
+\begin{displayquote}
+\textit{Safety-Intersection}: if there are two instances of \acrshort{qgp}, such that all correct processes that are not crashed and not slow towards the respective gatherer processes initiate the protocol within $\delta$ time window such that $T+\delta < T_{QGP}$, then, if the two correct gatherers $p$ and $p'$ gather $M$ and $M'$ respectively, $M$ and $M'$ intersect in at least one correct replica.
+\end{displayquote}
+
+This specification is directly related to the fact that all correct processes are expected to gather messages from a quorum, which is why the timeout value $T_{QGP}$ must be larger than the synchrony bound $T$ plus the maximum time $\delta$ that can elapse between two processes initiating the gathering procedure. However, since in our system model processes are differentiated by roles as in traditional Paxos, the gathering logic will be reflected at multiple roles. For brevity, the entire procedure is only explicit at the learners' pseudocode (Algorithm~\ref{VFT-Learn}). The aforementioned difference in system modeling requires us to reason about the maximum delay that can be observed between two votes sent in any given message step. Take the worst case scenario where two message paths observe the biggest possible latency difference at the learners after being sent by the leader: in the first case, the \textit{phase 2a} message reaches an acceptor almost immediately and triggers the sending of a \textit{phase 2b} message that also reaches the learner almost immediately; the second message takes the maximum amount of time $T$ that a non-faulty and non-slow message can take to reach some acceptors. Consider that the leader is also Byzantine and ignores a subset of the acceptors. Due to this behavior, some acceptors will have to wait for the replay broadcast sent by other acceptors to be aware of the \textit{phase 2a} message. Suppose that, for both the replay round and the corresponding \textit{phase 2b} message it triggers, it takes $T$ time units for the message to reach the intended recipients. In this case, a total of $3T$ message delays will separate the two message paths without either of them being faulty or slow. Therefore, the timeout value $T_{QGP}$ at the learners must be set to $3T$.
+
+\subsubsection{Quorums}
+There are several aspects of \acrshort{vgp} that are dependent on possible quorum sizes. As is the case with \acrshort{bgp}, we must ensure that the leader receives a \textit{phase 1b} message from at least one correct acceptor relaying the most recently learned sequence along with enough proofs to ensure that no other non-commutative sequence may have been learned. Since the only aspect of the \acrshort{vgp} protocol that differs significantly from \acrshort{bgp} is the procedure through which the quorums are gathered, the same reasoning for correctness applies. As long as quorums are guaranteed to intersect in more than $o$ acceptors, we are sure that two non-commutative sequences cannot both receive a quorum of verification messages. In order to demonstrate the protocol's correctness, section \ref{vft_proofs} shows that this condition is upheld for any two gathered quorums. \par
+However, even though we are able of extending \acrshort{bgp} to the Visigoth model using VFT-SMaRt's \acrshort{qgp} to collect messages without introducing additional complexity to the protocol's message pattern, there exists some potential for conflict between the two protocols when we consider that they are designed to expect different quorum sizes. In particular, \acrshort{bgp} requires acceptors to gather $N-f$ proofs in order to ensure the leader of the following classic ballot that enough acceptors committed to some sequence. Since learners only learn after witnessing $N-f$ collections of such proofs, we also guarantee that, when a sequence is learned, not only no other non-commutative sequence is learned in the same ballot but also the leader of the next classic ballot will be aware of every learned sequence. However, as we previously mentioned, \acrshort{vft} uses either a quorum of $N-s$ acceptors or a smaller quorum of $N-u$ during its message gathering procedure. Although the original VFT protocol proves that any two quorums intersect, it's unclear what effect the variable quorums have on the collection of proofs in the verification phase. In particular, when a learner receives a vote, he has no way of knowing whether to expect $N-s$ or $N-u$ proofs. \par 
+In the interest of preserving safety, \acrshort{vgp} initially assumes that only the $s$ slow processes may be silent for more than $3T$ time units and requires at least $N-s$ proofs in order to accept a \textit{phase 2b} message. If a phase $2b$ message carries with it less than $N-s$ proofs, it's not counted as a valid vote in \textit{phase 2b}. However, since we want the protocol to progress in the presence of faults, \textit{phase 2b} messages that don't contain at least $N-s$ proofs are stored and, if the timeout lowers the minimum quorum size to $N-u$, the \textit{phase 2b} messages are rechecked in order to see if they contain at least $N-u$ proofs (Algorithm \ref{VFT-Learn} lines \{30-42\}). This rechecking can be done simply by recounting the valid proofs in each vote and considering not only those with at least $N-s$ votes but also those with at least $N-u$ votes. If more than $N-u$ such votes exist, the learner moves on to gathering a verification quorum that must be assembled whenever the required quorum is reduced from $N-s$ to $N-u$. The reason why this verification quorum is needed is due to the possibility of multiple quorums being assembled concurrently, as was described in the original \acrshort{vft} description~\cite{Porto2015}. As previously mentioned, it's important to note that, for conciseness, the \acrshort{qgp} is only explicit at the learner. However, both the leader and the acceptors also implement the exact same behavior when gathering a quorum of messages. Therefore, when an acceptor gathers verification messages, it first waits for $N-s$ such messages but, after a timeout of $3T$, it can send its \textit{phase 2b} vote with just $N-u$ votes.\par
+
+\subsection{Discussion}
+
+\subsubsection{Universally Commutative Commands}
+As is the case with \acrlong{bgp}, there is the possibility of extending \acrshort{vgp} by handling universally commutative commands differently than commands that may not commute with others. Since the impact and requirements of this optimization have been discussed at length in other chapters, we will refrain from repeating the same points here. However, it's interesting to note how the command history problem (and its solution) are well suited for an adaptation to the \acrshort{vft} model, since the advantages of both are aligned. The Visigoth model's additional assumptions make it specially useful in a datacenter environment where not only coordinated malicious behavior is unlikely, due to the high security barriers in place, but also the majority of costs scale inversely with the system's throughput capability (i.e., higher traffic requires more servers, switches, cooling equipment). Using the commutativity assumption to reduce coordination requirements, a protocol that solves the command history problem can improve both latency and the total number of messages exchanged. The extension of handling universally commutative commands increases the protocol's throughput and latency gains even further, such that the fault model, the consensus problem and the protocol's implementation all contribute to a system well suited to be used in a datacenter-like environment.
